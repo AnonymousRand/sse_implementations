@@ -8,8 +8,8 @@
 Node::Node(int startVal, int endVal) {
     this->startVal = startVal;
     this->endVal = endVal;
-    this->left = NULL;
-    this->right = NULL;
+    this->left = nullptr;
+    this->right = nullptr;
 }
 
 Node::Node(Node* left, Node* right) {
@@ -20,10 +20,10 @@ Node::Node(Node* left, Node* right) {
 }
 
 Node::~Node() {
-    if (this->left != NULL) {
+    if (this->left != nullptr) {
         delete this->left;
     }
-    if (this->right != NULL) {
+    if (this->right != nullptr) {
         delete this->right;
     }
 }
@@ -41,6 +41,8 @@ Node* Node::buildTdag(std::vector<int> leafVals) {
         l.push_back(new Node(leafVal, leafVal));
     }
 
+    // build full binary tree from leaves
+    // (this is my own algorithm i have no idea how good it is)
     while (l.size() > 1) {
         // todo temp
         std::cout << "---------\n";
@@ -70,6 +72,21 @@ Node* Node::buildTdag(std::vector<int> leafVals) {
         }
     }
 
+    // todo needs to insert extra tdag nodes, oh god
+    // preliminary idea: use DFS (private method also used by getSubtreeLeafVals()?) to return list of nodes
+    // then on every node:
+    /*
+        if (node->left == nullptr || node->right == nullptr) {
+            continue;
+        }
+        if (node->left->right == nullptr || node->right->left == nullptr) {
+            continue;
+        }
+        Node* intermediate = new Node(n->left->right, n->right->left);
+    */
+    // however this probably requires DFS to be modified to support going through to parent nodes
+    // as these intermediate nodes are not ever along a branch from the root
+    // probably need to use DFS for graphs? https://www.geeksforgeeks.org/depth-first-search-or-dfs-for-a-graph/
     return l.front();
 }
 

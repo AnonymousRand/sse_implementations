@@ -12,7 +12,7 @@ class Node {
 
     public:
         /**
-         * Construct a `Node` with the given `startVal` and `endVal`, leaving its children `NULL`.
+         * Construct a `Node` with the given `startVal` and `endVal`, leaving its children `nullptr`.
          */
         Node(int startVal, int endVal);
 
