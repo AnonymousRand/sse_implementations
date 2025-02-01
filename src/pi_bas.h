@@ -2,8 +2,6 @@
 
 #include "data_types.h"
 
-#include <vector>
-
 class PiBasClient {
     private:
         Db db;
