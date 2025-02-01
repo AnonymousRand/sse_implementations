@@ -27,6 +27,9 @@ class Node {
         /**
          * Find the single range cover of the leaves containing `range`.
          */
+        // ideas: naive way is to traverse whole tree, return all nodes, check one by one
+        // better: can probably do some modified binary search for left and right values separately
+        // this might not work with tdag intermediate nodes though
         //int findSrc(std::tuple<int, int> range);
 
         /**
