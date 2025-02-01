@@ -2,9 +2,9 @@
 
 #include "log_src.h"
 
-typedef std::tuple<Kw, IdRange> Index1Val;
+typedef std::tuple<int, IdRange> Index1Val;
 typedef std::tuple<KwRange, std::vector<Index1Val>> Index1;
-typedef std::tuple<IdRange, std::vector<Id>> Index2;
+typedef std::tuple<IdRange, std::vector<int>> Index2;
 
 class LogSrciClient : public LogSrcClient {
     public:
@@ -21,5 +21,5 @@ class LogSrciServer : public LogSrcServer {
 
     public:
         std::vector<Index1Val> search1(QueryToken queryToken);
-        std::vector<Id> search2(QueryToken queryToken);
+        std::vector<int> search2(QueryToken queryToken);
 };

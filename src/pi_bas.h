@@ -9,7 +9,7 @@ class PiBasClient {
     public:
         std::string setup(int secParam);
         EncIndex buildIndex(std::string key, Db db);
-        QueryToken trpdr(std::string key, Kw kw);
+        QueryToken trpdr(std::string key, int kw);
 };
 
 class PiBasServer {
@@ -17,5 +17,5 @@ class PiBasServer {
         EncIndex encIndex;
 
     public:
-        std::vector<Id> search(QueryToken queryToken);
+        std::vector<int> search(QueryToken queryToken);
 };
