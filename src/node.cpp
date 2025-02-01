@@ -1,11 +1,21 @@
 #include "node.h"
 
-#include <queue>
+#include <iostream>
+#include <list>
+#include <stdlib.h>
 
-Node::Node(int val) {
-    this->val = val;
+Node::Node(int startVal, int endVal) {
+    this->startVal = startVal;
+    this->endVal = endVal;
     this->left = NULL;
     this->right = NULL;
+}
+
+Node::Node(Node* left, Node* right) {
+    this->startVal = left->startVal;
+    this->endVal = right->endVal;
+    this->left = left;
+    this->right = right;
 }
 
 Node::~Node() {
@@ -18,14 +28,40 @@ Node::~Node() {
 }
 
 Node* buildTdag(std::vector<int> leafVals) {
-    // queue used to hold nodes while building
-    std::queue<Node*> q;
-    // initially load just the leaves into queue
-    for (int leafVal : leafVals) {
-        q.push(new Node(leafVal));
+    if (leafVals.size() == 0) {
+        std::cerr << "Error: `leafVals` passed to `node.buildTdag()` is empty :/" << std::endl;
+        return EXIT_FAILURE;
     }
 
-    while (!q.empty()) {
-        
+    // linked list used to hold nodes while building (linked list chosen for efficiency)
+    std::list<Node*> l;
+    // initially load just the leaves into list
+    for (int leafVal : leafVals) {
+        l.push_back(new Node(leafVal, leafVal));
     }
+
+    while (l.size() > 1) {
+        // find first two nodes from `l` that have contiguous ranges and join them with a parent node
+        // then delete these two nodes and append their new parent node to `l` to keep building tree
+        Node* node1 = l.pop_front();
+        for (auto it = l.begin(); it != l.end(); it++) {
+            Node* node2 = *it;
+            if (node2->startVal - 1 == node1->endVal) {
+                // `node1` becomes the left child of new parent node
+                Node* parent = new Node(node1, node2);
+                l.push_back(parent);
+                l.erase(it);
+                break;
+            }
+            if (node2->endVal + 1 == node1->startVal) {
+                // `node2` becomes the left child of new parent node
+                Node* parent = new Node(node2, node1);
+                l.push_back(parent);
+                l.erase(it);
+                break;
+            }
+        }
+    }
+
+    return l.pop_front();
 }
