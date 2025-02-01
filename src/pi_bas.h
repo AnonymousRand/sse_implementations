@@ -10,7 +10,7 @@ class PiBasClient {
         std::string setup(int secParam);
         EncIndex buildIndex(std::string key, Db db);
         QueryToken trpdr(std::string key, Kw kw);
-}
+};
 
 class PiBasServer {
     private:
@@ -18,4 +18,4 @@ class PiBasServer {
 
     public:
         std::vector<Id> search(QueryToken queryToken);
-}
+};
