@@ -3,6 +3,7 @@
 #include <iostream>
 #include <list>
 #include <stdlib.h>
+#include <string>
 
 Node::Node(int startVal, int endVal) {
     this->startVal = startVal;
@@ -27,10 +28,10 @@ Node::~Node() {
     }
 }
 
-Node* buildTdag(std::vector<int> leafVals) {
+Node* Node::buildTdag(std::vector<int> leafVals) {
     if (leafVals.size() == 0) {
         std::cerr << "Error: `leafVals` passed to `node.buildTdag()` is empty :/" << std::endl;
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     // linked list used to hold nodes while building (linked list chosen for efficiency)
@@ -41,9 +42,15 @@ Node* buildTdag(std::vector<int> leafVals) {
     }
 
     while (l.size() > 1) {
+        // todo temp
+        std::cout << "---------\n";
+        for (auto v : l) {
+            std::cout << v->startVal << " - " << v->endVal << "\n";
+        }
         // find first two nodes from `l` that have contiguous ranges and join them with a parent node
         // then delete these two nodes and append their new parent node to `l` to keep building tree
-        Node* node1 = l.pop_front();
+        Node* node1 = l.front();
+        l.pop_front();
         for (auto it = l.begin(); it != l.end(); it++) {
             Node* node2 = *it;
             if (node2->startVal - 1 == node1->endVal) {
@@ -63,5 +70,10 @@ Node* buildTdag(std::vector<int> leafVals) {
         }
     }
 
-    return l.pop_front();
+    return l.front();
+}
+
+std::ostream& operator << (std::ostream& os, const Node& node) {
+    // todo
+    return os;
 }

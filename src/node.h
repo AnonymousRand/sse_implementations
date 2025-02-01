@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 
 class Node {
@@ -24,12 +25,6 @@ class Node {
         ~Node();
 
         /**
-         * Create a TDAG (full binary tree + intermediate nodes) bottom-up from the given leaf values.
-         * Leaf values must be contiguous integers sorted in ascending order.
-         */
-        Node* buildTdag(std::vector<int> leafVals);
-
-        /**
          * Find the single range cover of the leaves containing `range`.
          */
         //int findSrc(std::tuple<int, int> range);
@@ -38,4 +33,12 @@ class Node {
          * Get all leaf values from the subtree of `node`.
          */
         //std::vector<int> getSubtreeLeafVals(Node* node);
+
+        /**
+         * Create a TDAG (full binary tree + intermediate nodes) bottom-up from the given leaf values.
+         * Leaf values must be contiguous integers sorted in ascending order.
+         */
+        static Node* buildTdag(std::vector<int> leafVals);
+
+        friend std::ostream& operator << (std::ostream& os, const Node& node);
 };
