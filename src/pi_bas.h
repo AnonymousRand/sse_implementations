@@ -2,6 +2,7 @@
 
 #include "data_types.h"
 
+
 class PiBasClient {
     private:
         Db db;
@@ -11,6 +12,7 @@ class PiBasClient {
         EncIndex buildIndex(std::string key, Db db);
         QueryToken trpdr(std::string key, int kw);
 };
+
 
 class PiBasServer {
     private:

@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
+
 typedef std::tuple<int, int>                          IdRange;
 typedef std::tuple<int, int>                          KwRange;
 typedef std::tuple<std::string, std::string>          QueryToken;
