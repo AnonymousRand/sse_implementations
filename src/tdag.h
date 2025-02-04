@@ -56,5 +56,7 @@ class TdagNode {
          */
         static TdagNode* buildTdag(std::vector<int> leafVals);
 
+
+        // overload for debugging
         friend std::ostream& operator << (std::ostream& os, const TdagNode* node);
 };
