@@ -1,6 +1,8 @@
 #include "pi_bas.h"
 
+#include <cmath>
 #include <iostream>
+#include <random>
 
 
 void exp1(int secParam, PiBasClient client, PiBasServer server) {
@@ -17,8 +19,18 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    // PiBas experiements
-    PiBasClient piBasClient = PiBasClient();
+    // experiment 1: db of size 2^20 and vary range sizes
+    Db db;
+    std::random_device dev;
+    std::mt19937 rand(dev());
+    std::uniform_int_distribution<int> dist(pow(2, 20));
+    for (int i = 0; i < pow(2, 20); i++) {
+        db[i] = dist(rand);
+    }
+
+    PiBasClient piBasClient = PiBasClient(db);
     PiBasServer piBasServer = PiBasServer();
     exp1(secParam, piBasClient, piBasServer);
+
+    // experiement 2: fixed range size and vary db sizes
 }
