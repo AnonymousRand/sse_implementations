@@ -1,4 +1,4 @@
-#include "node.h"
+#include "tree.h"
 
 int main() {
     std::vector<int> leafVals = {0, 1 ,2 ,3, 4};

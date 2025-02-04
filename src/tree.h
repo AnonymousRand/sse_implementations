@@ -1,5 +1,6 @@
 #pragma once
 
+#include <forward_list>
 #include <iostream>
 #include <vector>
 
@@ -9,6 +10,11 @@ class Node {
         int endVal;
         Node* left;
         Node* right;
+
+        /**
+         * Traverse subtree of `root` and return all nodes in that subtree.
+         */
+        std::forward_list<Node*> traverse(Node* root);
 
     public:
         /**
@@ -33,15 +39,29 @@ class Node {
         //int findSrc(std::tuple<int, int> range);
 
         /**
-         * Get all leaf values from the subtree of `node`.
+         * Get all leaf values from the subtree of `root`.
          */
-        //std::vector<int> getSubtreeLeafVals(Node* node);
+        //std::vector<int> getSubtreeLeafVals(Node* root);
 
         /**
-         * Create a TDAG (full binary tree + intermediate nodes) bottom-up from the given leaf values.
+         * Construct a `full` binary tree bottom-up from the given leaf values.
          * Leaf values must be contiguous integers sorted in ascending order.
          */
-        static Node* buildTdag(std::vector<int> leafVals);
+        static Node* buildFromLeafVals(std::vector<int> leafVals);
 
         friend std::ostream& operator << (std::ostream& os, const Node& node);
+};
+
+class TdagNode : public Node {
+    private:
+        TdagNode* extraParent;
+
+        std::forward_list<Node*> traverse(Node* root);
+
+    public:
+        /**
+         * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given leaf values.
+         * Leaf values must be contiguous integers sorted in ascending order.
+         */
+        static TdagNode* buildFromLeafVals(std::vector<int> leafVals);
 };

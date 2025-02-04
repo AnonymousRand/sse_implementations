@@ -1,6 +1,6 @@
 #pragma once
 
-#include "node.h"
+#include "tree.h"
 #include "pi_bas.h"
 
 class LogSrcClient : public PiBasClient {
