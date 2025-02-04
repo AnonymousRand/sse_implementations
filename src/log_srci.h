@@ -9,11 +9,15 @@ typedef std::tuple<IdRange, std::vector<int>> Index2;
 
 
 class LogSrciClient : public LogSrcClient {
+    private:
+        unsigned char* key1;
+        unsigned char* key2;
+
     public:
-        std::tuple<std::string, std::string> setup(int secParam);
-        std::tuple<EncIndex, EncIndex> buildIndex(std::tuple<std::string, std::string> keys, Db db);
-        QueryToken trpdr1(std::string key1, KwRange kwRange);
-        QueryToken trpdr2(std::string key2, IdRange idRange);
+        void setup(int secParam);
+        std::tuple<EncIndex, EncIndex> buildIndex();
+        QueryToken trpdr1(KwRange kwRange);
+        QueryToken trpdr2(IdRange idRange);
 };
 
 

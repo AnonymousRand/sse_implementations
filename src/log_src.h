@@ -6,8 +6,8 @@
 
 class LogSrcClient : public PiBasClient {
     public:
-        EncIndex buildIndex(std::string key, Db db);
-        QueryToken trpdr(std::string key, KwRange kwRange);
+        EncIndex buildIndex();
+        QueryToken trpdr(KwRange kwRange);
 };
 
 

@@ -6,11 +6,14 @@
 class PiBasClient {
     private:
         Db db;
+        unsigned char* key;
 
     public:
-        std::string setup(int secParam);
-        EncIndex buildIndex(std::string key, Db db);
-        QueryToken trpdr(std::string key, int kw);
+        PiBasClient(Db db);
+
+        void setup(int secParam);
+        EncIndex buildIndex();
+        QueryToken trpdr(int kw);
 };
 
 
