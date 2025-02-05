@@ -19,3 +19,16 @@ void PiBasClient::setup(int secParam) {
     }
     this->key = key;
 }
+
+
+EncIndex PiBasClient::buildIndex() {
+    // iterate over dictionary and create map to track new keywords vs. keys
+    // every time new keyword encountered, add to map, create the key and perform the things
+    // every time existing keyword encountered, encrypt using key from map
+    // is this more efficient than methodin paper?
+    // should be since we don't need separate pass to find all kws
+    // and that pass alone should take as long as my whole approach?
+    // if time experimentally check both?
+
+    // can skip create setp in paper by just using ordered map so we already have it sorted? and thus skips the list?
+}
