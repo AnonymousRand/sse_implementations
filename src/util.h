@@ -14,5 +14,6 @@ static const int BLOCK_SIZE = 128 / 8;
 
 
 void handleOpenSslErrors();
+openSslStr intToOpenSslStr(int n);
 openSslStr aesEncrypt(const EVP_CIPHER* cipher, openSslStr plaintext, unsigned char key[256 / 8]);
 openSslStr aesDecrypt(const EVP_CIPHER* cipher, openSslStr ciphertext, unsigned char key[256 / 8]);

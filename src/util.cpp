@@ -3,12 +3,18 @@
 #include <iostream>
 
 
-// todo need int to OpenSslStr
-
 // btw is there a name for that design pattern where yuou pass return val in arg instead like C?
 void handleOpenSslErrors() {
     ERR_print_errors_fp(stderr);
     exit(EXIT_FAILURE);
+}
+
+
+// todo need int to OpenSslStr
+// todo implement prf with hmac-sha-512 as in paper?
+openSslStr intToOpenSslStr(int n) {
+    openSslStr s;
+    s.c_str() = std::to_string(n);
 }
 
 
