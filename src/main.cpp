@@ -11,6 +11,14 @@ void exp1(int secParam, PiBasClient client, PiBasServer server) {
 }
 
 
+// temp
+void gen_key(unsigned char key[KEY_SIZE]) {
+    int rc = RAND_bytes(key, KEY_SIZE);
+    if (rc != 1)
+      throw std::runtime_error("RAND_bytes key failed");
+}
+
+
 int main() {
     int secParam = 256;
 
@@ -32,9 +40,10 @@ int main() {
     // temp
     // todo incorrect encryption/decyprtion error
     // null terminator?
-    unsigned char* key = strToUCharPtr("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
-    std::tuple<unsigned char*, int> c = aesEncrypt(EVP_aes_256_ecb(), strToUCharPtr("hi"), 2, key, 256);
-    std::cout << std::get<0>(c) << " length " << std::get<1>(c) << std::endl;
-    unsigned char* m = aesDecrypt(EVP_aes_256_ecb(), std::get<0>(c), std::get<1>(c), key);
+    unsigned char key[KEY_SIZE];
+    gen_key(key);
+    openSslStr c = aesEncrypt(EVP_aes_256_ecb(), "hi", key);
+    //BIO_dump_fp(stdout, std::get<0>(c), std::get<1>(c));
+    openSslStr m = aesDecrypt(EVP_aes_256_ecb(), c, key);
     std::cout << m << std::endl;
 }

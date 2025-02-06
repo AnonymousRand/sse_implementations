@@ -1,13 +1,18 @@
+#include "data_types.h"
+
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <string>
 #include <tuple>
 
 
-// creating `intToUCharPtr(int n)` that returns `strToUCharPtr(std::to_string(n))` has weird memory issues?
-// it screws up the value of the return back in the caller (it's correct in the callee)
-unsigned char* strToUCharPtr(std::string s);
+typedef std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)> EVP_CIPHER_CTX_free_ptr;
+
+
+static const int KEY_SIZE= 256 / 8;
+static const int BLOCK_SIZE = 128 / 8;
+
 
 void handleOpenSslErrors();
-std::tuple<unsigned char*, int> aesEncrypt(const EVP_CIPHER* cipher, unsigned char* plaintext, int plaintextLen, unsigned char* key, int blockSize);
-unsigned char* aesDecrypt(const EVP_CIPHER* cipher, unsigned char* ciphertext, int ciphertextLen, unsigned char* key);
+openSslStr aesEncrypt(const EVP_CIPHER* cipher, openSslStr plaintext, unsigned char key[256 / 8]);
+openSslStr aesDecrypt(const EVP_CIPHER* cipher, openSslStr ciphertext, unsigned char key[256 / 8]);
