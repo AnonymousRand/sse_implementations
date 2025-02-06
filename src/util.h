@@ -9,5 +9,5 @@
 unsigned char* strToUCharPtr(std::string s);
 
 void handleOpenSslErrors();
-std::tuple<unsigned char*, int> AesEncrypt(unsigned char* plaintext, int plaintextLen, unsigned char* key, int keyLen);
-unsigned char* AesDecrypt(unsigned char* ciphertext, int ciphertextLen, unsigned char* key, int keyLen);
+std::tuple<unsigned char*, int> aesEncrypt(const EVP_CIPHER* cipher, unsigned char* plaintext, int plaintextLen, unsigned char* key, int blockSize);
+unsigned char* aesDecrypt(const EVP_CIPHER* cipher, unsigned char* ciphertext, int ciphertextLen, unsigned char* key);

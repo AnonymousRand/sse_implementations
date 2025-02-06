@@ -14,30 +14,15 @@ void handleOpenSslErrors() {
 }
 
 
-std::tuple<unsigned char*, int> AesEncrypt(unsigned char* plaintext, int plaintextLen, unsigned char* key, int keyLen) {
+std::tuple<unsigned char*, int> aesEncrypt(const EVP_CIPHER* cipher, unsigned char* plaintext, int plaintextLen, unsigned char* key, int blockSize) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) handleOpenSslErrors();
 
     // initialize encryption
-    int res;
-    switch (keyLen) {
-        case 128:
-            res = EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), nullptr, key, nullptr);
-            break;
-        case 192:
-            res = EVP_EncryptInit_ex(ctx, EVP_aes_192_ecb(), nullptr, key, nullptr);
-            break;
-        case 256:
-            res = EVP_EncryptInit_ex(ctx, EVP_aes_256_ecb(), nullptr, key, nullptr);
-            break;
-        default:
-            std::cerr << "Error: `keyLen` passed to `util.AesEncrypt()` is not valid :/" << std::endl;
-            exit(EXIT_FAILURE);
-    }
-    if (res != 1) handleOpenSslErrors();
+    if (EVP_EncryptInit_ex(ctx, cipher, nullptr, key, nullptr) != 1) handleOpenSslErrors();
 
     // perform encryption
-    unsigned char ciphertext[plaintextLen + keyLen];
+    unsigned char ciphertext[plaintextLen + blockSize];
     int ciphertextLenSoFar = 0;
     if (EVP_EncryptUpdate(ctx, ciphertext, &ciphertextLenSoFar, plaintext, plaintextLen) != 1) handleOpenSslErrors();
 
@@ -46,31 +31,18 @@ std::tuple<unsigned char*, int> AesEncrypt(unsigned char* plaintext, int plainte
 
     // clean up
     EVP_CIPHER_CTX_free(ctx);
+    // todo also for int to uchar* just do C-style of passing return value in argument instead?
+    // btw is there a name for that design pattern?
     return std::tuple<unsigned char*, int> {ciphertext, ciphertextLenSoFar};
 }
 
 
-unsigned char* AesDecrypt(unsigned char* ciphertext, int ciphertextLen, unsigned char* key, int keyLen) {
+unsigned char* aesDecrypt(const EVP_CIPHER* cipher, unsigned char* ciphertext, int ciphertextLen, unsigned char* key) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) handleOpenSslErrors();
 
     // initialize decryption
-    int res;
-    switch (keyLen) {
-        case 128:
-            res = EVP_DecryptInit_ex(ctx, EVP_aes_128_ecb(), nullptr, key, nullptr);
-            break;
-        case 192:
-            res = EVP_DecryptInit_ex(ctx, EVP_aes_192_ecb(), nullptr, key, nullptr);
-            break;
-        case 256:
-            res = EVP_DecryptInit_ex(ctx, EVP_aes_256_ecb(), nullptr, key, nullptr);
-            break;
-        default:
-            std::cerr << "Error: `keyLen` passed to `util.AesDecrypt()` is not valid :/" << std::endl;
-            exit(EXIT_FAILURE);
-    }
-    if (res != 1) handleOpenSslErrors();
+    if (EVP_DecryptInit_ex(ctx, cipher, nullptr, key, nullptr) != 1) handleOpenSslErrors();
 
     // perform decryption
     unsigned char plaintext[ciphertextLen + 1];
@@ -79,6 +51,7 @@ unsigned char* AesDecrypt(unsigned char* ciphertext, int ciphertextLen, unsigned
 
     // finalize decryption (deal with last partial block)
     if (EVP_DecryptFinal_ex(ctx, plaintext + plaintextLenSoFar, &plaintextLenSoFar) != 1) handleOpenSslErrors();
+    plaintext[plaintextLenSoFar] = '\0'; // need to add back null terminator
 
     // clean up
     EVP_CIPHER_CTX_free(ctx);

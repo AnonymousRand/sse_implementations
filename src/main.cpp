@@ -12,13 +12,7 @@ void exp1(int secParam, PiBasClient client, PiBasServer server) {
 
 
 int main() {
-    int secParam;
-    std::cout << "Enter security parameter/key length (must be 128, 192, or 256): ";
-    std::cin >> secParam;
-    if (std::cin.fail() || !(secParam == 128 || secParam == 192 || secParam == 256)) {
-        std::cerr << "Error: invalid input" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    int secParam = 256;
 
     // experiment 1: db of size 2^20 and vary range sizes
     Db db;
@@ -36,5 +30,11 @@ int main() {
     // experiment 2: fixed range size and vary db sizes
     
     // temp
-    std::cout << std::get<0>(AesEncrypt(strToUCharPtr("hi"), 2, strToUCharPtr("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"), 128)) << std::endl;
+    // todo incorrect encryption/decyprtion error
+    // null terminator?
+    unsigned char* key = strToUCharPtr("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
+    std::tuple<unsigned char*, int> c = aesEncrypt(EVP_aes_256_ecb(), strToUCharPtr("hi"), 2, key, 256);
+    std::cout << std::get<0>(c) << " length " << std::get<1>(c) << std::endl;
+    unsigned char* m = aesDecrypt(EVP_aes_256_ecb(), std::get<0>(c), std::get<1>(c), key);
+    std::cout << m << std::endl;
 }

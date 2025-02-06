@@ -8,8 +8,8 @@
 PiBasClient::PiBasClient(Db db) {
     this->db = db;
     // build set of unique keywords for use during `setup()`
-    for (auto [id, kw] : db) {
-        this->uniqueKws.insert(kw);
+    for (auto pair : db) {
+        this->uniqueKws.insert(pair.second);
     }
 }
 
