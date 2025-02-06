@@ -2,10 +2,13 @@
 
 #include "data_types.h"
 
+#include <unordered_set>
+
 
 class PiBasClient {
     private:
         Db db;
+        std::unordered_set<int> uniqueKws;
         unsigned char* key;
 
     public:

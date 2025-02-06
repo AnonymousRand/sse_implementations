@@ -1,4 +1,5 @@
 #include "pi_bas.h"
+#include "util.h" // temp
 
 #include <cmath>
 #include <iostream>
@@ -12,10 +13,10 @@ void exp1(int secParam, PiBasClient client, PiBasServer server) {
 
 int main() {
     int secParam;
-    std::cout << "Enter security parameter (key length): ";
+    std::cout << "Enter security parameter/key length (must be 128, 192, or 256): ";
     std::cin >> secParam;
-    if (std::cin.fail() || secParam <= 0) {
-        std::cerr << "Error: please enter a positive integer" << std::endl;
+    if (std::cin.fail() || !(secParam == 128 || secParam == 192 || secParam == 256)) {
+        std::cerr << "Error: invalid input" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -30,7 +31,10 @@ int main() {
 
     PiBasClient piBasClient = PiBasClient(db);
     PiBasServer piBasServer = PiBasServer();
-    exp1(secParam, piBasClient, piBasServer);
+    //exp1(secParam, piBasClient, piBasServer);
 
-    // experiement 2: fixed range size and vary db sizes
+    // experiment 2: fixed range size and vary db sizes
+    
+    // temp
+    std::cout << std::get<0>(AesEncrypt(strToUCharPtr("hi"), 2, strToUCharPtr("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"), 128)) << std::endl;
 }
