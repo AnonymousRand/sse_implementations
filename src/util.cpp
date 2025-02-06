@@ -10,15 +10,18 @@ void handleOpenSslErrors() {
 }
 
 
-// todo need int to OpenSslStr
-// todo implement prf with hmac-sha-512 as in paper?
-openSslStr intToOpenSslStr(int n) {
-    openSslStr s;
-    s.c_str() = std::to_string(n);
+unsigned char* strToUCharPtr(std::string s) {
+    return reinterpret_cast<unsigned char*>(const_cast<char*>(s.c_str()));
 }
 
 
-openSslStr aesEncrypt(const EVP_CIPHER* cipher, openSslStr plaintext, unsigned char key[KEY_SIZE]) {
+// todo output doesnt match command line!
+unsigned char* prf(unsigned char* key, int keyLen, unsigned char* input, int inputLen) {
+    return HMAC(EVP_sha512(), key, keyLen, input, inputLen, nullptr, nullptr);
+}
+
+
+int aesEncrypt(const EVP_CIPHER* cipher, unsigned char* ptext, int ptextLen, unsigned char* ctext, unsigned char key[KEY_SIZE]) {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
     if (!ctx) {
         handleOpenSslErrors();
@@ -30,24 +33,21 @@ openSslStr aesEncrypt(const EVP_CIPHER* cipher, openSslStr plaintext, unsigned c
     }
 
     // perform encryption
-    openSslStr ciphertext;
-    ciphertext.resize(plaintext.size() + BLOCK_SIZE);
-    int ciphertextLen1, ciphertextLen2;
-    if (EVP_EncryptUpdate(ctx.get(), (unsigned char*)&ciphertext[0], &ciphertextLen1, (unsigned char*)&plaintext[0], plaintext.size()) != 1) {
+    int ctextLen1, ctextLen2;
+    if (EVP_EncryptUpdate(ctx.get(), ctext, &ctextLen1, ptext, ptextLen) != 1) {
         handleOpenSslErrors();
     }
 
     // finalize encryption (deal with last partial block)
-    if (EVP_EncryptFinal_ex(ctx.get(), (unsigned char*)&ciphertext[0] + ciphertextLen1, &ciphertextLen2) != 1) {
+    if (EVP_EncryptFinal_ex(ctx.get(), ctext + ctextLen1, &ctextLen2) != 1) {
         handleOpenSslErrors();
     }
 
-    ciphertext.resize(ciphertextLen1 + ciphertextLen2);
-    return ciphertext;
+    return ctextLen1 + ctextLen2;
 }
 
 
-openSslStr aesDecrypt(const EVP_CIPHER* cipher, openSslStr ciphertext, unsigned char key[KEY_SIZE]) {
+int aesDecrypt(const EVP_CIPHER* cipher, unsigned char* ctext, int ctextLen, unsigned char* ptext, unsigned char key[KEY_SIZE]) {
     EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
     if (!ctx) {
         handleOpenSslErrors();
@@ -59,18 +59,16 @@ openSslStr aesDecrypt(const EVP_CIPHER* cipher, openSslStr ciphertext, unsigned 
     }
 
     // perform decryption
-    openSslStr plaintext;
-    plaintext.resize(ciphertext.size());
-    int plaintextLen1, plaintextLen2;
-    if (EVP_DecryptUpdate(ctx.get(), (unsigned char*)&plaintext[0], &plaintextLen1, (unsigned char*)&ciphertext[0], ciphertext.size()) != 1) {
+    int ptextLen1, ptextLen2;
+    if (EVP_DecryptUpdate(ctx.get(), ptext, &ptextLen1, ctext, ctextLen) != 1) {
         handleOpenSslErrors();
     }
 
     // finalize decryption (deal with last partial block)
-    if (EVP_DecryptFinal_ex(ctx.get(), (unsigned char*)&plaintext[0] + plaintextLen1, &plaintextLen2) != 1) {
+    if (EVP_DecryptFinal_ex(ctx.get(), ptext + ptextLen1, &ptextLen2) != 1) {
         handleOpenSslErrors();
     }
 
-    plaintext.resize(plaintextLen1 + plaintextLen2);
-    return plaintext;
+    ptext[ptextLen1 + ptextLen2] = '\0';
+    return ptextLen1 + ptextLen2;
 }

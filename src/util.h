@@ -2,6 +2,9 @@
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
+#include <openssl/hmac.h>
+#include <openssl/params.h>
+#include <openssl/core_names.h>
 #include <string>
 #include <tuple>
 
@@ -14,6 +17,10 @@ static const int BLOCK_SIZE = 128 / 8;
 
 
 void handleOpenSslErrors();
-openSslStr intToOpenSslStr(int n);
-openSslStr aesEncrypt(const EVP_CIPHER* cipher, openSslStr plaintext, unsigned char key[256 / 8]);
-openSslStr aesDecrypt(const EVP_CIPHER* cipher, openSslStr ciphertext, unsigned char key[256 / 8]);
+unsigned char* strToUCharPtr(std::string s);
+
+// PRF implemented as HMAC-SHA512 as done in Private Practical Range Search Revisited
+unsigned char* prf(unsigned char* key, int keyLen, unsigned char* input, int inputLen);
+
+int aesEncrypt(const EVP_CIPHER* cipher, unsigned char* ptext, int ptextLen, unsigned char* ctext, unsigned char key[256 / 8]);
+int aesDecrypt(const EVP_CIPHER* cipher, unsigned char* ctext, int ctextLen, unsigned char* ptext, unsigned char key[256 / 8]);
