@@ -5,15 +5,16 @@
 
 void exp1(PiBasClient client, PiBasServer server) {
     client.setup(KEY_SIZE);
-    EncIndex encIndex = client.buildIndex();
-    std::cout << "----- Encrypted Index -----" << std::endl;
-    for (auto pair : encIndex) {
-        std::cout << pair.first << ": ";
-        for (ustring result : pair.second) {
-            std::cout << result << ", ";
-        }
-        std::cout << std::endl;
+    server.setEncIndex(client.buildIndex());
+    // query 28
+    int kw = 28;
+    QueryToken queryToken = client.trpdr(kw);
+    std::vector<int> results = server.search(queryToken);
+    std::cout << "Querying " << kw << ": results are";
+    for (int result : results) {
+        std::cout << " " << result;
     }
+    std::cout << std::endl;
 }
 
 int main() {

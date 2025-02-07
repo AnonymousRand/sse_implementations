@@ -17,21 +17,22 @@ static const int BLOCK_SIZE = 128 / 8;
 // `ustring`
 ////////////////////////////////////////////////////////////////////////////////
 
-// use `ustring` in most of the cases instead of `unsigned char*`
+// use `ustring` as much as possible instead of `unsigned char*` to avoid C-style mess
 typedef std::basic_string<unsigned char> ustring;
 
 ustring to_ustring(int n);
+int from_ustring(ustring n);
 std::ostream& operator << (std::ostream& os, const ustring str);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Custom Types
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef std::tuple<int, int>                    IdRange;
-typedef std::tuple<int, int>                    KwRange;
-typedef std::tuple<ustring, ustring>            QueryToken;
-typedef std::unordered_map<int, int>            Db;
-typedef std::map<ustring, std::vector<ustring>> EncIndex;
+typedef std::tuple<int, int>         IdRange;
+typedef std::tuple<int, int>         KwRange;
+typedef std::tuple<ustring, ustring> QueryToken;
+typedef std::unordered_map<int, int> Db;
+typedef std::map<ustring, ustring>   EncIndex;
 
 ////////////////////////////////////////////////////////////////////////////////
 // OpenSSL

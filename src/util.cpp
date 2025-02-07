@@ -9,11 +9,14 @@
 // `ustring`
 ////////////////////////////////////////////////////////////////////////////////
 
-// no way Google AI wrote code that worked???
-// (never mind)
 ustring to_ustring(int n) {
-    std::string s = std::to_string(n);
-    return ustring(s.begin(), s.end());
+    std::string str = std::to_string(n);
+    return ustring(str.begin(), str.end());
+}
+
+int from_ustring(ustring s) {
+    std::string str = std::string(s.begin(), s.end());
+    return std::stoi(str);
 }
 
 std::ostream& operator << (std::ostream& os, const ustring str) {

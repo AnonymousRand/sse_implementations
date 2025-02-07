@@ -10,11 +10,28 @@ void PiBasServer::setEncIndex(EncIndex encIndex) {
 }
 
 std::vector<int> PiBasServer::search(QueryToken queryToken) {
+    std::vector<int> results;
+    ustring subkey1 = std::get<0>(queryToken);
+    ustring subkey2 = std::get<1>(queryToken);
     int counter = 0;
     
+    // for c = 0 until Get returns error
     while (true) {
-        ustring encIndexK = prf(
+        // d <- Get(D, F(K_1, c))
+        ustring encIndexK = prf(subkey1, to_ustring(counter));
+        auto it = this->encIndex.find(encIndexK);
+        if (it == this->encIndex.end()) {
+            break;
+        }
+        ustring encIndexV = it->second;
+        // id <- Dec(K_2, d)
+        ustring ptext = aesDecrypt(EVP_aes_256_ecb(), subkey2, encIndexV);
+        results.push_back(from_ustring(ptext));
+
+        counter++;
     }
+
+    return results;
 }
 
 PiBasClient::PiBasClient(Db db) {
@@ -23,9 +40,6 @@ PiBasClient::PiBasClient(Db db) {
     for (auto pair : db) {
         this->uniqueKws.insert(pair.second);
     }
-}
-
-PiBasClient::~PiBasClient() {
 }
 
 void PiBasClient::setup(int secParam) {
@@ -43,32 +57,26 @@ void PiBasClient::setup(int secParam) {
 EncIndex PiBasClient::buildIndex() {
     EncIndex encIndex;
     for (int kw : this->uniqueKws) {
+        // todo use IV and randomized encryption
         // K_1 || K_2 <- F(K, w)
         ustring K = prf(this->key, to_ustring(kw));
         int subkeyLen = K.length() / 2;
-        ustring subkey1 = K.substr(subkeyLen);
-        ustring subkey2 = K.substr(subkeyLen, K.length());
+        ustring subkey1 = K.substr(0, subkeyLen);
+        ustring subkey2 = K.substr(subkeyLen, subkeyLen);
         
-        // initialize counter c <- 0
         unsigned int counter = 0;
         // for each id in DB(w) (evil O(n^2) if ~=n unique keywords)
         for (auto pair : this->db) {
             if (pair.second != kw) {
                 continue;
             }
-            
-            // l <- F(K_1, c); d <- Enc(K_2, id); c++
-            ustring encIndexK = prf(subkey1.c_str(), to_ustring(counter));
-            ustring encIndexV = aesEncrypt(EVP_aes_256_ecb(), subkey2.c_str(), to_ustring(pair.first));
+            // l <- F(K_1, c); d <- Enc(K_2, id)
+            ustring encIndexK = prf(subkey1, to_ustring(counter));
+            ustring encIndexV = aesEncrypt(EVP_aes_256_ecb(), subkey2, to_ustring(pair.first));
             counter++;
-
             // add (l, d) to list L (in lex order)
             // we add straight to dictionary here since we have ordered maps in C++
-            if (encIndex.count(encIndexK) == 0) {
-                encIndex[encIndexK] = std::vector<ustring> {encIndexV};
-            } else {
-                encIndex[encIndexK].push_back(encIndexV);
-            }
+            encIndex[encIndexK] = encIndexV;
         }
     }
 
@@ -76,7 +84,11 @@ EncIndex PiBasClient::buildIndex() {
 }
 
 QueryToken PiBasClient::trpdr(int kw) {
-    ustring subkey1 = prf(this->key, to_ustring(1) + to_ustring(kw));
-    ustring subkey2 = prf(this->key, to_ustring(2) + to_ustring(kw));
+    // the paper uses different notation for the key generation here vs. in `setup()`;
+    // I'm fairly sure they meant the same thing
+    ustring K = prf(this->key, to_ustring(kw));
+    int subkeyLen = K.length() / 2;
+    ustring subkey1 = K.substr(0, subkeyLen);
+    ustring subkey2 = K.substr(subkeyLen, subkeyLen);
     return std::tuple<ustring, ustring>(subkey1, subkey2);
 }
