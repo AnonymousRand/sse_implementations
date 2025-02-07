@@ -1,12 +1,10 @@
 #pragma once
 
 #include <map>
-#include <memory>
 #include <iostream>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
-#include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -42,7 +40,7 @@ typedef std::map<ustring, std::vector<ustring>> EncIndex;
 void handleOpenSslErrors();
 
 // PRF implemented as HMAC-SHA512 as done in Private Practical Range Search Revisited
-ustring prf(const unsigned char* key, int keyLen, ustring input);
+ustring prf(ustring key, ustring input);
 
-ustring aesEncrypt(const EVP_CIPHER* cipher, const unsigned char* key, ustring ptext);
-ustring aesDecrypt(const EVP_CIPHER* cipher, const unsigned char* key, ustring ctext);
+ustring aesEncrypt(const EVP_CIPHER* cipher, ustring key, ustring ptext, ustring iv=ustring());
+ustring aesDecrypt(const EVP_CIPHER* cipher, ustring key, ustring ctext, ustring iv=ustring());

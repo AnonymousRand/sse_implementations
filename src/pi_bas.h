@@ -5,8 +5,12 @@
 #include <unordered_set>
 
 class PiBasServer {
-    public:
+    private:
         EncIndex encIndex;
+
+    public:
+        void setEncIndex(EncIndex encIndex);
+
         std::vector<int> search(QueryToken queryToken);
 };
 
@@ -14,14 +18,12 @@ class PiBasClient {
     private:
         Db db;
         std::unordered_set<int> uniqueKws;
-        unsigned char* key;
-        int secParam;
+        ustring key;
+        int keyLen;
 
     public:
         PiBasClient(Db db);
         ~PiBasClient();
-
-        void sendEncIndex(PiBasServer server, EncIndex encIndex);
 
         void setup(int secParam);
         EncIndex buildIndex();

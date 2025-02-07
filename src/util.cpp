@@ -33,19 +33,25 @@ void handleOpenSslErrors() {
     exit(EXIT_FAILURE);
 }
 
-ustring prf(const unsigned char* key, int keyLen, ustring input) {
-    unsigned char* output = HMAC(EVP_sha512(), key, keyLen, &input[0], input.length(), nullptr, nullptr);
+ustring prf(ustring key, ustring input) {
+    unsigned char* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, nullptr);
     return ustring(output);
 }
 
-ustring aesEncrypt(const EVP_CIPHER* cipher, const unsigned char* key, ustring ptext) {
+ustring aesEncrypt(const EVP_CIPHER* cipher, ustring key, ustring ptext, ustring iv) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
         handleOpenSslErrors();
     }
 
     // initialize encryption
-    if (EVP_EncryptInit_ex(ctx, cipher, nullptr, key, nullptr) != 1) {
+    unsigned char* ucharIv;
+    if (iv == ustring()) {
+        ucharIv = nullptr;
+    } else {
+        ucharIv = &iv[0];
+    }
+    if (EVP_EncryptInit_ex(ctx, cipher, nullptr, &key[0], ucharIv) != 1) {
         handleOpenSslErrors();
     }
 
@@ -67,14 +73,20 @@ ustring aesEncrypt(const EVP_CIPHER* cipher, const unsigned char* key, ustring p
     return ctext;
 }
 
-ustring aesDecrypt(const EVP_CIPHER* cipher, unsigned char* key, ustring ctext) {
+ustring aesDecrypt(const EVP_CIPHER* cipher, ustring key, ustring ctext, ustring iv) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
         handleOpenSslErrors();
     }
 
     // initialize decryption
-    if (EVP_DecryptInit_ex(ctx, cipher, nullptr, key, nullptr) != 1) {
+    unsigned char* ucharIv;
+    if (iv == ustring()) {
+        ucharIv = nullptr;
+    } else {
+        ucharIv = &iv[0];
+    }
+    if (EVP_DecryptInit_ex(ctx, cipher, nullptr, &key[0], ucharIv) != 1) {
         handleOpenSslErrors();
     }
 
@@ -92,7 +104,6 @@ ustring aesDecrypt(const EVP_CIPHER* cipher, unsigned char* key, ustring ctext) 
     }
 
     EVP_CIPHER_CTX_free(ctx);
-    //ptext[ptextLen1 + ptextLen2] = '\0';
     ptext.resize(ptextLen1 + ptextLen2);
     return ptext;
 }

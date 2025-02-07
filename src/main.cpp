@@ -6,6 +6,14 @@
 void exp1(PiBasClient client, PiBasServer server) {
     client.setup(KEY_SIZE);
     EncIndex encIndex = client.buildIndex();
+    std::cout << "----- Encrypted Index -----" << std::endl;
+    for (auto pair : encIndex) {
+        std::cout << pair.first << ": ";
+        for (ustring result : pair.second) {
+            std::cout << result << ", ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 int main() {
