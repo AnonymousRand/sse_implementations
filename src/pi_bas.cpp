@@ -22,7 +22,6 @@ std::vector<int> PiBasServer::search(QueryToken queryToken) {
         ustring data = encIndexV.first;
         // id <- Dec(K_2, d)
         ustring iv = encIndexV.second;
-        // todo occasional bad decrypt wtf?????
         ustring ptext = aesDecrypt(EVP_aes_256_cbc(), subkey2, data, iv);
         results.push_back(ustrToInt(ptext));
 
@@ -59,6 +58,8 @@ EncIndex PiBasClient::buildIndex() {
         
         unsigned int counter = 0;
         // for each id in DB(w) (evil O(n^2) if ~=n unique keywords)
+        // todo this is unacceptable? 2^20 size database never seems to finish; make sure it's stuck on buildIndex
+        // maybe actually just make sse objects store plaintext map keywords -> ids? build in constructor?
         for (auto pair : this->db) {
             if (pair.second != kwRange) {
                 continue;
