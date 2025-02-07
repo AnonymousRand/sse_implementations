@@ -2,12 +2,7 @@
 #include "pi_bas.h"
 
 #include <iostream>
-#include <openssl/rand.h>
 #include <string.h>
-
-void PiBasServer::setEncIndex(EncIndex encIndex) {
-    this->encIndex = encIndex;
-}
 
 std::vector<int> PiBasServer::search(QueryToken queryToken) {
     std::vector<int> results;
@@ -15,7 +10,7 @@ std::vector<int> PiBasServer::search(QueryToken queryToken) {
     ustring subkey2 = std::get<1>(queryToken);
     int counter = 0;
     
-    // for c = 0 until Get returns error
+    // for c = 0 until `Get` returns error
     while (true) {
         // d <- Get(D, F(K_1, c))
         ustring encIndexK = prf(subkey1, to_ustring(counter));
@@ -23,31 +18,24 @@ std::vector<int> PiBasServer::search(QueryToken queryToken) {
         if (it == this->encIndex.end()) {
             break;
         }
-        ustring encIndexV = it->second;
+        ustring encIndexV = std::get<0>(it->second);
         // id <- Dec(K_2, d)
-        ustring ptext = aesDecrypt(EVP_aes_256_ecb(), subkey2, encIndexV);
+        ustring iv = std::get<1>(it->second);
+        ustring ptext = aesDecrypt(EVP_aes_256_cbc(), subkey2, encIndexV, iv);
         results.push_back(from_ustring(ptext));
 
         counter++;
     }
-
     return results;
 }
 
-PiBasClient::PiBasClient(Db db) {
-    this->db = db;
-    // build set of unique keywords for use during `setup()`
-    for (auto pair : db) {
-        this->uniqueKws.insert(pair.second);
-    }
-}
+PiBasClient::PiBasClient(Db db) : SseClient(db) {};
 
 void PiBasClient::setup(int secParam) {
     unsigned char* key = new unsigned char[secParam];
     int res = RAND_priv_bytes(key, secParam);
     if (res != 1) {
-        std::cerr << "Error: `RAND_priv_bytes()` in `PiBasClient.set()` returned result " << res << " :/" << std::endl;
-        exit(EXIT_FAILURE);
+        handleOpenSslErrors();
     }
     this->key = ustring(key);
     this->keyLen = secParam;
@@ -57,7 +45,6 @@ void PiBasClient::setup(int secParam) {
 EncIndex PiBasClient::buildIndex() {
     EncIndex encIndex;
     for (int kw : this->uniqueKws) {
-        // todo use IV and randomized encryption
         // K_1 || K_2 <- F(K, w)
         ustring K = prf(this->key, to_ustring(kw));
         int subkeyLen = K.length() / 2;
@@ -72,11 +59,12 @@ EncIndex PiBasClient::buildIndex() {
             }
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring encIndexK = prf(subkey1, to_ustring(counter));
-            ustring encIndexV = aesEncrypt(EVP_aes_256_ecb(), subkey2, to_ustring(pair.first));
+            ustring iv = genIv();
+            ustring encIndexV = aesEncrypt(EVP_aes_256_cbc(), subkey2, to_ustring(pair.first), iv);
             counter++;
-            // add (l, d) to list L (in lex order)
-            // we add straight to dictionary here since we have ordered maps in C++
-            encIndex[encIndexK] = encIndexV;
+            // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
+            // also store IV in plain along with encrypted value
+            encIndex[encIndexK] = std::tuple<ustring, ustring> {encIndexV, iv};
         }
     }
 

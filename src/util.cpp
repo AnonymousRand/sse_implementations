@@ -41,6 +41,17 @@ ustring prf(ustring key, ustring input) {
     return ustring(output);
 }
 
+ustring genIv() {
+    unsigned char* iv = new unsigned char[IV_SIZE];
+    int res = RAND_bytes(iv, IV_SIZE);
+    if (res != 1) {
+        handleOpenSslErrors();
+    }
+    ustring ustrIv = ustring(iv);
+    delete[] iv;
+    return ustrIv;
+}
+
 ustring aesEncrypt(const EVP_CIPHER* cipher, ustring key, ustring ptext, ustring iv) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
