@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string>
 
-
 // DFS but with additional traversal of TDAG's extra parent nodes
 std::forward_list<TdagNode*> TdagNode::traverse() {
     std::forward_list<TdagNode*> nodes;
@@ -17,7 +16,6 @@ std::forward_list<TdagNode*> TdagNode::traverse() {
     return nodes;
 }
 
-
 TdagNode::TdagNode(int startVal, int endVal) {
     this->startVal = startVal;
     this->endVal = endVal;
@@ -26,7 +24,6 @@ TdagNode::TdagNode(int startVal, int endVal) {
     this->extraParent = nullptr;
 }
 
-
 TdagNode::TdagNode(TdagNode* left, TdagNode* right) {
     this->startVal = left->startVal;
     this->endVal = right->endVal;
@@ -34,7 +31,6 @@ TdagNode::TdagNode(TdagNode* left, TdagNode* right) {
     this->right = right;
     this->extraParent = nullptr;
 }
-
 
 TdagNode::~TdagNode() {
     if (this->left != nullptr) {
@@ -47,7 +43,6 @@ TdagNode::~TdagNode() {
         delete this->extraParent;
     }
 }
-
 
 // current algo uses divide-and-conquer with early exits to find best SRC
 // which is worst-case O(N) for N nodes instead of O(log R) as described in paper
@@ -95,7 +90,6 @@ TdagNode* TdagNode::findSrc(std::tuple<int, int> range) {
     return srcCandidates.begin()->second; // take advantage of the fact that `std::map`s are sorted by key
 }
 
-
 std::vector<int> TdagNode::traverseSrc() {
     std::vector<int> leafVals;
     std::forward_list<TdagNode*> nodes = this->traverse();
@@ -106,7 +100,6 @@ std::vector<int> TdagNode::traverseSrc() {
     }
     return leafVals;
 }
-
 
 TdagNode* TdagNode::buildTdag(std::vector<int> leafVals) {
     if (leafVals.size() == 0) {
@@ -169,7 +162,6 @@ TdagNode* TdagNode::buildTdag(std::vector<int> leafVals) {
 
     return tdag;
 }
-
 
 std::ostream& operator << (std::ostream& os, const TdagNode* node) {
     return os << node->startVal << " - " << node->endVal;

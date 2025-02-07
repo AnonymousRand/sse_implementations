@@ -1,26 +1,33 @@
-#include "data_types.h"
+#pragma once
 
+#include <map>
+#include <memory>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
-#include <openssl/params.h>
-#include <openssl/core_names.h>
 #include <string>
 #include <tuple>
+#include <unordered_map>
+#include <vector>
 
+typedef std::tuple<int, int>                                  IdRange;
+typedef std::tuple<int, int>                                  KwRange;
+typedef std::tuple<unsigned char*, unsigned char*>            QueryToken;
+typedef std::unordered_map<int, int>                          Db;
+typedef std::map<unsigned char*, std::vector<unsigned char*>> EncIndex;
+typedef std::basic_string<unsigned char>                      ustring;
 
-typedef std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)> EVP_CIPHER_CTX_free_ptr;
-
-
-static const int KEY_SIZE= 256 / 8;
+static const int KEY_SIZE = 256 / 8;
 static const int BLOCK_SIZE = 128 / 8;
 
+// assumes numbers are positive
+int countDigits(int n);
+int intToUCharPtr(int n, unsigned char* output);
 
 void handleOpenSslErrors();
-unsigned char* strToUCharPtr(std::string s);
 
 // PRF implemented as HMAC-SHA512 as done in Private Practical Range Search Revisited
-unsigned char* prf(unsigned char* key, int keyLen, unsigned char* input, int inputLen);
+int prf(unsigned char* key, int keyLen, unsigned char* input, int inputLen, unsigned char* output);
 
-int aesEncrypt(const EVP_CIPHER* cipher, unsigned char* ptext, int ptextLen, unsigned char* ctext, unsigned char key[256 / 8]);
-int aesDecrypt(const EVP_CIPHER* cipher, unsigned char* ctext, int ctextLen, unsigned char* ptext, unsigned char key[256 / 8]);
+int aesEncrypt(unsigned char* key, const EVP_CIPHER* cipher, unsigned char* ptext, int ptextLen, unsigned char* ctext);
+int aesDecrypt(unsigned char* key, const EVP_CIPHER* cipher, unsigned char* ctext, int ctextLen, unsigned char* ptext);
