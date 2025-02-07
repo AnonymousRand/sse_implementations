@@ -2,32 +2,47 @@
 
 #include <map>
 #include <memory>
+#include <iostream>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
 
-typedef std::tuple<int, int>                                  IdRange;
-typedef std::tuple<int, int>                                  KwRange;
-typedef std::tuple<unsigned char*, unsigned char*>            QueryToken;
-typedef std::unordered_map<int, int>                          Db;
-typedef std::map<unsigned char*, std::vector<unsigned char*>> EncIndex;
-typedef std::basic_string<unsigned char>                      ustring;
-
 static const int KEY_SIZE = 256 / 8;
 static const int BLOCK_SIZE = 128 / 8;
 
-// assumes numbers are positive
-int countDigits(int n);
-int intToUCharPtr(int n, unsigned char* output);
+////////////////////////////////////////////////////////////////////////////////
+// `ustring`
+////////////////////////////////////////////////////////////////////////////////
+
+// use `ustring` in most of the cases instead of `unsigned char*`
+typedef std::basic_string<unsigned char> ustring;
+
+ustring to_ustring(int n);
+std::ostream& operator << (std::ostream& os, const ustring str);
+
+////////////////////////////////////////////////////////////////////////////////
+// Custom Types
+////////////////////////////////////////////////////////////////////////////////
+
+typedef std::tuple<int, int>                    IdRange;
+typedef std::tuple<int, int>                    KwRange;
+typedef std::tuple<ustring, ustring>            QueryToken;
+typedef std::unordered_map<int, int>            Db;
+typedef std::map<ustring, std::vector<ustring>> EncIndex;
+
+////////////////////////////////////////////////////////////////////////////////
+// OpenSSL
+////////////////////////////////////////////////////////////////////////////////
 
 void handleOpenSslErrors();
 
 // PRF implemented as HMAC-SHA512 as done in Private Practical Range Search Revisited
-int prf(unsigned char* key, int keyLen, unsigned char* input, int inputLen, unsigned char* output);
+ustring prf(const unsigned char* key, int keyLen, ustring input);
 
-int aesEncrypt(unsigned char* key, const EVP_CIPHER* cipher, unsigned char* ptext, int ptextLen, unsigned char* ctext);
-int aesDecrypt(unsigned char* key, const EVP_CIPHER* cipher, unsigned char* ctext, int ctextLen, unsigned char* ptext);
+ustring aesEncrypt(const EVP_CIPHER* cipher, const unsigned char* key, ustring ptext);
+ustring aesDecrypt(const EVP_CIPHER* cipher, const unsigned char* key, ustring ctext);

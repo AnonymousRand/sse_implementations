@@ -1,20 +1,11 @@
 #include "pi_bas.h"
 
 #include <cmath>
-#include <iostream>
 #include <random>
 
 void exp1(PiBasClient client, PiBasServer server) {
     client.setup(KEY_SIZE);
     EncIndex encIndex = client.buildIndex();
-    std::cout << "----- Encrypted Index -----" << std::endl;
-    for (auto pair : encIndex) {
-        std::cout << pair.first << ": ";
-        for (auto it : pair.second) {
-            std::cout << *it << ", ";
-        }
-        std::cout << std::endl;
-    }
 }
 
 int main() {
@@ -23,7 +14,7 @@ int main() {
     const int dbSize = pow(2, 5);
     std::random_device dev;
     std::mt19937 rand(dev());
-    std::uniform_int_distribution<int> dist(dbSize);
+    std::uniform_int_distribution<int> dist(1, dbSize);
     std::cout << "----- Dataset -----" << std::endl;
     for (int i = 0; i < dbSize; i++) {
         db[i] = dist(rand);
@@ -37,12 +28,12 @@ int main() {
     // experiment 2: fixed range size and vary db sizes
     
     // temp
-    //unsigned char* org = (unsigned char*)"1000";
+    //ustring org = (ustring)"1000";
     //std::cout << "1: " << org << std::endl;
     //int n = 1000;
     //std::string s2 = std::to_string(n);
-    //std::cout << "2: " << (unsigned char*)(s2.c_str()) << std::endl;
-    //unsigned char* output = new unsigned char;
+    //std::cout << "2: " << (ustring)(s2.c_str()) << std::endl;
+    //ustring output = new unsigned char;
     //intToUCharPtr(1000, output);
     //output[4] = '\0';
     //std::cout << "3: " << output << std::endl;
@@ -59,7 +50,7 @@ int main() {
     //    0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77, 0x77
     //};
     //std::cout << "key is " << key << std::endl;
-    //unsigned char* output;
+    //ustring output;
     //output = prf(key, 64, strToUCharPtr("to be or not to be"), 18);
     //BIO_dump_fp(stdout, output, 512 / 8);
     //unsigned char key[KEY_SIZE];

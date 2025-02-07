@@ -1,22 +1,31 @@
 #include "util.h"
 
 #include <cmath>
+#include <memory>
 #include <iostream>
 #include <string.h>
 
-int countDigits(int n) {
-    if (n == 0) {
-        return 1;
-    }
-    return (int)floor(log10(n)) + 1;
+////////////////////////////////////////////////////////////////////////////////
+// `ustring`
+////////////////////////////////////////////////////////////////////////////////
+
+// no way Google AI wrote code that worked???
+// (never mind)
+ustring to_ustring(int n) {
+    std::string s = std::to_string(n);
+    return ustring(s.begin(), s.end());
 }
 
-int intToUCharPtr(int n, unsigned char* output) {
-    std::string s = std::to_string(n);
-    int outputLen = s.length();
-    memcpy(output, (unsigned char*)(s.c_str()), outputLen);
-    return outputLen;
+std::ostream& operator << (std::ostream& os, const ustring str) {
+    for (auto c : str) {
+        os << static_cast<char>(c);
+    }
+    return os;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// OpenSSL
+////////////////////////////////////////////////////////////////////////////////
 
 // btw is there a name for that design pattern where yuou pass return val in arg instead like C?
 void handleOpenSslErrors() {
@@ -24,13 +33,12 @@ void handleOpenSslErrors() {
     exit(EXIT_FAILURE);
 }
 
-int prf(unsigned char* key, int keyLen, unsigned char* input, int inputLen, unsigned char* output) {
-    unsigned int outputLen;
-    HMAC(EVP_sha512(), key, keyLen, input, inputLen, output, &outputLen);
-    return (int)outputLen;
+ustring prf(const unsigned char* key, int keyLen, ustring input) {
+    unsigned char* output = HMAC(EVP_sha512(), key, keyLen, &input[0], input.length(), nullptr, nullptr);
+    return ustring(output);
 }
 
-int aesEncrypt(unsigned char* key, const EVP_CIPHER* cipher, unsigned char* ptext, int ptextLen, unsigned char* ctext) {
+ustring aesEncrypt(const EVP_CIPHER* cipher, const unsigned char* key, ustring ptext) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
         handleOpenSslErrors();
@@ -43,20 +51,23 @@ int aesEncrypt(unsigned char* key, const EVP_CIPHER* cipher, unsigned char* ptex
 
     // perform encryption
     int ctextLen1, ctextLen2;
-    if (EVP_EncryptUpdate(ctx, ctext, &ctextLen1, ptext, ptextLen) != 1) {
+    ustring ctext;
+    ctext.resize(ptext.length() + BLOCK_SIZE);
+    if (EVP_EncryptUpdate(ctx, &ctext[0], &ctextLen1, &ptext[0], ptext.length()) != 1) {
         handleOpenSslErrors();
     }
 
     // finalize encryption (deal with last partial block)
-    if (EVP_EncryptFinal_ex(ctx, ctext + ctextLen1, &ctextLen2) != 1) {
+    if (EVP_EncryptFinal_ex(ctx, &ctext[0] + ctextLen1, &ctextLen2) != 1) {
         handleOpenSslErrors();
     }
 
     EVP_CIPHER_CTX_free(ctx);
-    return ctextLen1 + ctextLen2;
+    ctext.resize(ctextLen1 + ctextLen2);
+    return ctext;
 }
 
-int aesDecrypt(unsigned char* key, const EVP_CIPHER* cipher, unsigned char* ctext, int ctextLen, unsigned char* ptext) {
+ustring aesDecrypt(const EVP_CIPHER* cipher, unsigned char* key, ustring ctext) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
         handleOpenSslErrors();
@@ -69,16 +80,19 @@ int aesDecrypt(unsigned char* key, const EVP_CIPHER* cipher, unsigned char* ctex
 
     // perform decryption
     int ptextLen1, ptextLen2;
-    if (EVP_DecryptUpdate(ctx, ptext, &ptextLen1, ctext, ctextLen) != 1) {
+    ustring ptext;
+    ptext.resize(ctext.length());
+    if (EVP_DecryptUpdate(ctx, &ptext[0], &ptextLen1, &ctext[0], ctext.length()) != 1) {
         handleOpenSslErrors();
     }
 
     // finalize decryption (deal with last partial block)
-    if (EVP_DecryptFinal_ex(ctx, ptext + ptextLen1, &ptextLen2) != 1) {
+    if (EVP_DecryptFinal_ex(ctx, &ptext[0] + ptextLen1, &ptextLen2) != 1) {
         handleOpenSslErrors();
     }
 
     EVP_CIPHER_CTX_free(ctx);
     //ptext[ptextLen1 + ptextLen2] = '\0';
-    return ptextLen1 + ptextLen2;
+    ptext.resize(ptextLen1 + ptextLen2);
+    return ptext;
 }

@@ -19,6 +19,8 @@ class PiBasClient {
 
     public:
         PiBasClient(Db db);
+        ~PiBasClient();
+
         void sendEncIndex(PiBasServer server, EncIndex encIndex);
 
         void setup(int secParam);

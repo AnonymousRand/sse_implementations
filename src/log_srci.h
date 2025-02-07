@@ -19,8 +19,8 @@ class LogSrciServer : public LogSrcServer {
 
 class LogSrciClient : public LogSrcClient {
     private:
-        unsigned char* key1;
-        unsigned char* key2;
+        ustring key1;
+        ustring key2;
 
     public:
         void sendEncIndex(LogSrciServer server, EncIndex encIndex1, EncIndex encIndex2);
