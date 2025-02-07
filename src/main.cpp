@@ -1,4 +1,4 @@
-// todo temp compilation `g++ main.cpp util.cpp pi_bas.cpp sse.cpp -lcrypto -o a`
+// todo temp compilation `g++ main.cpp util.cpp pi_bas.cpp -lcrypto -o a`
 #include <cmath>
 #include <random>
 
@@ -21,15 +21,15 @@ void exp1(PiBasClient client, PiBasServer server) {
 int main() {
     // experiment 1: db of size 2^20 and vary range sizes
     Db db;
-    const int dbSize = pow(2, 20);
+    const int dbSize = pow(2, 5);
     std::random_device dev;
     std::mt19937 rand(dev());
     std::uniform_int_distribution<int> dist(1, dbSize);
-    //std::cout << "----- Dataset -----" << std::endl;
+    std::cout << "----- Dataset -----" << std::endl;
     for (int i = 0; i < dbSize; i++) {
         Kw kw = dist(rand);
         db[i] = KwRange {kw, kw};
-        //std::cout << i << ": " << db[i] << std::endl;
+        std::cout << i << ": " << db[i] << std::endl;
     }
 
     PiBasClient piBasClient = PiBasClient(db);

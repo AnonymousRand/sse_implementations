@@ -1,5 +1,6 @@
 #pragma once
 
+#include<set>
 #include <vector>
 
 #include "util.h"
@@ -20,6 +21,8 @@ class PiBasServer {
 class PiBasClient {
     protected:
         Db db;
+        std::map<KwRange, std::vector<Id>> index;
+        std::set<KwRange> uniqueKwRanges;
         ustring key;
         int keyLen;
 

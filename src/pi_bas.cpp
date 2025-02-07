@@ -42,6 +42,19 @@ void PiBasServer::setEncIndex(EncIndex encIndex) {
 
 PiBasClient::PiBasClient(Db db) {
     this->db = db;
+
+    // generate (plaintext) index of keywords to documents mapping and list of unique keywords
+    for (auto pair : db) {
+        Id id = pair.first;
+        KwRange kwRange = pair.second;
+
+        if (this->index.count(kwRange) == 0) {
+            this->index[kwRange] = std::vector<Id> {id};
+        } else {
+            this->index[kwRange].push_back(id);
+        }
+        this->uniqueKwRanges.insert(kwRange); // `std::set` will not insert duplicate elements
+    }
 }
 
 void PiBasClient::setup(int secParam) {
@@ -57,24 +70,9 @@ void PiBasClient::setup(int secParam) {
 
 EncIndex PiBasClient::buildIndex() {
     EncIndex encIndex;
-    // generate list of unique keywords to iterate through
-    // and temporary (plaintext) index of keywords to documents mapping (to get DB(w))
-    std::map<KwRange, std::vector<Id>> index;
-    std::set<KwRange> uniqueKwRanges;
-    for (auto pair : this->db) {
-        Id id = pair.first;
-        KwRange kwRange = pair.second;
-
-        uniqueKwRanges.insert(kwRange); // `std::set` will not insert duplicate elements
-        if (index.count(kwRange) == 0) {
-            index[kwRange] = std::vector<Id> {id};
-        } else {
-            index[kwRange].push_back(id);
-        }
-    }
 
     // for each w in W
-    for (KwRange kwRange : uniqueKwRanges) {
+    for (KwRange kwRange : this->uniqueKwRanges) {
         // K_1 || K_2 <- F(K, w)
         ustring K = prf(this->key, kwRangeToUstr(kwRange));
         int subkeyLen = K.length() / 2;
@@ -83,8 +81,8 @@ EncIndex PiBasClient::buildIndex() {
         
         unsigned int counter = 0;
         // for each id in DB(w)
-        auto docsWithKwRangeIt = index.find(kwRange);
-        if (docsWithKwRangeIt == index.end()) {
+        auto docsWithKwRangeIt = this->index.find(kwRange);
+        if (docsWithKwRangeIt == this->index.end()) {
             continue;
         }
         for (Id id : docsWithKwRangeIt->second) {
