@@ -34,12 +34,13 @@ int main() {
 
     PiBasClient piBasClient = PiBasClient(db);
     PiBasServer piBasServer = PiBasServer();
-    exp1(piBasClient, piBasServer);
+    //exp1(piBasClient, piBasServer);
 
     // experiment 2: fixed range size and vary db sizes
     
     // temp
-    //ustring org = (ustring)"1000";
+    int n = 1000;
+    std::cout << intToUstr(n) << std::endl;
     //std::cout << "1: " << org << std::endl;
     //int n = 1000;
     //std::string s2 = std::to_string(n);

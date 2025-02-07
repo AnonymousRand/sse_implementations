@@ -1,7 +1,7 @@
 #include <set>
 
 #include "log_src.h"
-#include "tree.h"
+#include "tdag.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // PiBasClient
@@ -11,8 +11,7 @@ EncIndex LogSrcClient::buildIndex() {
     EncIndex encIndex;
 
     // build TDAG over keywords
-    TdagNode* tdag = TdagNode::buildTdag(self->uniqueKwRanges);
+    TdagNode* tdag = TdagNode::buildTdag(this->uniqueKwRanges);
 
     // replicate 
-    Index index;
 }

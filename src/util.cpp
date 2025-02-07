@@ -1,6 +1,7 @@
 #include <cmath>
 #include <memory>
 #include <iostream>
+#include <sstream>
 #include <string.h>
 
 #include "util.h"
@@ -9,22 +10,25 @@
 // Custom Types
 ////////////////////////////////////////////////////////////////////////////////
 
-// todo does general basic_stringstream really not work? would be poggers if
-// could use it to generalize int, kwRange, str, ucharptr to ustring
-ustring intToUStr(int n) {
-    std::string str = std::to_string(n);
-    return ustring(str.begin(), str.end());
+// TODO does general basic_stringstream really not work? would be poggers if
+// could use it to generalize int, str, ucharptr to ustring
+ustring intToUstr(int n) {
+    //std::string str = std::to_string(n);
+    //return ustring(str.begin(), str.end());
+    std::basic_stringstream<unsigned char> ss;
+    ss << n << "s";
+    return ss.str();
 }
 
 ustring kwRangeToUstr(KwRange kwRange) {
-    return intToUStr(kwRange.first) + strToUstr("-") + intToUStr(kwRange.second);
+    return intToUstr(kwRange.first) + strToUstr("-") + intToUstr(kwRange.second);
 }
 
 ustring strToUstr(std::string s) {
     return reinterpret_cast<const unsigned char*>(s.c_str());
 }
 
-ustring ucharptrToUstr(unsigned char* p, size_t len) {
+ustring ucharptrToUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
 

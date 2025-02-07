@@ -33,10 +33,10 @@ typedef std::unordered_map<Id, KwRange>                Db;
 // `std::map<label, std::pair<data, iv>>`
 typedef std::map<ustring, std::pair<ustring, ustring>> EncIndex;
 
-ustring intToUStr(int n);
+ustring intToUstr(int n);
 ustring kwRangeToUstr(KwRange kwRange);
 ustring strToUstr(std::string s);
-ustring ucharptrToUstr(unsigned char* p, size_t len);
+ustring ucharptrToUstr(unsigned char* p, int len);
 int ustrToInt(ustring n);
 
 bool operator < (const KwRange kwRange1, const KwRange kwRange2);

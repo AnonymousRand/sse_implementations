@@ -15,7 +15,7 @@ std::vector<int> PiBasServer::search(QueryToken queryToken) {
     // for c = 0 until `Get` returns error
     while (true) {
         // d <- Get(D, F(K_1, c))
-        ustring label = prf(subkey1, intToUStr(counter));
+        ustring label = prf(subkey1, intToUstr(counter));
         auto it = this->encIndex.find(label);
         if (it == this->encIndex.end()) {
             break;
@@ -87,9 +87,9 @@ EncIndex PiBasClient::buildIndex() {
         }
         for (Id id : docsWithKwRangeIt->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
-            ustring label = prf(subkey1, intToUStr(counter));
+            ustring label = prf(subkey1, intToUstr(counter));
             ustring iv = genIv();
-            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, intToUStr(id), iv);
+            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, intToUstr(id), iv);
             counter++;
             // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
             // also store IV in plain along with encrypted value
