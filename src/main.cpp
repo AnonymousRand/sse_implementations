@@ -1,17 +1,18 @@
-#include "pi_bas.h"
-
+// todo temp compilation `g++ main.cpp util.cpp pi_bas.cpp sse.cpp -lcrypto -o a`
 #include <cmath>
 #include <random>
+
+#include "pi_bas.h"
 
 void exp1(PiBasClient client, PiBasServer server) {
     client.setup(KEY_SIZE);
     server.setEncIndex(client.buildIndex());
-    // query 28
-    int kw = 28;
-    QueryToken queryToken = client.trpdr(kw);
-    std::vector<int> results = server.search(queryToken);
-    std::cout << "Querying " << kw << ": results are";
-    for (int result : results) {
+    // query
+    KwRange kwRange = KwRange {12, 12};
+    QueryToken queryToken = client.trpdr(kwRange);
+    std::vector<Id> results = server.search(queryToken);
+    std::cout << "Querying " << kwRange << ": results are";
+    for (Id result : results) {
         std::cout << " " << result;
     }
     std::cout << std::endl;
@@ -26,7 +27,8 @@ int main() {
     std::uniform_int_distribution<int> dist(1, dbSize);
     std::cout << "----- Dataset -----" << std::endl;
     for (int i = 0; i < dbSize; i++) {
-        db[i] = dist(rand);
+        Kw kw = dist(rand);
+        db[i] = KwRange {kw, kw};
         std::cout << i << ": " << db[i] << std::endl;
     }
 

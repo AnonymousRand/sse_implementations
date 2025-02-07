@@ -1,10 +1,9 @@
-#include "tdag.h"
-
-#include <iostream>
 #include <map>
 #include <list>
-#include <stdlib.h>
+#include <stdlib.h> // todo what is this for?
 #include <string>
+
+#include "tdag.h"
 
 // DFS but with additional traversal of TDAG's extra parent nodes
 std::forward_list<TdagNode*> TdagNode::traverse() {
@@ -16,7 +15,7 @@ std::forward_list<TdagNode*> TdagNode::traverse() {
     return nodes;
 }
 
-TdagNode::TdagNode(int startVal, int endVal) {
+TdagNode::TdagNode(Kw startVal, Kw endVal) {
     this->startVal = startVal;
     this->endVal = endVal;
     this->left = nullptr;
@@ -47,9 +46,9 @@ TdagNode::~TdagNode() {
 // current algo uses divide-and-conquer with early exits to find best SRC
 // which is worst-case O(N) for N nodes instead of O(log R) as described in paper
 // experimentally, this actually seems like O(log N), probably because of early exits
-TdagNode* TdagNode::findSrc(std::tuple<int, int> range) {
-    int rangeStart = std::get<0>(range);  // this syntax is very cursed
-    int rangeEnd = std::get<1>(range);
+TdagNode* TdagNode::findSrc(KwRange range) {
+    int rangeStart = range.first;
+    int rangeEnd = range.second;
     std::map<int, TdagNode*> srcCandidates;
     auto findDiff = [=](TdagNode* node) { // nested lambda function for code reuse
         return (rangeStart - node->startVal) + (node->endVal - rangeEnd);
@@ -90,18 +89,18 @@ TdagNode* TdagNode::findSrc(std::tuple<int, int> range) {
     return srcCandidates.begin()->second; // take advantage of the fact that `std::map`s are sorted by key
 }
 
-std::vector<int> TdagNode::traverseSrc() {
-    std::vector<int> leafVals;
+std::vector<KwRange> TdagNode::traverseSrc() {
+    std::vector<KwRange> leafVals;
     std::forward_list<TdagNode*> nodes = this->traverse();
     for (TdagNode* node : nodes) {
-        if (node->startVal == node->endVal) {
-            leafVals.push_back(node->startVal);
+        if (node->left == nullptr && node->right == nullptr) {
+            leafVals.push_back(KwRange {node->startVal, node->endVal});
         }
     }
     return leafVals;
 }
 
-TdagNode* TdagNode::buildTdag(std::vector<int> leafVals) {
+TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
     if (leafVals.size() == 0) {
         std::cerr << "Error: `leafVals` passed to `TdagNode.buildTdag()` is empty :/" << std::endl;
         exit(EXIT_FAILURE);
@@ -110,8 +109,8 @@ TdagNode* TdagNode::buildTdag(std::vector<int> leafVals) {
     // list to hold nodes while building (linked list chosen for efficiency)
     // initially load just the leaves as nodes into list
     std::list<TdagNode*> l;
-    for (int leafVal : leafVals) {
-        l.push_back(new TdagNode(leafVal, leafVal));
+    for (KwRange leafVal : leafVals) {
+        l.push_back(new TdagNode(leafVal.first, leafVal.second));
     }
 
     // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)

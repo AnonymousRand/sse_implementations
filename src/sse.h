@@ -1,8 +1,9 @@
 #pragma once
 
-#include "util.h"
+#include <set>
+#include <vector>
 
-#include <unordered_set>
+#include "util.h"
 
 class SseServer {
     protected:
@@ -14,13 +15,13 @@ class SseServer {
         /**
          * Process a query and compute all results.
          */
-        virtual std::vector<int> search(QueryToken queryToken) = 0;
+        virtual std::vector<Id> search(QueryToken queryToken) = 0;
 };
 
 class SseClient {
     protected:
         Db db;
-        std::unordered_set<int> uniqueKws; // used during `setup()`
+        std::set<KwRange> uniqueKwRanges; // used during `setup()`
         ustring key;
         int keyLen;
 
@@ -43,5 +44,5 @@ class SseClient {
         /**
          * Issue a query by computing its encrypted token.
          */
-        virtual QueryToken trpdr(int kw) = 0;
+        virtual QueryToken trpdr(KwRange kwRange) = 0;
 };

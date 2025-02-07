@@ -1,22 +1,45 @@
-#include "util.h"
-
 #include <cmath>
 #include <memory>
 #include <iostream>
 #include <string.h>
 
+#include "util.h"
+
 ////////////////////////////////////////////////////////////////////////////////
-// `ustring`
+// Custom Types
 ////////////////////////////////////////////////////////////////////////////////
 
-ustring to_ustring(int n) {
+// todo does general basic_stringstream really not work? would be poggers if
+// could use it to generalize int, kwRange, str, ucharptr to ustring
+ustring intToUStr(int n) {
     std::string str = std::to_string(n);
     return ustring(str.begin(), str.end());
 }
 
-int from_ustring(ustring s) {
+ustring kwRangeToUstr(KwRange kwRange) {
+    return intToUStr(kwRange.first) + strToUstr("-") + intToUStr(kwRange.second);
+}
+
+ustring strToUstr(std::string s) {
+    return reinterpret_cast<const unsigned char*>(s.c_str());
+}
+
+ustring ucharptrToUstr(unsigned char* p, size_t len) {
+    return ustring(p, len);
+}
+
+int ustrToInt(ustring s) {
     std::string str = std::string(s.begin(), s.end());
     return std::stoi(str);
+}
+
+bool operator < (const KwRange kwRange1, const KwRange kwRange2) {
+    return kwRange1.first < kwRange2.first;
+}
+
+std::ostream& operator << (std::ostream& os, const KwRange kwRange) {
+    os << kwRange.first << "-" << kwRange.second;
+    return os;
 }
 
 std::ostream& operator << (std::ostream& os, const ustring str) {
@@ -30,15 +53,16 @@ std::ostream& operator << (std::ostream& os, const ustring str) {
 // OpenSSL
 ////////////////////////////////////////////////////////////////////////////////
 
-// btw is there a name for that design pattern where yuou pass return val in arg instead like C?
+// todo btw is there a name for that design pattern where yuou pass return val in arg instead like C?
 void handleOpenSslErrors() {
     ERR_print_errors_fp(stderr);
     exit(EXIT_FAILURE);
 }
 
 ustring prf(ustring key, ustring input) {
-    unsigned char* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, nullptr);
-    return ustring(output);
+    unsigned int outputLen;
+    unsigned char* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen);
+    return ucharptrToUstr(output, outputLen);
 }
 
 ustring genIv() {
@@ -47,7 +71,7 @@ ustring genIv() {
     if (res != 1) {
         handleOpenSslErrors();
     }
-    ustring ustrIv = ustring(iv);
+    ustring ustrIv = ucharptrToUstr(iv, IV_SIZE);
     delete[] iv;
     return ustrIv;
 }

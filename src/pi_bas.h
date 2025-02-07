@@ -4,7 +4,7 @@
 
 class PiBasServer : public SseServer {
     public:
-        std::vector<int> search(QueryToken queryToken);
+        std::vector<Id> search(QueryToken queryToken);
 };
 
 class PiBasClient : public SseClient {
@@ -13,5 +13,5 @@ class PiBasClient : public SseClient {
 
         void setup(int secParam);
         EncIndex buildIndex();
-        QueryToken trpdr(int kw);
+        QueryToken trpdr(KwRange kwRange);
 };

@@ -4,7 +4,7 @@
 
 class LogSrcServer : public PiBasServer {
     public:
-        std::vector<int> search(QueryToken queryToken);
+        std::vector<Id> search(QueryToken queryToken);
 };
 
 class LogSrcClient : public PiBasClient {
