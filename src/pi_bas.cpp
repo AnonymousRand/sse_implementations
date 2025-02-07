@@ -1,3 +1,5 @@
+#include <set>
+
 #include "pi_bas.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,11 +32,17 @@ std::vector<int> PiBasServer::search(QueryToken queryToken) {
     return results;
 }
 
+void PiBasServer::setEncIndex(EncIndex encIndex) {
+    this->encIndex = encIndex;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PiBasClient
 ////////////////////////////////////////////////////////////////////////////////
 
-PiBasClient::PiBasClient(Db db) : SseClient(db) {};
+PiBasClient::PiBasClient(Db db) {
+    this->db = db;
+}
 
 void PiBasClient::setup(int secParam) {
     unsigned char* key = new unsigned char[secParam];
@@ -49,7 +57,24 @@ void PiBasClient::setup(int secParam) {
 
 EncIndex PiBasClient::buildIndex() {
     EncIndex encIndex;
-    for (KwRange kwRange : this->uniqueKwRanges) {
+    // generate list of unique keywords to iterate through
+    // and temporary (plaintext) index of keywords to documents mapping (to get DB(w))
+    std::map<KwRange, std::vector<Id>> index;
+    std::set<KwRange> uniqueKwRanges;
+    for (auto pair : this->db) {
+        Id id = pair.first;
+        KwRange kwRange = pair.second;
+
+        uniqueKwRanges.insert(kwRange); // `std::set` will not insert duplicate elements
+        if (index.count(kwRange) == 0) {
+            index[kwRange] = std::vector<Id> {id};
+        } else {
+            index[kwRange].push_back(id);
+        }
+    }
+
+    // for each w in W
+    for (KwRange kwRange : uniqueKwRanges) {
         // K_1 || K_2 <- F(K, w)
         ustring K = prf(this->key, kwRangeToUstr(kwRange));
         int subkeyLen = K.length() / 2;
@@ -57,17 +82,16 @@ EncIndex PiBasClient::buildIndex() {
         ustring subkey2 = K.substr(subkeyLen, subkeyLen);
         
         unsigned int counter = 0;
-        // for each id in DB(w) (evil O(n^2) if ~=n unique keywords)
-        // todo this is unacceptable? 2^20 size database never seems to finish; make sure it's stuck on buildIndex
-        // maybe actually just make sse objects store plaintext map keywords -> ids? build in constructor?
-        for (auto pair : this->db) {
-            if (pair.second != kwRange) {
-                continue;
-            }
+        // for each id in DB(w)
+        auto docsWithKwRangeIt = index.find(kwRange);
+        if (docsWithKwRangeIt == index.end()) {
+            continue;
+        }
+        for (Id id : docsWithKwRangeIt->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring label = prf(subkey1, intToUStr(counter));
             ustring iv = genIv();
-            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, intToUStr(pair.first), iv);
+            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, intToUStr(id), iv);
             counter++;
             // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
             // also store IV in plain along with encrypted value
