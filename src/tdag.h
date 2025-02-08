@@ -3,7 +3,6 @@
 #include <iostream>
 #include <list>
 #include <set>
-#include <vector>
 
 #include "util.h"
 
@@ -36,17 +35,17 @@ class TdagNode {
         /**
          * Find the single range cover of the leaves containing `range`.
          */
-        TdagNode* findSrc(KwRange range);
+        TdagNode* findSrc(KwRange kwRange);
 
         /**
          * Get all leaf values from the subtree of `this`.
          */
-        std::vector<KwRange> traverseSrc();
+        std::list<KwRange> traverseLeaves();
 
         /**
          * Get all covering nodes (i.e. ancestors) of the leaf node with `leafKwRange` within the tree given by `this`.
          */
-        std::vector<TdagNode*> getAllCoversForLeaf(KwRange leafKwRange);
+        std::list<TdagNode*> getAllCoversForLeaf(KwRange leafKwRange);
 
         /**
          * Getter for `this->kwRange`.

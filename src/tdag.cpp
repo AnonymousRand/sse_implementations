@@ -33,12 +33,13 @@ std::list<TdagNode*> TdagNode::traverse() {
     std::list<TdagNode*> nodes;
     // track `extraParent` nodes to prevent duplicates; use `unordered_set` as it's probably the fastest way to do this
     std::unordered_set<TdagNode*> extraParents;
+
     nodes.push_front(this);
     if (this->left != nullptr) {
-        nodes.merge(this->left->traverse());
+        nodes.splice(nodes.end(), this->left->traverse());
     }
     if (this->right != nullptr) {
-        nodes.merge(this->right->traverse());
+        nodes.splice(nodes.end(), this->right->traverse());
     }
     if (this->extraParent != nullptr) {
         auto res = extraParents.insert(this->extraParent);
@@ -47,20 +48,21 @@ std::list<TdagNode*> TdagNode::traverse() {
             nodes.push_back(this->extraParent);
         }
     }
-    return std::list<TdagNode*>(nodes);
+
+    return nodes;
 }
 
 // current algo uses divide-and-conquer with early exits to find best SRC
 // which is worst-case O(N) for N nodes instead of O(log R) as described in paper
 // experimentally, this actually seems like O(log N), probably because of early exits
-TdagNode* TdagNode::findSrc(KwRange range) {
+TdagNode* TdagNode::findSrc(KwRange kwRange) {
     std::map<int, TdagNode*> srcCandidates;
     auto findDiff = [=](TdagNode* node) { // nested lambda function for code reuse
-        return (range.first - node->kwRange.first) + (node->kwRange.second - range.second);
+        return (kwRange.first - node->kwRange.first) + (node->kwRange.second - kwRange.second);
     };
 
     // early exit and backtrack up the tree if current node doesn't encompass at least the entire range
-    if (!isContainingRange(this->kwRange, range)) {
+    if (!isContainingRange(this->kwRange, kwRange)) {
         return nullptr;
     }
 
@@ -71,7 +73,7 @@ TdagNode* TdagNode::findSrc(KwRange range) {
     }
     srcCandidates[thisDiff] = this;
     if (this->left != nullptr) {
-        TdagNode* leftSrc = this->left->findSrc(range);
+        TdagNode* leftSrc = this->left->findSrc(kwRange);
         if (leftSrc != nullptr) {
             int leftDiff = findDiff(leftSrc);
             if (leftDiff == 0) {
@@ -81,7 +83,7 @@ TdagNode* TdagNode::findSrc(KwRange range) {
         }
     }
     if (this->right != nullptr) {
-        TdagNode* rightSrc = this->right->findSrc(range);
+        TdagNode* rightSrc = this->right->findSrc(kwRange);
         if (rightSrc != nullptr) {
             int rightDiff = findDiff(rightSrc);
             if (rightDiff == 0) {
@@ -94,8 +96,8 @@ TdagNode* TdagNode::findSrc(KwRange range) {
     return srcCandidates.begin()->second; // take advantage of the fact that `std::map`s are sorted by key
 }
 
-std::vector<KwRange> TdagNode::traverseSrc() {
-    std::vector<KwRange> leafVals;
+std::list<KwRange> TdagNode::traverseLeaves() {
+    std::list<KwRange> leafVals;
     std::list<TdagNode*> nodes = this->traverse();
     for (TdagNode* node : nodes) {
         if (node->left == nullptr && node->right == nullptr) {
@@ -105,23 +107,19 @@ std::vector<KwRange> TdagNode::traverseSrc() {
     return leafVals;
 }
 
-// todo see if its faster to findSrc using this and just iterate through shared ancestors looking for closest cover
-// todo refactor vectors to lists or sets or something when possible if faster for its specific use cases
-std::vector<TdagNode*> TdagNode::getAllCoversForLeaf(KwRange leafKwRange) {
-    std::vector<TdagNode*> ancsts = {this};
-    auto mergeRecurRes = [&](std::vector<TdagNode*> res) {
-        ancsts.insert(ancsts.end(), res.begin(), res.end());
-    };
+std::list<TdagNode*> TdagNode::getAllCoversForLeaf(KwRange leafKwRange) {
+    std::list<TdagNode*> ancsts = {this};
 
     if (this->left != nullptr && isContainingRange(this->left->kwRange, leafKwRange)) {
-        mergeRecurRes(this->left->getAllCoversForLeaf(leafKwRange));
+        ancsts.splice(ancsts.end(), this->left->getAllCoversForLeaf(leafKwRange));
     }
     if (this->right != nullptr && isContainingRange(this->right->kwRange, leafKwRange)) {
-        mergeRecurRes(this->right->getAllCoversForLeaf(leafKwRange));
+        ancsts.splice(ancsts.end(), this->right->getAllCoversForLeaf(leafKwRange));
     }
     if (this->extraParent != nullptr && isContainingRange(this->extraParent->kwRange, leafKwRange)) {
         ancsts.push_back(this->extraParent);
     }
+
     return ancsts;
 }
 
@@ -185,14 +183,16 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
     while (!nodes.empty()) {
         TdagNode* node = nodes.front();
         nodes.pop_front();
-        if (node->left == nullptr || node->right == nullptr) continue;
-        if (node->left->right == nullptr || node->right->left == nullptr) continue;
+        if (node->left == nullptr || node->right == nullptr
+                || node->left->right == nullptr || node->right->left == nullptr) {
+            continue;
+        }
 
         TdagNode* extraParent = new TdagNode(node->left->right, node->right->left);
         node->left->right->extraParent = extraParent;
         node->right->left->extraParent = extraParent;
         // using the method I have for finding spots to add extra nodes, extra nodes themselves must also be checked
-        nodes.push_front(extraParent);
+        nodes.push_back(extraParent);
     }
 
     return tdag;

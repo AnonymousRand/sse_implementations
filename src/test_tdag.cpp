@@ -9,5 +9,5 @@ int main() {
     TdagNode* tdag = TdagNode::buildTdag(leafVals);
     TdagNode* src = tdag->findSrc(std::tuple<int, int> {22323, 22344});
     std::cout << src << std::endl;
-    std::vector<int> leafValsOfSrc = src->traverseSrc();
+    std::vector<int> leafValsOfSrc = src->traverseLeaves();
 }
