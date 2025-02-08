@@ -56,7 +56,7 @@ std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraPare
 
 // current algo uses divide-and-conquer to find best SRC
 // which is worst-case O(N) for N nodes instead of O(log R) as described in paper
-// todo evaluate new early exit speed
+// TODO evaluate new early exit speed
 TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     std::map<int, TdagNode*> srcCandidates;
 
@@ -79,8 +79,8 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
         }
     }
     // if the extra TDAG parent is not a candidate and the current node's range is narrower than the target range,
-    // we wont't have to go further down the tree
-    // todo verify
+    // we wont't have to go further down the tree and we can early exit
+    // TODO verify
     if (diff == -1 && rangeSize(this->kwRange) < rangeSize(targetKwRange)) {
         return nullptr;
     }
