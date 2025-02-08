@@ -78,8 +78,8 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
             return this->extraParent;
         }
     }
-    // if the extra TDAG parent is not a candidate and our current node's range is narrower than the target range,
-    // we don't have to go further down the tree and we can early exit
+    // if the extra TDAG parent is not a candidate and the current node's range is narrower than the target range,
+    // we wont't have to go further down the tree
     // todo verify
     if (diff == -1 && rangeSize(this->kwRange) < rangeSize(targetKwRange)) {
         return nullptr;
@@ -90,15 +90,17 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
         return this;
     }
     if (this->left != nullptr) {
-        diff = addCandidate(this->left->findSrc(targetKwRange));
+        TdagNode* leftSrc = this->left->findSrc(targetKwRange);
+        diff = addCandidate(leftSrc);
         if (diff == 0) {
-            return this->left;
+            return leftSrc;
         }
     }
     if (this->right != nullptr) {
-        diff = addCandidate(this->right->findSrc(targetKwRange));
+        TdagNode* rightSrc = this->right->findSrc(targetKwRange);
+        diff = addCandidate(rightSrc);
         if (diff == 0) {
-            return this->right;
+            return rightSrc;
         }
     }
 
