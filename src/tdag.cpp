@@ -1,19 +1,16 @@
-#include <map>
-#include <string>
+#include <unordered_set>
 
 #include "tdag.h"
 
-TdagNode::TdagNode(Kw startVal, Kw endVal) {
-    this->startVal = startVal;
-    this->endVal = endVal;
+TdagNode::TdagNode(KwRange kwRange) {
+    this->kwRange = kwRange;
     this->left = nullptr;
     this->right = nullptr;
     this->extraParent = nullptr;
 }
 
 TdagNode::TdagNode(TdagNode* left, TdagNode* right) {
-    this->startVal = left->startVal;
-    this->endVal = right->endVal;
+    this->kwRange = KwRange {left->kwRange.first, right->kwRange.second};
     this->left = left;
     this->right = right;
     this->extraParent = nullptr;
@@ -34,26 +31,36 @@ TdagNode::~TdagNode() {
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
 std::list<TdagNode*> TdagNode::traverse() {
     std::list<TdagNode*> nodes;
+    // track `extraParent` nodes to prevent duplicates; use `unordered_set` as it's probably the fastest way to do this
+    std::unordered_set<TdagNode*> extraParents;
     nodes.push_front(this);
-    if (this->left != nullptr) nodes.splice(nodes.end(), this->left->traverse());
-    if (this->right != nullptr) nodes.splice(nodes.end(), this->right->traverse());
-    if (this->extraParent != nullptr) nodes.push_back(this->extraParent);
-    return nodes;
+    if (this->left != nullptr) {
+        nodes.merge(this->left->traverse());
+    }
+    if (this->right != nullptr) {
+        nodes.merge(this->right->traverse());
+    }
+    if (this->extraParent != nullptr) {
+        auto res = extraParents.insert(this->extraParent);
+        // if insertion succeeded; i.e., the node is not already in the `unordered_set` (this prevents duplicates)
+        if (res.second) {
+            nodes.push_back(this->extraParent);
+        }
+    }
+    return std::list<TdagNode*>(nodes);
 }
 
 // current algo uses divide-and-conquer with early exits to find best SRC
 // which is worst-case O(N) for N nodes instead of O(log R) as described in paper
 // experimentally, this actually seems like O(log N), probably because of early exits
 TdagNode* TdagNode::findSrc(KwRange range) {
-    int rangeStart = range.first;
-    int rangeEnd = range.second;
     std::map<int, TdagNode*> srcCandidates;
     auto findDiff = [=](TdagNode* node) { // nested lambda function for code reuse
-        return (rangeStart - node->startVal) + (node->endVal - rangeEnd);
+        return (range.first - node->kwRange.first) + (node->kwRange.second - range.second);
     };
 
     // early exit and backtrack up the tree if current node doesn't encompass at least the entire range
-    if (this->startVal > rangeStart || this->endVal < rangeEnd) {
+    if (!isContainingRange(this->kwRange, range)) {
         return nullptr;
     }
 
@@ -92,10 +99,34 @@ std::vector<KwRange> TdagNode::traverseSrc() {
     std::list<TdagNode*> nodes = this->traverse();
     for (TdagNode* node : nodes) {
         if (node->left == nullptr && node->right == nullptr) {
-            leafVals.push_back(KwRange {node->startVal, node->endVal});
+            leafVals.push_back(node->kwRange);
         }
     }
     return leafVals;
+}
+
+// todo see if its faster to findSrc using this and just iterate through shared ancestors looking for closest cover
+// todo refactor vectors to lists or sets or something when possible if faster for its specific use cases
+std::vector<TdagNode*> TdagNode::getAllCoversForLeaf(KwRange leafKwRange) {
+    std::vector<TdagNode*> ancsts = {this};
+    auto mergeRecurRes = [&](std::vector<TdagNode*> res) {
+        ancsts.insert(ancsts.end(), res.begin(), res.end());
+    };
+
+    if (this->left != nullptr && isContainingRange(this->left->kwRange, leafKwRange)) {
+        mergeRecurRes(this->left->getAllCoversForLeaf(leafKwRange));
+    }
+    if (this->right != nullptr && isContainingRange(this->right->kwRange, leafKwRange)) {
+        mergeRecurRes(this->right->getAllCoversForLeaf(leafKwRange));
+    }
+    if (this->extraParent != nullptr && isContainingRange(this->extraParent->kwRange, leafKwRange)) {
+        ancsts.push_back(this->extraParent);
+    }
+    return ancsts;
+}
+
+KwRange TdagNode::getKwRange() {
+    return this->kwRange;
 }
 
 TdagNode* TdagNode::buildTdag(Kw maxLeafVal) {
@@ -116,7 +147,7 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
     // initially load just the leaves as nodes into list
     std::list<TdagNode*> l;
     for (KwRange leafVal : leafVals) {
-        l.push_back(new TdagNode(leafVal.first, leafVal.second));
+        l.push_back(new TdagNode(leafVal));
     }
 
     // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)
@@ -131,14 +162,14 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
         // find a contiguous node
         for (auto it = l.begin(); it != l.end(); it++) {
             TdagNode* node2 = *it;
-            if (node2->startVal - 1 == node1->endVal) {
+            if (node2->kwRange.first - 1 == node1->kwRange.second) {
                 // if `node1` is the left child of new parent node
                 TdagNode* parent = new TdagNode(node1, node2);
                 l.push_back(parent);
                 l.erase(it);
                 break;
             }
-            if (node2->endVal + 1 == node1->startVal) {
+            if (node2->kwRange.second + 1 == node1->kwRange.first) {
                 // if `node2` is the left child of new parent node
                 TdagNode* parent = new TdagNode(node2, node1);
                 l.push_back(parent);
@@ -158,9 +189,8 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
         if (node->left->right == nullptr || node->right->left == nullptr) continue;
 
         TdagNode* extraParent = new TdagNode(node->left->right, node->right->left);
-        // IMPORTANT: only assign `extraParent` to its left child
-        // so we don't have to keep track of visited nodes for traversal
         node->left->right->extraParent = extraParent;
+        node->right->left->extraParent = extraParent;
         // using the method I have for finding spots to add extra nodes, extra nodes themselves must also be checked
         nodes.push_front(extraParent);
     }
@@ -171,7 +201,7 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
 std::ostream& operator << (std::ostream& os, TdagNode* node) {
     std::list<TdagNode*> nodes = node->traverse();
     for (TdagNode* node : nodes) {
-        os << node->startVal << "-" << node->endVal << std::endl;
+        os << node->getKwRange() << std::endl;
     }
     return os;
 }

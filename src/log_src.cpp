@@ -26,5 +26,7 @@ EncIndex LogSrcClient::buildIndex() {
 
     // replicate
     Db dbWithReplications;
-    for (
+    for (auto pair : this->db) {
+        
+    }
 }

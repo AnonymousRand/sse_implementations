@@ -10,6 +10,11 @@
 // Custom Types
 ////////////////////////////////////////////////////////////////////////////////
 
+int ustrToInt(ustring s) {
+    std::string str = std::string(s.begin(), s.end());
+    return std::stoi(str);
+}
+
 ustring intToUstr(int n) {
     std::string str = std::to_string(n);
     return ustring(str.begin(), str.end());
@@ -27,21 +32,20 @@ ustring ucharptrToUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
 
-int ustrToInt(ustring s) {
-    std::string str = std::string(s.begin(), s.end());
-    return std::stoi(str);
+bool isContainingRange(KwRange containing, KwRange contained) {
+    return containing.first <= contained.first && containing.second >= contained.second;
 }
 
-bool operator < (const KwRange kwRange1, const KwRange kwRange2) {
+bool operator < (KwRange kwRange1, KwRange kwRange2) {
     return kwRange1.first < kwRange2.first;
 }
 
-std::ostream& operator << (std::ostream& os, const KwRange kwRange) {
+std::ostream& operator << (std::ostream& os, KwRange kwRange) {
     os << kwRange.first << "-" << kwRange.second;
     return os;
 }
 
-std::ostream& operator << (std::ostream& os, const ustring str) {
+std::ostream& operator << (std::ostream& os, ustring str) {
     for (auto c : str) {
         os << static_cast<char>(c);
     }

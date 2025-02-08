@@ -33,15 +33,18 @@ typedef std::unordered_map<Id, KwRange>                Db;
 // `std::map<label, std::pair<data, iv>>`
 typedef std::map<ustring, std::pair<ustring, ustring>> EncIndex;
 
+// hot mess
+int ustrToInt(ustring n);
 ustring intToUstr(int n);
 ustring kwRangeToUstr(KwRange kwRange);
 ustring strToUstr(std::string s);
 ustring ucharptrToUstr(unsigned char* p, int len);
-int ustrToInt(ustring n);
 
-bool operator < (const KwRange kwRange1, const KwRange kwRange2);
-std::ostream& operator << (std::ostream& os, const KwRange kwRange);
-std::ostream& operator << (std::ostream& os, const ustring str);
+bool isContainingRange(KwRange containing, KwRange contained);
+
+bool operator < (KwRange kwRange1, KwRange kwRange2);
+std::ostream& operator << (std::ostream& os, KwRange kwRange);
+std::ostream& operator << (std::ostream& os, ustring str);
 
 ////////////////////////////////////////////////////////////////////////////////
 // OpenSSL

@@ -4,6 +4,7 @@
 
 #include "log_src.h"
 #include "pi_bas.h"
+#include "tdag.h" // temp
 
 void exp1(PiBasClient client, PiBasServer server) {
     client.setup(KEY_SIZE);
@@ -21,31 +22,38 @@ void exp1(PiBasClient client, PiBasServer server) {
 
 int main() {
     // experiment 1: db of size 2^20 and vary range sizes
-    Db db;
-    const int dbSize = pow(2, 3);
-    std::random_device dev;
-    std::mt19937 rand(dev());
-    std::uniform_int_distribution<int> dist(0, dbSize - 1);
-    std::cout << "----- Dataset -----" << std::endl;
-    for (int i = 0; i < dbSize; i++) {
-        Kw kw = dist(rand);
-        db[i] = KwRange {kw, kw};
-        std::cout << i << ": " << db[i] << std::endl;
-    }
+    //Db db;
+    //const int dbSize = pow(2, 3);
+    //std::random_device dev;
+    //std::mt19937 rand(dev());
+    //std::uniform_int_distribution<int> dist(0, dbSize - 1);
+    //std::cout << "----- Dataset -----" << std::endl;
+    //for (int i = 0; i < dbSize; i++) {
+    //    Kw kw = dist(rand);
+    //    db[i] = KwRange {kw, kw};
+    //    std::cout << i << ": " << db[i] << std::endl;
+    //}
 
-    PiBasClient piBasClient = PiBasClient(db);
-    PiBasServer piBasServer = PiBasServer();
-    exp1(piBasClient, piBasServer);
+    //PiBasClient piBasClient = PiBasClient(db);
+    //PiBasServer piBasServer = PiBasServer();
+    //exp1(piBasClient, piBasServer);
 
-    LogSrcClient logSrcClient = LogSrcClient(db);
-    LogSrcServer logSrcServer = LogSrcServer();
-    logSrcClient.setup(KEY_SIZE);
-    logSrcClient.buildIndex();
+    //LogSrcClient logSrcClient = LogSrcClient(db);
+    //LogSrcServer logSrcServer = LogSrcServer();
+    //logSrcClient.setup(KEY_SIZE);
+    //logSrcClient.buildIndex();
     //exp1(logSrcClient, logSrcServer);
 
     // experiment 2: fixed range size and vary db sizes
     
     // temp
+    int size = 200;
+    TdagNode* tdag = TdagNode::buildTdag(size);
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            tdag->getAllCoversForLeaf(KwRange {i, j});
+        }
+    }
     //int n = 1000;
     //std::cout << intToUstr(n) << std::endl;
     //std::cout << "1: " << org << std::endl;

@@ -9,8 +9,7 @@
 
 class TdagNode {
     private:
-        Kw startVal;
-        Kw endVal;
+        KwRange kwRange;
         TdagNode* left;
         TdagNode* right;
         TdagNode* extraParent;
@@ -22,12 +21,12 @@ class TdagNode {
 
     public:
         /**
-         * Construct a `TdagNode` with the given `startVal` and `endVal`, leaving its children `nullptr`.
+         * Construct a `TdagNode` with the given `KwRange`, leaving its children `nullptr`.
          */
-        TdagNode(Kw startVal, Kw endVal);
+        TdagNode(KwRange kwRange);
 
         /**
-         * Construct a `TdagNode` with the given children, setting its own `startVal` and `endVal`
+         * Construct a `TdagNode` with the given children, setting its own `kwRange`
          * to the union of its children's ranges.
          */
         TdagNode(TdagNode* left, TdagNode* right);
@@ -45,9 +44,14 @@ class TdagNode {
         std::vector<KwRange> traverseSrc();
 
         /**
-         * Convert the root node of `this` into a `KwRange`.
+         * Get all covering nodes (i.e. ancestors) of the leaf node with `leafKwRange` within the tree given by `this`.
          */
-        KwRange getRootKwRange();
+        std::vector<TdagNode*> getAllCoversForLeaf(KwRange leafKwRange);
+
+        /**
+         * Getter for `this->kwRange`.
+         */
+        KwRange getKwRange();
 
         /**
          * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given maximum leaf value,
