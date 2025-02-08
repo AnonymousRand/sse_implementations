@@ -10,14 +10,9 @@
 // Custom Types
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO does general basic_stringstream really not work? would be poggers if
-// could use it to generalize int, str, ucharptr to ustring
 ustring intToUstr(int n) {
-    //std::string str = std::to_string(n);
-    //return ustring(str.begin(), str.end());
-    std::basic_stringstream<unsigned char> ss;
-    ss << n << "s";
-    return ss.str();
+    std::string str = std::to_string(n);
+    return ustring(str.begin(), str.end());
 }
 
 ustring kwRangeToUstr(KwRange kwRange) {
@@ -57,7 +52,6 @@ std::ostream& operator << (std::ostream& os, const ustring str) {
 // OpenSSL
 ////////////////////////////////////////////////////////////////////////////////
 
-// todo btw is there a name for that design pattern where yuou pass return val in arg instead like C?
 void handleOpenSslErrors() {
     ERR_print_errors_fp(stderr);
     exit(EXIT_FAILURE);

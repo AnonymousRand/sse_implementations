@@ -1,19 +1,7 @@
 #include <map>
-#include <list>
-#include <stdlib.h> // todo what is this for?
 #include <string>
 
 #include "tdag.h"
-
-// DFS but with additional traversal of TDAG's extra parent nodes
-std::forward_list<TdagNode*> TdagNode::traverse() {
-    std::forward_list<TdagNode*> nodes;
-    nodes.push_front(this);
-    if (this->left != nullptr) nodes.splice_after(nodes.cbegin(), this->left->traverse());
-    if (this->right != nullptr) nodes.splice_after(nodes.cbegin(), this->right->traverse());
-    if (this->extraParent != nullptr) nodes.push_front(this->extraParent);
-    return nodes;
-}
 
 TdagNode::TdagNode(Kw startVal, Kw endVal) {
     this->startVal = startVal;
@@ -41,6 +29,16 @@ TdagNode::~TdagNode() {
     if (this->extraParent != nullptr) {
         delete this->extraParent;
     }
+}
+
+// DFS preorder but with additional traversal of TDAG's extra parent nodes
+std::list<TdagNode*> TdagNode::traverse() {
+    std::list<TdagNode*> nodes;
+    nodes.push_front(this);
+    if (this->left != nullptr) nodes.splice(nodes.end(), this->left->traverse());
+    if (this->right != nullptr) nodes.splice(nodes.end(), this->right->traverse());
+    if (this->extraParent != nullptr) nodes.push_back(this->extraParent);
+    return nodes;
 }
 
 // current algo uses divide-and-conquer with early exits to find best SRC
@@ -91,13 +89,21 @@ TdagNode* TdagNode::findSrc(KwRange range) {
 
 std::vector<KwRange> TdagNode::traverseSrc() {
     std::vector<KwRange> leafVals;
-    std::forward_list<TdagNode*> nodes = this->traverse();
+    std::list<TdagNode*> nodes = this->traverse();
     for (TdagNode* node : nodes) {
         if (node->left == nullptr && node->right == nullptr) {
             leafVals.push_back(KwRange {node->startVal, node->endVal});
         }
     }
     return leafVals;
+}
+
+TdagNode* TdagNode::buildTdag(Kw maxLeafVal) {
+    std::set<KwRange> leafVals;
+    for (Kw i = 0; i <= maxLeafVal; i++) {
+        leafVals.insert(KwRange {i, i});
+    }
+    return TdagNode::buildTdag(leafVals);
 }
 
 TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
@@ -144,7 +150,7 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
 
     // add extra TDAG nodes
     TdagNode* tdag = l.front();
-    std::forward_list<TdagNode*> nodes = tdag->traverse();
+    std::list<TdagNode*> nodes = tdag->traverse();
     while (!nodes.empty()) {
         TdagNode* node = nodes.front();
         nodes.pop_front();
@@ -162,6 +168,10 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
     return tdag;
 }
 
-std::ostream& operator << (std::ostream& os, const TdagNode* node) {
-    return os << node->startVal << " - " << node->endVal;
+std::ostream& operator << (std::ostream& os, TdagNode* node) {
+    std::list<TdagNode*> nodes = node->traverse();
+    for (TdagNode* node : nodes) {
+        os << node->startVal << "-" << node->endVal << std::endl;
+    }
+    return os;
 }

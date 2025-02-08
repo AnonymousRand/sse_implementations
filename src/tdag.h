@@ -1,8 +1,7 @@
 #pragma once
 
-#include <forward_list>
 #include <iostream>
-#include <tuple>
+#include <list>
 #include <set>
 #include <vector>
 
@@ -19,7 +18,7 @@ class TdagNode {
         /**
          * Traverse subtree of `this` and return all traversed nodes.
          */
-        std::forward_list<TdagNode*> traverse();
+        std::list<TdagNode*> traverse();
 
     public:
         /**
@@ -46,12 +45,23 @@ class TdagNode {
         std::vector<KwRange> traverseSrc();
 
         /**
+         * Convert the root node of `this` into a `KwRange`.
+         */
+        KwRange getRootKwRange();
+
+        /**
+         * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given maximum leaf value,
+         * with consecutive, size 1 ranges as leaves.
+         */
+        static TdagNode* buildTdag(Kw maxLeafVal);
+
+        /**
          * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given leaf values.
-         * Leaf values must be disjoint but continguous `KwRange`s;
-         * sorted in ascending order by `std::set` based on `<` operator for `KwRange`
+         * Leaf values must be disjoint but contiguous `KwRange`s; they are sorted in
+         * ascending order by `std::set` based on the definition of the `<` operator for `KwRange`.
          */
         static TdagNode* buildTdag(std::set<KwRange> leafVals);
 
         // overload for debugging
-        friend std::ostream& operator << (std::ostream& os, const TdagNode* node);
+        friend std::ostream& operator << (std::ostream& os, TdagNode* node);
 };

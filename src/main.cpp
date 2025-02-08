@@ -1,7 +1,8 @@
-// todo temp compilation `g++ main.cpp util.cpp pi_bas.cpp -lcrypto -o a`
+// temp compilation `g++ main.cpp util.cpp pi_bas.cpp log_src.cpp tdag.cpp -lcrypto -o a`
 #include <cmath>
 #include <random>
 
+#include "log_src.h"
 #include "pi_bas.h"
 
 void exp1(PiBasClient client, PiBasServer server) {
@@ -21,10 +22,10 @@ void exp1(PiBasClient client, PiBasServer server) {
 int main() {
     // experiment 1: db of size 2^20 and vary range sizes
     Db db;
-    const int dbSize = pow(2, 5);
+    const int dbSize = pow(2, 3);
     std::random_device dev;
     std::mt19937 rand(dev());
-    std::uniform_int_distribution<int> dist(1, dbSize);
+    std::uniform_int_distribution<int> dist(0, dbSize - 1);
     std::cout << "----- Dataset -----" << std::endl;
     for (int i = 0; i < dbSize; i++) {
         Kw kw = dist(rand);
@@ -34,13 +35,19 @@ int main() {
 
     PiBasClient piBasClient = PiBasClient(db);
     PiBasServer piBasServer = PiBasServer();
-    //exp1(piBasClient, piBasServer);
+    exp1(piBasClient, piBasServer);
+
+    LogSrcClient logSrcClient = LogSrcClient(db);
+    LogSrcServer logSrcServer = LogSrcServer();
+    logSrcClient.setup(KEY_SIZE);
+    logSrcClient.buildIndex();
+    //exp1(logSrcClient, logSrcServer);
 
     // experiment 2: fixed range size and vary db sizes
     
     // temp
-    int n = 1000;
-    std::cout << intToUstr(n) << std::endl;
+    //int n = 1000;
+    //std::cout << intToUstr(n) << std::endl;
     //std::cout << "1: " << org << std::endl;
     //int n = 1000;
     //std::string s2 = std::to_string(n);

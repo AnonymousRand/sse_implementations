@@ -1,30 +1,16 @@
 #pragma once
 
-#include<set>
 #include <vector>
 
 #include "util.h"
 
-class PiBasServer {
-    protected:
-        EncIndex encIndex;
-
-    public:
-        /**
-         * Process a query and compute all results.
-         */
-        std::vector<Id> search(QueryToken queryToken);
-
-        void setEncIndex(EncIndex encIndex);
-};
-
 class PiBasClient {
     protected:
         Db db;
-        std::map<KwRange, std::vector<Id>> index;
-        std::set<KwRange> uniqueKwRanges;
         ustring key;
         int keyLen;
+
+        EncIndex buildIndexInner(Db db);
 
     public:
         PiBasClient(Db db);
@@ -40,10 +26,23 @@ class PiBasClient {
         /**
          * Build the encrypted index.
          */
-        EncIndex buildIndex();
+        virtual EncIndex buildIndex();
 
         /**
          * Issue a query by computing its encrypted token.
          */
         QueryToken trpdr(KwRange kwRange);
+};
+
+class PiBasServer {
+    protected:
+        EncIndex encIndex;
+
+    public:
+        /**
+         * Process a query and compute all results.
+         */
+        std::vector<Id> search(QueryToken queryToken);
+
+        void setEncIndex(EncIndex encIndex);
 };

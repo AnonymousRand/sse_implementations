@@ -4,14 +4,27 @@
 #include "tdag.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// PiBasClient
+// LogSrcClient
 ////////////////////////////////////////////////////////////////////////////////
+
+LogSrcClient::LogSrcClient(Db db) : PiBasClient(db) {};
 
 EncIndex LogSrcClient::buildIndex() {
     EncIndex encIndex;
 
     // build TDAG over keywords
-    TdagNode* tdag = TdagNode::buildTdag(this->uniqueKwRanges);
+    // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
+    Kw maxKw = -1;
+    for (auto pair : this->db) {
+        KwRange kwRange = pair.second;
+        if (kwRange.second > maxKw) {
+            maxKw = kwRange.second;
+        }
+    }
+    TdagNode* tdag = TdagNode::buildTdag(maxKw);
+    std::cout << tdag << std::endl;
 
-    // replicate 
+    // replicate
+    Db dbWithReplications;
+    for (
 }
