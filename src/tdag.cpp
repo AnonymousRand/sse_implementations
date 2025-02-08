@@ -57,6 +57,7 @@ std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraPare
 // current algo uses divide-and-conquer to find best SRC
 // which is worst-case O(N) for N nodes instead of O(log R) as described in paper
 // TODO evaluate new early exit speed
+// TODO FIRST compare with the double find ancestors solution again, it's cleaner and doesn't require proofs
 TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     std::map<int, TdagNode*> srcCandidates;
 
