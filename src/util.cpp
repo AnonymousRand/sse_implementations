@@ -15,20 +15,20 @@ int ustrToInt(ustring s) {
     return std::stoi(str);
 }
 
-ustring intToUstr(int n) {
+ustring toUstr(int n) {
     std::string str = std::to_string(n);
     return ustring(str.begin(), str.end());
 }
 
-ustring kwRangeToUstr(KwRange kwRange) {
-    return intToUstr(kwRange.first) + strToUstr("-") + intToUstr(kwRange.second);
+ustring toUstr(KwRange kwRange) {
+    return toUstr(kwRange.first) + toUstr("-") + toUstr(kwRange.second);
 }
 
-ustring strToUstr(std::string s) {
+ustring toUstr(std::string s) {
     return reinterpret_cast<const unsigned char*>(s.c_str());
 }
 
-ustring ucharptrToUstr(unsigned char* p, int len) {
+ustring toUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
 
@@ -64,7 +64,7 @@ void handleOpenSslErrors() {
 ustring prf(ustring key, ustring input) {
     unsigned int outputLen;
     unsigned char* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen);
-    return ucharptrToUstr(output, outputLen);
+    return toUstr(output, outputLen);
 }
 
 ustring genIv() {
@@ -73,7 +73,7 @@ ustring genIv() {
     if (res != 1) {
         handleOpenSslErrors();
     }
-    ustring ustrIv = ucharptrToUstr(iv, IV_SIZE);
+    ustring ustrIv = toUstr(iv, IV_SIZE);
     delete[] iv;
     return ustrIv;
 }

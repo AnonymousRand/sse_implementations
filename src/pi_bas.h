@@ -10,7 +10,7 @@ class PiBasClient {
         ustring key;
         int keyLen;
 
-        EncIndex buildIndexInner(Db db);
+        EncIndex buildIndex(Db db);
 
     public:
         PiBasClient(Db db);

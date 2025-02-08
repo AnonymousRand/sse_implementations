@@ -24,14 +24,15 @@ int main() {
     // experiment 1: db of size 2^20 and vary range sizes
     Db db;
     const int dbSize = pow(2, 3);
-    std::random_device dev;
-    std::mt19937 rand(dev());
-    std::uniform_int_distribution<int> dist(0, dbSize - 1);
+    //std::random_device dev;
+    //std::mt19937 rng(dev());
+    //std::uniform_int_distribution<int> dist(0, dbSize - 1);
     std::cout << "----- Dataset -----" << std::endl;
     for (int i = 0; i < dbSize; i++) {
-        Kw kw = dist(rand);
-        db[i] = KwRange {kw, kw};
-        std::cout << i << ": " << db[i] << std::endl;
+        //Kw kw = dist(rng);
+        Kw kw = i;
+        db.insert(std::make_pair(i, KwRange {kw, kw}));
+        std::cout << i << ": " << db.find(i)->second << std::endl;
     }
 
     //PiBasClient piBasClient = PiBasClient(db);

@@ -29,16 +29,18 @@ typedef std::pair<Id, Id>                              IdRange;
 // `std::pair<kw_range_start, kw_range_end>` to be generalized for ranges
 typedef std::pair<Kw, Kw>                              KwRange;
 typedef std::pair<ustring, ustring>                    QueryToken;
-typedef std::unordered_map<Id, KwRange>                Db;
+// `multimap` to allow documents to contain multiple keywords (keyword search problem)
+// as well as work with schemes that replicate documents/tuples
+typedef std::unordered_multimap<Id, KwRange>           Db;
 // `std::map<label, std::pair<data, iv>>`
 typedef std::map<ustring, std::pair<ustring, ustring>> EncIndex;
 
 // hot mess
 int ustrToInt(ustring n);
-ustring intToUstr(int n);
-ustring kwRangeToUstr(KwRange kwRange);
-ustring strToUstr(std::string s);
-ustring ucharptrToUstr(unsigned char* p, int len);
+ustring toUstr(int n);
+ustring toUstr(KwRange kwRange);
+ustring toUstr(std::string s);
+ustring toUstr(unsigned char* p, int len);
 
 bool isContainingRange(KwRange containing, KwRange contained);
 

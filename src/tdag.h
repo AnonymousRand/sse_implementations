@@ -3,6 +3,7 @@
 #include <iostream>
 #include <list>
 #include <set>
+#include <unordered_set>
 
 #include "util.h"
 
@@ -17,6 +18,7 @@ class TdagNode {
          * Traverse subtree of `this` and return all traversed nodes.
          */
         std::list<TdagNode*> traverse();
+        std::list<TdagNode*> traverse(std::unordered_set<TdagNode*>& extraParents);
 
     public:
         /**
@@ -43,18 +45,19 @@ class TdagNode {
         std::list<KwRange> traverseLeaves();
 
         /**
-         * Get all covering nodes (i.e. ancestors) of the leaf node with `leafKwRange` within the tree given by `this`.
+         * Get all ancestors (i.e. covering nodes) of the leaf node with `leafKwRange` within the tree `this`,
+         * including the leaf itself.
          */
-        std::list<TdagNode*> getAllCoversForLeaf(KwRange leafKwRange);
+        std::list<TdagNode*> getLeafAncestors(KwRange leafKwRange);
 
         /**
-         * Getter for `this->kwRange`.
+         * Get `this->kwRange`.
          */
         KwRange getKwRange();
 
         /**
          * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given maximum leaf value,
-         * with consecutive, size 1 ranges as leaves.
+         * with consecutive size 1 ranges as leaves.
          */
         static TdagNode* buildTdag(Kw maxLeafVal);
 

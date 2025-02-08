@@ -1,5 +1,3 @@
-#include <unordered_set>
-
 #include "tdag.h"
 
 TdagNode::TdagNode(KwRange kwRange) {
@@ -29,17 +27,21 @@ TdagNode::~TdagNode() {
 }
 
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
+// track `extraParent` nodes to prevent duplicates; use `unordered_set` as it's probably the fastest way to do this
 std::list<TdagNode*> TdagNode::traverse() {
-    std::list<TdagNode*> nodes;
-    // track `extraParent` nodes to prevent duplicates; use `unordered_set` as it's probably the fastest way to do this
-    std::unordered_set<TdagNode*> extraParents;
+    std::unordered_set<TdagNode*> nodes;
+    return this->traverse(nodes);
+}
 
+std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraParents) {
+    std::list<TdagNode*> nodes;
     nodes.push_front(this);
+
     if (this->left != nullptr) {
-        nodes.splice(nodes.end(), this->left->traverse());
+        nodes.splice(nodes.end(), this->left->traverse(extraParents));
     }
     if (this->right != nullptr) {
-        nodes.splice(nodes.end(), this->right->traverse());
+        nodes.splice(nodes.end(), this->right->traverse(extraParents));
     }
     if (this->extraParent != nullptr) {
         auto res = extraParents.insert(this->extraParent);
@@ -107,20 +109,20 @@ std::list<KwRange> TdagNode::traverseLeaves() {
     return leafVals;
 }
 
-std::list<TdagNode*> TdagNode::getAllCoversForLeaf(KwRange leafKwRange) {
-    std::list<TdagNode*> ancsts = {this};
+std::list<TdagNode*> TdagNode::getLeafAncestors(KwRange leafKwRange) {
+    std::list<TdagNode*> ancestors = {this};
 
     if (this->left != nullptr && isContainingRange(this->left->kwRange, leafKwRange)) {
-        ancsts.splice(ancsts.end(), this->left->getAllCoversForLeaf(leafKwRange));
+        ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafKwRange));
     }
     if (this->right != nullptr && isContainingRange(this->right->kwRange, leafKwRange)) {
-        ancsts.splice(ancsts.end(), this->right->getAllCoversForLeaf(leafKwRange));
+        ancestors.splice(ancestors.end(), this->right->getLeafAncestors(leafKwRange));
     }
     if (this->extraParent != nullptr && isContainingRange(this->extraParent->kwRange, leafKwRange)) {
-        ancsts.push_back(this->extraParent);
+        ancestors.push_back(this->extraParent);
     }
 
-    return ancsts;
+    return ancestors;
 }
 
 KwRange TdagNode::getKwRange() {

@@ -14,13 +14,13 @@ PiBasClient::PiBasClient(Db db) {
     }
 }
 
-EncIndex PiBasClient::buildIndexInner(Db db) {
+EncIndex PiBasClient::buildIndex(Db db) {
     EncIndex encIndex;
 
     // generate (plaintext) index of keywords to documents mapping and list of unique keywords
     std::map<KwRange, std::vector<Id>> index;
-    std::set<KwRange> uniqueKwRanges;
-    for (auto pair : db) {
+    std::set<KwRange> uniqueKwRanges; // todo did this break on unordered set
+    for (auto pair : db) {              // this breaks apart `std::unordered_multimap` buckets as intended
         Id id = pair.first;
         KwRange kwRange = pair.second;
 
@@ -35,7 +35,7 @@ EncIndex PiBasClient::buildIndexInner(Db db) {
     // for each w in W
     for (KwRange kwRange : uniqueKwRanges) {
         // K_1 || K_2 <- F(K, w)
-        ustring K = prf(this->key, kwRangeToUstr(kwRange));
+        ustring K = prf(this->key, toUstr(kwRange));
         int subkeyLen = K.length() / 2;
         ustring subkey1 = K.substr(0, subkeyLen);
         ustring subkey2 = K.substr(subkeyLen, subkeyLen);
@@ -48,9 +48,9 @@ EncIndex PiBasClient::buildIndexInner(Db db) {
         }
         for (Id id : docsWithKwRangeIt->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
-            ustring label = prf(subkey1, intToUstr(counter));
+            ustring label = prf(subkey1, toUstr(counter));
             ustring iv = genIv();
-            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, intToUstr(id), iv);
+            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, toUstr(id), iv);
             counter++;
             // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
             // also store IV in plain along with encrypted value
@@ -67,20 +67,19 @@ void PiBasClient::setup(int secParam) {
     if (res != 1) {
         handleOpenSslErrors();
     }
-    this->key = ucharptrToUstr(key, secParam);
+    this->key = toUstr(key, secParam);
     this->keyLen = secParam;
     delete[] key;
 }
 
 EncIndex PiBasClient::buildIndex() {
-    // can't use `this->db` as default param as it's evaluated at runtime
-    return this->buildIndexInner(this->db);
+    return this->buildIndex(this->db);
 }
 
 QueryToken PiBasClient::trpdr(KwRange kwRange) {
     // the paper uses different notation for the key generation here vs. in `setup()`;
     // I'm fairly sure they meant the same thing
-    ustring K = prf(this->key, kwRangeToUstr(kwRange));
+    ustring K = prf(this->key, toUstr(kwRange));
     int subkeyLen = K.length() / 2;
     ustring subkey1 = K.substr(0, subkeyLen);
     ustring subkey2 = K.substr(subkeyLen, subkeyLen);
@@ -100,7 +99,7 @@ std::vector<int> PiBasServer::search(QueryToken queryToken) {
     // for c = 0 until `Get` returns error
     while (true) {
         // d <- Get(D, F(K_1, c))
-        ustring label = prf(subkey1, intToUstr(counter));
+        ustring label = prf(subkey1, toUstr(counter));
         auto it = this->encIndex.find(label);
         if (it == this->encIndex.end()) {
             break;
