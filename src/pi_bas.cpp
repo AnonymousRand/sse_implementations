@@ -6,12 +6,17 @@
 // PiBasClient
 ////////////////////////////////////////////////////////////////////////////////
 
-PiBasClient::PiBasClient(Db db) {
-    this->db = db;
-    if (this->db.empty()) {
-        std::cerr << "Error: `db` passed to `PiBasClient.PiBasClient()` is empty :/" << std::endl;
-        exit(EXIT_FAILURE);
+PiBasClient::PiBasClient(Db db) : SseClient(db) {};
+
+void PiBasClient::setup(int secParam) {
+    unsigned char* key = new unsigned char[secParam];
+    int res = RAND_priv_bytes(key, secParam);
+    if (res != 1) {
+        handleOpenSslErrors();
     }
+    this->key = toUstr(key, secParam);
+    this->keyLen = secParam;
+    delete[] key;
 }
 
 EncIndex PiBasClient::buildIndex(Db db) {
@@ -61,17 +66,6 @@ EncIndex PiBasClient::buildIndex(Db db) {
     return encIndex;
 }
 
-void PiBasClient::setup(int secParam) {
-    unsigned char* key = new unsigned char[secParam];
-    int res = RAND_priv_bytes(key, secParam);
-    if (res != 1) {
-        handleOpenSslErrors();
-    }
-    this->key = toUstr(key, secParam);
-    this->keyLen = secParam;
-    delete[] key;
-}
-
 EncIndex PiBasClient::buildIndex() {
     return this->buildIndex(this->db);
 }
@@ -114,8 +108,4 @@ std::vector<int> PiBasServer::search(QueryToken queryToken) {
         counter++;
     }
     return results;
-}
-
-void PiBasServer::setEncIndex(EncIndex encIndex) {
-    this->encIndex = encIndex;
 }

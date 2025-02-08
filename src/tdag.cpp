@@ -54,44 +54,51 @@ std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraPare
     return nodes;
 }
 
-// current algo uses divide-and-conquer with early exits to find best SRC
+// current algo uses divide-and-conquer to find best SRC
 // which is worst-case O(N) for N nodes instead of O(log R) as described in paper
-// experimentally, this actually seems like O(log N), probably because of early exits
-TdagNode* TdagNode::findSrc(KwRange kwRange) {
+// todo evaluate new early exit speed
+TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     std::map<int, TdagNode*> srcCandidates;
-    auto findDiff = [=](TdagNode* node) { // nested lambda function for code reuse
-        return (kwRange.first - node->kwRange.first) + (node->kwRange.second - kwRange.second);
+
+    auto addCandidate = [&](TdagNode* node) {
+        if (node == nullptr || !isContainingRange(node->kwRange, targetKwRange)) {
+            return -1;
+        }
+
+        int diff = (targetKwRange.first - node->kwRange.first) + (node->kwRange.second - targetKwRange.second);
+        srcCandidates[diff] = node;
+        return diff;
     };
 
-    // early exit and backtrack up the tree if current node doesn't encompass at least the entire range
-    if (!isContainingRange(this->kwRange, kwRange)) {
+    // find best SRC between current node, best SRC in left subtree, best SRC in right subtree, and extra TDAG parent 
+    int diff = -1;
+    if (this->extraParent != nullptr) {
+        diff = addCandidate(this->extraParent);
+        if (diff == 0) {
+            return this->extraParent;
+        }
+    }
+    // if the extra TDAG parent is not a candidate and our current node's range is narrower than the target range,
+    // we don't have to go further down the tree and we can early exit
+    // todo verify
+    if (diff == -1 && rangeSize(this->kwRange) < rangeSize(targetKwRange)) {
         return nullptr;
     }
 
-    // find best SRC between current node, best SRC in left subtree, and best SRC in right subtree
-    int thisDiff = findDiff(this);
-    if (thisDiff == 0) {
+    diff = addCandidate(this);
+    if (diff == 0) {
         return this;
     }
-    srcCandidates[thisDiff] = this;
     if (this->left != nullptr) {
-        TdagNode* leftSrc = this->left->findSrc(kwRange);
-        if (leftSrc != nullptr) {
-            int leftDiff = findDiff(leftSrc);
-            if (leftDiff == 0) {
-                return leftSrc;
-            }
-            srcCandidates[leftDiff] = leftSrc;
+        diff = addCandidate(this->left->findSrc(targetKwRange));
+        if (diff == 0) {
+            return this->left;
         }
     }
     if (this->right != nullptr) {
-        TdagNode* rightSrc = this->right->findSrc(kwRange);
-        if (rightSrc != nullptr) {
-            int rightDiff = findDiff(rightSrc);
-            if (rightDiff == 0) {
-                return rightSrc;
-            }
-            srcCandidates[rightDiff] = rightSrc;
+        diff = addCandidate(this->right->findSrc(targetKwRange));
+        if (diff == 0) {
+            return this->right;
         }
     }
 

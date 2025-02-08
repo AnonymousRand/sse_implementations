@@ -1,48 +1,20 @@
 #pragma once
 
-#include <vector>
+#include "sse.h"
 
-#include "util.h"
-
-class PiBasClient {
+class PiBasClient : public SseClient {
     protected:
-        Db db;
-        ustring key;
-        int keyLen;
-
         EncIndex buildIndex(Db db);
 
     public:
         PiBasClient(Db db);
 
-        /**
-         * Generate a key.
-         *
-         * `Setup()` from original paper broken up into `setup()` and `buildIndex()`
-         * to be consistent with later papers.
-         */
-        void setup(int secParam);
-
-        /**
-         * Build the encrypted index.
-         */
-        virtual EncIndex buildIndex();
-
-        /**
-         * Issue a query by computing its encrypted token.
-         */
-        QueryToken trpdr(KwRange kwRange);
+        void setup(int secParam) override;
+        EncIndex buildIndex() override;
+        QueryToken trpdr(KwRange kwRange) override;
 };
 
-class PiBasServer {
-    protected:
-        EncIndex encIndex;
-
+class PiBasServer : public SseServer {
     public:
-        /**
-         * Process a query and compute all results.
-         */
-        std::vector<Id> search(QueryToken queryToken);
-
-        void setEncIndex(EncIndex encIndex);
+        std::vector<Id> search(QueryToken queryToken) override;
 };

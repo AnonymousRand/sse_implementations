@@ -8,7 +8,7 @@ typedef std::unordered_map<KwRange, std::vector<Index1Val>> Index1;
 typedef std::unordered_map<kwRange, std::vector<Id>> Index2;
 
 class LogSrciClient : public LogSrcClient {
-    private:
+    protected:
         ustring key1;
         ustring key2;
 
@@ -20,7 +20,7 @@ class LogSrciClient : public LogSrcClient {
 };
 
 class LogSrciServer : public LogSrcServer {
-    private:
+    protected:
         EncIndex encIndex1;
         EncIndex encIndex2;
 

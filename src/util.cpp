@@ -32,6 +32,10 @@ ustring toUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
 
+Kw rangeSize(KwRange kwRange) {
+    return (Kw)abs(kwRange.second - kwRange.first);
+}
+
 bool isContainingRange(KwRange containing, KwRange contained) {
     return containing.first <= contained.first && containing.second >= contained.second;
 }

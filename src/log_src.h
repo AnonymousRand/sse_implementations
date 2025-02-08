@@ -11,10 +11,7 @@ class LogSrcClient : public PiBasClient {
         LogSrcClient(Db db);
 
         EncIndex buildIndex() override;
-        QueryToken trpdr(KwRange kwRange);
+        QueryToken trpdr(KwRange kwRange) override;
 };
 
-class LogSrcServer : public PiBasServer {
-    public:
-        std::vector<Id> search(QueryToken queryToken);
-};
+class LogSrcServer : public PiBasServer {};

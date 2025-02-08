@@ -1,6 +1,6 @@
 #include <algorithm>
-#include <set>
 #include <random>
+#include <set>
 
 #include "log_src.h"
 
@@ -23,7 +23,7 @@ EncIndex LogSrcClient::buildIndex() {
         }
     }
     this->tdag = TdagNode::buildTdag(maxKw);
-    std::cout << this->tdag << std::endl;
+    std::cout << tdag << std::endl;
 
     // replicate every document to all nodes/keywords ranges in TDAG that cover it
     std::unordered_map<Id, std::vector<KwRange>> dbWithReplicas;
@@ -59,4 +59,7 @@ EncIndex LogSrcClient::buildIndex() {
 }
 
 QueryToken LogSrcClient::trpdr(KwRange kwRange) {
+    TdagNode* src = this->tdag->findSrc(kwRange);
+    std::cout << "src for " << kwRange << " is " << src->getKwRange() << std::endl;
+    return PiBasClient::trpdr(src->getKwRange());
 }

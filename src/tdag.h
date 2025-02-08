@@ -37,7 +37,7 @@ class TdagNode {
         /**
          * Find the single range cover of the leaves containing `range`.
          */
-        TdagNode* findSrc(KwRange kwRange);
+        TdagNode* findSrc(KwRange targetKwRange);
 
         /**
          * Get all leaf values from the subtree of `this`.
