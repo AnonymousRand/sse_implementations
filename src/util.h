@@ -26,8 +26,22 @@ typedef std::basic_string<unsigned char> ustring;
 typedef int                                            Id;
 typedef int                                            Kw;
 typedef std::pair<Id, Id>                              IdRange;
-// `std::pair<kw_range_start, kw_range_end>` to be generalized for ranges
-typedef std::pair<Kw, Kw>                              KwRange;
+
+class KwRange {
+    public:
+        Kw start;
+        Kw end;
+
+        KwRange() = default;
+        KwRange(Kw start, Kw end);
+        Kw size();
+        bool contains(KwRange kwRange);
+        bool isDisjoint(KwRange kwRange);
+
+        friend bool operator < (const KwRange& kwRange1, const KwRange& kwRange2);
+        friend std::ostream& operator << (std::ostream& os, const KwRange& kwRange);
+};
+
 typedef std::pair<ustring, ustring>                    QueryToken;
 // `multimap` to allow documents to contain multiple keywords (keyword search problem)
 // as well as work with schemes that replicate documents/tuples
@@ -35,21 +49,13 @@ typedef std::unordered_multimap<Id, KwRange>           Db;
 // `std::map<label, std::pair<data, iv>>`
 typedef std::map<ustring, std::pair<ustring, ustring>> EncIndex;
 
-// hot mess
 int ustrToInt(ustring n);
 ustring toUstr(int n);
 ustring toUstr(KwRange kwRange);
 ustring toUstr(std::string s);
 ustring toUstr(unsigned char* p, int len);
 
-// todo make custom class for datatype??? so we can do range.size() or something? or is that too much
-Kw rangeSize(KwRange kwRange);
-bool isContainingRange(KwRange containing, KwRange contained);
-bool areDisjointRanges(KwRange kwRange1, KwRange kwRange2);
-
-bool operator < (KwRange kwRange1, KwRange kwRange2);
-std::ostream& operator << (std::ostream& os, KwRange kwRange);
-std::ostream& operator << (std::ostream& os, ustring str);
+std::ostream& operator << (std::ostream& os, const ustring str);
 
 ////////////////////////////////////////////////////////////////////////////////
 // OpenSSL

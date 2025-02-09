@@ -11,7 +11,7 @@ void exp1(SseClient& client, SseServer& server) {
     std::cout << "Building index..." << std::endl;
     server.setEncIndex(client.buildIndex());
 
-    KwRange kwRange = KwRange {2, 4};
+    KwRange kwRange = KwRange(2, 4);
     std::cout << "Querying " << kwRange << "..." << std::endl;
     QueryToken queryToken = client.trpdr(kwRange);
     std::vector<Id> results = server.search(queryToken);
@@ -33,7 +33,7 @@ int main() {
     for (int i = 0; i < dbSize; i++) {
         //Kw kw = dist(rng);
         Kw kw = i;
-        db.insert(std::make_pair(i, KwRange {kw, kw}));
+        db.insert(std::make_pair(i, KwRange(kw, kw)));
         //std::cout << i << ": " << db.find(i)->second << std::endl;
     }
 
@@ -41,16 +41,9 @@ int main() {
     //PiBasServer piBasServer = PiBasServer();
     //exp1(piBasClient, piBasServer);
 
-    //LogSrcClient logSrcClient = LogSrcClient(db);
-    //LogSrcServer logSrcServer = LogSrcServer();
-    //exp1(logSrcClient, logSrcServer);
-    dbSize = 500;
-    TdagNode* tdag = TdagNode::buildTdag(dbSize);
-    for (int i = 0; i < dbSize; i++) {
-        for (int j = i; j < dbSize; j++) {
-            tdag->findSrc(KwRange {i, j});
-        }
-    }
+    LogSrcClient logSrcClient = LogSrcClient(db);
+    LogSrcServer logSrcServer = LogSrcServer();
+    exp1(logSrcClient, logSrcServer);
 
     // experiment 2: fixed range size and vary db sizes
 }

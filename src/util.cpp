@@ -21,7 +21,7 @@ ustring toUstr(int n) {
 }
 
 ustring toUstr(KwRange kwRange) {
-    return toUstr(kwRange.first) + toUstr("-") + toUstr(kwRange.second);
+    return toUstr(kwRange.start) + toUstr("-") + toUstr(kwRange.end);
 }
 
 ustring toUstr(std::string s) {
@@ -32,28 +32,37 @@ ustring toUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
 
-Kw rangeSize(KwRange kwRange) {
-    return (Kw)abs(kwRange.second - kwRange.first);
+KwRange::KwRange(Kw start, Kw end) {
+    this->start = start;
+    this->end = end;
 }
 
-bool isContainingRange(KwRange containing, KwRange contained) {
-    return containing.first <= contained.first && containing.second >= contained.second;
+Kw KwRange::size() {
+    return (Kw)abs(this->end - this->start);
 }
 
-bool areDisjointRanges(KwRange kwRange1, KwRange kwRange2) {
-    return kwRange1.second < kwRange2.first || kwRange1.first > kwRange2.second;
+bool KwRange::contains(KwRange kwRange) {
+    return this->start <= kwRange.start && this->end >= kwRange.end;
 }
 
-bool operator < (KwRange kwRange1, KwRange kwRange2) {
-    return kwRange1.first < kwRange2.first;
+bool KwRange::isDisjoint(KwRange kwRange) {
+    return this->end < kwRange.start || this->start > kwRange.end;
 }
 
-std::ostream& operator << (std::ostream& os, KwRange kwRange) {
-    os << kwRange.first << "-" << kwRange.second;
+// implemented the same way as `std::pair` does to ensure that this can reflexively determine equivalence
+bool operator < (const KwRange& kwRange1, const KwRange& kwRange2) {
+    if (kwRange1.start == kwRange2.start) {
+        return kwRange1.end < kwRange2.end;
+    }
+    return kwRange1.start < kwRange2.start;
+}
+
+std::ostream& operator << (std::ostream& os, const KwRange& kwRange) {
+    os << kwRange.start << "-" << kwRange.end;
     return os;
 }
 
-std::ostream& operator << (std::ostream& os, ustring str) {
+std::ostream& operator << (std::ostream& os, const ustring str) {
     for (auto c : str) {
         os << static_cast<char>(c);
     }

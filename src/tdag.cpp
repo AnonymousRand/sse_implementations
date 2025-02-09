@@ -8,7 +8,7 @@ TdagNode::TdagNode(KwRange kwRange) {
 }
 
 TdagNode::TdagNode(TdagNode* left, TdagNode* right) {
-    this->kwRange = KwRange {left->kwRange.first, right->kwRange.second};
+    this->kwRange = KwRange(left->kwRange.start, right->kwRange.end);
     this->left = left;
     this->right = right;
     this->extraParent = nullptr;
@@ -61,18 +61,18 @@ std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraPare
 TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     std::map<int, TdagNode*> srcCandidates;
     auto addCandidate = [&](TdagNode* node) {
-        if (node == nullptr || !isContainingRange(node->kwRange, targetKwRange)) {
+        if (node == nullptr || !node->kwRange.contains(targetKwRange)) {
             return -1;
         }
 
-        int diff = (targetKwRange.first - node->kwRange.first) + (node->kwRange.second - targetKwRange.second);
+        int diff = (targetKwRange.start - node->kwRange.start) + (node->kwRange.end - targetKwRange.end);
         srcCandidates[diff] = node;
         return diff;
     };
 
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
-    if (areDisjointRanges(this->kwRange, targetKwRange)) {
+    if (this->kwRange.isDisjoint(targetKwRange)) {
         return nullptr;
     }
 
@@ -87,7 +87,7 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     }
     // if the current node's range is more than one narrower than the target range, it is impossible for
     // its children to be the SRC, so we can early exit if we also know its extra TDAG parent cannot be an SRC
-    if (diff == -1 && rangeSize(this->kwRange) < rangeSize(targetKwRange) - 1) {
+    if (diff == -1 && this->kwRange.size() < targetKwRange.size() - 1) {
         return nullptr;
     }
 
@@ -131,13 +131,13 @@ std::list<KwRange> TdagNode::traverseLeaves() {
 std::list<TdagNode*> TdagNode::getLeafAncestors(KwRange leafKwRange) {
     std::list<TdagNode*> ancestors = {this};
 
-    if (this->left != nullptr && isContainingRange(this->left->kwRange, leafKwRange)) {
+    if (this->left != nullptr && this->left->kwRange.contains(leafKwRange)) {
         ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafKwRange));
     }
-    if (this->right != nullptr && isContainingRange(this->right->kwRange, leafKwRange)) {
+    if (this->right != nullptr && this->right->kwRange.contains(leafKwRange)) {
         ancestors.splice(ancestors.end(), this->right->getLeafAncestors(leafKwRange));
     }
-    if (this->extraParent != nullptr && isContainingRange(this->extraParent->kwRange, leafKwRange)) {
+    if (this->extraParent != nullptr && this->extraParent->kwRange.contains(leafKwRange)) {
         ancestors.push_back(this->extraParent);
     }
 
@@ -151,7 +151,7 @@ KwRange TdagNode::getKwRange() {
 TdagNode* TdagNode::buildTdag(Kw maxLeafVal) {
     std::set<KwRange> leafVals;
     for (Kw i = 0; i <= maxLeafVal; i++) {
-        leafVals.insert(KwRange {i, i});
+        leafVals.insert(KwRange(i, i));
     }
     return TdagNode::buildTdag(leafVals);
 }
@@ -181,14 +181,14 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
         // find a contiguous node
         for (auto it = l.begin(); it != l.end(); it++) {
             TdagNode* node2 = *it;
-            if (node2->kwRange.first - 1 == node1->kwRange.second) {
+            if (node2->kwRange.start - 1 == node1->kwRange.end) {
                 // if `node1` is the left child of new parent node
                 TdagNode* parent = new TdagNode(node1, node2);
                 l.push_back(parent);
                 l.erase(it);
                 break;
             }
-            if (node2->kwRange.second + 1 == node1->kwRange.first) {
+            if (node2->kwRange.end + 1 == node1->kwRange.start) {
                 // if `node2` is the left child of new parent node
                 TdagNode* parent = new TdagNode(node2, node1);
                 l.push_back(parent);
