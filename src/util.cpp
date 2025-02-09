@@ -40,6 +40,10 @@ bool isContainingRange(KwRange containing, KwRange contained) {
     return containing.first <= contained.first && containing.second >= contained.second;
 }
 
+bool areDisjointRanges(KwRange kwRange1, KwRange kwRange2) {
+    return kwRange1.second < kwRange2.first || kwRange1.first > kwRange2.second;
+}
+
 bool operator < (KwRange kwRange1, KwRange kwRange2) {
     return kwRange1.first < kwRange2.first;
 }

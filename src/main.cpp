@@ -25,7 +25,7 @@ void exp1(SseClient& client, SseServer& server) {
 int main() {
     // experiment 1: db of size 2^20 and vary range sizes
     Db db;
-    const int dbSize = pow(2, 3);
+    int dbSize = pow(2, 3);
     //std::random_device dev;
     //std::mt19937 rng(dev());
     //std::uniform_int_distribution<int> dist(0, dbSize - 1);
@@ -41,9 +41,16 @@ int main() {
     //PiBasServer piBasServer = PiBasServer();
     //exp1(piBasClient, piBasServer);
 
-    LogSrcClient logSrcClient = LogSrcClient(db);
-    LogSrcServer logSrcServer = LogSrcServer();
-    exp1(logSrcClient, logSrcServer);
+    //LogSrcClient logSrcClient = LogSrcClient(db);
+    //LogSrcServer logSrcServer = LogSrcServer();
+    //exp1(logSrcClient, logSrcServer);
+    dbSize = 500;
+    TdagNode* tdag = TdagNode::buildTdag(dbSize);
+    for (int i = 0; i < dbSize; i++) {
+        for (int j = i; j < dbSize; j++) {
+            tdag->findSrc(KwRange {i, j});
+        }
+    }
 
     // experiment 2: fixed range size and vary db sizes
 }

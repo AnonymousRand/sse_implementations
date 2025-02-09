@@ -45,6 +45,7 @@ ustring toUstr(unsigned char* p, int len);
 // todo make custom class for datatype??? so we can do range.size() or something? or is that too much
 Kw rangeSize(KwRange kwRange);
 bool isContainingRange(KwRange containing, KwRange contained);
+bool areDisjointRanges(KwRange kwRange1, KwRange kwRange2);
 
 bool operator < (KwRange kwRange1, KwRange kwRange2);
 std::ostream& operator << (std::ostream& os, KwRange kwRange);

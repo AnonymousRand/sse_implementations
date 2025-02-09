@@ -54,13 +54,12 @@ std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraPare
     return nodes;
 }
 
-// current algo uses divide-and-conquer to find best SRC
-// which is worst-case O(N) for N nodes instead of O(log R) as described in paper
-// TODO evaluate new early exit speed
-// TODO FIRST compare with the double find ancestors solution again, it's cleaner and doesn't require proofs
+// current algo uses divide-and-conquer with early exits to find best SRC
+// TODO time complexity
+// TODO note assumptions for optimizations: ranges strictly increasing, balanced tree
+// TODO have to verify/prove early exits?
 TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     std::map<int, TdagNode*> srcCandidates;
-
     auto addCandidate = [&](TdagNode* node) {
         if (node == nullptr || !isContainingRange(node->kwRange, targetKwRange)) {
             return -1;
@@ -71,7 +70,14 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
         return diff;
     };
 
-    // find best SRC between current node, best SRC in left subtree, best SRC in right subtree, and extra TDAG parent 
+    // if the current node is disjoint with the target range, it is impossible for
+    // its children or extra TDAG parent to be the SRC, so we can early exit
+    if (areDisjointRanges(this->kwRange, targetKwRange)) {
+        return nullptr;
+    }
+
+    // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
+    // and extra TDAG parent 
     int diff = -1;
     if (this->extraParent != nullptr) {
         diff = addCandidate(this->extraParent);
@@ -79,10 +85,9 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
             return this->extraParent;
         }
     }
-    // if the extra TDAG parent is not a candidate and the current node's range is narrower than the target range,
-    // we wont't have to go further down the tree and we can early exit
-    // TODO verify
-    if (diff == -1 && rangeSize(this->kwRange) < rangeSize(targetKwRange)) {
+    // if the current node's range is more than one narrower than the target range, it is impossible for
+    // its children to be the SRC, so we can early exit if we also know its extra TDAG parent cannot be an SRC
+    if (diff == -1 && rangeSize(this->kwRange) < rangeSize(targetKwRange) - 1) {
         return nullptr;
     }
 
@@ -105,7 +110,11 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
         }
     }
 
-    return srcCandidates.begin()->second; // take advantage of the fact that `std::map`s are sorted by key
+    if (srcCandidates.empty()) {
+        return nullptr;
+    } else {
+        return srcCandidates.begin()->second; // take advantage of the fact that `std::map`s are sorted by key
+    }
 }
 
 std::list<KwRange> TdagNode::traverseLeaves() {
