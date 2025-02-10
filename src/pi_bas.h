@@ -2,21 +2,14 @@
 
 #include "sse.h"
 
-template <typename KeyType = ustring, typename EncIndType = EncInd> // todo switch order of all these
-class PiBasClient : public SseClient<KeyType, EncIndType> {
-    protected:
-        EncInd buildIndex(Db db);
-
+class PiBasClient : public SseClient<ustring, EncInd> {
     public:
-        PiBasClient(Db db); // todo can replace with using?
-
-        void setup(int secParam) override;
-        EncIndType buildIndex() override;
-        QueryToken trpdr(KwRange kwRange) override;
+        ustring setup(int secParam) override;
+        EncInd buildIndex(ustring key, Db db) override;
+        QueryToken trpdr(ustring key, KwRange kwRange) override;
 };
 
-template <typename EncIndType = EncInd>
-class PiBasServer : public SseServer<EncIndType> {
+class PiBasServer : public SseServer<EncInd> {
     public:
-        std::vector<Id> search(QueryToken queryToken) override;
+        std::vector<Id> search(EncInd encInd, QueryToken queryToken) override;
 };

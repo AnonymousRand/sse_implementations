@@ -2,20 +2,23 @@
 #include <random>
 
 #include "log_src.h"
+#include "pi_bas.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // LogSrcClient
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcClient::LogSrcClient(Db db) : Super(db) {};
+LogSrcClient::LogSrcClient() {
+    this->underlying = PiBasClient();
+}
 
-EncInd LogSrcClient::buildIndex() {
+EncInd LogSrcClient::buildIndex(ustring key, Db db) {
     EncInd encInd;
 
     // build TDAG over keywords
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = -1;
-    for (auto pair : this->db) {
+    for (auto pair : db) {
         KwRange kwRange = pair.second;
         if (kwRange.end > maxKw) {
             maxKw = kwRange.end;
@@ -25,7 +28,7 @@ EncInd LogSrcClient::buildIndex() {
 
     // replicate every document to all nodes/keywords ranges in TDAG that cover it
     std::unordered_map<Id, std::vector<KwRange>> dbWithReplicas;
-    for (auto pair : this->db) {
+    for (auto pair : db) {
         Id id = pair.first;
         KwRange kwRange = pair.second;
         std::list<TdagNode*> ancestors = this->tdag->getLeafAncestors(kwRange);
@@ -53,11 +56,11 @@ EncInd LogSrcClient::buildIndex() {
         }
     }
 
-    return Super::buildIndex(processedDb);
+    return this->underlying.buildIndex(key, processedDb);
 }
 
-QueryToken LogSrcClient::trpdr(KwRange kwRange) {
+QueryToken LogSrcClient::trpdr(ustring key, KwRange kwRange) {
     TdagNode* src = this->tdag->findSrc(kwRange);
     std::cout << "SRC for " << kwRange << " is " << src->getKwRange() << std::endl;
-    return Super::trpdr(src->getKwRange());
+    return this->underlying.trpdr(key, src->getKwRange());
 }

@@ -2,35 +2,22 @@
 
 #include "pi_bas.h"
 
-template class PiBasClient<ustring, EncInd>;
-template class PiBasServer<EncInd>;
-
-template class PiBasClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>>;
-template class PiBasServer<std::pair<EncInd, EncInd>>;
-
 ////////////////////////////////////////////////////////////////////////////////
 // PiBasClient
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename KeyType, typename EncIndType>
-PiBasClient<KeyType, EncIndType>::PiBasClient(Db db) : SseClient<KeyType, EncIndType>(db) {};
-
-template <>
-void PiBasClient<ustring, EncInd>::setup(int secParam) {
+ustring PiBasClient::setup(int secParam) {
     unsigned char* key = new unsigned char[secParam];
     int res = RAND_priv_bytes(key, secParam);
     if (res != 1) {
         handleOpenSslErrors();
     }
-    this->key = toUstr(key, secParam);
+    ustring ustrKey = toUstr(key, secParam);
     delete[] key;
+    return ustrKey;
 }
 
-template <typename KeyType, typename EncIndType>
-void PiBasClient<KeyType, EncIndType>::setup(int secParam) {}
-
-template <>
-EncInd PiBasClient<ustring, EncInd>::buildIndex(Db db) {
+EncInd PiBasClient::buildIndex(ustring key, Db db) {
     EncInd encInd;
 
     // generate (plaintext) index of keywords to documents mapping and list of unique keywords
@@ -51,7 +38,7 @@ EncInd PiBasClient<ustring, EncInd>::buildIndex(Db db) {
     // for each w in W
     for (KwRange kwRange : uniqueKwRanges) {
         // K_1 || K_2 <- F(K, w)
-        ustring K = prf(this->key, toUstr(kwRange));
+        ustring K = prf(key, toUstr(kwRange));
         int subkeyLen = K.length() / 2;
         ustring subkey1 = K.substr(0, subkeyLen);
         ustring subkey2 = K.substr(subkeyLen, subkeyLen);
@@ -77,36 +64,21 @@ EncInd PiBasClient<ustring, EncInd>::buildIndex(Db db) {
     return encInd;
 }
 
-template <>
-EncInd PiBasClient<ustring, EncInd>::buildIndex() {
-    return this->buildIndex(this->db);
-}
-
-template <typename KeyType, typename EncIndType>
-EncIndType PiBasClient<KeyType, EncIndType>::buildIndex() {
-    return EncIndType(this->buildIndex(this->db)));
-}
-
-template <>
-QueryToken PiBasClient<ustring, EncInd>::trpdr(KwRange kwRange) {
+QueryToken PiBasClient::trpdr(ustring key, KwRange kwRange) {
     // the paper uses different notation for the key generation here vs. in `setup()`;
     // I'm fairly sure they meant the same thing
-    ustring K = prf(this->key, toUstr(kwRange));
+    ustring K = prf(key, toUstr(kwRange));
     int subkeyLen = K.length() / 2;
     ustring subkey1 = K.substr(0, subkeyLen);
     ustring subkey2 = K.substr(subkeyLen, subkeyLen);
     return std::pair<ustring, ustring> {subkey1, subkey2};
 }
 
-template <typename KeyType, typename EncIndType>
-QueryToken PiBasClient<KeyType, EncIndType>::trpdr(KwRange kwRange) {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // PiBasServer
 ////////////////////////////////////////////////////////////////////////////////
 
-template <>
-std::vector<int> PiBasServer<EncInd>::search(QueryToken queryToken) {
+std::vector<int> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
     std::vector<int> results;
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
@@ -116,8 +88,8 @@ std::vector<int> PiBasServer<EncInd>::search(QueryToken queryToken) {
     while (true) {
         // d <- Get(D, F(K_1, c))
         ustring label = prf(subkey1, toUstr(counter));
-        auto it = this->encInd.find(label);
-        if (it == this->encInd.end()) {
+        auto it = encInd.find(label);
+        if (it == encInd.end()) {
             break;
         }
         std::pair<ustring, ustring> encIndV = it->second;
@@ -129,5 +101,6 @@ std::vector<int> PiBasServer<EncInd>::search(QueryToken queryToken) {
 
         counter++;
     }
+
     return results;
 }

@@ -1,19 +1,17 @@
 #pragma once
 
-#include "pi_bas.h"
+#include "sse.h"
 #include "tdag.h"
 
-class LogSrcClient : public PiBasClient<ustring, EncInd> {
+class LogSrcClient : public RangeSseClient<ustring, EncInd> {
     protected:
         TdagNode* tdag;
 
     public:
-        using Super = PiBasClient<ustring, EncInd>;
+        LogSrcClient();
 
-        LogSrcClient(Db db);
-
-        BaseEncIndType buildIndex() override;
-        QueryToken trpdr(KwRange kwRange) override;
+        EncInd buildIndex(ustring key, Db db) override;
+        QueryToken trpdr(ustring key, KwRange kwRange) override;
 };
 
-class LogSrcServer : public PiBasServer<EncInd> {};
+class LogSrcServer : public RangeSseServer<EncInd> {};

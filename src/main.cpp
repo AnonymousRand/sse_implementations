@@ -1,21 +1,20 @@
-// temp compilation `g++ main.cpp sse.cpp pi_bas.cpp log_src.cpp tdag.cpp util.cpp -lcrypto -o a`
+// temp compilation `g++ main.cpp pi_bas.cpp log_src.cpp tdag.cpp util.cpp -lcrypto -o a`
 #include <cmath>
 #include <random>
+#include <type_traits>
 
 #include "log_src.h"
-#include "log_srci.h"
 #include "pi_bas.h"
-#include "sse.h"
 
-template <typename ClientType, typename ServerType>
-void exp1(ClientType& client, ServerType& server) {
-    client.setup(KEY_SIZE);
+void exp1(SseClient<ustring, EncInd>& client, SseServer<EncInd>& server, Db db) {
+    ustring key = client.setup(KEY_SIZE);
     std::cout << "Building index..." << std::endl;
-    server.setEncInd(client.buildIndex());
+    EncInd encInd = client.buildIndex(key, db);
 
     KwRange query = KwRange(2, 4);
     std::cout << "Querying " << query << "..." << std::endl;
-    std::vector<Id> results = server.template query<>(client, query);
+    QueryToken queryToken = client.trpdr(key, query);
+    std::vector<Id> results = server.search(encInd, queryToken);
     std::cout << "Results are:";
     for (Id result : results) {
         std::cout << " " << result;
@@ -38,9 +37,9 @@ int main() {
         //std::cout << i << ": " << db.find(i)->second << std::endl;
     }
 
-    PiBasClient piBasClient = PiBasClient(db);
+    PiBasClient piBasClient = PiBasClient();
     PiBasServer piBasServer = PiBasServer();
-    //exp1(piBasClient, piBasServer);
+    exp1(piBasClient, piBasServer, db);
 
     //LogSrcClient logSrcClient = LogSrcClient(db);
     //LogSrcServer logSrcServer = LogSrcServer();
