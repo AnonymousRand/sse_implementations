@@ -19,37 +19,11 @@ static const int BLOCK_SIZE = 128 / 8;
 static const int IV_SIZE = 128 / 8;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Custom Types
+// ustring
 ////////////////////////////////////////////////////////////////////////////////
 
 // use `ustring` as much as possible instead of `unsigned char*` to avoid C-style hell
-using ustring = std::basic_string<unsigned char> ustring;
-using Id      = int;
-using Kw      = int;
-using IdRange = std::pair<Id, Id>;
-
-// we generalize keywords to always be ranges; single keywords are just size 1 ranges
-class KwRange {
-    public:
-        Kw start;
-        Kw end;
-
-        KwRange() = default;
-        KwRange(Kw start, Kw end);
-        Kw size();
-        bool contains(KwRange kwRange);
-        bool isDisjoint(KwRange kwRange);
-
-        friend bool operator < (const KwRange& kwRange1, const KwRange& kwRange2);
-        friend std::ostream& operator << (std::ostream& os, const KwRange& kwRange);
-};
-
-using Doc        = std::tuple<Id, Kw>;
-template <typename DbDocType = Id, typename DbKwType = Kw> // todo maybe defaults need to be in classes as well?
-using Db         = std::vector<std::tuple<DbDocType, DbKwType>>; // todo test if list is faster
-using QueryToken = std::pair<ustring, ustring>;
-// `std::map<label, std::pair<data, iv>>`
-using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
+using ustring    = std::basic_string<unsigned char> ustring;
 
 int ustrToInt(ustring n);
 ustring toUstr(int n);
@@ -59,6 +33,38 @@ ustring toUstr(std::string s);
 ustring toUstr(unsigned char* p, int len);
 
 std::ostream& operator << (std::ostream& os, const ustring str);
+
+////////////////////////////////////////////////////////////////////////////////
+// Custom Types
+////////////////////////////////////////////////////////////////////////////////
+
+using Id         = int;
+using Kw         = int;
+using IdRange    = std::pair<Id, Id>;
+using Doc        = std::tuple<Id, Kw>;
+template <typename DbDocType = Id, typename DbKwType = Kw> // todo maybe defaults need to be in functions as well?
+using Db         = std::vector<std::tuple<DbDocType, DbKwType>>; // todo test if list is faster
+using QueryToken = std::pair<ustring, ustring>;
+// `std::map<label, std::pair<data, iv>>`
+using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
+
+////////////////////////////////////////////////////////////////////////////////
+// KwRange
+////////////////////////////////////////////////////////////////////////////////
+
+using KwRange = std::pair<Kw, Kw>;
+class KwRange : public std::pair<Kw, Kw> {
+    public:
+        Kw size();
+        bool contains(KwRange kwRange);
+        bool isDisjoint(KwRange
+}
+
+Kw kwRangeSize(KwRange kwRange);
+bool kwRangeContains(KwRange containing, KwRange contained);
+bool areDisjointKwRanges(KwRange kwRange1, KwRange kwRange2);
+
+std::ostream& operator << (std::ostream& os, const KwRange& kwRange);
 
 ////////////////////////////////////////////////////////////////////////////////
 // TDAG

@@ -6,11 +6,7 @@
 
 using Ind1Val = std::pair<KwRange, IdRange>;
 
-template <typename DbDocType, typename DbKwType>
-class LogSrciClient : public RangeSseClient<
-    std::pair<ustring, ustring>, std::pair<EncInd, EncInd>,
-    DbDocType, DbKwType
-> {
+class LogSrciClient : public RangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>> {
     protected:
         TdagNode* tdag1;
         TdagNode* tdag2;
@@ -19,6 +15,7 @@ class LogSrciClient : public RangeSseClient<
         LogSrciClient(SseClient<ustring, EncInd>& underlying);
 
         std::pair<ustring, ustring> setup(int secParam) override;
+        template <typename DbDocType, typename DbKwType>
         std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<DbDocType, DbKwType> db) override;
         // interactivity messes up the API (anger)
         QueryToken trpdr1(ustring key1, KwRange kwRange);

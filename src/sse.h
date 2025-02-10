@@ -4,10 +4,7 @@
 
 #include "util.h"
 
-template <
-    typename KeyType, typename EncIndType,
-    typename DbDocType, typename DbKwType
->
+template <typename KeyType, typename EncIndType>
 class SseClient {
     public:
         /**
@@ -21,6 +18,7 @@ class SseClient {
         /**
          * Build the encrypted index.
          */
+        template <typename DbDocType, typename DbKwType>
         virtual EncIndType buildIndex(KeyType key, Db<DbDocType, DbKwType> db) = 0;
 
         /**
@@ -38,11 +36,8 @@ class SseServer {
         virtual std::vector<Id> search(EncIndType encInd, QueryToken queryToken) = 0;
 };
 
-template <
-    typename KeyType, typename EncIndType,
-    typename DbDocType, typename DbKwType
->
-class RangeSseClient : public SseClient<KeyType, EncIndType, DbDocType, DbKwType> {
+template <typename KeyType, typename EncIndType>
+class RangeSseClient : public SseClient<KeyType, EncIndType> {
     protected:
         SseClient<KeyType, EncIndType>& underlying;
 

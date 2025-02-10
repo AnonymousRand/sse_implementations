@@ -9,7 +9,7 @@
 /* TODO
  * >finish change of as much as possible kwrange -> kw
         >>make Db templated
-        also means kwrange cant be a class anymore! need to be a pair. in fact enforce dbtypekw has base class pair
+        >extend kwrange from std::pair for custom functions? enforce dbtypekw has base class pair.
         also need to make tdags templated!!! to store dbtypekw
     merge setup and buildindex again? since thats what dynamic paper does
     const as much in tdag/util as possible?
@@ -17,7 +17,7 @@
 */
 
 ////////////////////////////////////////////////////////////////////////////////
-// Custom Types
+// ustring
 ////////////////////////////////////////////////////////////////////////////////
 
 int ustrToInt(ustring s) {
@@ -46,40 +46,31 @@ ustring toUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
 
-KwRange::KwRange(Kw start, Kw end) {
-    this->start = start;
-    this->end = end;
-}
-
-Kw KwRange::size() {
-    return (Kw)abs(this->end - this->start);
-}
-
-bool KwRange::contains(KwRange kwRange) {
-    return this->start <= kwRange.start && this->end >= kwRange.end;
-}
-
-bool KwRange::isDisjoint(KwRange kwRange) {
-    return this->end < kwRange.start || this->start > kwRange.end;
-}
-
-// implemented the same way as `std::pair` does to ensure that this can reflexively determine equivalence
-bool operator < (const KwRange& kwRange1, const KwRange& kwRange2) {
-    if (kwRange1.start == kwRange2.start) {
-        return kwRange1.end < kwRange2.end;
-    }
-    return kwRange1.start < kwRange2.start;
-}
-
-std::ostream& operator << (std::ostream& os, const KwRange& kwRange) {
-    os << kwRange.start << "-" << kwRange.end;
-    return os;
-}
-
 std::ostream& operator << (std::ostream& os, const ustring str) {
     for (auto c : str) {
         os << static_cast<char>(c);
     }
+    return os;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// KwRange
+////////////////////////////////////////////////////////////////////////////////
+
+Kw kwRangeSize(KwRange kwRange) {
+    return (Kw)abs(kwRange.second - kwRange.first);
+}
+
+bool kwRangeContains(KwRange contatining, KwRange contained) {
+    return containing.first <= contained.first && containing.second >= contained.second;
+}
+
+bool areDisjointKwRanges(KwRange kwRange1, KwRange kwRange2) {
+    return kwRange1.second < kwRange2.first || kwRange1.first > kwRange2.second;
+}
+
+std::ostream& operator << (std::ostream& os, const KwRange& kwRange) {
+    os << kwRange.start << "-" << kwRange.end;
     return os;
 }
 
@@ -159,7 +150,7 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
 
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
-    if (this->kwRange.isDisjoint(targetKwRange)) {
+    if (areDisjointKwRanges(this->kwRange, targetKwRange)) {
         return nullptr;
     }
 
@@ -174,7 +165,7 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     }
     // if the current node's range is more than one narrower than the target range, it is impossible for
     // its children to be the SRC, so we can early exit if we also know its extra TDAG parent cannot be an SRC
-    if (diff == -1 && this->kwRange.size() < targetKwRange.size() - 1) {
+    if (diff == -1 && kwRangeSize(this->kwRange) < kwRangeSize(targetKwRange) - 1) {
         return nullptr;
     }
 
@@ -218,13 +209,13 @@ std::list<KwRange> TdagNode::traverseLeaves() {
 std::list<TdagNode*> TdagNode::getLeafAncestors(KwRange leafKwRange) {
     std::list<TdagNode*> ancestors = {this};
 
-    if (this->left != nullptr && this->left->kwRange.contains(leafKwRange)) {
+    if (this->left != nullptr && kwRangeContains(this->left->kwRange, leafKwRange)) {
         ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafKwRange));
     }
-    if (this->right != nullptr && this->right->kwRange.contains(leafKwRange)) {
+    if (this->right != nullptr && kwRangeContains(this->right->kwRange, leafKwRange)) {
         ancestors.splice(ancestors.end(), this->right->getLeafAncestors(leafKwRange));
     }
-    if (this->extraParent != nullptr && this->extraParent->kwRange.contains(leafKwRange)) {
+    if (this->extraParent != nullptr && kwRangeContains(this->extraParent->kwRange, leafKwRange)) {
         ancestors.push_back(this->extraParent);
     }
 
