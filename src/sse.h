@@ -1,8 +1,6 @@
-// API for SSE schemes
+// APIs for SSE schemes
 
 #pragma once
-
-#include <vector>
 
 #include "util.h"
 

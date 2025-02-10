@@ -23,9 +23,9 @@ EncInd PiBasClient::buildIndex(ustring key, Db db) {
     // generate (plaintext) index of keywords to documents mapping and list of unique keywords
     std::map<KwRange, std::vector<Id>> index;
     std::set<KwRange> uniqueKwRanges;
-    for (auto pair : db) {
-        Id id = pair.first;
-        KwRange kwRange = pair.second;
+    for (Doc doc : db) {
+        Id id = std::get<0>(doc);       // this syntax is cursed
+        KwRange kwRange = std::get<1>(doc);
 
         if (index.count(kwRange) == 0) {
             index[kwRange] = std::vector<Id> {id};
@@ -45,11 +45,11 @@ EncInd PiBasClient::buildIndex(ustring key, Db db) {
         
         unsigned int counter = 0;
         // for each id in DB(w)
-        auto docsWithKwRangeIt = index.find(kwRange);
-        if (docsWithKwRangeIt == index.end()) {
+        auto itDocsWithSameKwRange = index.find(kwRange);
+        if (itDocsWithSameKwRange == index.end()) {
             continue;
         }
-        for (Id id : docsWithKwRangeIt->second) {
+        for (Id id : itDocsWithSameKwRange->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring label = prf(subkey1, toUstr(counter));
             ustring iv = genIv();

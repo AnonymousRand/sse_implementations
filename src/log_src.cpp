@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <random>
+#include <unordered_map>
 
 #include "log_src.h"
 #include "pi_bas.h"
@@ -21,8 +22,8 @@ EncInd LogSrcClient::buildIndex(ustring key, Db db) {
     // build TDAG over keywords
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = -1;
-    for (auto pair : db) {
-        KwRange kwRange = pair.second;
+    for (Doc doc : db) {
+        KwRange kwRange = std::get<1>(doc);
         if (kwRange.end > maxKw) {
             maxKw = kwRange.end;
         }
@@ -30,10 +31,11 @@ EncInd LogSrcClient::buildIndex(ustring key, Db db) {
     this->tdag = TdagNode::buildTdag(maxKw);
 
     // replicate every document to all nodes/keywords ranges in TDAG that cover it
+    // temporarily use `unordered_map` to easily identify which docs share the same `kwRange` for shuffling later
     std::unordered_map<Id, std::vector<KwRange>> dbWithReplicas;
-    for (auto pair : db) {
-        Id id = pair.first;
-        KwRange kwRange = pair.second;
+    for (Doc doc : db) {
+        Id id = std::get<0>(doc);
+        KwRange kwRange = std::get<1>(doc);
         std::list<TdagNode*> ancestors = this->tdag->getLeafAncestors(kwRange);
         for (TdagNode* ancestor : ancestors) {
             KwRange kwRange = ancestor->getKwRange();
@@ -45,8 +47,7 @@ EncInd LogSrcClient::buildIndex(ustring key, Db db) {
         }
     }
 
-    // randomly permute documents associated with same keyword range/node
-    // then convert to `std::unordered_multimap` format compatible with `PiBasClient.buildIndex()`
+    // randomly permute documents associated with same keyword range/node and convert temporary `unordered_map` to `Db`
     Db processedDb;
     std::random_device rd;
     std::mt19937 rng(rd());
@@ -55,7 +56,7 @@ EncInd LogSrcClient::buildIndex(ustring key, Db db) {
         std::vector<KwRange> kwRanges = pair.second;
         std::shuffle(kwRanges.begin(), kwRanges.end(), rng);
         for (KwRange kwRange : kwRanges) {
-            processedDb.insert(std::make_pair(id, kwRange));
+            processedDb.push_back(Doc {id, kwRange});
         }
     }
 

@@ -5,9 +5,9 @@
 #include <list>
 #include <set>
 #include <string>
-#include <unordered_map>
+#include <tuple>
 #include <unordered_set>
-//#include <utility> //todo
+#include <vector>
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -43,10 +43,9 @@ class KwRange {
         friend std::ostream& operator << (std::ostream& os, const KwRange& kwRange);
 };
 
+typedef std::tuple<Id, KwRange>                        Doc;
+typedef std::vector<Doc>                               Db; // todo test if list is faster
 typedef std::pair<ustring, ustring>                    QueryToken;
-// `multimap` to allow documents to contain multiple keywords
-// (for keyword search, as well as work with schemes that replicate documents)
-typedef std::unordered_multimap<Id, KwRange>           Db;
 // `std::map<label, std::pair<data, iv>>`
 typedef std::map<ustring, std::pair<ustring, ustring>> EncInd;
 
@@ -121,7 +120,7 @@ class TdagNode {
         /**
          * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given leaf values.
          * Leaf values must be disjoint but contiguous `KwRange`s; they are sorted in
-         * ascending order by `std::set` based on the definition of the `<` operator for `KwRange`.
+         * ascending order by `set` based on the definition of the `<` operator for `KwRange`.
          */
         static TdagNode* buildTdag(std::set<KwRange> leafVals);
 
