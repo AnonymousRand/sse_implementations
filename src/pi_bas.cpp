@@ -23,7 +23,7 @@ EncInd PiBasClient::buildIndex(ustring key, Db db) {
     // generate (plaintext) index of keywords to documents mapping and list of unique keywords
     std::map<KwRange, std::vector<Id>> index;
     std::set<KwRange> uniqueKwRanges;
-    for (auto pair : db) {              // this breaks apart `std::unordered_multimap` buckets as intended
+    for (auto pair : db) {
         Id id = pair.first;
         KwRange kwRange = pair.second;
 

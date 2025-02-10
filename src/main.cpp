@@ -1,4 +1,4 @@
-// temp compilation `g++ main.cpp sse.cpp pi_bas.cpp log_src.cpp tdag.cpp util.cpp -lcrypto -o a`
+// temp compilation `g++ main.cpp sse.cpp pi_bas.cpp log_src.cpp util.cpp -lcrypto -o a`
 #include <cmath>
 #include <random>
 #include <type_traits>

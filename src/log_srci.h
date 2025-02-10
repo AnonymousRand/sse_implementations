@@ -1,28 +1,31 @@
 #pragma once
 
-#include "pi_bas.h"
+#include "sse.h"
 
 typedef std::tuple<Kw, IdRange> Ind1Val;
 typedef std::unordered_map<KwRange, std::vector<Ind1Val>> Ind1;
 // todo do these datatypes need to be revised based on new intuitoin from 2/5 lecture about tdag2 and stuff?
 typedef std::unordered_map<KwRange, std::vector<Id>> Ind2;
 
-class LogSrciClient : public PiBasClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>> {
-    public:
-        LogSrciClient(Db db);
+class LogSrciClient : public RangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>> {
+    protected:
+        TdagNode* tdag1;
+        TdagNode* tdag2;
 
-        void setup(int secParam) override;
-        BaseEncIndType buildIndex() override;
-        // interactivity messes up the API >:(
-        QueryToken trpdr1(KwRange kwRange);
-        QueryToken trpdr2(std::vector<Ind1Val> choices);
+    public:
+        LogSrciClient(SseClient<ustring, EncIndex>& underlying);
+
+        std::pair<ustring, ustring> setup(int secParam) override;
+        std::pair<EncIndex, EncIndex> buildIndex(std::pair<ustring, ustring> key, Db db) override;
+        // interactivity messes up the API >:(((
+        QueryToken trpdr1(ustring key1, KwRange kwRange);
+        QueryToken trpdr2(ustring key2, std::vector<Ind1Val> choices);
 };
 
-class LogSrciServer : public PiBasServer<std::pair<EncInd, EncInd>> {
+class LogSrciServer : public RangeSseServer<std::pair<EncInd, EncInd>> {
     public:
-        std::vector<Ind1Val> search1(QueryToken queryToken);
-        std::vector<Id> search2(QueryToken queryToken);
-};
+        LogSrciServer(SseServer<EncInd>& underlying);
 
-// overload since search is now interactive
-std::vector<Id> query(LogSrciClient& client, LogSrciServer& server, KwRange query);
+        std::vector<Ind1Val> search1(EncInd encInd1, QueryToken queryToken);
+        std::vector<Id> search2(EncInd encInd2, QueryToken queryToken);
+};

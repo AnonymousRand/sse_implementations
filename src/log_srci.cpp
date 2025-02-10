@@ -4,36 +4,36 @@
 // LogSrciClient
 ////////////////////////////////////////////////////////////////////////////////
 
-void LogSrciClient::setup(int secParam) {
-    unsigned char* key = new unsigned char[secParam];
+LogSrciClient::LogSrciClient(SseClient<ustring, EncInd>& underlying)
+        : RangeSseClient<ustring, EncInd>(underlying) {};
 
-    int res = RAND_priv_bytes(key, secParam);
-    if (res != 1) {
+std::pair<ustring, ustring> setup(int secParam) {
+    unsigned char* key1 = new unsigned char[secParam];
+    unsigned char* key2 = new unsigned char[secParam];
+    int res1 = RAND_priv_bytes(key1, secParam);
+    int res2 = RAND_priv_bytes(key2, secParam);
+    if (res1 != 1 || res2 != 1) {
         handleOpenSslErrors();
     }
-    this->key1 = toUstr(key, secParam);
-    res = RAND_priv_bytes(key, secParam);
-    if (res != 1) {
-        handleOpenSslErrors();
-    }
-    this->key2 = toUstr(key, secParam);
 
-    delete[] key;
+    ustring ustrKey1 = toUstr(key1, secParam);
+    ustring ustrKey2 = toUstr(key2, secParam);
+    delete[] key1, key2;
+    return std::pair<ustring, ustring> {ustrKey1, ustrKey2};
 }
 
-void 
+std::pair<EncIndex, EncIndex> buildIndex(std::pair<ustring, ustring> key, Db db) {
+    
+}
+
+QueryToken trpdr1(ustring key1, KwRange kwRange) {
+
+}
+
+QueryToken trpdr2(ustring key2, std::vector<Ind1Val> choices) {
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // LogSrciServer
 ////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Controller
-////////////////////////////////////////////////////////////////////////////////
-
-std::vector<Id> query(LogSrciClient& client, LogSrciServer& server, KwRange query) {
-    QueryToken queryToken1 = client.trpdr1(query);
-    std::vector<Ind1Val> results1 = server.search1(queryToken);
-    QueryToken queryToken2 = client.trpdr2(results1);
-    return server.search2(queryToken);
-}

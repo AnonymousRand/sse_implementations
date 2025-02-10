@@ -1,16 +1,12 @@
 #pragma once
 
 #include "sse.h"
-#include "tdag.h"
 
 class LogSrcClient : public RangeSseClient<ustring, EncInd> {
     protected:
         TdagNode* tdag;
 
     public:
-        using KeyType = ustring;
-        using EncIndType = EncInd;
-
         LogSrcClient(SseClient<ustring, EncInd>& underlying);
 
         ustring setup(int secParam) override;

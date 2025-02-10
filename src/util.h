@@ -2,9 +2,12 @@
 
 #include <map>
 #include <iostream>
+#include <list>
+#include <set>
 #include <string>
 #include <unordered_map>
-#include <utility>
+#include <unordered_set>
+//#include <utility> //todo
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -15,17 +18,15 @@ static const int KEY_SIZE = 256 / 8;
 static const int BLOCK_SIZE = 128 / 8;
 static const int IV_SIZE = 128 / 8;
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Custom Types
 ////////////////////////////////////////////////////////////////////////////////
 
 // use `ustring` as much as possible instead of `unsigned char*` to avoid C-style hell
 typedef std::basic_string<unsigned char> ustring;
-
-typedef int               Id;
-typedef int               Kw;
-typedef std::pair<Id, Id> IdRange;
+typedef int                              Id;
+typedef int                              Kw;
+typedef std::pair<Id, Id>                IdRange;
 
 class KwRange {
     public:
@@ -43,8 +44,8 @@ class KwRange {
 };
 
 typedef std::pair<ustring, ustring>                    QueryToken;
-// `multimap` to allow documents to contain multiple keywords (keyword search problem)
-// as well as work with schemes that replicate documents/tuples
+// `multimap` to allow documents to contain multiple keywords
+// (for keyword search, as well as work with schemes that replicate documents)
 typedef std::unordered_multimap<Id, KwRange>           Db;
 // `std::map<label, std::pair<data, iv>>`
 typedef std::map<ustring, std::pair<ustring, ustring>> EncInd;
@@ -58,12 +59,81 @@ ustring toUstr(unsigned char* p, int len);
 std::ostream& operator << (std::ostream& os, const ustring str);
 
 ////////////////////////////////////////////////////////////////////////////////
+// TDAG
+////////////////////////////////////////////////////////////////////////////////
+
+// i know this should probably be in a separate file but i wanted to cut down on file count
+// so it was clearer what does what
+class TdagNode {
+    private:
+        KwRange kwRange;
+        TdagNode* left;
+        TdagNode* right;
+        TdagNode* extraParent;
+
+        /**
+         * Traverse subtree of `this` and return all traversed nodes.
+         */
+        std::list<TdagNode*> traverse();
+        std::list<TdagNode*> traverse(std::unordered_set<TdagNode*>& extraParents);
+
+    public:
+        /**
+         * Construct a `TdagNode` with the given `KwRange`, leaving its children `nullptr`.
+         */
+        TdagNode(KwRange kwRange);
+
+        /**
+         * Construct a `TdagNode` with the given children, setting its own `kwRange`
+         * to the union of its children's ranges.
+         */
+        TdagNode(TdagNode* left, TdagNode* right);
+        
+        ~TdagNode();
+
+        /**
+         * Find the single range cover of the leaves containing `range`.
+         */
+        TdagNode* findSrc(KwRange targetKwRange);
+
+        /**
+         * Get all leaf values from the subtree of `this`.
+         */
+        std::list<KwRange> traverseLeaves();
+
+        /**
+         * Get all ancestors (i.e. covering nodes) of the leaf node with `leafKwRange` within the tree `this`,
+         * including the leaf itself.
+         */
+        std::list<TdagNode*> getLeafAncestors(KwRange leafKwRange);
+
+        /**
+         * Get `this->kwRange`.
+         */
+        KwRange getKwRange();
+
+        /**
+         * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given maximum leaf value,
+         * with consecutive size 1 ranges as leaves.
+         */
+        static TdagNode* buildTdag(Kw maxLeafVal);
+
+        /**
+         * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given leaf values.
+         * Leaf values must be disjoint but contiguous `KwRange`s; they are sorted in
+         * ascending order by `std::set` based on the definition of the `<` operator for `KwRange`.
+         */
+        static TdagNode* buildTdag(std::set<KwRange> leafVals);
+
+        friend std::ostream& operator << (std::ostream& os, TdagNode* node);
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // OpenSSL
 ////////////////////////////////////////////////////////////////////////////////
 
 void handleOpenSslErrors();
 
-// PRF implemented as HMAC-SHA512 as done in Private Practical Range Search Revisited
 ustring prf(ustring key, ustring input);
 
 ustring genIv();

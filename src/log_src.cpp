@@ -8,7 +8,8 @@
 // LogSrcClient
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcClient::LogSrcClient(SseClient<ustring, EncInd>& underlying) : RangeSseClient<ustring, EncInd>(underlying) {};
+LogSrcClient::LogSrcClient(SseClient<ustring, EncInd>& underlying)
+        : RangeSseClient<ustring, EncInd>(underlying) {};
 
 ustring LogSrcClient::setup(int secParam) {
     return this->underlying.setup(secParam);
