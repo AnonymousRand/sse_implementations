@@ -28,14 +28,15 @@ typedef int                              Id;
 typedef int                              Kw;
 typedef std::pair<Id, Id>                IdRange;
 
+// we generalize keywords to always be ranges; single keywords are just size 1 ranges
 class KwRange {
     public:
-        Kw start;
-        Kw end;
+        int start;
+        int end;
 
         KwRange() = default;
-        KwRange(Kw start, Kw end);
-        Kw size();
+        KwRange(int start, int end);
+        int size();
         bool contains(KwRange kwRange);
         bool isDisjoint(KwRange kwRange);
 

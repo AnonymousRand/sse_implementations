@@ -31,18 +31,19 @@ EncInd LogSrcClient::buildIndex(ustring key, Db db) {
     this->tdag = TdagNode::buildTdag(maxKw);
 
     // replicate every document to all nodes/keywords ranges in TDAG that cover it
-    // temporarily use `unordered_map` to easily identify which docs share the same `kwRange` for shuffling later
-    std::unordered_map<Id, std::vector<KwRange>> dbWithReplicas;
+    // temporarily use index instead of db (`unordered_map` instead of `vector`)
+    // to easily identify which docs share the same `kwRange` for shuffling later
+    std::unordered_map<Id, std::vector<KwRange>> index;
     for (Doc doc : db) {
         Id id = std::get<0>(doc);
         KwRange kwRange = std::get<1>(doc);
         std::list<TdagNode*> ancestors = this->tdag->getLeafAncestors(kwRange);
         for (TdagNode* ancestor : ancestors) {
             KwRange kwRange = ancestor->getKwRange();
-            if (dbWithReplicas.count(id) == 0) {
-                dbWithReplicas[id] = std::vector<KwRange> {kwRange};
+            if (index.count(id) == 0) {
+                index[id] = std::vector<KwRange> {kwRange};
             } else {
-                dbWithReplicas[id].push_back(kwRange);
+                index[id].push_back(kwRange);
             }
         }
     }

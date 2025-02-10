@@ -1,23 +1,25 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "sse.h"
 
-typedef std::tuple<Kw, IdRange> Ind1Val;
+typedef std::pair<KwRange, IdRange> Ind1Val;
 typedef std::unordered_map<KwRange, std::vector<Ind1Val>> Ind1;
-// todo do these datatypes need to be revised based on new intuitoin from 2/5 lecture about tdag2 and stuff?
-typedef std::unordered_map<KwRange, std::vector<Id>> Ind2;
 
 class LogSrciClient : public RangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>> {
     protected:
+        // have to store index for ind1 since TDAG alone can no longer handle its data format in its nodes
+        Ind1 ind1; 
         TdagNode* tdag1;
         TdagNode* tdag2;
 
     public:
-        LogSrciClient(SseClient<ustring, EncIndex>& underlying);
+        LogSrciClient(SseClient<ustring, EncInd>& underlying);
 
         std::pair<ustring, ustring> setup(int secParam) override;
-        std::pair<EncIndex, EncIndex> buildIndex(std::pair<ustring, ustring> key, Db db) override;
-        // interactivity messes up the API >:(((
+        std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db db) override;
+        // interactivity messes up the API (anger)
         QueryToken trpdr1(ustring key1, KwRange kwRange);
         QueryToken trpdr2(ustring key2, std::vector<Ind1Val> choices);
 };

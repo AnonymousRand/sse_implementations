@@ -20,7 +20,7 @@ ustring PiBasClient::setup(int secParam) {
 EncInd PiBasClient::buildIndex(ustring key, Db db) {
     EncInd encInd;
 
-    // generate (plaintext) index of keywords to documents mapping and list of unique keywords
+    // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     std::map<KwRange, std::vector<Id>> index;
     std::set<KwRange> uniqueKwRanges;
     for (Doc doc : db) {

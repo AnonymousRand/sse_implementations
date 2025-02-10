@@ -32,13 +32,13 @@ ustring toUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
 
-KwRange::KwRange(Kw start, Kw end) {
+KwRange::KwRange(int start, int end) {
     this->start = start;
     this->end = end;
 }
 
-Kw KwRange::size() {
-    return (Kw)abs(this->end - this->start);
+int KwRange::size() {
+    return (int)abs(this->end - this->start);
 }
 
 bool KwRange::contains(KwRange kwRange) {
