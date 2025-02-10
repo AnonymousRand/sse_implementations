@@ -38,8 +38,11 @@ class SseServer {
         virtual std::vector<Id> search(EncIndType encInd, QueryToken queryToken) = 0;
 };
 
-template <typename KeyType, typename EncIndType>
-class RangeSseClient : public SseClient<KeyType, EncIndType> {
+template <
+    typename KeyType, typename EncIndType,
+    typename DbDocType, typename DbKwType
+>
+class RangeSseClient : public SseClient<KeyType, EncIndType, DbDocType, DbKwType> {
     protected:
         SseClient<KeyType, EncIndType>& underlying;
 

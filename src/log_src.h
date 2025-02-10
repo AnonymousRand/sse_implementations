@@ -3,7 +3,7 @@
 #include "sse.h"
 
 template <typename DbDocType, typename DbKwType>
-class LogSrcClient : public RangeSseClient<ustring, EncInd> {
+class LogSrcClient : public RangeSseClient<ustring, EncInd, DbDocType, DbKwType> {
     protected:
         TdagNode* tdag;
 

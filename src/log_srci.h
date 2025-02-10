@@ -7,7 +7,10 @@
 using Ind1Val = std::pair<KwRange, IdRange>;
 
 template <typename DbDocType, typename DbKwType>
-class LogSrciClient : public RangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>> {
+class LogSrciClient : public RangeSseClient<
+    std::pair<ustring, ustring>, std::pair<EncInd, EncInd>,
+    DbDocType, DbKwType
+> {
     protected:
         TdagNode* tdag1;
         TdagNode* tdag2;

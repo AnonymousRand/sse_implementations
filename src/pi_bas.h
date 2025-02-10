@@ -3,7 +3,7 @@
 #include "sse.h"
 
 template <typename DbDocType, typename DbKwType>
-class PiBasClient : public SseClient<ustring, EncInd> {
+class PiBasClient : public SseClient<ustring, EncInd, DbDocType, DbKwType> {
     public:
         ustring setup(int secParam) override;
         EncInd buildIndex(ustring key, Db<DbDocType, DbKwType> db) override;
