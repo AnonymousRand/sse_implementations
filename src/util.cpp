@@ -9,9 +9,10 @@
 /* TODO
  * >finish change of as much as possible kwrange -> kw
         >>make Db templated
-        >extend kwrange from std::pair for custom functions? enforce dbtypekw has base class pair.
+        >>extend kwrange from std::pair for custom functions?
+        >enforce dbtypekw has base class pair or int
         also need to make tdags templated!!! to store dbtypekw
-    merge setup and buildindex again? since thats what dynamic paper does
+    merge setup and buildindex again? since thats what dynamic paper does. check if wikipedia/2024 paper still do that, since it does make the code harder (have to return a pair)
     const as much in tdag/util as possible?
     review class slides for srci as well
 */
@@ -57,16 +58,16 @@ std::ostream& operator << (std::ostream& os, const ustring str) {
 // KwRange
 ////////////////////////////////////////////////////////////////////////////////
 
-Kw kwRangeSize(KwRange kwRange) {
-    return (Kw)abs(kwRange.second - kwRange.first);
+Kw KwRange::size() {
+    return (Kw)abs(this->second - this->first);
 }
 
-bool kwRangeContains(KwRange contatining, KwRange contained) {
-    return containing.first <= contained.first && containing.second >= contained.second;
+bool KwRange::contains(KwRange kwRange) {
+    return this->first <= kwRange.first && this->second >= kwRange.second;
 }
 
-bool areDisjointKwRanges(KwRange kwRange1, KwRange kwRange2) {
-    return kwRange1.second < kwRange2.first || kwRange1.first > kwRange2.second;
+bool KwRange::isDisjointWith(KwRange kwRange) {
+    return this->second < kwRange.first || this->first > kwRange.second;
 }
 
 std::ostream& operator << (std::ostream& os, const KwRange& kwRange) {
@@ -150,7 +151,7 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
 
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
-    if (areDisjointKwRanges(this->kwRange, targetKwRange)) {
+    if (this->kwRange.isDisjointWith(targetKwRange)) {
         return nullptr;
     }
 
@@ -165,7 +166,7 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     }
     // if the current node's range is more than one narrower than the target range, it is impossible for
     // its children to be the SRC, so we can early exit if we also know its extra TDAG parent cannot be an SRC
-    if (diff == -1 && kwRangeSize(this->kwRange) < kwRangeSize(targetKwRange) - 1) {
+    if (diff == -1 && this->kwRange.size() < targetKwRange.size() - 1) {
         return nullptr;
     }
 
@@ -209,13 +210,13 @@ std::list<KwRange> TdagNode::traverseLeaves() {
 std::list<TdagNode*> TdagNode::getLeafAncestors(KwRange leafKwRange) {
     std::list<TdagNode*> ancestors = {this};
 
-    if (this->left != nullptr && kwRangeContains(this->left->kwRange, leafKwRange)) {
+    if (this->left != nullptr && this->left->kwRange.contains(leafKwRange)) {
         ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafKwRange));
     }
-    if (this->right != nullptr && kwRangeContains(this->right->kwRange, leafKwRange)) {
+    if (this->right != nullptr && this->right->kwRange.contains(leafKwRange)) {
         ancestors.splice(ancestors.end(), this->right->getLeafAncestors(leafKwRange));
     }
-    if (this->extraParent != nullptr && kwRangeContains(this->extraParent->kwRange, leafKwRange)) {
+    if (this->extraParent != nullptr && this->extraParent->kwRange.contains(leafKwRange)) {
         ancestors.push_back(this->extraParent);
     }
 
