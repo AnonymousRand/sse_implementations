@@ -8,7 +8,6 @@ class SseClient {
     protected:
         Db db;
         ustring key;
-        int keyLen;
 
     public:
         SseClient(Db db);

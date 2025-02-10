@@ -3,6 +3,7 @@
 #include <random>
 
 #include "log_src.h"
+#include "log_srci.h"
 #include "pi_bas.h"
 #include "sse.h"
 
@@ -11,15 +12,27 @@ void exp1(SseClient& client, SseServer& server) {
     std::cout << "Building index..." << std::endl;
     server.setEncIndex(client.buildIndex());
 
-    KwRange kwRange = KwRange(2, 4);
+    KwRange query = KwRange(2, 4);
     std::cout << "Querying " << kwRange << "..." << std::endl;
-    QueryToken queryToken = client.trpdr(kwRange);
-    std::vector<Id> results = server.search(queryToken);
+    std::vector<Id> results = executeQuery(client, server, query);
     std::cout << "Results are:";
     for (Id result : results) {
         std::cout << " " << result;
     }
     std::cout << std::endl;
+}
+
+std::vector<Id> executeQuery(SseClient& client, SseServer& server, KwRange query) {
+    QueryToken queryToken = client.trpdr(query);
+    return server.search(queryToken);
+}
+
+// overload for Log-Src-i as its search is interactive
+std::vector<Id> executeQuery(LogSrciClient& client, LogSrciServer& server, KwRange query) {
+    QueryToken queryToken1 = client.trpdr1(query);
+    std::vector<Index1Val> results1 = server.search1(queryToken);
+    QueryToken queryToken2 = client.trpdr2(results1);
+    return server.search2(queryToken);
 }
 
 int main() {

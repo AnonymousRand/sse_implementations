@@ -15,7 +15,6 @@ void PiBasClient::setup(int secParam) {
         handleOpenSslErrors();
     }
     this->key = toUstr(key, secParam);
-    this->keyLen = secParam;
     delete[] key;
 }
 
