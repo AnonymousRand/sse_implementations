@@ -6,6 +6,16 @@
 
 #include "util.h"
 
+/* TODO
+ * >finish change of as much as possible kwrange -> kw
+        >>make Db templated
+        also means kwrange cant be a class anymore! need to be a pair. in fact enforce dbtypekw has base class pair
+        also need to make tdags templated!!! to store dbtypekw
+    merge setup and buildindex again? since thats what dynamic paper does
+    const as much in tdag/util as possible?
+    review class slides for srci as well
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
 // Custom Types
 ////////////////////////////////////////////////////////////////////////////////
