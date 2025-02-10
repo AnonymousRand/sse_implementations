@@ -8,8 +8,10 @@
 // LogSrcClient
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcClient::LogSrcClient() {
-    this->underlying = PiBasClient();
+LogSrcClient::LogSrcClient(SseClient<ustring, EncInd>& underlying) : RangeSseClient<ustring, EncInd>(underlying) {};
+
+ustring LogSrcClient::setup(int secParam) {
+    return this->underlying.setup(secParam);
 }
 
 EncInd LogSrcClient::buildIndex(ustring key, Db db) {
@@ -63,4 +65,14 @@ QueryToken LogSrcClient::trpdr(ustring key, KwRange kwRange) {
     TdagNode* src = this->tdag->findSrc(kwRange);
     std::cout << "SRC for " << kwRange << " is " << src->getKwRange() << std::endl;
     return this->underlying.trpdr(key, src->getKwRange());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LogSrcServer
+////////////////////////////////////////////////////////////////////////////////
+
+LogSrcServer::LogSrcServer(SseServer<EncInd>& underlying) : RangeSseServer<EncInd>(underlying) {};
+
+std::vector<Id> LogSrcServer::search(EncInd encInd, QueryToken queryToken) {
+    return this->underlying.search(encInd, queryToken);
 }

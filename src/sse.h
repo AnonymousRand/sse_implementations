@@ -41,10 +41,16 @@ template <typename KeyType, typename EncIndType>
 class RangeSseClient : public SseClient<KeyType, EncIndType> {
     protected:
         SseClient<KeyType, EncIndType>& underlying;
+
+    public:
+        RangeSseClient(SseClient<KeyType, EncIndType>& underlying);
 };
 
 template <typename EncIndType>
 class RangeSseServer : public SseServer<EncIndType> {
     protected:
         SseServer<EncIndType>& underlying;
+
+    public:
+        RangeSseServer(SseServer<EncIndType>& underlying);
 };

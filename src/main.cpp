@@ -1,10 +1,11 @@
-// temp compilation `g++ main.cpp pi_bas.cpp log_src.cpp tdag.cpp util.cpp -lcrypto -o a`
+// temp compilation `g++ main.cpp sse.cpp pi_bas.cpp log_src.cpp tdag.cpp util.cpp -lcrypto -o a`
 #include <cmath>
 #include <random>
 #include <type_traits>
 
 #include "log_src.h"
 #include "pi_bas.h"
+#include "sse.h"
 
 void exp1(SseClient<ustring, EncInd>& client, SseServer<EncInd>& server, Db db) {
     ustring key = client.setup(KEY_SIZE);
@@ -41,9 +42,11 @@ int main() {
     PiBasServer piBasServer = PiBasServer();
     exp1(piBasClient, piBasServer, db);
 
-    //LogSrcClient logSrcClient = LogSrcClient(db);
-    //LogSrcServer logSrcServer = LogSrcServer();
-    //exp1(logSrcClient, logSrcServer);
+    piBasClient = PiBasClient();
+    piBasServer = PiBasServer();
+    LogSrcClient logSrcClient = LogSrcClient(piBasClient);
+    LogSrcServer logSrcServer = LogSrcServer(piBasServer);
+    exp1(logSrcClient, logSrcServer, db);
 
     // experiment 2: fixed range size and vary db sizes
 }
