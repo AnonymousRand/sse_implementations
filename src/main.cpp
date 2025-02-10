@@ -7,32 +7,20 @@
 #include "pi_bas.h"
 #include "sse.h"
 
-void exp1(SseClient& client, SseServer& server) {
+template <typename ClientType, typename ServerType>
+void exp1(ClientType& client, ServerType& server) {
     client.setup(KEY_SIZE);
     std::cout << "Building index..." << std::endl;
-    server.setEncIndex(client.buildIndex());
+    server.setEncInd(client.buildIndex());
 
     KwRange query = KwRange(2, 4);
-    std::cout << "Querying " << kwRange << "..." << std::endl;
-    std::vector<Id> results = executeQuery(client, server, query);
+    std::cout << "Querying " << query << "..." << std::endl;
+    std::vector<Id> results = server.template query<>(client, query);
     std::cout << "Results are:";
     for (Id result : results) {
         std::cout << " " << result;
     }
     std::cout << std::endl;
-}
-
-std::vector<Id> executeQuery(SseClient& client, SseServer& server, KwRange query) {
-    QueryToken queryToken = client.trpdr(query);
-    return server.search(queryToken);
-}
-
-// overload for Log-Src-i as its search is interactive
-std::vector<Id> executeQuery(LogSrciClient& client, LogSrciServer& server, KwRange query) {
-    QueryToken queryToken1 = client.trpdr1(query);
-    std::vector<Index1Val> results1 = server.search1(queryToken);
-    QueryToken queryToken2 = client.trpdr2(results1);
-    return server.search2(queryToken);
 }
 
 int main() {
@@ -50,13 +38,13 @@ int main() {
         //std::cout << i << ": " << db.find(i)->second << std::endl;
     }
 
-    //PiBasClient piBasClient = PiBasClient(db);
-    //PiBasServer piBasServer = PiBasServer();
+    PiBasClient piBasClient = PiBasClient(db);
+    PiBasServer piBasServer = PiBasServer();
     //exp1(piBasClient, piBasServer);
 
-    LogSrcClient logSrcClient = LogSrcClient(db);
-    LogSrcServer logSrcServer = LogSrcServer();
-    exp1(logSrcClient, logSrcServer);
+    //LogSrcClient logSrcClient = LogSrcClient(db);
+    //LogSrcServer logSrcServer = LogSrcServer();
+    //exp1(logSrcClient, logSrcServer);
 
     // experiment 2: fixed range size and vary db sizes
 }

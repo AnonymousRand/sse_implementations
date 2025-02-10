@@ -7,10 +7,10 @@
 // LogSrcClient
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcClient::LogSrcClient(Db db) : PiBasClient(db) {};
+LogSrcClient::LogSrcClient(Db db) : Super(db) {};
 
-EncIndex LogSrcClient::buildIndex() {
-    EncIndex encIndex;
+EncInd LogSrcClient::buildIndex() {
+    EncInd encInd;
 
     // build TDAG over keywords
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
@@ -53,11 +53,11 @@ EncIndex LogSrcClient::buildIndex() {
         }
     }
 
-    return PiBasClient::buildIndex(processedDb);
+    return Super::buildIndex(processedDb);
 }
 
 QueryToken LogSrcClient::trpdr(KwRange kwRange) {
     TdagNode* src = this->tdag->findSrc(kwRange);
     std::cout << "SRC for " << kwRange << " is " << src->getKwRange() << std::endl;
-    return PiBasClient::trpdr(src->getKwRange());
+    return Super::trpdr(src->getKwRange());
 }

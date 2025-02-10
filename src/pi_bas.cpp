@@ -2,13 +2,21 @@
 
 #include "pi_bas.h"
 
+template class PiBasClient<ustring, EncInd>;
+template class PiBasServer<EncInd>;
+
+template class PiBasClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>>;
+template class PiBasServer<std::pair<EncInd, EncInd>>;
+
 ////////////////////////////////////////////////////////////////////////////////
 // PiBasClient
 ////////////////////////////////////////////////////////////////////////////////
 
-PiBasClient::PiBasClient(Db db) : SseClient(db) {};
+template <typename KeyType, typename EncIndType>
+PiBasClient<KeyType, EncIndType>::PiBasClient(Db db) : SseClient<KeyType, EncIndType>(db) {};
 
-void PiBasClient::setup(int secParam) {
+template <>
+void PiBasClient<ustring, EncInd>::setup(int secParam) {
     unsigned char* key = new unsigned char[secParam];
     int res = RAND_priv_bytes(key, secParam);
     if (res != 1) {
@@ -18,8 +26,12 @@ void PiBasClient::setup(int secParam) {
     delete[] key;
 }
 
-EncIndex PiBasClient::buildIndex(Db db) {
-    EncIndex encIndex;
+template <typename KeyType, typename EncIndType>
+void PiBasClient<KeyType, EncIndType>::setup(int secParam) {}
+
+template <>
+EncInd PiBasClient<ustring, EncInd>::buildIndex(Db db) {
+    EncInd encInd;
 
     // generate (plaintext) index of keywords to documents mapping and list of unique keywords
     std::map<KwRange, std::vector<Id>> index;
@@ -58,18 +70,25 @@ EncIndex PiBasClient::buildIndex(Db db) {
             counter++;
             // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
             // also store IV in plain along with encrypted value
-            encIndex[label] = std::pair<ustring, ustring> {data, iv};
+            encInd[label] = std::pair<ustring, ustring> {data, iv};
         }
     }
 
-    return encIndex;
+    return encInd;
 }
 
-EncIndex PiBasClient::buildIndex() {
+template <>
+EncInd PiBasClient<ustring, EncInd>::buildIndex() {
     return this->buildIndex(this->db);
 }
 
-QueryToken PiBasClient::trpdr(KwRange kwRange) {
+template <typename KeyType, typename EncIndType>
+EncIndType PiBasClient<KeyType, EncIndType>::buildIndex() {
+    return EncIndType(this->buildIndex(this->db)));
+}
+
+template <>
+QueryToken PiBasClient<ustring, EncInd>::trpdr(KwRange kwRange) {
     // the paper uses different notation for the key generation here vs. in `setup()`;
     // I'm fairly sure they meant the same thing
     ustring K = prf(this->key, toUstr(kwRange));
@@ -79,11 +98,15 @@ QueryToken PiBasClient::trpdr(KwRange kwRange) {
     return std::pair<ustring, ustring> {subkey1, subkey2};
 }
 
+template <typename KeyType, typename EncIndType>
+QueryToken PiBasClient<KeyType, EncIndType>::trpdr(KwRange kwRange) {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PiBasServer
 ////////////////////////////////////////////////////////////////////////////////
 
-std::vector<int> PiBasServer::search(QueryToken queryToken) {
+template <>
+std::vector<int> PiBasServer<EncInd>::search(QueryToken queryToken) {
     std::vector<int> results;
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
@@ -93,14 +116,14 @@ std::vector<int> PiBasServer::search(QueryToken queryToken) {
     while (true) {
         // d <- Get(D, F(K_1, c))
         ustring label = prf(subkey1, toUstr(counter));
-        auto it = this->encIndex.find(label);
-        if (it == this->encIndex.end()) {
+        auto it = this->encInd.find(label);
+        if (it == this->encInd.end()) {
             break;
         }
-        std::pair<ustring, ustring> encIndexV = it->second;
-        ustring data = encIndexV.first;
+        std::pair<ustring, ustring> encIndV = it->second;
+        ustring data = encIndV.first;
         // id <- Dec(K_2, d)
-        ustring iv = encIndexV.second;
+        ustring iv = encIndV.second;
         ustring ptext = aesDecrypt(EVP_aes_256_cbc(), subkey2, data, iv);
         results.push_back(ustrToInt(ptext));
 

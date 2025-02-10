@@ -1,15 +1,22 @@
+// API for SSE schemes
+
 #pragma once
 
 #include <vector>
 
 #include "util.h"
 
+template <typename KeyType, typename EncIndType>
 class SseClient {
     protected:
         Db db;
-        ustring key;
+        KeyType key;
 
     public:
+        using BaseKeyType = KeyType;
+        using BaseEncIndType = EncIndType;
+
+        SseClient();
         SseClient(Db db);
 
         /**
@@ -23,7 +30,7 @@ class SseClient {
         /**
          * Build the encrypted index.
          */
-        virtual EncIndex buildIndex() = 0;
+        virtual EncIndType buildIndex() = 0;
 
         /**
          * Issue a query by computing its encrypted token.
@@ -31,15 +38,20 @@ class SseClient {
         virtual QueryToken trpdr(KwRange kwRange) = 0;
 };
 
+template <typename EncIndType>
 class SseServer {
     protected:
-        EncIndex encIndex;
+        EncIndType encInd;
 
     public:
+        using BaseEncIndType = EncIndType;
+
         /**
          * Process a query and compute all results.
          */
         virtual std::vector<Id> search(QueryToken queryToken) = 0;
 
-        void setEncIndex(EncIndex encIndex);
+        void setEncInd(EncIndType encInd);
+        template <typename ClientType>
+        std::vector<Id> query(ClientType& client, KwRange query);
 };

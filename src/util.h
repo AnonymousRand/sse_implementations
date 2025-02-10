@@ -23,9 +23,9 @@ static const int IV_SIZE = 128 / 8;
 // use `ustring` as much as possible instead of `unsigned char*` to avoid C-style hell
 typedef std::basic_string<unsigned char> ustring;
 
-typedef int                                            Id;
-typedef int                                            Kw;
-typedef std::pair<Id, Id>                              IdRange;
+typedef int               Id;
+typedef int               Kw;
+typedef std::pair<Id, Id> IdRange;
 
 class KwRange {
     public:
@@ -47,7 +47,7 @@ typedef std::pair<ustring, ustring>                    QueryToken;
 // as well as work with schemes that replicate documents/tuples
 typedef std::unordered_multimap<Id, KwRange>           Db;
 // `std::map<label, std::pair<data, iv>>`
-typedef std::map<ustring, std::pair<ustring, ustring>> EncIndex;
+typedef std::map<ustring, std::pair<ustring, ustring>> EncInd;
 
 int ustrToInt(ustring n);
 ustring toUstr(int n);
