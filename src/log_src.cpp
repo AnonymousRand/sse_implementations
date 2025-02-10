@@ -16,48 +16,49 @@ ustring LogSrcClient::setup(int secParam) {
     return this->underlying.setup(secParam);
 }
 
-EncInd LogSrcClient::buildIndex(ustring key, Db db) {
+template <typename DbDocType, typename DbKwType>
+EncInd LogSrcClient::buildIndex(ustring key, Db<DbDocType, DbKwType> db) {
     EncInd encInd;
 
     // build TDAG over keywords
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
-    Kw maxKw = -1;
-    for (Doc doc : db) {
-        KwRange kwRange = std::get<1>(doc);
-        if (kwRange.end > maxKw) {
-            maxKw = kwRange.end;
+    DbKwType maxKw = -1;
+    for (auto entry : db) {
+        DbKwType kw = std::get<1>(entry);
+        if (kw.second > maxKw) {
+            maxKw = kwRange.second;
         }
     }
     this->tdag = TdagNode::buildTdag(maxKw);
 
     // replicate every document to all nodes/keywords ranges in TDAG that cover it
-    // temporarily use index instead of db (`unordered_map` instead of `vector`)
-    // to easily identify which docs share the same `kwRange` for shuffling later
-    std::unordered_map<Id, std::vector<KwRange>> index;
-    for (Doc doc : db) {
-        Id id = std::get<0>(doc);
-        KwRange kwRange = std::get<1>(doc);
-        std::list<TdagNode*> ancestors = this->tdag->getLeafAncestors(kwRange);
+    // temporarily use `unordered_map` instead of `vector` to easily identify
+    // which docs share the same `kwRange` for shuffling later
+    std::unordered_map<DbDocType, std::vector<DbKwType>> dbWithReplicas;
+    for (auto entry : db) {
+        DbDocType doc = std::get<0>(entry);
+        DbKwType kw = std::get<1>(entry);
+        std::list<TdagNode*> ancestors = this->tdag->getLeafAncestors(kw);
         for (TdagNode* ancestor : ancestors) {
-            KwRange kwRange = ancestor->getKwRange();
-            if (index.count(id) == 0) {
-                index[id] = std::vector<KwRange> {kwRange};
+            DbKwType ancestorKw = ancestor->getKwRange();
+            if (dbWithReplicas.count(doc) == 0) {
+                dbWithReplicas[doc] = std::vector<DbKwType> {ancestorKw};
             } else {
-                index[id].push_back(kwRange);
+                dbWithReplicas[doc].push_back(ancestorKw);
             }
         }
     }
 
     // randomly permute documents associated with same keyword range/node and convert temporary `unordered_map` to `Db`
-    Db processedDb;
+    Db<> processedDb;
     std::random_device rd;
     std::mt19937 rng(rd());
     for (auto pair : dbWithReplicas) {
-        Id id = pair.first;
-        std::vector<KwRange> kwRanges = pair.second;
-        std::shuffle(kwRanges.begin(), kwRanges.end(), rng);
-        for (KwRange kwRange : kwRanges) {
-            processedDb.push_back(Doc {id, kwRange});
+        DbDocType doc = pair.first;
+        std::vector<DbKwType> kws = pair.second;
+        std::shuffle(kws.begin(), kws.end(), rng);
+        for (DbKwType kw : kws) {
+            processedDb.push_back(Doc {doc, kw});
         }
     }
 

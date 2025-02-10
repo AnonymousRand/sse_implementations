@@ -2,10 +2,11 @@
 
 #include "sse.h"
 
+template <typename DbDocType, typename DbKwType>
 class PiBasClient : public SseClient<ustring, EncInd> {
     public:
         ustring setup(int secParam) override;
-        EncInd buildIndex(ustring key, Db db) override;
+        EncInd buildIndex(ustring key, Db<DbDocType, DbKwType> db) override;
         QueryToken trpdr(ustring key, KwRange kwRange) override;
 };
 

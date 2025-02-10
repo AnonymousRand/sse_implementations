@@ -17,43 +17,46 @@ ustring PiBasClient::setup(int secParam) {
     return ustrKey;
 }
 
-EncInd PiBasClient::buildIndex(ustring key, Db db) {
+template <typename DbDocType, typename DbKwType>
+EncInd PiBasClient::buildIndex(ustring key, Db<std::tuple<DbDocType, DbKwType>> db) {
     EncInd encInd;
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::map<KwRange, std::vector<Id>> index;
-    std::set<KwRange> uniqueKwRanges;
-    for (Doc doc : db) {
-        Id id = std::get<0>(doc);       // this syntax is cursed
-        KwRange kwRange = std::get<1>(doc);
+    std::map<DbKwType, std::vector<DbDocType>> index;
+    std::set<DbKwType> uniqueKws;
+    for (auto entry : db) {
+        DbDocType doc = std::get<0>(entry);
+        DbKwType kw = std::get<1>(entry);
 
-        if (index.count(kwRange) == 0) {
-            index[kwRange] = std::vector<Id> {id};
+        if (index.count(kw) == 0) {
+            index[kw] = std::vector<DbDocType> {doc};
         } else {
-            index[kwRange].push_back(id);
+            index[kw].push_back(doc);
         }
-        uniqueKwRanges.insert(kwRange); // `std::set` will not insert duplicate elements
+        uniqueKws.insert(kw); // `std::set` will not insert duplicate elements
     }
 
     // for each w in W
-    for (KwRange kwRange : uniqueKwRanges) {
+    for (DbKwType kw : uniqueKws) {
         // K_1 || K_2 <- F(K, w)
-        ustring K = prf(key, toUstr(kwRange));
+        ustring K = prf(key, toUstr(kw));
         int subkeyLen = K.length() / 2;
         ustring subkey1 = K.substr(0, subkeyLen);
         ustring subkey2 = K.substr(subkeyLen, subkeyLen);
         
         unsigned int counter = 0;
         // for each id in DB(w)
-        auto itDocsWithSameKwRange = index.find(kwRange);
-        if (itDocsWithSameKwRange == index.end()) {
+        auto itDocsWithSameKw = index.find(kw);
+        if (itDocsWithSameKw == index.end()) {
             continue;
         }
-        for (Id id : itDocsWithSameKwRange->second) {
+        for (DbDocType doc : itDocsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring label = prf(subkey1, toUstr(counter));
             ustring iv = genIv();
-            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, toUstr(id), iv);
+            // todo need way to encode doc for srci index1
+            // surely just another overload works due to sfinae right?
+            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, toUstr(doc), iv);
             counter++;
             // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
             // also store IV in plain along with encrypted value

@@ -4,7 +4,10 @@
 
 #include "util.h"
 
-template <typename KeyType, typename EncIndType>
+template <
+    typename KeyType, typename EncIndType,
+    typename DbDocType, typename DbKwType
+>
 class SseClient {
     public:
         /**
@@ -18,7 +21,7 @@ class SseClient {
         /**
          * Build the encrypted index.
          */
-        virtual EncIndType buildIndex(KeyType key, Db db) = 0;
+        virtual EncIndType buildIndex(KeyType key, Db<DbDocType, DbKwType> db) = 0;
 
         /**
          * Issue a query by computing its encrypted token.

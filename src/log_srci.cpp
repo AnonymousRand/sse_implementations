@@ -22,39 +22,30 @@ std::pair<ustring, ustring> setup(int secParam) {
     return std::pair<ustring, ustring> {ustrKey1, ustrKey2};
 }
 
-std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db db) {
-    EncInd encInd1;
-    EncInd encInd2;
-    
-    // build TDAG1 over keywords
-    Kw maxKw = -1;
-    for (Doc doc : db) {
-        KwRange kwRange = std::get<1>(doc);
-        if (kwRange.end > maxKw) {
-            maxKw = kwRange.end;
-        }
-    }
-    this->tdag1 = TdagNode::buildTdag(maxKw);
-
-    // replicate every document to all nodes/keywords ranges in TDAG1 that cover it
-    // `db1` contains individual entries in each `values` or `documents` column of index 1: pairs (kw, id range)
-    std::vector<std::pair<Kw, Ind1Val>> db1;
-    for (Doc doc : db) {
-        Id id = std::get<0>(doc);
-        KwRange kwRange = std::get<1>(doc);
-        std::list<TdagNode*> ancestors = this->tdag->getLeafAncestors(kwRange);
-        for (TdagNode* ancestor : ancestors) {
-            KwRange kwRange = ancestor->getKwRange();
-            if (index.count(id) == 0) {
-                index[id] = std::vector<KwRange> {kwRange};
-            } else {
-                index[id].push_back(kwRange);
-            }
-        }
-    }
-
-    return this->underlying.buildIndex(key, processedDb);
-}
+//template <typename DbDocType, typename DbKwType>
+//std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<DbDocType, DbKwType> db) {
+//    EncInd encInd1;
+//    EncInd encInd2;
+//    
+//    // build TDAG1 over keywords
+//    DbDocType maxKw = -1;
+//    for (auto entry : db) {
+//        DbKwType kw = std::get<1>(entry);
+//        if (kw.second > maxKw) {
+//            maxKw = kw.second;
+//        }
+//    }
+//    this->tdag1 = TdagNode::buildTdag(maxKw);
+//
+//    // replicate every document to all nodes/keywords ranges in TDAG1 that cover it
+//    // `db1` contains individual entries in each `values` or `documents` column of index 1: pairs (kw, id range)
+//    // todo sort out and finish
+//    std::vector<std::pair<DbKwType, Ind1Val>> db1;
+//    for (auto entry : db) {
+//    }
+//
+//    return this->underlying.buildIndex(key, processedDb);
+//}
 
 QueryToken trpdr1(ustring key1, KwRange kwRange) {
 

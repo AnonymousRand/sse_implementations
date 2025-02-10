@@ -4,13 +4,11 @@
 
 #include "sse.h"
 
-typedef std::pair<KwRange, IdRange> Ind1Val;
-typedef std::unordered_map<KwRange, std::vector<Ind1Val>> Ind1;
+using Ind1Val = std::pair<KwRange, IdRange>;
 
+template <typename DbDocType, typename DbKwType>
 class LogSrciClient : public RangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>> {
     protected:
-        // have to store index for ind1 since TDAG alone can no longer handle its data format in its nodes
-        Ind1 ind1; 
         TdagNode* tdag1;
         TdagNode* tdag2;
 
@@ -18,7 +16,7 @@ class LogSrciClient : public RangeSseClient<std::pair<ustring, ustring>, std::pa
         LogSrciClient(SseClient<ustring, EncInd>& underlying);
 
         std::pair<ustring, ustring> setup(int secParam) override;
-        std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db db) override;
+        std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<DbDocType, DbKwType> db) override;
         // interactivity messes up the API (anger)
         QueryToken trpdr1(ustring key1, KwRange kwRange);
         QueryToken trpdr2(ustring key2, std::vector<Ind1Val> choices);

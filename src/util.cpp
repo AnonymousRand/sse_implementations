@@ -20,6 +20,10 @@ ustring toUstr(int n) {
     return ustring(str.begin(), str.end());
 }
 
+ustring toUstr(IdRange idRange) {
+    return toUstr(idRange.first) + toUstr("-") + toUstr(idRange.second);
+}
+
 ustring toUstr(KwRange kwRange) {
     return toUstr(kwRange.start) + toUstr("-") + toUstr(kwRange.end);
 }
@@ -32,13 +36,13 @@ ustring toUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
 
-KwRange::KwRange(int start, int end) {
+KwRange::KwRange(Kw start, Kw end) {
     this->start = start;
     this->end = end;
 }
 
-int KwRange::size() {
-    return (int)abs(this->end - this->start);
+Kw KwRange::size() {
+    return (Kw)abs(this->end - this->start);
 }
 
 bool KwRange::contains(KwRange kwRange) {
@@ -132,13 +136,13 @@ std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraPare
 // TODO note assumptions for optimizations: ranges strictly increasing, balanced tree
 // TODO have to verify/prove early exits?
 TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
-    std::map<int, TdagNode*> srcCandidates;
+    std::map<Kw, TdagNode*> srcCandidates;
     auto addCandidate = [&](TdagNode* node) {
         if (node == nullptr || !node->kwRange.contains(targetKwRange)) {
             return -1;
         }
 
-        int diff = (targetKwRange.start - node->kwRange.start) + (node->kwRange.end - targetKwRange.end);
+        Kw diff = (targetKwRange.start - node->kwRange.start) + (node->kwRange.end - targetKwRange.end);
         srcCandidates[diff] = node;
         return diff;
     };
@@ -151,7 +155,7 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
 
     // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
     // and extra TDAG parent 
-    int diff = -1;
+    Kw diff = -1;
     if (this->extraParent != nullptr) {
         diff = addCandidate(this->extraParent);
         if (diff == 0) {

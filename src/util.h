@@ -23,20 +23,20 @@ static const int IV_SIZE = 128 / 8;
 ////////////////////////////////////////////////////////////////////////////////
 
 // use `ustring` as much as possible instead of `unsigned char*` to avoid C-style hell
-typedef std::basic_string<unsigned char> ustring;
-typedef int                              Id;
-typedef int                              Kw;
-typedef std::pair<Id, Id>                IdRange;
+using ustring = std::basic_string<unsigned char> ustring;
+using Id      = int;
+using Kw      = int;
+using IdRange = std::pair<Id, Id>;
 
 // we generalize keywords to always be ranges; single keywords are just size 1 ranges
 class KwRange {
     public:
-        int start;
-        int end;
+        Kw start;
+        Kw end;
 
         KwRange() = default;
-        KwRange(int start, int end);
-        int size();
+        KwRange(Kw start, Kw end);
+        Kw size();
         bool contains(KwRange kwRange);
         bool isDisjoint(KwRange kwRange);
 
@@ -44,14 +44,16 @@ class KwRange {
         friend std::ostream& operator << (std::ostream& os, const KwRange& kwRange);
 };
 
-typedef std::tuple<Id, KwRange>                        Doc;
-typedef std::vector<Doc>                               Db; // todo test if list is faster
-typedef std::pair<ustring, ustring>                    QueryToken;
+using Doc        = std::tuple<Id, Kw>;
+template <typename DbDocType = Id, typename DbKwType = Kw> // todo maybe defaults need to be in classes as well?
+using Db         = std::vector<std::tuple<DbDocType, DbKwType>>; // todo test if list is faster
+using QueryToken = std::pair<ustring, ustring>;
 // `std::map<label, std::pair<data, iv>>`
-typedef std::map<ustring, std::pair<ustring, ustring>> EncInd;
+using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
 
 int ustrToInt(ustring n);
 ustring toUstr(int n);
+ustring toUstr(IdRange idRange);
 ustring toUstr(KwRange kwRange);
 ustring toUstr(std::string s);
 ustring toUstr(unsigned char* p, int len);

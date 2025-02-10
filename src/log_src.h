@@ -2,6 +2,7 @@
 
 #include "sse.h"
 
+template <typename DbDocType, typename DbKwType>
 class LogSrcClient : public RangeSseClient<ustring, EncInd> {
     protected:
         TdagNode* tdag;
@@ -10,7 +11,7 @@ class LogSrcClient : public RangeSseClient<ustring, EncInd> {
         LogSrcClient(SseClient<ustring, EncInd>& underlying);
 
         ustring setup(int secParam) override;
-        EncInd buildIndex(ustring key, Db db) override;
+        EncInd buildIndex(ustring key, Db<DbDocType, DbKwType> db) override;
         QueryToken trpdr(ustring key, KwRange kwRange) override;
 };
 
