@@ -9,22 +9,21 @@
 // LogSrcClient
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcClient::LogSrcClient(SseClient<ustring, EncInd>& underlying)
-        : RangeSseClient<ustring, EncInd>(underlying) {};
+LogSrcClient::LogSrcClient(ISseClient<ustring, EncInd>& underlying)
+        : IRangeSseClient<ustring, EncInd>(underlying) {};
 
 ustring LogSrcClient::setup(int secParam) {
     return this->underlying.setup(secParam);
 }
 
-template <typename DbDocType, typename DbKwType>
-EncInd LogSrcClient::buildIndex(ustring key, Db<DbDocType, DbKwType> db) {
+EncInd LogSrcClient::buildIndex(ustring key, Db<Id> db) {
     EncInd encInd;
 
     // build TDAG over keywords
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
-    DbKwType maxKw = -1;
+    Range maxKw = -1;
     for (auto entry : db) {
-        DbKwType kw = std::get<1>(entry);
+        Range kw = std::get<1>(entry);
         if (kw.second > maxKw) {
             maxKw = kwRange.second;
         }
@@ -34,15 +33,15 @@ EncInd LogSrcClient::buildIndex(ustring key, Db<DbDocType, DbKwType> db) {
     // replicate every document to all nodes/keywords ranges in TDAG that cover it
     // temporarily use `unordered_map` instead of `vector` to easily identify
     // which docs share the same `kwRange` for shuffling later
-    std::unordered_map<DbDocType, std::vector<DbKwType>> dbWithReplicas;
+    std::unordered_map<DbDocType, std::vector<Range>> dbWithReplicas;
     for (auto entry : db) {
         DbDocType doc = std::get<0>(entry);
-        DbKwType kw = std::get<1>(entry);
+        Range kw = std::get<1>(entry);
         std::list<TdagNode*> ancestors = this->tdag->getLeafAncestors(kw);
         for (TdagNode* ancestor : ancestors) {
-            DbKwType ancestorKw = ancestor->getKwRange();
+            Range ancestorKw = ancestor->getKwRange();
             if (dbWithReplicas.count(doc) == 0) {
-                dbWithReplicas[doc] = std::vector<DbKwType> {ancestorKw};
+                dbWithReplicas[doc] = std::vector<Range> {ancestorKw};
             } else {
                 dbWithReplicas[doc].push_back(ancestorKw);
             }
@@ -55,9 +54,9 @@ EncInd LogSrcClient::buildIndex(ustring key, Db<DbDocType, DbKwType> db) {
     std::mt19937 rng(rd());
     for (auto pair : dbWithReplicas) {
         DbDocType doc = pair.first;
-        std::vector<DbKwType> kws = pair.second;
+        std::vector<Range> kws = pair.second;
         std::shuffle(kws.begin(), kws.end(), rng);
-        for (DbKwType kw : kws) {
+        for (Range kw : kws) {
             processedDb.push_back(Doc {doc, kw});
         }
     }
@@ -75,7 +74,7 @@ QueryToken LogSrcClient::trpdr(ustring key, KwRange kwRange) {
 // LogSrcServer
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcServer::LogSrcServer(SseServer<EncInd>& underlying) : RangeSseServer<EncInd>(underlying) {};
+LogSrcServer::LogSrcServer(ISseServer<EncInd>& underlying) : IRangeSseServer<EncInd>(underlying) {};
 
 std::vector<Id> LogSrcServer::search(EncInd encInd, QueryToken queryToken) {
     return this->underlying.search(encInd, queryToken);

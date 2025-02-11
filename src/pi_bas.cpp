@@ -17,19 +17,18 @@ ustring PiBasClient::setup(int secParam) {
     return ustrKey;
 }
 
-template <typename DbDocType, typename DbKwType>
-EncInd PiBasClient::buildIndex(ustring key, Db<std::tuple<DbDocType, DbKwType>> db) {
+EncInd PiBasClient::buildIndex(ustring key, Db db) {
     EncInd encInd;
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::map<DbKwType, std::vector<DbDocType>> index;
-    std::set<DbKwType> uniqueKws;
+    std::map<Range, std::vector<IEncryptable>> index;
+    std::set<Range> uniqueKws;
     for (auto entry : db) {
-        DbDocType doc = std::get<0>(entry);
-        DbKwType kw = std::get<1>(entry);
+        IEncryptable doc = std::get<0>(entry);
+        Range kw = std::get<1>(entry);
 
         if (index.count(kw) == 0) {
-            index[kw] = std::vector<DbDocType> {doc};
+            index[kw] = std::vector<IEncryptable> {doc};
         } else {
             index[kw].push_back(doc);
         }
@@ -37,7 +36,7 @@ EncInd PiBasClient::buildIndex(ustring key, Db<std::tuple<DbDocType, DbKwType>> 
     }
 
     // for each w in W
-    for (DbKwType kw : uniqueKws) {
+    for (Range kw : uniqueKws) {
         // K_1 || K_2 <- F(K, w)
         ustring K = prf(key, toUstr(kw));
         int subkeyLen = K.length() / 2;
@@ -50,7 +49,7 @@ EncInd PiBasClient::buildIndex(ustring key, Db<std::tuple<DbDocType, DbKwType>> 
         if (itDocsWithSameKw == index.end()) {
             continue;
         }
-        for (DbDocType doc : itDocsWithSameKw->second) {
+        for (IEncryptable doc : itDocsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring label = prf(subkey1, toUstr(counter));
             ustring iv = genIv();

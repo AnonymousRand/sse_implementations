@@ -4,8 +4,8 @@
 // LogSrciClient
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrciClient::LogSrciClient(SseClient<ustring, EncInd>& underlying)
-        : RangeSseClient<ustring, EncInd>(underlying) {};
+LogSrciClient::LogSrciClient(ISseClient<ustring, EncInd>& underlying)
+        : IRangeSseClient<ustring, EncInd>(underlying) {};
 
 std::pair<ustring, ustring> setup(int secParam) {
     unsigned char* key1 = new unsigned char[secParam];
@@ -22,15 +22,14 @@ std::pair<ustring, ustring> setup(int secParam) {
     return std::pair<ustring, ustring> {ustrKey1, ustrKey2};
 }
 
-//template <typename DbDocType, typename DbKwType>
-//std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<DbDocType, DbKwType> db) {
+//std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<> db) {
 //    EncInd encInd1;
 //    EncInd encInd2;
 //    
 //    // build TDAG1 over keywords
-//    DbDocType maxKw = -1;
+//    Range maxKw = -1;
 //    for (auto entry : db) {
-//        DbKwType kw = std::get<1>(entry);
+//        Range kw = std::get<1>(entry);
 //        if (kw.second > maxKw) {
 //            maxKw = kw.second;
 //        }
@@ -40,7 +39,7 @@ std::pair<ustring, ustring> setup(int secParam) {
 //    // replicate every document to all nodes/keywords ranges in TDAG1 that cover it
 //    // `db1` contains individual entries in each `values` or `documents` column of index 1: pairs (kw, id range)
 //    // todo sort out and finish
-//    std::vector<std::pair<DbKwType, Ind1Val>> db1;
+//    std::vector<std::pair<Range, std::pair<KwRange, IdRange>>> db1;
 //    for (auto entry : db) {
 //    }
 //

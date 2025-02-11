@@ -4,8 +4,12 @@
 
 #include "util.h"
 
+////////////////////////////////////////////////////////////////////////////////
+// ISse
+////////////////////////////////////////////////////////////////////////////////
+
 template <typename KeyType, typename EncIndType>
-class SseClient {
+class ISseClient {
     public:
         /**
          * Generate a key.
@@ -18,8 +22,7 @@ class SseClient {
         /**
          * Build the encrypted index.
          */
-        template <typename DbDocType, typename DbKwType>
-        virtual EncIndType buildIndex(KeyType key, Db<DbDocType, DbKwType> db) = 0;
+        virtual EncIndType buildIndex(KeyType key, Db db) = 0;
 
         /**
          * Issue a query by computing its encrypted token.
@@ -28,7 +31,7 @@ class SseClient {
 };
 
 template <typename EncIndType>
-class SseServer {
+class ISseServer {
     public:
         /**
          * Process a query and compute all results.
@@ -36,20 +39,24 @@ class SseServer {
         virtual std::vector<Id> search(EncIndType encInd, QueryToken queryToken) = 0;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// IRangeSse
+////////////////////////////////////////////////////////////////////////////////
+
 template <typename KeyType, typename EncIndType>
-class RangeSseClient : public SseClient<KeyType, EncIndType> {
+class IRangeSseClient : public ISseClient<KeyType, EncIndType> {
     protected:
-        SseClient<KeyType, EncIndType>& underlying;
+        ISseClient<KeyType, EncIndType>& underlying;
 
     public:
-        RangeSseClient(SseClient<KeyType, EncIndType>& underlying);
+        IRangeSseClient(ISseClient<KeyType, EncIndType>& underlying);
 };
 
 template <typename EncIndType>
-class RangeSseServer : public SseServer<EncIndType> {
+class IRangeSseServer : public ISseServer<EncIndType> {
     protected:
-        SseServer<EncIndType>& underlying;
+        ISseServer<EncIndType>& underlying;
 
     public:
-        RangeSseServer(SseServer<EncIndType>& underlying);
+        IRangeSseServer(ISseServer<EncIndType>& underlying);
 };

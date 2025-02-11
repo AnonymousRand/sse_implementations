@@ -2,15 +2,14 @@
 
 #include "sse.h"
 
-class PiBasClient : public SseClient<ustring, EncInd> {
+class PiBasClient : public ISseClient<ustring, EncInd> {
     public:
         ustring setup(int secParam) override;
-        template <typename DbDocType, typename DbKwType>
-        EncInd buildIndex(ustring key, Db<DbDocType, DbKwType> db) override;
+        EncInd buildIndex(ustring key, Db db) override;
         QueryToken trpdr(ustring key, KwRange kwRange) override;
 };
 
-class PiBasServer : public SseServer<EncInd> {
+class PiBasServer : public ISseServer<EncInd> {
     public:
         std::vector<Id> search(EncInd encInd, QueryToken queryToken) override;
 };

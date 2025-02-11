@@ -7,11 +7,6 @@
 #include "util.h"
 
 /* TODO
- * >finish change of as much as possible kwrange -> kw
-        >>make Db templated
-        >>extend kwrange from std::pair for custom functions?
-        >enforce dbtypekw has base class pair or int
-        also need to make tdags templated!!! to store dbtypekw
     merge setup and buildindex again? since thats what dynamic paper does. check if wikipedia/2024 paper still do that, since it does make the code harder (have to return a pair)
     const as much in tdag/util as possible?
     review class slides for srci as well
@@ -20,24 +15,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // ustring
 ////////////////////////////////////////////////////////////////////////////////
-
-int ustrToInt(ustring s) {
-    std::string str = std::string(s.begin(), s.end());
-    return std::stoi(str);
-}
-
-ustring toUstr(int n) {
-    std::string str = std::to_string(n);
-    return ustring(str.begin(), str.end());
-}
-
-ustring toUstr(IdRange idRange) {
-    return toUstr(idRange.first) + toUstr("-") + toUstr(idRange.second);
-}
-
-ustring toUstr(KwRange kwRange) {
-    return toUstr(kwRange.start) + toUstr("-") + toUstr(kwRange.end);
-}
 
 ustring toUstr(std::string s) {
     return reinterpret_cast<const unsigned char*>(s.c_str());
@@ -54,24 +31,55 @@ std::ostream& operator << (std::ostream& os, const ustring str) {
     return os;
 }
 
+template class IEncryptable<int>;
+template class IEncryptable<std::pair<KwRange, IdRange>>;
+
+template <typename T>
+T IEncryptable<T>::get() {
+    return this->val;
+}
+
+ustring Id::toUstr() {
+    std::string str = std::to_string(this->val);
+    return ustring(str.begin(), str.end());
+}
+
+Id Id::fromUstr(ustring ustr) {
+    std::string str = std::string(s.begin(), s.end());
+    this->val = std::stoi(str);
+    return this;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// KwRange
+// Range
 ////////////////////////////////////////////////////////////////////////////////
 
-Kw KwRange::size() {
-    return (Kw)abs(this->second - this->first);
+template class Range<Id>;
+template class Range<Kw>;
+
+template <typename RangeType>
+RangeType Range<RangeType>::size() {
+    return (RangeType)abs(this->second - this->first);
 }
 
-bool KwRange::contains(KwRange kwRange) {
-    return this->first <= kwRange.first && this->second >= kwRange.second;
+template <typename RangeType>
+bool Range<RangeType>::contains(Range<RangeType> range) {
+    return this->first <= range.first && this->second >= range.second;
 }
 
-bool KwRange::isDisjointWith(KwRange kwRange) {
-    return this->second < kwRange.first || this->first > kwRange.second;
+template <typename RangeType>
+bool Range<RangeType>::isDisjointWith(Range<RangeType> range) {
+    return this->second < range.first || this->first > range.second;
 }
 
-std::ostream& operator << (std::ostream& os, const KwRange& kwRange) {
-    os << kwRange.start << "-" << kwRange.end;
+template <typename RangeType>
+ustring Range<RangeType>::toUstr() {
+    return toUstr(this->first) + toUstr("-") + toUstr(this->second);
+}
+
+template <typename RangeType>
+std::ostream& operator << (std::ostream& os, const Range<RangeType>& range) {
+    os << range.start << "-" << range.end;
     return os;
 }
 
@@ -79,15 +87,15 @@ std::ostream& operator << (std::ostream& os, const KwRange& kwRange) {
 // TDAG
 ////////////////////////////////////////////////////////////////////////////////
 
-TdagNode::TdagNode(KwRange kwRange) {
-    this->kwRange = kwRange;
+TdagNode::TdagNode(Range range) {
+    this->range = range;
     this->left = nullptr;
     this->right = nullptr;
     this->extraParent = nullptr;
 }
 
 TdagNode::TdagNode(TdagNode* left, TdagNode* right) {
-    this->kwRange = KwRange(left->kwRange.start, right->kwRange.end);
+    this->range = Range(left->range.start, right->range.end);
     this->left = left;
     this->right = right;
     this->extraParent = nullptr;
@@ -106,7 +114,7 @@ TdagNode::~TdagNode() {
 }
 
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
-// track `extraParent` nodes to prevent duplicates; use `unordered_set` as it's probably the fastest way to do this
+// track `extraParent` nodes in an `unordered_set` to prevent duplicates
 std::list<TdagNode*> TdagNode::traverse() {
     std::unordered_set<TdagNode*> nodes;
     return this->traverse(nodes);
@@ -137,27 +145,27 @@ std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraPare
 // TODO time complexity
 // TODO note assumptions for optimizations: ranges strictly increasing, balanced tree
 // TODO have to verify/prove early exits?
-TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
-    std::map<Kw, TdagNode*> srcCandidates;
+TdagNode* TdagNode::findSrc(Range targetRange) {
+    std::map<int, TdagNode*> srcCandidates;
     auto addCandidate = [&](TdagNode* node) {
-        if (node == nullptr || !node->kwRange.contains(targetKwRange)) {
+        if (node == nullptr || !node->range.contains(targetRange)) {
             return -1;
         }
 
-        Kw diff = (targetKwRange.start - node->kwRange.start) + (node->kwRange.end - targetKwRange.end);
+        int diff = (targetRange.start - node->range.start) + (node->range.end - targetRange.end);
         srcCandidates[diff] = node;
         return diff;
     };
 
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
-    if (this->kwRange.isDisjointWith(targetKwRange)) {
+    if (this->range.isDisjointWith(targetRange)) {
         return nullptr;
     }
 
     // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
     // and extra TDAG parent 
-    Kw diff = -1;
+    int diff = -1;
     if (this->extraParent != nullptr) {
         diff = addCandidate(this->extraParent);
         if (diff == 0) {
@@ -166,7 +174,7 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     }
     // if the current node's range is more than one narrower than the target range, it is impossible for
     // its children to be the SRC, so we can early exit if we also know its extra TDAG parent cannot be an SRC
-    if (diff == -1 && this->kwRange.size() < targetKwRange.size() - 1) {
+    if (diff == -1 && this->range.size() < targetRange.size() - 1) {
         return nullptr;
     }
 
@@ -175,14 +183,14 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
         return this;
     }
     if (this->left != nullptr) {
-        TdagNode* leftSrc = this->left->findSrc(targetKwRange);
+        TdagNode* leftSrc = this->left->findSrc(targetRange);
         diff = addCandidate(leftSrc);
         if (diff == 0) {
             return leftSrc;
         }
     }
     if (this->right != nullptr) {
-        TdagNode* rightSrc = this->right->findSrc(targetKwRange);
+        TdagNode* rightSrc = this->right->findSrc(targetRange);
         diff = addCandidate(rightSrc);
         if (diff == 0) {
             return rightSrc;
@@ -196,46 +204,46 @@ TdagNode* TdagNode::findSrc(KwRange targetKwRange) {
     }
 }
 
-std::list<KwRange> TdagNode::traverseLeaves() {
-    std::list<KwRange> leafVals;
+std::list<Range> TdagNode::traverseLeaves() {
+    std::list<Range> leafVals;
     std::list<TdagNode*> nodes = this->traverse();
     for (TdagNode* node : nodes) {
         if (node->left == nullptr && node->right == nullptr) {
-            leafVals.push_back(node->kwRange);
+            leafVals.push_back(node->range);
         }
     }
     return leafVals;
 }
 
-std::list<TdagNode*> TdagNode::getLeafAncestors(KwRange leafKwRange) {
+std::list<TdagNode*> TdagNode::getLeafAncestors(Range leafRange) {
     std::list<TdagNode*> ancestors = {this};
 
-    if (this->left != nullptr && this->left->kwRange.contains(leafKwRange)) {
-        ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafKwRange));
+    if (this->left != nullptr && this->left->range.contains(leafRange)) {
+        ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafRange));
     }
-    if (this->right != nullptr && this->right->kwRange.contains(leafKwRange)) {
-        ancestors.splice(ancestors.end(), this->right->getLeafAncestors(leafKwRange));
+    if (this->right != nullptr && this->right->range.contains(leafRange)) {
+        ancestors.splice(ancestors.end(), this->right->getLeafAncestors(leafRange));
     }
-    if (this->extraParent != nullptr && this->extraParent->kwRange.contains(leafKwRange)) {
+    if (this->extraParent != nullptr && this->extraParent->range.contains(leafRange)) {
         ancestors.push_back(this->extraParent);
     }
 
     return ancestors;
 }
 
-KwRange TdagNode::getKwRange() {
-    return this->kwRange;
+Range TdagNode::getRange() {
+    return this->range;
 }
 
-TdagNode* TdagNode::buildTdag(Kw maxLeafVal) {
-    std::set<KwRange> leafVals;
-    for (Kw i = 0; i <= maxLeafVal; i++) {
-        leafVals.insert(KwRange(i, i));
+TdagNode* TdagNode::buildTdag(int maxLeafVal) {
+    std::set<Range> leafVals;
+    for (int i = 0; i <= maxLeafVal; i++) {
+        leafVals.insert(Range(i, i));
     }
     return TdagNode::buildTdag(leafVals);
 }
 
-TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
+TdagNode* TdagNode::buildTdag(std::set<Range> leafVals) {
     if (leafVals.size() == 0) {
         std::cerr << "Error: `leafVals` passed to `TdagNode.buildTdag()` is empty :/" << std::endl;
         exit(EXIT_FAILURE);
@@ -243,7 +251,7 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
 
     // list to hold nodes while building; initialize with leaves
     std::list<TdagNode*> l;
-    for (KwRange leafVal : leafVals) {
+    for (Range leafVal : leafVals) {
         l.push_back(new TdagNode(leafVal));
     }
 
@@ -257,14 +265,14 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
         // find a contiguous node
         for (auto it = l.begin(); it != l.end(); it++) {
             TdagNode* node2 = *it;
-            if (node2->kwRange.start - 1 == node1->kwRange.end) {
+            if (node2->range.start - 1 == node1->range.end) {
                 // if `node1` is the left child of new parent node
                 TdagNode* parent = new TdagNode(node1, node2);
                 l.push_back(parent);
                 l.erase(it);
                 break;
             }
-            if (node2->kwRange.end + 1 == node1->kwRange.start) {
+            if (node2->range.end + 1 == node1->range.start) {
                 // if `node2` is the left child of new parent node
                 TdagNode* parent = new TdagNode(node2, node1);
                 l.push_back(parent);
@@ -300,7 +308,7 @@ TdagNode* TdagNode::buildTdag(std::set<KwRange> leafVals) {
 std::ostream& operator << (std::ostream& os, TdagNode* node) {
     std::list<TdagNode*> nodes = node->traverse();
     for (TdagNode* node : nodes) {
-        os << node->getKwRange() << std::endl;
+        os << node->getRange() << std::endl;
     }
     return os;
 }
