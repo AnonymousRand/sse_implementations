@@ -17,53 +17,8 @@ ustring PiBasClient::setup(int secParam) {
     return ustrKey;
 }
 
-EncInd PiBasClient::buildIndex(ustring key, Db db) {
-    EncInd encInd;
-
-    // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::map<Range, std::vector<IEncryptable>> index;
-    std::set<Range> uniqueKws;
-    for (auto entry : db) {
-        IEncryptable doc = std::get<0>(entry);
-        Range kw = std::get<1>(entry);
-
-        if (index.count(kw) == 0) {
-            index[kw] = std::vector<IEncryptable> {doc};
-        } else {
-            index[kw].push_back(doc);
-        }
-        uniqueKws.insert(kw); // `std::set` will not insert duplicate elements
-    }
-
-    // for each w in W
-    for (Range kw : uniqueKws) {
-        // K_1 || K_2 <- F(K, w)
-        ustring K = prf(key, toUstr(kw));
-        int subkeyLen = K.length() / 2;
-        ustring subkey1 = K.substr(0, subkeyLen);
-        ustring subkey2 = K.substr(subkeyLen, subkeyLen);
-        
-        unsigned int counter = 0;
-        // for each id in DB(w)
-        auto itDocsWithSameKw = index.find(kw);
-        if (itDocsWithSameKw == index.end()) {
-            continue;
-        }
-        for (IEncryptable doc : itDocsWithSameKw->second) {
-            // l <- F(K_1, c); d <- Enc(K_2, id)
-            ustring label = prf(subkey1, toUstr(counter));
-            ustring iv = genIv();
-            // todo need way to encode doc for srci index1
-            // surely just another overload works due to sfinae right?
-            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, toUstr(doc), iv);
-            counter++;
-            // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
-            // also store IV in plain along with encrypted value
-            encInd[label] = std::pair<ustring, ustring> {data, iv};
-        }
-    }
-
-    return encInd;
+EncInd PiBasClient::buildIndex(ustring key, Db<Id, KwRange> db) {
+    return this->buildIndexGeneric(key, db);
 }
 
 QueryToken PiBasClient::trpdr(ustring key, KwRange kwRange) {
@@ -74,6 +29,54 @@ QueryToken PiBasClient::trpdr(ustring key, KwRange kwRange) {
     ustring subkey1 = K.substr(0, subkeyLen);
     ustring subkey2 = K.substr(subkeyLen, subkeyLen);
     return std::pair<ustring, ustring> {subkey1, subkey2};
+}
+
+template <typename DbDocType, typename DbKwType>
+EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
+    EncInd encInd;
+
+    // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
+    std::map<DbDocType, std::vector<DbDocType>> index;
+    std::set<DbKwType> uniqueKws;
+    for (auto entry : db) {
+        DbDocType dbDoc = std::get<0>(entry);
+        DbKwType dbKw = std::get<1>(entry);
+
+        if (index.count(dbKw) == 0) {
+            index[dbKw] = std::vector<DbDocType> {dbDoc};
+        } else {
+            index[dbKw].push_back(dbDoc);
+        }
+        uniqueKws.insert(dbKw); // `std::set` will not insert duplicate elements
+    }
+
+    // for each w in W
+    for (DbKwType dbKw : uniqueKws) {
+        // K_1 || K_2 <- F(K, w)
+        ustring K = prf(key, dbKw.toUstr());
+        int subkeyLen = K.length() / 2;
+        ustring subkey1 = K.substr(0, subkeyLen);
+        ustring subkey2 = K.substr(subkeyLen, subkeyLen);
+        
+        unsigned int counter = 0;
+        // for each id in DB(w)
+        auto itDocsWithSameKw = index.find(dbKw);
+        if (itDocsWithSameKw == index.second()) {
+            continue;
+        }
+        for (DbDocType dbDoc : itDocsWithSameKw->second) {
+            // l <- F(K_1, c); d <- Enc(K_2, id)
+            ustring label = prf(subkey1, toUstr(counter));
+            ustring iv = genIv();
+            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, dbDoc.toUstr(), iv);
+            counter++;
+            // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
+            // also store IV in plain along with encrypted value
+            encInd[label] = std::pair<ustring, ustring> {data, iv};
+        }
+    }
+
+    return encInd;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +94,7 @@ std::vector<int> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
         // d <- Get(D, F(K_1, c))
         ustring label = prf(subkey1, toUstr(counter));
         auto it = encInd.find(label);
-        if (it == encInd.end()) {
+        if (it == encInd.second()) {
             break;
         }
         std::pair<ustring, ustring> encIndV = it->second;

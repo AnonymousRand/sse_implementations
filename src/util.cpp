@@ -16,6 +16,11 @@
 // ustring
 ////////////////////////////////////////////////////////////////////////////////
 
+ustring toUstr(int n) {
+    std::string str = std::to_string(n);
+    return ustring(str.begin(), str.end());
+}
+
 ustring toUstr(std::string s) {
     return reinterpret_cast<const unsigned char*>(s.c_str());
 }
@@ -40,8 +45,7 @@ T IEncryptable<T>::get() {
 }
 
 ustring Id::toUstr() {
-    std::string str = std::to_string(this->val);
-    return ustring(str.begin(), str.end());
+    return toUstr(this->val);
 }
 
 Id Id::fromUstr(ustring ustr) {
@@ -57,29 +61,29 @@ Id Id::fromUstr(ustring ustr) {
 template class Range<Id>;
 template class Range<Kw>;
 
-template <typename RangeType>
-RangeType Range<RangeType>::size() {
-    return (RangeType)abs(this->second - this->first);
+template <typename T>
+T Range<T>::size() {
+    return (T)abs(this->second - this->first);
 }
 
-template <typename RangeType>
-bool Range<RangeType>::contains(Range<RangeType> range) {
+template <typename T>
+bool Range<T>::contains(Range<T> range) {
     return this->first <= range.first && this->second >= range.second;
 }
 
-template <typename RangeType>
-bool Range<RangeType>::isDisjointWith(Range<RangeType> range) {
+template <typename T>
+bool Range<T>::isDisjointWith(Range<T> range) {
     return this->second < range.first || this->first > range.second;
 }
 
-template <typename RangeType>
-ustring Range<RangeType>::toUstr() {
+template <typename T>
+ustring Range<T>::toUstr() {
     return toUstr(this->first) + toUstr("-") + toUstr(this->second);
 }
 
-template <typename RangeType>
-std::ostream& operator << (std::ostream& os, const Range<RangeType>& range) {
-    os << range.start << "-" << range.end;
+template <typename T>
+std::ostream& operator << (std::ostream& os, const Range<T>& range) {
+    os << range.first << "-" << range.second;
     return os;
 }
 
@@ -87,21 +91,27 @@ std::ostream& operator << (std::ostream& os, const Range<RangeType>& range) {
 // TDAG
 ////////////////////////////////////////////////////////////////////////////////
 
-TdagNode::TdagNode(Range range) {
+template class TdagNode<Kw>;
+template class TdagNode<Id>;
+
+template <typename T>
+TdagNode<T>::TdagNode(Range<T> range) {
     this->range = range;
     this->left = nullptr;
     this->right = nullptr;
     this->extraParent = nullptr;
 }
 
-TdagNode::TdagNode(TdagNode* left, TdagNode* right) {
-    this->range = Range(left->range.start, right->range.end);
+template <typename T>
+TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) {
+    this->range = Range<T>(left->range.first, right->range.second);
     this->left = left;
     this->right = right;
     this->extraParent = nullptr;
 }
 
-TdagNode::~TdagNode() {
+template <typename T>
+TdagNode<T>::~TdagNode() {
     if (this->left != nullptr) {
         delete this->left;
     }
@@ -115,20 +125,22 @@ TdagNode::~TdagNode() {
 
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
 // track `extraParent` nodes in an `unordered_set` to prevent duplicates
-std::list<TdagNode*> TdagNode::traverse() {
-    std::unordered_set<TdagNode*> nodes;
+template <typename T>
+std::list<TdagNode<T>*> TdagNode<T>::traverse() {
+    std::unordered_set<TdagNode<T>*> nodes;
     return this->traverse(nodes);
 }
 
-std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraParents) {
-    std::list<TdagNode*> nodes;
+template <typename T>
+std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& extraParents) {
+    std::list<TdagNode<T>*> nodes;
     nodes.push_front(this);
 
     if (this->left != nullptr) {
-        nodes.splice(nodes.end(), this->left->traverse(extraParents));
+        nodes.splice(nodes.second(), this->left->traverse(extraParents));
     }
     if (this->right != nullptr) {
-        nodes.splice(nodes.end(), this->right->traverse(extraParents));
+        nodes.splice(nodes.second(), this->right->traverse(extraParents));
     }
     if (this->extraParent != nullptr) {
         auto res = extraParents.insert(this->extraParent);
@@ -145,14 +157,15 @@ std::list<TdagNode*> TdagNode::traverse(std::unordered_set<TdagNode*>& extraPare
 // TODO time complexity
 // TODO note assumptions for optimizations: ranges strictly increasing, balanced tree
 // TODO have to verify/prove early exits?
-TdagNode* TdagNode::findSrc(Range targetRange) {
-    std::map<int, TdagNode*> srcCandidates;
-    auto addCandidate = [&](TdagNode* node) {
+template <typename T>
+TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
+    std::map<T, TdagNode<T>*> srcCandidates;
+    auto addCandidate = [&](TdagNode<T>* node) {
         if (node == nullptr || !node->range.contains(targetRange)) {
             return -1;
         }
 
-        int diff = (targetRange.start - node->range.start) + (node->range.end - targetRange.end);
+        T diff = (targetRange.first - node->range.first) + (node->range.second - targetRange.second);
         srcCandidates[diff] = node;
         return diff;
     };
@@ -165,7 +178,7 @@ TdagNode* TdagNode::findSrc(Range targetRange) {
 
     // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
     // and extra TDAG parent 
-    int diff = -1;
+    T diff = -1;
     if (this->extraParent != nullptr) {
         diff = addCandidate(this->extraParent);
         if (diff == 0) {
@@ -183,14 +196,14 @@ TdagNode* TdagNode::findSrc(Range targetRange) {
         return this;
     }
     if (this->left != nullptr) {
-        TdagNode* leftSrc = this->left->findSrc(targetRange);
+        TdagNode<T>* leftSrc = this->left->findSrc(targetRange);
         diff = addCandidate(leftSrc);
         if (diff == 0) {
             return leftSrc;
         }
     }
     if (this->right != nullptr) {
-        TdagNode* rightSrc = this->right->findSrc(targetRange);
+        TdagNode<T>* rightSrc = this->right->findSrc(targetRange);
         diff = addCandidate(rightSrc);
         if (diff == 0) {
             return rightSrc;
@@ -204,10 +217,11 @@ TdagNode* TdagNode::findSrc(Range targetRange) {
     }
 }
 
-std::list<Range> TdagNode::traverseLeaves() {
-    std::list<Range> leafVals;
-    std::list<TdagNode*> nodes = this->traverse();
-    for (TdagNode* node : nodes) {
+template <typename T>
+std::list<Range<T>> TdagNode<T>::traverseLeaves() {
+    std::list<Range<T>> leafVals;
+    std::list<TdagNode<T>*> nodes = this->traverse();
+    for (TdagNode<T>* node : nodes) {
         if (node->left == nullptr && node->right == nullptr) {
             leafVals.push_back(node->range);
         }
@@ -215,14 +229,15 @@ std::list<Range> TdagNode::traverseLeaves() {
     return leafVals;
 }
 
-std::list<TdagNode*> TdagNode::getLeafAncestors(Range leafRange) {
-    std::list<TdagNode*> ancestors = {this};
+template <typename T>
+std::list<TdagNode<T>*> TdagNode<T>::getLeafAncestors(Range<T> leafRange) {
+    std::list<TdagNode<T>*> ancestors = {this};
 
     if (this->left != nullptr && this->left->range.contains(leafRange)) {
-        ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafRange));
+        ancestors.splice(ancestors.second(), this->left->getLeafAncestors(leafRange));
     }
     if (this->right != nullptr && this->right->range.contains(leafRange)) {
-        ancestors.splice(ancestors.end(), this->right->getLeafAncestors(leafRange));
+        ancestors.splice(ancestors.second(), this->right->getLeafAncestors(leafRange));
     }
     if (this->extraParent != nullptr && this->extraParent->range.contains(leafRange)) {
         ancestors.push_back(this->extraParent);
@@ -231,28 +246,31 @@ std::list<TdagNode*> TdagNode::getLeafAncestors(Range leafRange) {
     return ancestors;
 }
 
-Range TdagNode::getRange() {
+template <typename T>
+Range<T> TdagNode<T>::getRange() {
     return this->range;
 }
 
-TdagNode* TdagNode::buildTdag(int maxLeafVal) {
-    std::set<Range> leafVals;
-    for (int i = 0; i <= maxLeafVal; i++) {
-        leafVals.insert(Range(i, i));
+template <typename T>
+TdagNode<T>* TdagNode<T>::buildTdag(T maxLeafVal) {
+    std::set<Range<T>> leafVals;
+    for (T i = 0; i <= maxLeafVal; i++) {
+        leafVals.insert(Range<T>(i, i));
     }
-    return TdagNode::buildTdag(leafVals);
+    return TdagNode<T>::buildTdag(leafVals);
 }
 
-TdagNode* TdagNode::buildTdag(std::set<Range> leafVals) {
+template <typename T>
+TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>> leafVals) {
     if (leafVals.size() == 0) {
         std::cerr << "Error: `leafVals` passed to `TdagNode.buildTdag()` is empty :/" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     // list to hold nodes while building; initialize with leaves
-    std::list<TdagNode*> l;
-    for (Range leafVal : leafVals) {
-        l.push_back(new TdagNode(leafVal));
+    std::list<TdagNode<T>*> l;
+    for (Range<T> leafVal : leafVals) {
+        l.push_back(new TdagNode<T>(leafVal));
     }
 
     // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)
@@ -260,21 +278,21 @@ TdagNode* TdagNode::buildTdag(std::set<Range> leafVals) {
     while (l.size() > 1) {
         // find first two nodes from `l` that have contiguous ranges and join them with a parent node
         // then delete these two nodes and append their new parent node to `l` to keep building tree
-        TdagNode* node1 = l.front();
+        TdagNode<T>* node1 = l.front();
         l.pop_front();
         // find a contiguous node
         for (auto it = l.begin(); it != l.end(); it++) {
-            TdagNode* node2 = *it;
-            if (node2->range.start - 1 == node1->range.end) {
+            TdagNode<T>* node2 = *it;
+            if (node2->range.first - 1 == node1->range.second) {
                 // if `node1` is the left child of new parent node
-                TdagNode* parent = new TdagNode(node1, node2);
+                TdagNode<T>* parent = new TdagNode<T>(node1, node2);
                 l.push_back(parent);
                 l.erase(it);
                 break;
             }
-            if (node2->range.end + 1 == node1->range.start) {
+            if (node2->range.second + 1 == node1->range.first) {
                 // if `node2` is the left child of new parent node
-                TdagNode* parent = new TdagNode(node2, node1);
+                TdagNode<T>* parent = new TdagNode<T>(node2, node1);
                 l.push_back(parent);
                 l.erase(it);
                 break;
@@ -283,10 +301,10 @@ TdagNode* TdagNode::buildTdag(std::set<Range> leafVals) {
     }
 
     // add extra TDAG nodes
-    TdagNode* tdag = l.front();
-    std::list<TdagNode*> nodes = tdag->traverse();
+    TdagNode<T>* tdag = l.front();
+    std::list<TdagNode<T>*> nodes = tdag->traverse();
     while (!nodes.empty()) {
-        TdagNode* node = nodes.front();
+        TdagNode<T>* node = nodes.front();
         nodes.pop_front();
         if (node->left == nullptr
                 || node->right == nullptr
@@ -295,7 +313,7 @@ TdagNode* TdagNode::buildTdag(std::set<Range> leafVals) {
             continue;
         }
 
-        TdagNode* extraParent = new TdagNode(node->left->right, node->right->left);
+        TdagNode<T>* extraParent = new TdagNode<T>(node->left->right, node->right->left);
         node->left->right->extraParent = extraParent;
         node->right->left->extraParent = extraParent;
         // using my method of finding places to add extra nodes, extra nodes themselves must also be checked
@@ -305,9 +323,10 @@ TdagNode* TdagNode::buildTdag(std::set<Range> leafVals) {
     return tdag;
 }
 
-std::ostream& operator << (std::ostream& os, TdagNode* node) {
-    std::list<TdagNode*> nodes = node->traverse();
-    for (TdagNode* node : nodes) {
+template <typename T>
+std::ostream& operator << (std::ostream& os, TdagNode<T>* node) {
+    std::list<TdagNode<T>*> nodes = node->traverse();
+    for (TdagNode<T>* node : nodes) {
         os << node->getRange() << std::endl;
     }
     return os;

@@ -6,14 +6,14 @@
 
 class LogSrciClient : public IRangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>> {
     protected:
-        TdagNode* tdag1;
-        TdagNode* tdag2;
+        TdagNode<Kw>* tdag1;
+        TdagNode<Id>* tdag2;
 
     public:
         LogSrciClient(ISseClient<ustring, EncInd>& underlying);
 
         std::pair<ustring, ustring> setup(int secParam) override;
-        std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db db);
+        std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<Id, KwRange> db) override;
         // interactivity messes up the API (anger)
         QueryToken trpdr1(ustring key1, KwRange kwRange);
         QueryToken trpdr2(ustring key2, std::vector<std::pair<KwRange, IdRange>> choices);

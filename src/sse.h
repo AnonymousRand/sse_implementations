@@ -8,7 +8,7 @@
 // ISse
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename KeyType, typename EncIndType, typename DbDocType = Id, typename DbKwType = KwRange>
+template <typename KeyType, typename EncIndType>
 class ISseClient {
     public:
         /**
@@ -22,7 +22,7 @@ class ISseClient {
         /**
          * Build the encrypted index.
          */
-        virtual EncIndType buildIndex(KeyType key, Db db) = 0;
+        virtual EncIndType buildIndex(KeyType key, Db<Id, KwRange> db) = 0;
 
         /**
          * Issue a query by computing its encrypted token.
@@ -43,8 +43,8 @@ class ISseServer {
 // IRangeSse
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename KeyType, typename EncIndType, typename DbDocType = Id, typename DbKwType = KwRange>
-class IRangeSseClient : public ISseClient<KeyType, EncIndType, DbDocType, DbKwType> {
+template <typename KeyType, typename EncIndType>
+class IRangeSseClient : public ISseClient<KeyType, EncIndType> {
     protected:
         ISseClient<KeyType, EncIndType>& underlying;
 

@@ -22,28 +22,28 @@ std::pair<ustring, ustring> setup(int secParam) {
     return std::pair<ustring, ustring> {ustrKey1, ustrKey2};
 }
 
-//std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<> db) {
+//std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<Id, KwRange> db) {
 //    EncInd encInd1;
 //    EncInd encInd2;
 //    
 //    // build TDAG1 over keywords
-//    Range maxKw = -1;
+//    Kw maxKw = -1;
 //    for (auto entry : db) {
-//        Range kw = std::get<1>(entry);
-//        if (kw.second > maxKw) {
-//            maxKw = kw.second;
+//        KwRange kwRange = std::get<1>(entry);
+//        if (kwRange.second > maxKw) {
+//            maxKw = kwRange.second;
 //        }
 //    }
-//    this->tdag1 = TdagNode::buildTdag(maxKw);
+//    this->tdag1 = TdagNode<Kw>::buildTdag(maxKw);
 //
 //    // replicate every document to all nodes/keywords ranges in TDAG1 that cover it
 //    // `db1` contains individual entries in each `values` or `documents` column of index 1: pairs (kw, id range)
 //    // todo sort out and finish
-//    std::vector<std::pair<Range, std::pair<KwRange, IdRange>>> db1;
+//    std::vector<std::pair<KwRange, std::pair<KwRange, IdRange>>> db1;
 //    for (auto entry : db) {
 //    }
 //
-//    return this->underlying.buildIndex(key, processedDb);
+//    return this->underlying.buildIndexGeneric(key, processedDb);
 //}
 
 QueryToken trpdr1(ustring key1, KwRange kwRange) {

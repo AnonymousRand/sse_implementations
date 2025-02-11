@@ -27,7 +27,7 @@ void exp1(ISseClient<ustring, EncInd>& client, ISseServer<EncInd>& server, Db<Db
 int main() {
     // experiment 1: db of size 2^20 and vary range sizes
     const int dbSize = pow(2, 3);
-    Db<> db;
+    Db<Id, KwRange> db;
     //std::random_device dev;
     //std::mt19937 rng(dev());
     //std::uniform_int_distribution<int> dist(0, dbSize - 1);
