@@ -8,7 +8,7 @@
 // ISse
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename KeyType, typename EncIndType>
+template <typename KeyType, typename EncIndType, typename DbDocType = Id, typename DbKwType = KwRange>
 class ISseClient {
     public:
         /**
@@ -43,8 +43,8 @@ class ISseServer {
 // IRangeSse
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename KeyType, typename EncIndType>
-class IRangeSseClient : public ISseClient<KeyType, EncIndType> {
+template <typename KeyType, typename EncIndType, typename DbDocType = Id, typename DbKwType = KwRange>
+class IRangeSseClient : public ISseClient<KeyType, EncIndType, DbDocType, DbKwType> {
     protected:
         ISseClient<KeyType, EncIndType>& underlying;
 

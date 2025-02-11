@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <unordered_set>
 #include <vector>
 
@@ -36,6 +37,8 @@ class IEncryptable {
         T val;
 
     public:
+        using Type = T;
+
         virtual ustring toUstr() = 0;
         virtual IEncryptable<T> fromUstr(ustring ustr) = 0;
         T get();
@@ -65,6 +68,8 @@ using Kw = int;
 template <typename RangeType>
 class Range : public std::pair<RangeType, RangeType> {
     public:
+        using Type = RangeType;
+
         RangeType size();
         bool contains(Range<RangeType> range);
         bool isDisjointWith(Range<RangeType> range);
@@ -82,7 +87,9 @@ using KwRange = Range<Kw>;
 ////////////////////////////////////////////////////////////////////////////////
 
 // allow polymophic document types for db (because screw you Log-SRC-i for making everything a nonillion times more complicated)
-using Db         = std::vector<std::tuple<IEncryptable, Range>>; // todo test if list is faster
+template <typename DbDocType, DbKwType>
+// TODO ok probably just give up and make separate cases for logsrci???
+using Db         = std::vector<std::tuple<DbDocType, DbKwType>>; // todo test if list is faster
 using Doc        = std::tuple<Id, KwRange>;
 //                `std::map<label, std::pair<data, iv>>`
 using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
