@@ -1,15 +1,13 @@
 #include <algorithm>
 #include <random>
-#include <unordered_map>
 
 #include "log_src.h"
-#include "pi_bas.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // LogSrcClient
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcClient::LogSrcClient(PiBasClient<ustring, EncInd>& underlying) : IRangeSseClient<ustring, EncInd>(underlying) {};
+LogSrcClient::LogSrcClient(PiBasClient underlying) : IRangeSseClient<ustring, EncInd>(underlying) {};
 
 ustring LogSrcClient::setup(int secParam) {
     return this->underlying.setup(secParam);
@@ -32,13 +30,13 @@ EncInd LogSrcClient::buildIndex(ustring key, Db<Id, KwRange> db) {
     // replicate every document to all nodes/keywords ranges in TDAG that cover it
     // temporarily use `unordered_map` instead of `vector` to easily identify
     // which docs share the same `kwRange` for shuffling later
-    std::unordered_map<DbDocType, std::vector<KwRange>> dbWithReplicas;
+    std::map<Id, std::vector<KwRange>> dbWithReplicas;
     for (auto entry : db) {
         Id id = std::get<0>(entry);
         KwRange kwRange = std::get<1>(entry);
-        std::list<TdagNode*> ancestors = this->tdag->getLeafAncestors(kwRange);
-        for (TdagNode* ancestor : ancestors) {
-            KwRange ancestorKwRange = ancestor->getKwRange();
+        std::list<TdagNode<Kw>*> ancestors = this->tdag->getLeafAncestors(kwRange);
+        for (TdagNode<Kw>* ancestor : ancestors) {
+            KwRange ancestorKwRange = ancestor->getRange();
             if (dbWithReplicas.count(id) == 0) {
                 dbWithReplicas[id] = std::vector<KwRange> {ancestorKwRange};
             } else {
@@ -64,16 +62,16 @@ EncInd LogSrcClient::buildIndex(ustring key, Db<Id, KwRange> db) {
 }
 
 QueryToken LogSrcClient::trpdr(ustring key, KwRange kwRange) {
-    TdagNode* src = this->tdag->findSrc(kwRange);
-    std::cout << "SRC for " << kwRange << " is " << src->getKwRange() << std::endl;
-    return this->underlying.trpdr(key, src->getKwRange());
+    TdagNode<Kw>* src = this->tdag->findSrc(kwRange);
+    std::cout << "SRC for " << kwRange << " is " << src->getRange() << std::endl;
+    return this->underlying.trpdr(key, src->getRange());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // LogSrcServer
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcServer::LogSrcServer(ISseServer<EncInd>& underlying) : IRangeSseServer<EncInd>(underlying) {};
+LogSrcServer::LogSrcServer(PiBasServer underlying) : IRangeSseServer<EncInd>(underlying) {};
 
 std::vector<Id> LogSrcServer::search(EncInd encInd, QueryToken queryToken) {
     return this->underlying.search(encInd, queryToken);

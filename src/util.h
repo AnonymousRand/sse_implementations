@@ -32,29 +32,49 @@ ustring toUstr(unsigned char* p, int len);
 
 std::ostream& operator << (std::ostream& os, const ustring str);
 
+////////////////////////////////////////////////////////////////////////////////
+// IEncryptable
+////////////////////////////////////////////////////////////////////////////////
+
 template <typename T>
 class IEncryptable {
     protected:
         T val;
 
     public:
-        virtual ustring toUstr() = 0;
-        virtual IEncryptable<T> fromUstr(ustring ustr) = 0;
+        IEncryptable(T val);
         T get();
+
+        virtual ustring toUstr() = 0;
 };
 
 class Id : public IEncryptable<int> {
     public:
+        Id(int val);
+
         ustring toUstr() override;
-        IEncryptable<int> fromUstr(ustring ustr) override; // todo return val
+
+        static Id fromUstr(ustring ustr);
+        friend void operator ++ (Id& id, int _); // `int _` required to mark as postfix
+        friend bool operator + (const Id& id1, const Id& id2);
+        friend bool operator - (const Id& id1, const Id& id2);
+        friend bool operator == (const Id& id1, const Id& id2);
+        friend bool operator < (const Id& id1, const Id& id2);
+        friend bool operator > (const Id& id1, const Id& id2);
+        friend bool operator <= (const Id& id1, const Id& id2);
+        friend bool operator >= (const Id& id1, const Id& id2);
+        friend std::ostream& operator << (std::ostream& os, const Id& id);
 };
 
 // todo move to srci files?
 //class SrciAuxIndVal : public IEncryptable<std::pair<KwRange, IdRange>> {
 //    public:
 //        ustring toUstr();
-//        std::pair<KwRange, IdRange> fromUstr(ustring ustr);
+//        static std::pair<KwRange, IdRange> fromUstr(ustring ustr);
 //}
+
+template <typename T>
+ustring toUstr(IEncryptable<T>& iEncryptable);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Range
@@ -64,10 +84,12 @@ class Id : public IEncryptable<int> {
 template <typename T>
 class Range : public std::pair<T, T> {
     public:
+        Range();
+        Range(const T& start, const T& end);
+
         T size();
         bool contains(Range<T> range);
         bool isDisjointWith(Range<T> range);
-        ustring toUstr();
 
         template<typename T2>
         friend std::ostream& operator << (std::ostream& os, const Range<T2>& range);
@@ -77,20 +99,17 @@ using Kw      = int;
 using IdRange = Range<Id>;
 using KwRange = Range<Kw>;
 
+template <typename T>
+ustring toUstr(Range<T> range);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Other Custom Types
 ////////////////////////////////////////////////////////////////////////////////
 
 // allow polymophic document types for db (because screw you Log-SRC-i for making everything a nonillion times more complicated)
-// enforce base classes for clarity of calling methods, like Java generics `extends`
-// todo if is_base_of still needs Range<?> then probably just screw it and don't check??
-template <
-    typename DbDocType, typename DbKwType,
-    typename = std::enable_if_t<
-        std::is_base_of_v<IEncryptable<int>, DbDocType>
-        && std::is_base_of_v<Range<Kw>, DbKwType>
-    >
->
+// no easy way to enforce (templated) base classes for clarity unfortunately, like Java generics `extends`
+// so just make sure `DbDocType` subclasses `IEncryptable` and `DbKwType` subclasses `Range`
+template <typename DbDocType, typename DbKwType>
 using Db         = std::vector<std::tuple<DbDocType, DbKwType>>; // todo test if list is faster
 // changing `Doc` will lead to a snowball of broken dreams...
 using Doc        = std::tuple<Id, KwRange>; // todo needed?? can just do make_tuple??
@@ -123,7 +142,7 @@ class TdagNode {
         /**
          * Construct a `TdagNode` with the given `Range`, leaving its children `nullptr`.
          */
-        TdagNode(Range<T> range);
+        TdagNode(const Range<T>& range);
 
         /**
          * Construct a `TdagNode` with the given children, setting its own `range`
@@ -167,7 +186,8 @@ class TdagNode {
          */
         static TdagNode<T>* buildTdag(std::set<Range<T>> leafVals);
 
-        friend std::ostream& operator << (std::ostream& os, TdagNode<T>* node);
+        template <typename T2>
+        friend std::ostream& operator << (std::ostream& os, TdagNode<T2> node);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

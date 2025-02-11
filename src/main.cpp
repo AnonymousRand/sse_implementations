@@ -1,4 +1,4 @@
-// temp compilation `g++ main.cpp sse.cpp pi_bas.cpp log_src.cpp util.cpp -lcrypto -o a`
+// temp compilation `g++ main.cpp pi_bas.cpp log_src.cpp util.cpp -lcrypto -o a`
 #include <cmath>
 #include <random>
 #include <type_traits>
@@ -7,13 +7,12 @@
 #include "pi_bas.h"
 #include "sse.h"
 
-template <typename DbDocType>
-void exp1(ISseClient<ustring, EncInd>& client, ISseServer<EncInd>& server, Db<DbDocType> db) {
+void exp1(ISseClient<ustring, EncInd>& client, ISseServer<EncInd>& server, Db<Id, KwRange> db) {
     ustring key = client.setup(KEY_SIZE);
     std::cout << "Building index..." << std::endl;
     EncInd encInd = client.buildIndex(key, db);
 
-    KwRange query = KwRange(2, 2);
+    KwRange query(2, 4);
     std::cout << "Querying " << query << "..." << std::endl;
     QueryToken queryToken = client.trpdr(key, query);
     std::vector<Id> results = server.search(encInd, queryToken);
@@ -35,18 +34,16 @@ int main() {
     for (int i = 0; i < dbSize; i++) {
         //Kw kw = dist(rng);
         Kw kw = i;
-        db.push_back(Doc {i, KwRange {kw, kw}});
+        db.push_back(Doc {Id(i), KwRange {kw, kw}});
         //std::cout << i << ": " << db.find(i)->second << std::endl;
     }
 
-    PiBasClient piBasClient = PiBasClient();
-    PiBasServer piBasServer = PiBasServer();
+    PiBasClient piBasClient;
+    PiBasServer piBasServer;
     exp1(piBasClient, piBasServer, db);
 
-    piBasClient = PiBasClient();
-    piBasServer = PiBasServer();
-    LogSrcClient logSrcClient = LogSrcClient(piBasClient);
-    LogSrcServer logSrcServer = LogSrcServer(piBasServer);
+    LogSrcClient logSrcClient(piBasClient);
+    LogSrcServer logSrcServer(piBasServer);
     exp1(logSrcClient, logSrcServer, db);
 
     // experiment 2: fixed range size and vary db sizes

@@ -38,25 +38,3 @@ class ISseServer {
          */
         virtual std::vector<Id> search(EncIndType encInd, QueryToken queryToken) = 0;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// IRangeSse
-////////////////////////////////////////////////////////////////////////////////
-
-template <typename KeyType, typename EncIndType>
-class IRangeSseClient : public ISseClient<KeyType, EncIndType> {
-    protected:
-        ISseClient<KeyType, EncIndType>& underlying;
-
-    public:
-        IRangeSseClient(ISseClient<KeyType, EncIndType>& underlying);
-};
-
-template <typename EncIndType>
-class IRangeSseServer : public ISseServer<EncIndType> {
-    protected:
-        ISseServer<EncIndType>& underlying;
-
-    public:
-        IRangeSseServer(ISseServer<EncIndType>& underlying);
-};

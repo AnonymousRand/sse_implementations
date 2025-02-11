@@ -1,7 +1,6 @@
 #pragma once
 
-#include <unordered_map>
-
+#include "pi_bas.h"
 #include "sse.h"
 
 class LogSrciClient : public IRangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>> {
@@ -10,7 +9,7 @@ class LogSrciClient : public IRangeSseClient<std::pair<ustring, ustring>, std::p
         TdagNode<Id>* tdag2;
 
     public:
-        LogSrciClient(ISseClient<ustring, EncInd>& underlying);
+        LogSrciClient(PiBasClient underlying);
 
         std::pair<ustring, ustring> setup(int secParam) override;
         std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<Id, KwRange> db) override;
@@ -21,7 +20,7 @@ class LogSrciClient : public IRangeSseClient<std::pair<ustring, ustring>, std::p
 
 class LogSrciServer : public IRangeSseServer<std::pair<EncInd, EncInd>> {
     public:
-        LogSrciServer(ISseServer<EncInd>& underlying);
+        LogSrciServer(PiBasServer underlying);
 
         std::vector<std::pair<KwRange, IdRange>> search1(EncInd encInd1, QueryToken queryToken);
         std::vector<Id> search2(EncInd encInd2, QueryToken queryToken);

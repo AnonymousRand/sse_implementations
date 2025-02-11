@@ -8,7 +8,7 @@
 
 /* TODO
     merge setup and buildindex again? since thats what dynamic paper does. check if wikipedia/2024 paper still do that, since it does make the code harder (have to return a pair)
-    const as much in tdag/util as possible?
+    const as much in tdag/util as possible? like range constructor for example (copied from std::pair)
     review class slides for srci as well
 */
 
@@ -36,23 +36,77 @@ std::ostream& operator << (std::ostream& os, const ustring str) {
     return os;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// IEncryptable
+////////////////////////////////////////////////////////////////////////////////
+
 template class IEncryptable<int>;
-template class IEncryptable<std::pair<KwRange, IdRange>>;
+//template class IEncryptable<std::pair<KwRange, IdRange>>;
+
+template <typename T>
+IEncryptable<T>::IEncryptable(T val) {
+    this->val = val;
+}
 
 template <typename T>
 T IEncryptable<T>::get() {
     return this->val;
 }
 
+Id::Id(int val) : IEncryptable<int>(val) {};
+
 ustring Id::toUstr() {
-    return toUstr(this->val);
+    return ::toUstr(this->val);
 }
 
 Id Id::fromUstr(ustring ustr) {
-    std::string str = std::string(s.begin(), s.end());
-    this->val = std::stoi(str);
-    return this;
+    std::string str(ustr.begin(), ustr.end());
+    return Id(std::stoi(str));
 }
+
+void operator ++ (Id& id, int _) {
+    id.val++;
+}
+
+bool operator + (const Id& id1, const Id& id2) {
+    return id1.val + id2.val;
+}
+
+bool operator - (const Id& id1, const Id& id2) {
+    return id1.val - id2.val;
+}
+
+bool operator == (const Id& id1, const Id& id2) {
+    return id1.val == id2.val;
+}
+
+bool operator < (const Id& id1, const Id& id2) {
+    return id1.val < id2.val;
+}
+
+bool operator > (const Id& id1, const Id& id2) {
+    return id1.val > id2.val;
+}
+
+bool operator <= (const Id& id1, const Id& id2) {
+    return id1.val <= id2.val;
+}
+
+bool operator >= (const Id& id1, const Id& id2) {
+    return id1.val >= id2.val;
+}
+
+std::ostream& operator << (std::ostream& os, const Id& id) {
+    return os << id.val;
+}
+
+template <typename T>
+ustring toUstr(IEncryptable<T>& iEncryptable) {
+    return iEncryptable.toUstr();
+}
+
+template ustring toUstr(IEncryptable<Id>& id);
+//template ustring toUstr(IEncryptable<std::pair<KwRange, IdRange>& srciAuxIndexVal>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Range
@@ -60,6 +114,12 @@ Id Id::fromUstr(ustring ustr) {
 
 template class Range<Id>;
 template class Range<Kw>;
+
+template <typename T>
+Range<T>::Range() : std::pair<T, T>(0, 0) {};
+
+template <typename T>
+Range<T>::Range(const T& start, const T& end) : std::pair<T, T>(start, end) {};
 
 template <typename T>
 T Range<T>::size() {
@@ -77,15 +137,20 @@ bool Range<T>::isDisjointWith(Range<T> range) {
 }
 
 template <typename T>
-ustring Range<T>::toUstr() {
-    return toUstr(this->first) + toUstr("-") + toUstr(this->second);
+std::ostream& operator << (std::ostream& os, const Range<T>& range) {
+    return os << range.first << "-" << range.second;
 }
 
+template std::ostream& operator << (std::ostream& os, const Range<Id>& range);
+template std::ostream& operator << (std::ostream& os, const Range<Kw>& range);
+
 template <typename T>
-std::ostream& operator << (std::ostream& os, const Range<T>& range) {
-    os << range.first << "-" << range.second;
-    return os;
+ustring toUstr(Range<T> range) {
+    return toUstr(range.first) + toUstr("-") + toUstr(range.second);
 }
+
+template ustring toUstr(Range<Id> range);
+template ustring toUstr(Range<Kw> range);
 
 ////////////////////////////////////////////////////////////////////////////////
 // TDAG
@@ -95,8 +160,7 @@ template class TdagNode<Kw>;
 template class TdagNode<Id>;
 
 template <typename T>
-TdagNode<T>::TdagNode(Range<T> range) {
-    this->range = range;
+TdagNode<T>::TdagNode(const Range<T>& range) : range(range) {
     this->left = nullptr;
     this->right = nullptr;
     this->extraParent = nullptr;
@@ -137,10 +201,10 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& 
     nodes.push_front(this);
 
     if (this->left != nullptr) {
-        nodes.splice(nodes.second(), this->left->traverse(extraParents));
+        nodes.splice(nodes.end(), this->left->traverse(extraParents));
     }
     if (this->right != nullptr) {
-        nodes.splice(nodes.second(), this->right->traverse(extraParents));
+        nodes.splice(nodes.end(), this->right->traverse(extraParents));
     }
     if (this->extraParent != nullptr) {
         auto res = extraParents.insert(this->extraParent);
@@ -162,7 +226,7 @@ TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
     std::map<T, TdagNode<T>*> srcCandidates;
     auto addCandidate = [&](TdagNode<T>* node) {
         if (node == nullptr || !node->range.contains(targetRange)) {
-            return -1;
+            return T(-1);
         }
 
         T diff = (targetRange.first - node->range.first) + (node->range.second - targetRange.second);
@@ -178,7 +242,7 @@ TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
 
     // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
     // and extra TDAG parent 
-    T diff = -1;
+    T diff = T(-1);
     if (this->extraParent != nullptr) {
         diff = addCandidate(this->extraParent);
         if (diff == 0) {
@@ -234,10 +298,10 @@ std::list<TdagNode<T>*> TdagNode<T>::getLeafAncestors(Range<T> leafRange) {
     std::list<TdagNode<T>*> ancestors = {this};
 
     if (this->left != nullptr && this->left->range.contains(leafRange)) {
-        ancestors.splice(ancestors.second(), this->left->getLeafAncestors(leafRange));
+        ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafRange));
     }
     if (this->right != nullptr && this->right->range.contains(leafRange)) {
-        ancestors.splice(ancestors.second(), this->right->getLeafAncestors(leafRange));
+        ancestors.splice(ancestors.end(), this->right->getLeafAncestors(leafRange));
     }
     if (this->extraParent != nullptr && this->extraParent->range.contains(leafRange)) {
         ancestors.push_back(this->extraParent);
@@ -324,13 +388,16 @@ TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>> leafVals) {
 }
 
 template <typename T>
-std::ostream& operator << (std::ostream& os, TdagNode<T>* node) {
-    std::list<TdagNode<T>*> nodes = node->traverse();
+std::ostream& operator << (std::ostream& os, TdagNode<T> node) {
+    std::list<TdagNode<T>*> nodes = node.traverse();
     for (TdagNode<T>* node : nodes) {
         os << node->getRange() << std::endl;
     }
     return os;
 }
+
+template std::ostream& operator << (std::ostream& os, TdagNode<Id> node);
+template std::ostream& operator << (std::ostream& os, TdagNode<Kw> node);
 
 ////////////////////////////////////////////////////////////////////////////////
 // OpenSSL

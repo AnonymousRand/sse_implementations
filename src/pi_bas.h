@@ -2,6 +2,10 @@
 
 #include "sse.h"
 
+////////////////////////////////////////////////////////////////////////////////
+// PiBas
+////////////////////////////////////////////////////////////////////////////////
+
 class PiBasClient : public ISseClient<ustring, EncInd> {
     public:
         ustring setup(int secParam) override;
@@ -16,4 +20,26 @@ class PiBasClient : public ISseClient<ustring, EncInd> {
 class PiBasServer : public ISseServer<EncInd> {
     public:
         std::vector<Id> search(EncInd encInd, QueryToken queryToken) override;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// IRangeSse
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename KeyType, typename EncIndType>
+class IRangeSseClient : public ISseClient<KeyType, EncIndType> {
+    protected:
+        PiBasClient underlying;
+
+    public:
+        IRangeSseClient(PiBasClient underlying);
+};
+
+template <typename EncIndType>
+class IRangeSseServer : public ISseServer<EncIndType> {
+    protected:
+        PiBasServer underlying;
+
+    public:
+        IRangeSseServer(PiBasServer underlying);
 };

@@ -36,7 +36,7 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
     EncInd encInd;
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::map<DbDocType, std::vector<DbDocType>> index;
+    std::map<DbKwType, std::vector<DbDocType>> index;
     std::set<DbKwType> uniqueKws;
     for (auto entry : db) {
         DbDocType dbDoc = std::get<0>(entry);
@@ -53,7 +53,7 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
     // for each w in W
     for (DbKwType dbKw : uniqueKws) {
         // K_1 || K_2 <- F(K, w)
-        ustring K = prf(key, dbKw.toUstr());
+        ustring K = prf(key, toUstr(dbKw));
         int subkeyLen = K.length() / 2;
         ustring subkey1 = K.substr(0, subkeyLen);
         ustring subkey2 = K.substr(subkeyLen, subkeyLen);
@@ -61,7 +61,7 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
         unsigned int counter = 0;
         // for each id in DB(w)
         auto itDocsWithSameKw = index.find(dbKw);
-        if (itDocsWithSameKw == index.second()) {
+        if (itDocsWithSameKw == index.end()) {
             continue;
         }
         for (DbDocType dbDoc : itDocsWithSameKw->second) {
@@ -83,8 +83,8 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
 // PiBasServer
 ////////////////////////////////////////////////////////////////////////////////
 
-std::vector<int> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
-    std::vector<int> results;
+std::vector<Id> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
+    std::vector<Id> results;
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
     int counter = 0;
@@ -94,7 +94,7 @@ std::vector<int> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
         // d <- Get(D, F(K_1, c))
         ustring label = prf(subkey1, toUstr(counter));
         auto it = encInd.find(label);
-        if (it == encInd.second()) {
+        if (it == encInd.end()) {
             break;
         }
         std::pair<ustring, ustring> encIndV = it->second;
@@ -102,10 +102,29 @@ std::vector<int> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
         // id <- Dec(K_2, d)
         ustring iv = encIndV.second;
         ustring ptext = aesDecrypt(EVP_aes_256_cbc(), subkey2, data, iv);
-        results.push_back(ustrToInt(ptext));
+        results.push_back(Id::fromUstr(ptext));
 
         counter++;
     }
 
     return results;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// IRangeSse
+////////////////////////////////////////////////////////////////////////////////
+
+// have to explicitly instantiate templates (declare all possible types it could take)
+// to make template class implementation work from a separate file
+// todo can we delete these?
+template class IRangeSseClient<ustring, EncInd>;
+template class IRangeSseServer<EncInd>;
+
+template class IRangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>>;
+template class IRangeSseServer<std::pair<EncInd, EncInd>>;
+
+template <typename KeyType, typename EncIndType>
+IRangeSseClient<KeyType, EncIndType>::IRangeSseClient(PiBasClient underlying) : underlying(underlying) {};
+
+template <typename EncIndType>
+IRangeSseServer<EncIndType>::IRangeSseServer(PiBasServer underlying) : underlying(underlying) {};

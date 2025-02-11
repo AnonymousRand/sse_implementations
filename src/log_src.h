@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pi_bas.h"
 #include "sse.h"
 
 class LogSrcClient : public IRangeSseClient<ustring, EncInd> {
@@ -7,7 +8,7 @@ class LogSrcClient : public IRangeSseClient<ustring, EncInd> {
         TdagNode<Kw>* tdag;
 
     public:
-        LogSrcClient(ISseClient<ustring, EncInd>& underlying);
+        LogSrcClient(PiBasClient underlying);
 
         ustring setup(int secParam) override;
         EncInd buildIndex(ustring key, Db<Id, KwRange> db) override;
@@ -16,7 +17,7 @@ class LogSrcClient : public IRangeSseClient<ustring, EncInd> {
 
 class LogSrcServer : public IRangeSseServer<EncInd> {
     public:
-        LogSrcServer(PiBasClient<EncInd>& underlying);
+        LogSrcServer(PiBasServer underlying);
 
         std::vector<Id> search(EncInd encInd, QueryToken queryToken) override;
 };
