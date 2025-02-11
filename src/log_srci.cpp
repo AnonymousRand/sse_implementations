@@ -1,4 +1,3 @@
-#include "util.h"
 #include "log_srci.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +96,7 @@ std::pair<EncInd, EncInd> LogSrciClient::buildIndex(std::pair<ustring, ustring> 
         }
     }
 
-    EncInd encInd1 = this->underlying.buildIndexGeneric(key1, db1);
+    EncInd encInd1 = this->underlying.buildIndexGeneric<SrciDb1DocType, KwRange>(key1, db1);
 }
 
 QueryToken trpdr1(ustring key1, KwRange kwRange) {
