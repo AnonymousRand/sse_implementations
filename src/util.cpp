@@ -29,11 +29,16 @@ ustring toUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
 
-std::ostream& operator << (std::ostream& os, const ustring str) {
-    for (auto c : str) {
-        os << static_cast<char>(c);
+std::string fromUstr(ustring ustr) {
+    std::string str;
+    for (unsigned char c : ustr) {
+        str += static_cast<char>(c);
     }
-    return os;
+    return str;
+}
+
+std::ostream& operator << (std::ostream& os, const ustring ustr) {
+    return os << fromUstr(ustr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +46,6 @@ std::ostream& operator << (std::ostream& os, const ustring str) {
 ////////////////////////////////////////////////////////////////////////////////
 
 template class IEncryptable<int>;
-//template class IEncryptable<std::pair<KwRange, IdRange>>;
 
 template <typename T>
 IEncryptable<T>::IEncryptable(T val) {
@@ -53,7 +57,7 @@ T IEncryptable<T>::get() {
     return this->val;
 }
 
-Id::Id(int val) : IEncryptable<int>(val) {};
+Id::Id(int val) : IEncryptable<int>(val) {}
 
 ustring Id::toUstr() {
     return ::toUstr(this->val);
@@ -106,7 +110,6 @@ ustring toUstr(IEncryptable<T>& iEncryptable) {
 }
 
 template ustring toUstr(IEncryptable<Id>& id);
-//template ustring toUstr(IEncryptable<std::pair<KwRange, IdRange>& srciAuxIndexVal>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Range
@@ -116,10 +119,26 @@ template class Range<Id>;
 template class Range<Kw>;
 
 template <typename T>
-Range<T>::Range() : std::pair<T, T>(0, 0) {};
+// can't call default constructor for `std::pair` without explicit vals? `0, 0` is supposed to be default
+Range<T>::Range() : std::pair<T, T>(0, 0) {}
 
 template <typename T>
-Range<T>::Range(const T& start, const T& end) : std::pair<T, T>(start, end) {};
+Range<T>::Range(const T& start, const T& end) : std::pair<T, T>(start, end) {}
+
+template <typename T>
+Range<T> Range<T>::fromStr(std::string str) {
+    std::regex re("(.*?)-(.*?)");
+    std::smatch matches;
+    if (!std::regex_search(str, matches, re) || matches.size() != 2) {
+        std::cerr << "Error: bad string passed to `Range.Range()`, the world is going to end" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    Range<T> range;
+    range.first = T(std::stoi(matches[0].str()));
+    range.second = T(std::stoi(matches[1].str()));
+    return range;
+}
 
 template <typename T>
 T Range<T>::size() {
@@ -143,6 +162,16 @@ std::ostream& operator << (std::ostream& os, const Range<T>& range) {
 
 template std::ostream& operator << (std::ostream& os, const Range<Id>& range);
 template std::ostream& operator << (std::ostream& os, const Range<Kw>& range);
+
+template<typename T>
+std::string operator + (const std::string& str, const Range<T>& range) {
+    std::stringstream ss;
+    ss << str << range;
+    return ss.str();
+}
+
+template std::string operator + (const std::string& str, const Range<Id>& range);
+template std::string operator + (const std::string& str, const Range<Kw>& range);
 
 template <typename T>
 ustring toUstr(Range<T> range) {
@@ -168,7 +197,7 @@ TdagNode<T>::TdagNode(const Range<T>& range) : range(range) {
 
 template <typename T>
 TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) {
-    this->range = Range<T>(left->range.first, right->range.second);
+    this->range = Range<T> {left->range.first, right->range.second};
     this->left = left;
     this->right = right;
     this->extraParent = nullptr;
@@ -319,7 +348,7 @@ template <typename T>
 TdagNode<T>* TdagNode<T>::buildTdag(T maxLeafVal) {
     std::set<Range<T>> leafVals;
     for (T i = 0; i <= maxLeafVal; i++) {
-        leafVals.insert(Range<T>(i, i));
+        leafVals.insert(Range<T> {i, i});
     }
     return TdagNode<T>::buildTdag(leafVals);
 }

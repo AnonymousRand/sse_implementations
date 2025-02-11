@@ -3,6 +3,7 @@
 #include <map>
 #include <iostream>
 #include <list>
+#include <regex>
 #include <set>
 #include <string>
 #include <tuple>
@@ -29,8 +30,9 @@ using ustring = std::basic_string<unsigned char>;
 ustring toUstr(int n);
 ustring toUstr(std::string s);
 ustring toUstr(unsigned char* p, int len);
+std::string fromUstr(ustring ustr);
 
-std::ostream& operator << (std::ostream& os, const ustring str);
+std::ostream& operator << (std::ostream& os, const ustring ustr);
 
 ////////////////////////////////////////////////////////////////////////////////
 // IEncryptable
@@ -66,13 +68,6 @@ class Id : public IEncryptable<int> {
         friend std::ostream& operator << (std::ostream& os, const Id& id);
 };
 
-// todo move to srci files?
-//class SrciAuxIndVal : public IEncryptable<std::pair<KwRange, IdRange>> {
-//    public:
-//        ustring toUstr();
-//        static std::pair<KwRange, IdRange> fromUstr(ustring ustr);
-//}
-
 template <typename T>
 ustring toUstr(IEncryptable<T>& iEncryptable);
 
@@ -91,8 +86,12 @@ class Range : public std::pair<T, T> {
         bool contains(Range<T> range);
         bool isDisjointWith(Range<T> range);
 
+        static Range<T> fromStr(std::string str);
         template<typename T2>
         friend std::ostream& operator << (std::ostream& os, const Range<T2>& range);
+        // overload string concatenation (no way this worked)
+        template<typename T2>
+        friend std::string operator + (const std::string& str, const Range<T2>& range);
 };
 
 using Kw      = int;

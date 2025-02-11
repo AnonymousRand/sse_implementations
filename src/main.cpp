@@ -12,7 +12,7 @@ void exp1(ISseClient<ustring, EncInd>& client, ISseServer<EncInd>& server, Db<Id
     std::cout << "Building index..." << std::endl;
     EncInd encInd = client.buildIndex(key, db);
 
-    KwRange query(2, 4);
+    KwRange query {2, 4};
     std::cout << "Querying " << query << "..." << std::endl;
     QueryToken queryToken = client.trpdr(key, query);
     std::vector<Id> results = server.search(encInd, queryToken);

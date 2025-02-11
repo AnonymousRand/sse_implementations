@@ -4,19 +4,16 @@
 #include "log_src.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// LogSrcClient
+// Client
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcClient::LogSrcClient(PiBasClient underlying) : IRangeSseClient<ustring, EncInd>(underlying) {};
+LogSrcClient::LogSrcClient(PiBasClient underlying) : IRangeSseClient<ustring, EncInd>(underlying) {}
 
 ustring LogSrcClient::setup(int secParam) {
     return this->underlying.setup(secParam);
 }
 
 EncInd LogSrcClient::buildIndex(ustring key, Db<Id, KwRange> db) {
-    EncInd encInd;
-
-    // build TDAG over keywords
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = -1;
     for (auto entry : db) {
@@ -68,10 +65,10 @@ QueryToken LogSrcClient::trpdr(ustring key, KwRange kwRange) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LogSrcServer
+// Server
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcServer::LogSrcServer(PiBasServer underlying) : IRangeSseServer<EncInd>(underlying) {};
+LogSrcServer::LogSrcServer(PiBasServer underlying) : IRangeSseServer<EncInd>(underlying) {}
 
 std::vector<Id> LogSrcServer::search(EncInd encInd, QueryToken queryToken) {
     return this->underlying.search(encInd, queryToken);

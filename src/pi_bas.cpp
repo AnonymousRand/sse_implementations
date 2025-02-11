@@ -3,7 +3,7 @@
 #include "pi_bas.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// PiBasClient
+// Client
 ////////////////////////////////////////////////////////////////////////////////
 
 ustring PiBasClient::setup(int secParam) {
@@ -33,8 +33,6 @@ QueryToken PiBasClient::trpdr(ustring key, KwRange kwRange) {
 
 template <typename DbDocType, typename DbKwType>
 EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
-    EncInd encInd;
-
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     std::map<DbKwType, std::vector<DbDocType>> index;
     std::set<DbKwType> uniqueKws;
@@ -50,6 +48,7 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
         uniqueKws.insert(dbKw); // `std::set` will not insert duplicate elements
     }
 
+    EncInd encInd;
     // for each w in W
     for (DbKwType dbKw : uniqueKws) {
         // K_1 || K_2 <- F(K, w)
@@ -61,9 +60,6 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
         unsigned int counter = 0;
         // for each id in DB(w)
         auto itDocsWithSameKw = index.find(dbKw);
-        if (itDocsWithSameKw == index.end()) {
-            continue;
-        }
         for (DbDocType dbDoc : itDocsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring label = prf(subkey1, toUstr(counter));
@@ -80,7 +76,7 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PiBasServer
+// Server
 ////////////////////////////////////////////////////////////////////////////////
 
 std::vector<Id> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
@@ -124,7 +120,7 @@ template class IRangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, En
 template class IRangeSseServer<std::pair<EncInd, EncInd>>;
 
 template <typename KeyType, typename EncIndType>
-IRangeSseClient<KeyType, EncIndType>::IRangeSseClient(PiBasClient underlying) : underlying(underlying) {};
+IRangeSseClient<KeyType, EncIndType>::IRangeSseClient(PiBasClient underlying) : underlying(underlying) {}
 
 template <typename EncIndType>
-IRangeSseServer<EncIndType>::IRangeSseServer(PiBasServer underlying) : underlying(underlying) {};
+IRangeSseServer<EncIndType>::IRangeSseServer(PiBasServer underlying) : underlying(underlying) {}

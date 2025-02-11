@@ -3,6 +3,10 @@
 #include "pi_bas.h"
 #include "sse.h"
 
+////////////////////////////////////////////////////////////////////////////////
+// Client
+////////////////////////////////////////////////////////////////////////////////
+
 class LogSrcClient : public IRangeSseClient<ustring, EncInd> {
     protected:
         TdagNode<Kw>* tdag;
@@ -14,6 +18,10 @@ class LogSrcClient : public IRangeSseClient<ustring, EncInd> {
         EncInd buildIndex(ustring key, Db<Id, KwRange> db) override;
         QueryToken trpdr(ustring key, KwRange kwRange) override;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// Server
+////////////////////////////////////////////////////////////////////////////////
 
 class LogSrcServer : public IRangeSseServer<EncInd> {
     public:
