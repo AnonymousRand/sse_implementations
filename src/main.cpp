@@ -25,7 +25,6 @@ void exp1(LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>
     for (int i = 0; i < (int)log2(dbSize); i++) {
         queryCount++;
         KwRange query {0, (int)pow(2, i)};
-        std::cout << "querying " << query << std::endl;
         QueryToken queryToken = client.trpdr(key, query);
         std::vector<Id> results = server.search(encInd, queryToken);
     }
@@ -167,7 +166,7 @@ int main() {
     LogSrcServer logSrcServer(piBasServer);
     LogSrciClient logSrciClient(piBasClient);
     LogSrciServer logSrciServer(piBasServer);
-    int maxDbSize = pow(2, 20);
+    int maxDbSize = pow(2, 18);
 
     // experiment 1
     Db<> db = createDb(maxDbSize, false);
