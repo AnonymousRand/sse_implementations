@@ -157,8 +157,8 @@ int main() {
     LogSrciClient logSrciClient(piBasClient);
     LogSrciServer logSrciServer(piBasServer);
 
-    // experiment 1: uniform db of size 2^18 and varied query range sizes
-    int dbSize = pow(2, 18);
+    // experiment 1: uniform db of size 2^16 and varied query range sizes
+    int dbSize = pow(2, 16);
     for (int i = 0; i < dbSize; i++) {
         Kw kw = i;
         db.push_back(Doc {Id(i), KwRange {kw, kw}});
@@ -179,7 +179,7 @@ int main() {
     logSrciServer = LogSrciServer(piBasServer);
     exp1(logSrciClient, logSrciServer, db, dbSize);
 
-    // experiment 1.5: skewed db of size 2^18 and varied query range sizes
+    // experiment 1.5: skewed db of size 2^16 and varied query range sizes
     db.clear();
     std::random_device dev;
     std::mt19937 rng(dev());
