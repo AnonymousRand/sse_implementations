@@ -2,14 +2,14 @@
 #include <random>
 
 #include "log_src.h"
+#include "pi_bas.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Client
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename Underlying>
-LogSrcClient<Underlying>::LogSrcClient(Underlying underlying)
-        : IRangeSseClient<ustring, EncInd, Underlying>(underlying) {}
+LogSrcClient<Underlying>::LogSrcClient(Underlying underlying) : IRangeSseClient<Underlying>(underlying) {}
 
 template <typename Underlying>
 ustring LogSrcClient<Underlying>::setup(int secParam) {

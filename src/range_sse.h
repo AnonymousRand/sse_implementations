@@ -1,14 +1,13 @@
 #pragma once
 
-#include "pi_bas.h"
-#include "sse.h"
+#include "util/util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Client
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename KeyType, typename EncIndType, typename Underlying>
-class IRangeSseClient : public ISseClient<KeyType, EncIndType> {
+template <typename Underlying>
+class IRangeSseClient {
     protected:
         Underlying underlying;
 
@@ -21,7 +20,7 @@ class IRangeSseClient : public ISseClient<KeyType, EncIndType> {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename Underlying>
-class IRangeSseServer : public ISseServer {
+class IRangeSseServer {
     protected:
         Underlying underlying;
 

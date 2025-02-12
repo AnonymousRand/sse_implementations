@@ -8,16 +8,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename Underlying>
-class LogSrcClient : public IRangeSseClient<ustring, EncInd, Underlying> {
+class LogSrcClient : public IRangeSseClient<Underlying> {
     protected:
         TdagNode<Kw>* tdag;
 
     public:
         LogSrcClient(Underlying underlying);
 
-        ustring setup(int secParam) override;
-        EncInd buildIndex(ustring key, Db<> db) override;
-        QueryToken trpdr(ustring key, KwRange kwRange) override;
+        ustring setup(int secParam);
+        EncInd buildIndex(ustring key, Db<> db);
+        QueryToken trpdr(ustring key, KwRange kwRange);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,5 +29,5 @@ class LogSrcServer : public IRangeSseServer<Underlying> {
     public:
         LogSrcServer(Underlying underlying);
 
-        std::vector<Id> search(EncInd encInd, QueryToken queryToken) override;
+        std::vector<Id> search(EncInd encInd, QueryToken queryToken);
 };

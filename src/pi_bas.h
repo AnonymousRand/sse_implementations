@@ -1,16 +1,30 @@
 #pragma once
 
-#include "sse.h"
+#include "util/util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Client
 ////////////////////////////////////////////////////////////////////////////////
 
-class PiBasClient : public ISseClient<ustring, EncInd> {
+class PiBasClient {
     public:
-        ustring setup(int secParam) override;
-        EncInd buildIndex(ustring key, Db<> db) override;
-        QueryToken trpdr(ustring key, KwRange kwRange) override;
+        /**
+         * Generate a key.
+         *
+         * `Setup()` from original paper broken up into `setup()` and `buildIndex()`
+         * to be consistent with later papers.
+         */
+        ustring setup(int secParam);
+
+        /**
+         * Build the encrypted index.
+         */
+        EncInd buildIndex(ustring key, Db<> db);
+
+        /**
+         * Issue a query by computing its encrypted token.
+         */
+        QueryToken trpdr(ustring key, KwRange kwRange);
 
         // non-API functions for SSEs building on top of PiBas and requiring more polymorphic types
         // "template functions cannot be virtual" wahh wahh why can't you be more like java you sadistic troglodyte
@@ -24,10 +38,14 @@ class PiBasClient : public ISseClient<ustring, EncInd> {
 // Server
 ////////////////////////////////////////////////////////////////////////////////
 
-class PiBasServer : public ISseServer {
+class PiBasServer {
     public:
-        std::vector<Id> search(EncInd encInd, QueryToken queryToken) override;
+        /**
+         * Process a query and compute all results.
+         */
+        virtual std::vector<Id> search(EncInd encInd, QueryToken queryToken);
 
+        // non-API
         template <typename DbDocType = Id>
         std::vector<DbDocType> searchGeneric(EncInd encInd, QueryToken queryToken);
 };

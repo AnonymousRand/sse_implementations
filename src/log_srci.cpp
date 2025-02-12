@@ -4,6 +4,7 @@
 #include <openssl/rand.h>
 
 #include "log_srci.h"
+#include "pi_bas.h"
 #include "util/openssl.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -11,8 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename Underlying>
-LogSrciClient<Underlying>::LogSrciClient(Underlying underlying)
-        : IRangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>, Underlying>(underlying) {}
+LogSrciClient<Underlying>::LogSrciClient(Underlying underlying) : IRangeSseClient<Underlying>(underlying) {}
 
 template <typename Underlying>
 std::pair<ustring, ustring> LogSrciClient<Underlying>::setup(int secParam) {
@@ -121,7 +121,7 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
 }
 
 template <typename Underlying>
-QueryToken LogSrciClient<Underlying>::trpdr(ustring key1, KwRange kwRange) {
+QueryToken LogSrciClient<Underlying>::trpdr1(ustring key1, KwRange kwRange) {
     TdagNode<Kw>* src = this->tdag1->findSrc(kwRange);
     return this->underlying.trpdrGeneric(key1, src->getRange());
 }
@@ -163,7 +163,7 @@ std::vector<SrciDb1Doc> LogSrciServer<Underlying>::search1(EncInd encInd1, Query
 }
 
 template <typename Underlying>
-std::vector<Id> LogSrciServer<Underlying>::search(EncInd encInd2, QueryToken queryToken) {
+std::vector<Id> LogSrciServer<Underlying>::search2(EncInd encInd2, QueryToken queryToken) {
     return this->underlying.template searchGeneric<Id>(encInd2, queryToken);
 }
 

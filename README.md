@@ -8,7 +8,7 @@
 ## Compiling
 
 ```
-g++ main.cpp sse.cpp range_sse.cpp pi_bas.cpp log_src.cpp log_srci.cpp util/*.cpp -lcrypto
+g++ main.cpp range_sse.cpp pi_bas.cpp log_src.cpp log_srci.cpp util/*.cpp -lcrypto
 ```
 
 Using GCC to compile instead of G++ will probably produce a wall of errors (different linking mechanics?).
