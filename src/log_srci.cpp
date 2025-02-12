@@ -75,19 +75,12 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
         }
     }
 
-    // todo temp
-    for (auto entry : db1) {
-        std::cout << std::get<1>(entry) << ": " << std::get<0>(entry) << std::endl;
-    }
-
     // build TDAG2 over documents
     Id maxId = -1;
     for (auto entry : db) {
         Id id = std::get<0>(entry);
-        std::cout << "id: " << id << std::endl;
         if (id > maxId) {
             maxId = id;
-            std::cout << "max: " << maxId << std::endl;
         }
     }
     this->tdag2 = TdagNode<Id>::buildTdag(maxId);
@@ -128,12 +121,30 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
 
 template <typename Underlying>
 QueryToken LogSrciClient<Underlying>::trpdr(ustring key1, KwRange kwRange) {
-    
+    TdagNode<Kw>* src = this->tdag1->findSrc(kwRange);
+    return this->underlying.trpdrGeneric(key1, src->getRange());
 }
 
 template <typename Underlying>
-QueryToken LogSrciClient<Underlying>::trpdr2(ustring key2, std::vector<SrciDb1Doc> choices) {
+QueryToken LogSrciClient<Underlying>::trpdr2(ustring key2, KwRange kwRange, std::vector<SrciDb1Doc> choices) {
+    Id minId = -1, maxId = -1;
+    // filter out unnecessary choices and merge remaining ones into a single id range
+    for (SrciDb1Doc choice : choices) {
+        KwRange choiceKwRange = choice.get().first;
+        if (kwRange.contains(choiceKwRange)) {
+            IdRange choiceIdRange = choice.get().second;
+            if (choiceIdRange.first < minId || minId == -1) {
+                minId = choiceIdRange.first;
+            }
+            if (choiceIdRange.second > maxId) {
+                maxId = choiceIdRange.second;
+            }
+        }
+    }
 
+    IdRange idRangeToQuery {minId, maxId};
+    TdagNode<Id>* src = this->tdag2->findSrc(idRangeToQuery);
+    return this->underlying.trpdrGeneric(key2, src->getRange());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -146,7 +157,11 @@ template <typename Underlying>
 LogSrciServer<Underlying>::LogSrciServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
 
 template <typename Underlying>
-std::vector<SrciDb1Doc> LogSrciServer<Underlying>::search1(EncInd encInd1, QueryToken queryToken) {}
+std::vector<SrciDb1Doc> LogSrciServer<Underlying>::search1(EncInd encInd1, QueryToken queryToken) {
+    return this->underlying.template searchGeneric<SrciDb1Doc>(encInd1, queryToken);
+}
 
 template <typename Underlying>
-std::vector<Id> LogSrciServer<Underlying>::search(EncInd encInd2, QueryToken queryToken) {}
+std::vector<Id> LogSrciServer<Underlying>::search(EncInd encInd2, QueryToken queryToken) {
+    return this->underlying.template searchGeneric<Id>(encInd2, queryToken);
+}

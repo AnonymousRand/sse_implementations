@@ -59,11 +59,11 @@ T IEncryptable<T>::get() {
 
 Id::Id(int val) : IEncryptable<int>(val) {}
 
-ustring Id::toUstr() {
+ustring Id::encode() {
     return ::toUstr(this->val);
 }
 
-Id Id::fromUstr(ustring ustr) {
+Id Id::decode(ustring ustr) {
     std::string str(ustr.begin(), ustr.end());
     return Id(std::stoi(str));
 }
@@ -118,7 +118,7 @@ std::ostream& operator <<(std::ostream& os, const Id& id) {
 
 template <typename T>
 ustring toUstr(IEncryptable<T>& iEncryptable) {
-    return iEncryptable.toUstr();
+    return iEncryptable.encode();
 }
 
 template ustring toUstr(IEncryptable<Id>& id);
@@ -139,16 +139,16 @@ Range<T>::Range(const T& start, const T& end) : std::pair<T, T>(start, end) {}
 
 template <typename T>
 Range<T> Range<T>::fromStr(std::string str) {
-    std::regex re("(.*?)-(.*?)");
+    std::regex re("(.*?)-(.*)");
     std::smatch matches;
-    if (!std::regex_search(str, matches, re) || matches.size() != 2) {
+    if (!std::regex_search(str, matches, re) || matches.size() != 3) {
         std::cerr << "Error: bad string passed to `Range.Range()`, the world is going to end" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     Range<T> range;
-    range.first = T(std::stoi(matches[0].str()));
-    range.second = T(std::stoi(matches[1].str()));
+    range.first = T(std::stoi(matches[1].str()));
+    range.second = T(std::stoi(matches[2].str()));
     return range;
 }
 
@@ -200,29 +200,29 @@ template class IEncryptable<std::pair<KwRange, IdRange>>;
 SrciDb1Doc::SrciDb1Doc(KwRange kwRange, IdRange idRange)
         : IEncryptable<std::pair<KwRange, IdRange>>(std::pair<KwRange, IdRange> {kwRange, idRange}) {}
 
-ustring SrciDb1Doc::toUstr() {
+ustring SrciDb1Doc::encode() {
     std::string str = "(" + this->val.first + "," + this->val.second + ")";
     return ::toUstr(str);
 }
 
-std::pair<KwRange, IdRange> SrciDb1Doc::fromUstr(ustring ustr) {
+SrciDb1Doc SrciDb1Doc::decode(ustring ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
-    if (!std::regex_search(str, matches, re) || matches.size() != 2) {
+    if (!std::regex_search(str, matches, re) || matches.size() != 3) {
         std::cerr << "Error: bad string passed to `SrciDb1Doc.fromUstr()`, the world is going to end" << std::endl;
         exit(EXIT_FAILURE);
     }
-    KwRange kwRange = KwRange::fromStr(matches[0].str());
-    IdRange idRange = IdRange::fromStr(matches[1].str());
-    return std::pair<KwRange, IdRange> {kwRange, idRange};
+    KwRange kwRange = KwRange::fromStr(matches[1].str());
+    IdRange idRange = IdRange::fromStr(matches[2].str());
+    return SrciDb1Doc {kwRange, idRange};
 }
-
-template ustring toUstr(IEncryptable<SrciDb1Doc>& srciDb1Doc);
 
 std::ostream& operator <<(std::ostream& os, const SrciDb1Doc& srciDb1Doc) {
     return os << "(" << srciDb1Doc.val.first << ", [" << srciDb1Doc.val.second << "])";
 }
+
+template ustring toUstr(IEncryptable<SrciDb1Doc>& srciDb1Doc);
 
 ////////////////////////////////////////////////////////////////////////////////
 // TDAG

@@ -20,7 +20,7 @@ class LogSrciClient : public IRangeSseClient<std::pair<ustring, ustring>, std::p
         std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<> db) override;
         // interactivity messes up the API (anger)
         QueryToken trpdr(ustring key1, KwRange kwRange) override;
-        QueryToken trpdr2(ustring key2, std::vector<SrciDb1Doc> choices);
+        QueryToken trpdr2(ustring key2, KwRange kwRange, std::vector<SrciDb1Doc> choices);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

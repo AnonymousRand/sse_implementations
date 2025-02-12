@@ -47,15 +47,15 @@ class IEncryptable {
         IEncryptable(T val);
         T get();
 
-        virtual ustring toUstr() = 0;
+        virtual ustring encode() = 0;
 };
 
 class Id : public IEncryptable<int> {
     public:
         Id(int val);
 
-        ustring toUstr() override;
-        static Id fromUstr(ustring ustr);
+        ustring encode() override;
+        static Id decode(ustring ustr);
 
         friend Id abs(const Id& id);
         friend void operator ++(Id& id, int _); // `int _` required to mark as postfix
@@ -110,8 +110,8 @@ class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
     public:
         SrciDb1Doc(KwRange kwRange, IdRange idRange);
 
-        ustring toUstr() override;
-        static std::pair<KwRange, IdRange> fromUstr(ustring ustr);
+        ustring encode() override;
+        static SrciDb1Doc decode(ustring ustr);
 
         friend std::ostream& operator <<(std::ostream& os, const SrciDb1Doc& srciDb1Doc);
 };

@@ -13,10 +13,11 @@ void exp1(ISseClient<ustring, EncInd>& client, ISseServer& server, Db<> db) {
     std::cout << "Building index..." << std::endl;
     EncInd encInd = client.buildIndex(key, db);
 
-    KwRange query {2, 4};
+    KwRange query {3, 5};
     std::cout << "Querying " << query << "..." << std::endl;
     QueryToken queryToken = client.trpdr(key, query);
     std::vector<Id> results = server.search(encInd, queryToken);
+
     std::cout << "Results are:";
     for (Id result : results) {
         std::cout << " " << result;
@@ -29,6 +30,19 @@ void exp1(LogSrciClient<UnderlyingClientType>& client, LogSrciServer<UnderlyingS
     std::pair<ustring, ustring> keys = client.setup(KEY_SIZE);
     std::cout << "Building index..." << std::endl;
     std::pair<EncInd, EncInd> encInds = client.buildIndex(keys, db);
+
+    KwRange query {3, 5};
+    std::cout << "Querying " << query << "..." << std::endl;
+    QueryToken queryToken1 = client.trpdr(keys.first, query);
+    std::vector<SrciDb1Doc> results1 = server.search1(encInds.first, queryToken1);
+    QueryToken queryToken2 = client.trpdr2(keys.second, query, results1);
+    std::vector<Id> results2 = server.search(encInds.second, queryToken2);
+
+    std::cout << "Results are:";
+    for (Id result : results2) {
+        std::cout << " " << result;
+    }
+    std::cout << std::endl;
 }
 
 int main() {
@@ -45,14 +59,6 @@ int main() {
     //    db.push_back(Doc {Id(i), KwRange {kw, kw}});
     //    //std::cout << i << ": " << db.find(i)->second << std::endl;
     //}
-
-    PiBasClient piBasClient;
-    PiBasServer piBasServer;
-    //exp1(piBasClient, piBasServer, db);
-
-    //LogSrcClient logSrcClient(piBasClient);
-    //LogSrcServer logSrcServer(piBasServer);
-    //exp1(logSrcClient, logSrcServer, db);
 
     Db<> db;
     db.push_back(std::pair<Id, KwRange> {Id(0), KwRange {2, 2}});
@@ -72,6 +78,16 @@ int main() {
     db.push_back(std::pair<Id, KwRange> {Id(14), KwRange {6, 6}});
     db.push_back(std::pair<Id, KwRange> {Id(15), KwRange {7, 7}});
 
+    PiBasClient piBasClient;
+    PiBasServer piBasServer;
+    //exp1(piBasClient, piBasServer, db);
+
+    std::cout << "---------- Experiment 1 for Log-SRC ----------" << std::endl;
+    LogSrcClient logSrcClient(piBasClient);
+    LogSrcServer logSrcServer(piBasServer);
+    exp1(logSrcClient, logSrcServer, db);
+
+    std::cout << "\n---------- Experiment 1 for Log-SRC-i ----------" << std::endl;
     LogSrciClient logSrciClient(piBasClient);
     LogSrciServer logSrciServer(piBasServer);
     exp1(logSrciClient, logSrciServer, db);

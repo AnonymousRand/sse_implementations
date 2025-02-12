@@ -67,8 +67,7 @@ EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
 template <typename Underlying>
 QueryToken LogSrcClient<Underlying>::trpdr(ustring key, KwRange kwRange) {
     TdagNode<Kw>* src = this->tdag->findSrc(kwRange);
-    std::cout << "SRC for " << kwRange << " is " << src->getRange() << std::endl;
-    return this->underlying.trpdr(key, src->getRange());
+    return this->underlying.trpdrGeneric(key, src->getRange());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,5 +81,5 @@ LogSrcServer<Underlying>::LogSrcServer(Underlying underlying) : IRangeSseServer<
 
 template <typename Underlying>
 std::vector<Id> LogSrcServer<Underlying>::search(EncInd encInd, QueryToken queryToken) {
-    return this->underlying.search(encInd, queryToken);
+    return this->underlying.searchGeneric(encInd, queryToken);
 }
