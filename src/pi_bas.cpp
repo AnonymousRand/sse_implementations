@@ -1,6 +1,9 @@
 #include <set>
 
+#include <openssl/rand.h>
+
 #include "pi_bas.h"
+#include "util/openssl.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Client
@@ -70,10 +73,6 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
 }
 
 // todo see if can move these to srci where needed
-template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<> db);
-template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<SrciDb1Doc, KwRange> db);
-template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<Id, IdRange> db);
-
 template <typename RangeType>
 QueryToken PiBasClient::trpdrGeneric(ustring key, Range<RangeType> range) {
     // the paper uses different notation for the key generation here vs. in `setup()`;
@@ -84,6 +83,10 @@ QueryToken PiBasClient::trpdrGeneric(ustring key, Range<RangeType> range) {
     ustring subkey2 = K.substr(subkeyLen, subkeyLen);
     return QueryToken {subkey1, subkey2};
 }
+
+template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<> db);
+template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<SrciDb1Doc, KwRange> db);
+template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<Id, IdRange> db);
 
 template QueryToken PiBasClient::trpdrGeneric(ustring key, Range<Id> range);
 template QueryToken PiBasClient::trpdrGeneric(ustring key, Range<Kw> range);

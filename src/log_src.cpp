@@ -7,8 +7,6 @@
 // Client
 ////////////////////////////////////////////////////////////////////////////////
 
-template class LogSrcClient<PiBasClient>;
-
 template <typename Underlying>
 LogSrcClient<Underlying>::LogSrcClient(Underlying underlying)
         : IRangeSseClient<ustring, EncInd, Underlying>(underlying) {}
@@ -70,11 +68,11 @@ QueryToken LogSrcClient<Underlying>::trpdr(ustring key, KwRange kwRange) {
     return this->underlying.trpdrGeneric(key, src->getRange());
 }
 
+template class LogSrcClient<PiBasClient>;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Server
 ////////////////////////////////////////////////////////////////////////////////
-
-template class LogSrcServer<PiBasServer>;
 
 template <typename Underlying>
 LogSrcServer<Underlying>::LogSrcServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
@@ -83,3 +81,5 @@ template <typename Underlying>
 std::vector<Id> LogSrcServer<Underlying>::search(EncInd encInd, QueryToken queryToken) {
     return this->underlying.searchGeneric(encInd, queryToken);
 }
+
+template class LogSrcServer<PiBasServer>;

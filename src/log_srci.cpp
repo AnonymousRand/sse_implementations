@@ -1,13 +1,14 @@
 #include <algorithm>
 #include <random>
 
+#include <openssl/rand.h>
+
 #include "log_srci.h"
+#include "util/openssl.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Client
 ////////////////////////////////////////////////////////////////////////////////
-
-template class LogSrciClient<PiBasClient>;
 
 template <typename Underlying>
 LogSrciClient<Underlying>::LogSrciClient(Underlying underlying)
@@ -147,11 +148,11 @@ QueryToken LogSrciClient<Underlying>::trpdr2(ustring key2, KwRange kwRange, std:
     return this->underlying.trpdrGeneric(key2, src->getRange());
 }
 
+template class LogSrciClient<PiBasClient>;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Server
 ////////////////////////////////////////////////////////////////////////////////
-
-template class LogSrciServer<PiBasServer>;
 
 template <typename Underlying>
 LogSrciServer<Underlying>::LogSrciServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
@@ -165,3 +166,5 @@ template <typename Underlying>
 std::vector<Id> LogSrciServer<Underlying>::search(EncInd encInd2, QueryToken queryToken) {
     return this->underlying.template searchGeneric<Id>(encInd2, queryToken);
 }
+
+template class LogSrciServer<PiBasServer>;
