@@ -1,6 +1,6 @@
 # SSE-Implementations
 
-Implementations of `PiBas` ([Cash et. al 2014](https://eprint.iacr.org/2014/853.pdf)), `Log-SRC`, and `Log-SRC-i` ([Demertzis et. al 2016](https://idemertzis.com/Papers/sigmod16.pdf)) SSE schemes for experimental evaluation.
+Implementations of `PiBas` ([Cash et al. 2014](https://eprint.iacr.org/2014/853.pdf)), `Log-SRC`, and `Log-SRC-i` ([Demertzis et al. 2016](https://idemertzis.com/Papers/sigmod16.pdf)) SSE schemes for experimental evaluation.
 
 # Requirements
 
