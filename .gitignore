@@ -1,5 +1,6 @@
 # vim
 *.swp
 
-# tmp testing
+# compiled binary
 src/a
+src/a.out

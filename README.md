@@ -8,7 +8,8 @@ Implementations of the following searchable symmetric encryption (SSE) schemes:
 
 # Requirements
 
-- At least C++17 is required, which corresponds to G++ version 11 and above. To check the currently installed G++ version, use `g++ --version` at the command line.
+- At least C++17 is required. This is the default with G++ verion 11 and above; otherwise, attach the `-std=c++17` flag when compiling.
+    - To check the currently installed G++ version, use `g++ --version` at the command line.
 - The OpenSSL library needed to compile the program can be installed with `sudo apt install libssl-dev`.
 
 # Compiling
