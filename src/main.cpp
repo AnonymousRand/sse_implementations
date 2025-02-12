@@ -117,9 +117,9 @@ void exp2(
         std::vector<Id> results = server.search(encInd, queryToken);
         auto querySplit = std::chrono::high_resolution_clock::now();
 
-        totalElapsed += querySplit - startTime;
+        totalElapsed      += querySplit - startTime;
         buildIndexElapsed += buildIndexSplit - setupSplit;
-        queryElapsed += querySplit - buildIndexSplit;
+        queryElapsed      += querySplit - buildIndexSplit;
     }
 
     std::cout << "\nExecution times:" << std::endl;
@@ -155,9 +155,9 @@ void exp2(
         std::vector<Id> results2 = server.search2(encInds.second, queryToken2);
         auto querySplit = std::chrono::high_resolution_clock::now();
 
-        totalElapsed += querySplit - startTime;
+        totalElapsed      += querySplit - startTime;
         buildIndexElapsed += buildIndexSplit - setupSplit;
-        queryElapsed += querySplit - buildIndexSplit;
+        queryElapsed      += querySplit - buildIndexSplit;
     }
 
     std::cout << "Execution times:" << std::endl;
