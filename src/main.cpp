@@ -18,12 +18,12 @@ Db<> createDb(int dbSize, bool isDataSkewed) {
             do {
                 kw = (int)dist(rng);
             } while (kw >= dbSize);
-            db.push_back(Doc {Id(i), KwRange {kw, kw}});
+            db.push_back(std::make_tuple(Id(i), KwRange {kw, kw}));
         }
     } else {
         for (int i = 0; i < dbSize; i++) {
             Kw kw = i;
-            db.push_back(Doc {Id(i), KwRange {kw, kw}});
+            db.push_back(std::make_tuple(Id(i), KwRange {kw, kw}));
         }
     }
     sortDb(db);

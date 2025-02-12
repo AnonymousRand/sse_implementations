@@ -116,7 +116,6 @@ class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
 template <typename DbDocType = Id, typename DbKwType = KwRange>
 using Db         = std::vector<std::tuple<DbDocType, DbKwType>>; // todo test if list is faster
 // changing `Doc` will lead to a snowball of broken dreams...
-using Doc        = std::tuple<Id, KwRange>; // todo needed?? can just do make_tuple??
 //                `std::map<label, std::pair<data, iv>>`
 using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
 using QueryToken = std::pair<ustring, ustring>;

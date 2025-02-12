@@ -72,7 +72,6 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
     return encInd;
 }
 
-// todo see if can move these to srci where needed
 template <typename RangeType>
 QueryToken PiBasClient::trpdrGeneric(ustring key, Range<RangeType> range) {
     // the paper uses different notation for the key generation here vs. in `setup()`;

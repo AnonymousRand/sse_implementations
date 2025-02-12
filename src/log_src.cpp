@@ -56,7 +56,7 @@ EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
         std::vector<Id> ids = pair.second;
         std::shuffle(ids.begin(), ids.end(), rng);
         for (Id id : ids) {
-            processedDb.push_back(Doc {id, kwRange});
+            processedDb.push_back(std::make_tuple(id, kwRange));
         }
     }
 
