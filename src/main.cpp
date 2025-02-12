@@ -9,6 +9,27 @@
 static std::random_device dev;
 static std::mt19937 rng(dev());
 
+Db<> createDb(int dbSize, bool isDataSkewed) {
+    Db<> db;
+    if (isDataSkewed) {
+        std::normal_distribution dist((dbSize - 1) / 2.0, dbSize / 200.0);
+        for (int i = 0; i < dbSize; i++) {
+            Kw kw;
+            do {
+                kw = (int)dist(rng);
+            } while (kw >= dbSize);
+            db.push_back(Doc {Id(i), KwRange {kw, kw}});
+        }
+    } else {
+        for (int i = 0; i < dbSize; i++) {
+            Kw kw = i;
+            db.push_back(Doc {Id(i), KwRange {kw, kw}});
+        }
+    }
+    sortDb(db);
+    return db;
+}
+
 template <typename UnderlyingClient, typename UnderlyingServer>
 void exp1(LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>& server, Db<> db, int dbSize) {
     auto startTime = std::chrono::high_resolution_clock::now();
@@ -34,9 +55,9 @@ void exp1(LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>
     std::chrono::duration<double> buildIndexElapsed = buildIndexSplit - setupSplit;
     std::chrono::duration<double> queryElapsed      = querySplit - buildIndexSplit;
     std::cout << "\nExecution times:" << std::endl;
-    std::cout << "Total     : " << totalElapsed.count()              << "s" << std::endl;
-    std::cout << "BuildIndex: " << buildIndexElapsed.count()         << "s" << std::endl;
-    std::cout << "Per query : " << queryElapsed.count() / queryCount << "s" << std::endl;
+    std::cout << "Total      : " << totalElapsed.count()              << "s" << std::endl;
+    std::cout << "BuildIndex : " << buildIndexElapsed.count()         << "s" << std::endl;
+    std::cout << "Query (avg): " << queryElapsed.count() / queryCount << "s" << std::endl;
     std::cout << std::endl;
 }
 
@@ -66,31 +87,10 @@ void exp1(LogSrciClient<UnderlyingClient>& client, LogSrciServer<UnderlyingServe
     std::chrono::duration<double> buildIndexElapsed = buildIndexSplit - setupSplit;
     std::chrono::duration<double> queryElapsed      = querySplit - buildIndexSplit;
     std::cout << "\nExecution times:" << std::endl;
-    std::cout << "Total     : " << totalElapsed.count()              << "s" << std::endl;
-    std::cout << "BuildIndex: " << buildIndexElapsed.count()         << "s" << std::endl;
-    std::cout << "Per query : " << queryElapsed.count() / queryCount << "s" << std::endl;
+    std::cout << "Total      : " << totalElapsed.count()              << "s" << std::endl;
+    std::cout << "BuildIndex : " << buildIndexElapsed.count()         << "s" << std::endl;
+    std::cout << "Query (avg): " << queryElapsed.count() / queryCount << "s" << std::endl;
     std::cout << std::endl;
-}
-
-Db<> createDb(int dbSize, bool isDataSkewed) {
-    Db<> db;
-    if (isDataSkewed) {
-        std::normal_distribution dist((dbSize - 1) / 2.0, dbSize / 100.0);
-        for (int i = 0; i < dbSize; i++) {
-            Kw kw;
-            do {
-                kw = (int)dist(rng);
-            } while (kw >= dbSize);
-            db.push_back(Doc {Id(i), KwRange {kw, kw}});
-        }
-    } else {
-        for (int i = 0; i < dbSize; i++) {
-            Kw kw = i;
-            db.push_back(Doc {Id(i), KwRange {kw, kw}});
-        }
-    }
-    sortDb(db);
-    return db;
 }
 
 template <typename UnderlyingClient, typename UnderlyingServer>
@@ -99,6 +99,7 @@ void exp2(
     KwRange query, int maxDbSize, bool isDataSkewed
 ) {
     std::chrono::duration<double> totalElapsed;
+    std::chrono::duration<double> buildIndexElapsed;
     std::chrono::duration<double> queryElapsed;
 
     int queryCount = 0;
@@ -108,6 +109,7 @@ void exp2(
         auto startTime = std::chrono::high_resolution_clock::now();
 
         ustring key = client.setup(KEY_SIZE);
+        auto setupSplit = std::chrono::high_resolution_clock::now();
         EncInd encInd = client.buildIndex(key, db);
         auto buildIndexSplit = std::chrono::high_resolution_clock::now();
 
@@ -116,12 +118,14 @@ void exp2(
         auto querySplit = std::chrono::high_resolution_clock::now();
 
         totalElapsed += querySplit - startTime;
+        buildIndexElapsed += buildIndexSplit - setupSplit;
         queryElapsed += querySplit - buildIndexSplit;
     }
 
     std::cout << "\nExecution times:" << std::endl;
-    std::cout << "Total     : " << totalElapsed.count()              << "s" << std::endl;
-    std::cout << "Per query : " << queryElapsed.count() / queryCount << "s" << std::endl;
+    std::cout << "Total           : " << totalElapsed.count()                   << "s" << std::endl;
+    std::cout << "BuildIndex (avg): " << buildIndexElapsed.count() / queryCount << "s" << std::endl;
+    std::cout << "Query (avg)     : " << queryElapsed.count() / queryCount      << "s" << std::endl;
     std::cout << std::endl;
 }
 
@@ -131,6 +135,7 @@ void exp2(
     KwRange query, int maxDbSize, bool isDataSkewed
 ) {
     std::chrono::duration<double> totalElapsed;
+    std::chrono::duration<double> buildIndexElapsed;
     std::chrono::duration<double> queryElapsed;
 
     int queryCount = 0;
@@ -140,6 +145,7 @@ void exp2(
         auto startTime = std::chrono::high_resolution_clock::now();
 
         std::pair<ustring, ustring> keys = client.setup(KEY_SIZE);
+        auto setupSplit = std::chrono::high_resolution_clock::now();
         std::pair<EncInd, EncInd> encInds = client.buildIndex(keys, db);
         auto buildIndexSplit = std::chrono::high_resolution_clock::now();
 
@@ -150,12 +156,14 @@ void exp2(
         auto querySplit = std::chrono::high_resolution_clock::now();
 
         totalElapsed += querySplit - startTime;
+        buildIndexElapsed += buildIndexSplit - setupSplit;
         queryElapsed += querySplit - buildIndexSplit;
     }
 
     std::cout << "Execution times:" << std::endl;
-    std::cout << "Total     : " << totalElapsed.count()              << "s" << std::endl;
-    std::cout << "Per query : " << queryElapsed.count() / queryCount << "s" << std::endl;
+    std::cout << "Total           : " << totalElapsed.count()                   << "s" << std::endl;
+    std::cout << "BuildIndex (avg): " << buildIndexElapsed.count() / queryCount << "s" << std::endl;
+    std::cout << "Query (avg)     : " << queryElapsed.count() / queryCount      << "s" << std::endl;
     std::cout << std::endl;
 }
 
