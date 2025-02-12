@@ -110,12 +110,11 @@ class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
 // Other
 ////////////////////////////////////////////////////////////////////////////////
 
-// allow polymophic document types for db (because screw you Log-SRC-i for making everything a nonillion times more complicated)
+// allow polymophic document types for db (screw you Log-SRC-i for making everything a nonillion times more complicated)
 // no easy way to enforce (templated) base classes for clarity unfortunately, like Java generics `extends`
 // so just make sure `DbDocType` subclasses `IEncryptable` and `DbKwType` subclasses `Range`
 template <typename DbDocType = Id, typename DbKwType = KwRange>
-using Db         = std::vector<std::tuple<DbDocType, DbKwType>>; // todo test if list is faster
-// changing `Doc` will lead to a snowball of broken dreams...
+using Db         = std::vector<std::tuple<DbDocType, DbKwType>>;
 //                `std::map<label, std::pair<data, iv>>`
 using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
 using QueryToken = std::pair<ustring, ustring>;
