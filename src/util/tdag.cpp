@@ -63,7 +63,7 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& 
 // TODO note assumptions for optimizations: ranges strictly increasing, balanced tree
 // TODO have to verify/prove early exits?
 template <typename T>
-TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
+TdagNode<T>* TdagNode<T>::findSrcRecur(Range<T> targetRange) {
     std::map<T, TdagNode<T>*> srcCandidates;
     auto addCandidate = [&](TdagNode<T>* node) {
         if (node == nullptr || !node->range.contains(targetRange)) {
@@ -120,6 +120,15 @@ TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
     } else {
         return srcCandidates.begin()->second; // take advantage of `std::map`s being sorted by key
     }
+}
+
+template <typename T>
+TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
+    TdagNode<T>* src = this->findSrcRecur(targetRange);
+    if (src == nullptr) {
+        return this;
+    }
+    return src;
 }
 
 template <typename T>

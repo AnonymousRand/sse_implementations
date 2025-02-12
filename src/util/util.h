@@ -107,7 +107,7 @@ class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Other Custom Types
+// Other
 ////////////////////////////////////////////////////////////////////////////////
 
 // allow polymophic document types for db (because screw you Log-SRC-i for making everything a nonillion times more complicated)
@@ -120,3 +120,6 @@ using Doc        = std::tuple<Id, KwRange>; // todo needed?? can just do make_tu
 //                `std::map<label, std::pair<data, iv>>`
 using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
 using QueryToken = std::pair<ustring, ustring>;
+
+template <typename DbDocType, typename DbKwType>
+void sortDb(Db<DbDocType, DbKwType>& db);

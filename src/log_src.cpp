@@ -32,6 +32,7 @@ EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
     // temporarily use `unordered_map` instead of `vector` to easily identify
     // which docs share the same `kwRange` for shuffling later
     std::map<KwRange, std::vector<Id>> tempProcessedDb;
+    int temp = 0;
     for (auto entry : db) {
         Id id = std::get<0>(entry);
         KwRange kwRange = std::get<1>(entry);

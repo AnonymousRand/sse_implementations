@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <iostream>
@@ -218,3 +219,16 @@ template class IEncryptable<std::pair<KwRange, IdRange>>;
 
 template ustring toUstr(IEncryptable<int>& id);
 template ustring toUstr(IEncryptable<std::pair<KwRange, IdRange>>& srciDb1Doc);
+
+////////////////////////////////////////////////////////////////////////////////
+// Other
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename DbDocType, typename DbKwType>
+void sortDb(Db<DbDocType, DbKwType>& db) {
+    std::sort(db.begin(), db.end(), [](std::tuple<Id, KwRange> entry1, std::tuple<Id, KwRange> entry2) {
+        return std::get<0>(entry1) < std::get<0>(entry2);
+    });
+}
+
+template void sortDb(Db<Id, KwRange>& db);

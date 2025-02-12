@@ -20,6 +20,12 @@ class TdagNode {
         std::list<TdagNode<T>*> traverse();
         std::list<TdagNode<T>*> traverse(std::unordered_set<TdagNode<T>*>& extraParents);
 
+        /**
+         * Find the single range cover of the leaves containing `range`.
+         * Can return `nullptr`!!!
+         */
+        TdagNode<T>* findSrcRecur(Range<T> targetRange);
+
     public:
         /**
          * Construct a `TdagNode` with the given `Range`, leaving its children `nullptr`.
@@ -36,6 +42,7 @@ class TdagNode {
 
         /**
          * Find the single range cover of the leaves containing `range`.
+         * If `range` not found in `this`, return `this`.
          */
         TdagNode<T>* findSrc(Range<T> targetRange);
 
