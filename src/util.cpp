@@ -37,7 +37,7 @@ std::string fromUstr(ustring ustr) {
     return str;
 }
 
-std::ostream& operator << (std::ostream& os, const ustring ustr) {
+std::ostream& operator <<(std::ostream& os, const ustring ustr) {
     return os << fromUstr(ustr);
 }
 
@@ -68,39 +68,51 @@ Id Id::fromUstr(ustring ustr) {
     return Id(std::stoi(str));
 }
 
-void operator ++ (Id& id, int _) {
+Id abs(const Id& id) {
+    return Id(abs(id.val));
+}
+
+void operator ++(Id& id, int _) {
     id.val++;
 }
 
-bool operator + (const Id& id1, const Id& id2) {
+Id operator +(const Id& id1, const Id& id2) {
     return id1.val + id2.val;
 }
 
-bool operator - (const Id& id1, const Id& id2) {
+Id operator +(const Id& id1, const int n) {
+    return Id(id1.val + n);
+}
+
+Id operator -(const Id& id1, const Id& id2) {
     return id1.val - id2.val;
 }
 
-bool operator == (const Id& id1, const Id& id2) {
+Id operator -(const Id& id1, const int n) {
+    return Id(id1.val - n);
+}
+
+bool operator ==(const Id& id1, const Id& id2) {
     return id1.val == id2.val;
 }
 
-bool operator < (const Id& id1, const Id& id2) {
+bool operator <(const Id& id1, const Id& id2) {
     return id1.val < id2.val;
 }
 
-bool operator > (const Id& id1, const Id& id2) {
+bool operator >(const Id& id1, const Id& id2) {
     return id1.val > id2.val;
 }
 
-bool operator <= (const Id& id1, const Id& id2) {
+bool operator <=(const Id& id1, const Id& id2) {
     return id1.val <= id2.val;
 }
 
-bool operator >= (const Id& id1, const Id& id2) {
+bool operator >=(const Id& id1, const Id& id2) {
     return id1.val >= id2.val;
 }
 
-std::ostream& operator << (std::ostream& os, const Id& id) {
+std::ostream& operator <<(std::ostream& os, const Id& id) {
     return os << id.val;
 }
 
@@ -156,22 +168,22 @@ bool Range<T>::isDisjointWith(Range<T> range) {
 }
 
 template <typename T>
-std::ostream& operator << (std::ostream& os, const Range<T>& range) {
+std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
     return os << range.first << "-" << range.second;
 }
 
-template std::ostream& operator << (std::ostream& os, const Range<Id>& range);
-template std::ostream& operator << (std::ostream& os, const Range<Kw>& range);
+template std::ostream& operator <<(std::ostream& os, const Range<Id>& range);
+template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
 
 template<typename T>
-std::string operator + (const std::string& str, const Range<T>& range) {
+std::string operator +(const std::string& str, const Range<T>& range) {
     std::stringstream ss;
     ss << str << range;
     return ss.str();
 }
 
-template std::string operator + (const std::string& str, const Range<Id>& range);
-template std::string operator + (const std::string& str, const Range<Kw>& range);
+template std::string operator +(const std::string& str, const Range<Id>& range);
+template std::string operator +(const std::string& str, const Range<Kw>& range);
 
 template <typename T>
 ustring toUstr(Range<T> range) {
@@ -180,6 +192,37 @@ ustring toUstr(Range<T> range) {
 
 template ustring toUstr(Range<Id> range);
 template ustring toUstr(Range<Kw> range);
+
+// todo temp?
+
+template class IEncryptable<std::pair<KwRange, IdRange>>;
+
+SrciDb1Doc::SrciDb1Doc(KwRange kwRange, IdRange idRange)
+        : IEncryptable<std::pair<KwRange, IdRange>>(std::pair<KwRange, IdRange> {kwRange, idRange}) {}
+
+ustring SrciDb1Doc::toUstr() {
+    std::string str = "(" + this->val.first + "," + this->val.second + ")";
+    return ::toUstr(str);
+}
+
+std::pair<KwRange, IdRange> SrciDb1Doc::fromUstr(ustring ustr) {
+    std::string str = ::fromUstr(ustr);
+    std::regex re("\\((.*?),(.*?)\\)");
+    std::smatch matches;
+    if (!std::regex_search(str, matches, re) || matches.size() != 2) {
+        std::cerr << "Error: bad string passed to `SrciDb1Doc.fromUstr()`, the world is going to end" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    KwRange kwRange = KwRange::fromStr(matches[0].str());
+    IdRange idRange = IdRange::fromStr(matches[1].str());
+    return std::pair<KwRange, IdRange> {kwRange, idRange};
+}
+
+template ustring toUstr(IEncryptable<SrciDb1Doc>& srciDb1Doc);
+
+std::ostream& operator <<(std::ostream& os, const SrciDb1Doc& srciDb1Doc) {
+    return os << "(" << srciDb1Doc.val.first << ", [" << srciDb1Doc.val.second << "])";
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // TDAG
@@ -417,16 +460,16 @@ TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>> leafVals) {
 }
 
 template <typename T>
-std::ostream& operator << (std::ostream& os, TdagNode<T> node) {
-    std::list<TdagNode<T>*> nodes = node.traverse();
+std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
+    std::list<TdagNode<T>*> nodes = node->traverse();
     for (TdagNode<T>* node : nodes) {
         os << node->getRange() << std::endl;
     }
     return os;
 }
 
-template std::ostream& operator << (std::ostream& os, TdagNode<Id> node);
-template std::ostream& operator << (std::ostream& os, TdagNode<Kw> node);
+template std::ostream& operator <<(std::ostream& os, TdagNode<Id>* node);
+template std::ostream& operator <<(std::ostream& os, TdagNode<Kw>* node);
 
 ////////////////////////////////////////////////////////////////////////////////
 // OpenSSL

@@ -7,13 +7,19 @@
 // Client
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcClient::LogSrcClient(PiBasClient underlying) : IRangeSseClient<ustring, EncInd>(underlying) {}
+template class LogSrcClient<PiBasClient>;
 
-ustring LogSrcClient::setup(int secParam) {
+template <typename Underlying>
+LogSrcClient<Underlying>::LogSrcClient(Underlying underlying)
+        : IRangeSseClient<ustring, EncInd, Underlying>(underlying) {}
+
+template <typename Underlying>
+ustring LogSrcClient<Underlying>::setup(int secParam) {
     return this->underlying.setup(secParam);
 }
 
-EncInd LogSrcClient::buildIndex(ustring key, Db<Id, KwRange> db) {
+template <typename Underlying>
+EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = -1;
     for (auto entry : db) {
@@ -24,33 +30,33 @@ EncInd LogSrcClient::buildIndex(ustring key, Db<Id, KwRange> db) {
     }
     this->tdag = TdagNode<Kw>::buildTdag(maxKw);
 
-    // replicate every document to all nodes/keywords ranges in TDAG that cover it
+    // replicate every document to all keyword ranges/nodes in TDAG that cover it
     // temporarily use `unordered_map` instead of `vector` to easily identify
     // which docs share the same `kwRange` for shuffling later
-    std::map<Id, std::vector<KwRange>> dbWithReplicas;
+    std::map<KwRange, std::vector<Id>> tempProcessedDb;
     for (auto entry : db) {
         Id id = std::get<0>(entry);
         KwRange kwRange = std::get<1>(entry);
         std::list<TdagNode<Kw>*> ancestors = this->tdag->getLeafAncestors(kwRange);
         for (TdagNode<Kw>* ancestor : ancestors) {
             KwRange ancestorKwRange = ancestor->getRange();
-            if (dbWithReplicas.count(id) == 0) {
-                dbWithReplicas[id] = std::vector<KwRange> {ancestorKwRange};
+            if (tempProcessedDb.count(ancestorKwRange) == 0) {
+                tempProcessedDb[ancestorKwRange] = std::vector<Id> {id};
             } else {
-                dbWithReplicas[id].push_back(ancestorKwRange);
+                tempProcessedDb[ancestorKwRange].push_back(id);
             }
         }
     }
 
-    // randomly permute documents associated with same keyword range/node and convert temporary `unordered_map` to `Db`
-    Db<Id, KwRange> processedDb;
+    // randomly permute documents associated with same keyword range/node and convert temporary `map` to `Db`
+    Db<> processedDb;
     std::random_device rd;
     std::mt19937 rng(rd());
-    for (auto pair : dbWithReplicas) {
-        Id id = pair.first;
-        std::vector<KwRange> kwRanges = pair.second;
-        std::shuffle(kwRanges.begin(), kwRanges.end(), rng);
-        for (KwRange kwRange : kwRanges) {
+    for (auto pair : tempProcessedDb) {
+        KwRange kwRange = pair.first;
+        std::vector<Id> ids = pair.second;
+        std::shuffle(ids.begin(), ids.end(), rng);
+        for (Id id : ids) {
             processedDb.push_back(Doc {id, kwRange});
         }
     }
@@ -58,7 +64,8 @@ EncInd LogSrcClient::buildIndex(ustring key, Db<Id, KwRange> db) {
     return this->underlying.buildIndexGeneric(key, processedDb);
 }
 
-QueryToken LogSrcClient::trpdr(ustring key, KwRange kwRange) {
+template <typename Underlying>
+QueryToken LogSrcClient<Underlying>::trpdr(ustring key, KwRange kwRange) {
     TdagNode<Kw>* src = this->tdag->findSrc(kwRange);
     std::cout << "SRC for " << kwRange << " is " << src->getRange() << std::endl;
     return this->underlying.trpdr(key, src->getRange());
@@ -68,8 +75,12 @@ QueryToken LogSrcClient::trpdr(ustring key, KwRange kwRange) {
 // Server
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrcServer::LogSrcServer(PiBasServer underlying) : IRangeSseServer<EncInd>(underlying) {}
+template class LogSrcServer<PiBasServer>;
 
-std::vector<Id> LogSrcServer::search(EncInd encInd, QueryToken queryToken) {
+template <typename Underlying>
+LogSrcServer<Underlying>::LogSrcServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
+
+template <typename Underlying>
+std::vector<Id> LogSrcServer<Underlying>::search(EncInd encInd, QueryToken queryToken) {
     return this->underlying.search(encInd, queryToken);
 }

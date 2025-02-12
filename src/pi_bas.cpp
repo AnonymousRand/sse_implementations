@@ -17,7 +17,7 @@ ustring PiBasClient::setup(int secParam) {
     return ustrKey;
 }
 
-EncInd PiBasClient::buildIndex(ustring key, Db<Id, KwRange> db) {
+EncInd PiBasClient::buildIndex(ustring key, Db<> db) {
     return this->buildIndexGeneric(key, db);
 }
 
@@ -75,6 +75,11 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
     return encInd;
 }
 
+// todo see if can move these to srci where needed
+template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<> db);
+template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<SrciDb1Doc, KwRange> db);
+template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<Id, IdRange> db);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Server
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,22 +110,3 @@ std::vector<Id> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
 
     return results;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// IRangeSse
-////////////////////////////////////////////////////////////////////////////////
-
-// have to explicitly instantiate templates (declare all possible types it could take)
-// to make template class implementation work from a separate file
-// todo can we delete these?
-template class IRangeSseClient<ustring, EncInd>;
-template class IRangeSseServer<EncInd>;
-
-template class IRangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>>;
-template class IRangeSseServer<std::pair<EncInd, EncInd>>;
-
-template <typename KeyType, typename EncIndType>
-IRangeSseClient<KeyType, EncIndType>::IRangeSseClient(PiBasClient underlying) : underlying(underlying) {}
-
-template <typename EncIndType>
-IRangeSseServer<EncIndType>::IRangeSseServer(PiBasServer underlying) : underlying(underlying) {}

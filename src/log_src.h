@@ -1,21 +1,22 @@
 #pragma once
 
 #include "pi_bas.h"
-#include "sse.h"
+#include "range_sse.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Client
 ////////////////////////////////////////////////////////////////////////////////
 
-class LogSrcClient : public IRangeSseClient<ustring, EncInd> {
+template <typename Underlying>
+class LogSrcClient : public IRangeSseClient<ustring, EncInd, Underlying> {
     protected:
         TdagNode<Kw>* tdag;
 
     public:
-        LogSrcClient(PiBasClient underlying);
+        LogSrcClient(Underlying underlying);
 
         ustring setup(int secParam) override;
-        EncInd buildIndex(ustring key, Db<Id, KwRange> db) override;
+        EncInd buildIndex(ustring key, Db<> db) override;
         QueryToken trpdr(ustring key, KwRange kwRange) override;
 };
 
@@ -23,9 +24,10 @@ class LogSrcClient : public IRangeSseClient<ustring, EncInd> {
 // Server
 ////////////////////////////////////////////////////////////////////////////////
 
-class LogSrcServer : public IRangeSseServer<EncInd> {
+template <typename Underlying>
+class LogSrcServer : public IRangeSseServer<Underlying> {
     public:
-        LogSrcServer(PiBasServer underlying);
+        LogSrcServer(Underlying underlying);
 
         std::vector<Id> search(EncInd encInd, QueryToken queryToken) override;
 };

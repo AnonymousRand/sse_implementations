@@ -1,42 +1,20 @@
+#include <algorithm>
+#include <random>
+
 #include "log_srci.h"
-
-////////////////////////////////////////////////////////////////////////////////
-// Util
-////////////////////////////////////////////////////////////////////////////////
-
-template class IEncryptable<std::pair<KwRange, IdRange>>;
-
-SrciDb1DocType::SrciDb1DocType(KwRange kwRange, IdRange idRange)
-        : IEncryptable<std::pair<KwRange, IdRange>>(std::pair<KwRange, IdRange> {kwRange, idRange}) {}
-
-ustring SrciDb1DocType::toUstr() {
-    std::string str = "(" + this->val.first + "," + this->val.second + ")";
-    return ::toUstr(str);
-}
-
-std::pair<KwRange, IdRange> SrciDb1DocType::fromUstr(ustring ustr) {
-    std::string str = ::fromUstr(ustr);
-    std::regex re("\\((.*?),(.*?)\\)");
-    std::smatch matches;
-    if (!std::regex_search(str, matches, re) || matches.size() != 2) {
-        std::cerr << "Error: bad string passed to `SrciDb1DocType.fromUstr()`, the world is going to end" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    KwRange kwRange = KwRange::fromStr(matches[0].str());
-    IdRange idRange = IdRange::fromStr(matches[1].str());
-    return std::pair<KwRange, IdRange> {kwRange, idRange};
-}
-
-template ustring toUstr(IEncryptable<SrciDb1DocType>& srciDb1DocType);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Client
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrciClient::LogSrciClient(PiBasClient underlying)
-        : IRangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>>(underlying) {}
+template class LogSrciClient<PiBasClient>;
 
-std::pair<ustring, ustring> LogSrciClient::setup(int secParam) {
+template <typename Underlying>
+LogSrciClient<Underlying>::LogSrciClient(Underlying underlying)
+        : IRangeSseClient<std::pair<ustring, ustring>, std::pair<EncInd, EncInd>, Underlying>(underlying) {}
+
+template <typename Underlying>
+std::pair<ustring, ustring> LogSrciClient<Underlying>::setup(int secParam) {
     unsigned char* key1 = new unsigned char[secParam];
     unsigned char* key2 = new unsigned char[secParam];
     int res1 = RAND_priv_bytes(key1, secParam);
@@ -51,7 +29,8 @@ std::pair<ustring, ustring> LogSrciClient::setup(int secParam) {
     return std::pair<ustring, ustring> {ustrKey1, ustrKey2};
 }
 
-std::pair<EncInd, EncInd> LogSrciClient::buildIndex(std::pair<ustring, ustring> key, Db<Id, KwRange> db) {
+template <typename Underlying>
+std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustring, ustring> key, Db<> db) {
     ustring key1 = key.first;
     ustring key2 = key.second;
 
@@ -80,30 +59,80 @@ std::pair<EncInd, EncInd> LogSrciClient::buildIndex(std::pair<ustring, ustring> 
         uniqueKwRanges.insert(kwRange);
     }
 
-    // replicate every document (in this case pairs) to all nodes/keywords ranges in TDAG1 that cover it
+    // replicate every document (in this case pairs) to all keyword ranges/nodes in TDAG1 that cover it
     // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, id range), kw range/node)
-    Db<SrciDb1DocType, KwRange> db1;
+    Db<SrciDb1Doc, KwRange> db1;
     for (KwRange kwRange : uniqueKwRanges) {
         auto itDocsWithSameKwRange = index.find(kwRange);
         std::set<Id> docsWithSameKwRange = itDocsWithSameKwRange->second;
         IdRange idRange {*docsWithSameKwRange.begin(), *docsWithSameKwRange.rbegin()}; // `set` moment
-        SrciDb1DocType pair {kwRange, idRange};
+        SrciDb1Doc pair {kwRange, idRange};
 
         std::list<TdagNode<Kw>*> ancestors = this->tdag1->getLeafAncestors(kwRange);
         for (TdagNode<Kw>* ancestor : ancestors) {
-            std::pair<SrciDb1DocType, KwRange> finalEntry {pair, ancestor->getRange()};
+            std::pair<SrciDb1Doc, KwRange> finalEntry {pair, ancestor->getRange()};
             db1.push_back(finalEntry);
         }
     }
 
-    EncInd encInd1 = this->underlying.buildIndexGeneric<SrciDb1DocType, KwRange>(key1, db1);
+    // todo temp
+    for (auto entry : db1) {
+        std::cout << std::get<1>(entry) << ": " << std::get<0>(entry) << std::endl;
+    }
+
+    // build TDAG2 over documents
+    Id maxId = -1;
+    for (auto entry : db) {
+        Id id = std::get<0>(entry);
+        std::cout << "id: " << id << std::endl;
+        if (id > maxId) {
+            maxId = id;
+            std::cout << "max: " << maxId << std::endl;
+        }
+    }
+    this->tdag2 = TdagNode<Id>::buildTdag(maxId);
+
+    // replicate every document to all id ranges/nodes in TDAG2 that cover it
+    // again need temporary `map` to shuffle
+    std::map<IdRange, std::vector<Id>> tempInd2;
+    for (auto entry : db) {
+        Id id = std::get<0>(entry);
+        std::list<TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(IdRange {id, id});
+        for (TdagNode<Id>* ancestor : ancestors) {
+            IdRange ancestorIdRange = ancestor->getRange();
+            if (tempInd2.count(ancestorIdRange) == 0) {
+                tempInd2[ancestorIdRange] = std::vector<Id> {id};
+            } else {
+                tempInd2[ancestorIdRange].push_back(id);
+            }
+        }
+    }
+
+    // randomly permute documents associated with same id range/node and convert temporary `map` to `Db`
+    Db<Id, IdRange> db2;
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    for (auto pair : tempInd2) {
+        IdRange idRange = pair.first;
+        std::vector<Id> ids = pair.second;
+        std::shuffle(ids.begin(), ids.end(), rng);
+        for (Id id: ids) {
+            db2.push_back(std::pair <Id, IdRange> {id, idRange});
+        }
+    }
+
+    EncInd encInd1 = this->underlying.buildIndexGeneric(key1, db1);
+    EncInd encInd2 = this->underlying.buildIndexGeneric(key2, db2);
+    return std::pair<EncInd, EncInd> {encInd1, encInd2};
 }
 
-QueryToken trpdr1(ustring key1, KwRange kwRange) {
-
+template <typename Underlying>
+QueryToken LogSrciClient<Underlying>::trpdr(ustring key1, KwRange kwRange) {
+    
 }
 
-QueryToken trpdr(ustring key2, std::vector<SrciDb1DocType> choices) {
+template <typename Underlying>
+QueryToken LogSrciClient<Underlying>::trpdr2(ustring key2, std::vector<SrciDb1Doc> choices) {
 
 }
 
@@ -111,4 +140,13 @@ QueryToken trpdr(ustring key2, std::vector<SrciDb1DocType> choices) {
 // Server
 ////////////////////////////////////////////////////////////////////////////////
 
-LogSrciServer::LogSrciServer(PiBasServer underlying) : IRangeSseServer<std::pair<EncInd, EncInd>>(underlying) {}
+template class LogSrciServer<PiBasServer>;
+
+template <typename Underlying>
+LogSrciServer<Underlying>::LogSrciServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
+
+template <typename Underlying>
+std::vector<SrciDb1Doc> LogSrciServer<Underlying>::search1(EncInd encInd1, QueryToken queryToken) {}
+
+template <typename Underlying>
+std::vector<Id> LogSrciServer<Underlying>::search(EncInd encInd2, QueryToken queryToken) {}
