@@ -69,8 +69,8 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
         IdRange idRange {*docsWithSameKwRange.begin(), *docsWithSameKwRange.rbegin()}; // `set` moment
         SrciDb1Doc pair {kwRange, idRange};
 
-        std::list<const TdagNode<Kw>*> ancestors = this->tdag1->getLeafAncestors(kwRange);
-        for (const TdagNode<Kw>* ancestor : ancestors) {
+        std::list<TdagNode<Kw>*> ancestors = this->tdag1->getLeafAncestors(kwRange);
+        for (TdagNode<Kw>* ancestor : ancestors) {
             std::pair<SrciDb1Doc, KwRange> finalEntry {pair, ancestor->getRange()};
             db1.push_back(finalEntry);
         }
@@ -91,8 +91,8 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
     std::map<IdRange, std::vector<Id>> tempInd2;
     for (auto entry : db) {
         Id id = std::get<0>(entry);
-        std::list<const TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(IdRange {id, id});
-        for (const TdagNode<Id>* ancestor : ancestors) {
+        std::list<TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(IdRange {id, id});
+        for (TdagNode<Id>* ancestor : ancestors) {
             IdRange ancestorIdRange = ancestor->getRange();
             if (tempInd2.count(ancestorIdRange) == 0) {
                 tempInd2[ancestorIdRange] = std::vector<Id> {id};
@@ -122,7 +122,7 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
 
 template <typename Underlying>
 QueryToken LogSrciClient<Underlying>::trpdr1(ustring key1, KwRange kwRange) {
-    const TdagNode<Kw>* src = this->tdag1->findSrc(kwRange);
+    TdagNode<Kw>* src = this->tdag1->findSrc(kwRange);
     return this->underlying.trpdrGeneric(key1, src->getRange());
 }
 
@@ -144,7 +144,7 @@ QueryToken LogSrciClient<Underlying>::trpdr2(ustring key2, KwRange kwRange, std:
     }
 
     IdRange idRangeToQuery {minId, maxId};
-    const TdagNode<Id>* src = this->tdag2->findSrc(idRangeToQuery);
+    TdagNode<Id>* src = this->tdag2->findSrc(idRangeToQuery);
     return this->underlying.trpdrGeneric(key2, src->getRange());
 }
 

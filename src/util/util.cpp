@@ -7,8 +7,6 @@
 
 #include "util.h"
 
-// todo const reference as much in tdag/util as possible? like range constructor for example (copied from std::pair)
-
 ////////////////////////////////////////////////////////////////////////////////
 // ustring
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,15 +181,15 @@ template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
 template std::string operator +(const std::string& str, const Range<Id>& range);
 template std::string operator +(const std::string& str, const Range<Kw>& range);
 
-template ustring toUstr(Range<Id> range);
-template ustring toUstr(Range<Kw> range);
+template ustring toUstr(const Range<Id>& range);
+template ustring toUstr(const Range<Kw>& range);
 
 // todo temp?
 
 SrciDb1Doc::SrciDb1Doc(const KwRange& kwRange, const IdRange& idRange)
         : IEncryptable<std::pair<KwRange, IdRange>>(std::pair<KwRange, IdRange> {kwRange, idRange}) {}
 
-ustring SrciDb1Doc::encode() {
+ustring SrciDb1Doc::encode() const {
     std::string str = "(" + this->val.first + "," + this->val.second + ")";
     return ::toUstr(str);
 }
@@ -216,8 +214,8 @@ std::ostream& operator <<(std::ostream& os, const SrciDb1Doc& srciDb1Doc) {
 template class IEncryptable<int>;
 template class IEncryptable<std::pair<KwRange, IdRange>>;
 
-template ustring toUstr(IEncryptable<int>& id);
-template ustring toUstr(IEncryptable<std::pair<KwRange, IdRange>>& srciDb1Doc);
+template ustring toUstr(const IEncryptable<int>& id);
+template ustring toUstr(const IEncryptable<std::pair<KwRange, IdRange>>& srciDb1Doc);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Other

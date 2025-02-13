@@ -17,14 +17,14 @@ class TdagNode {
         /**
          * Traverse subtree of `this` and return all traversed nodes.
          */
-        std::list<const TdagNode<T>*> traverse() const;
-        std::list<const TdagNode<T>*> traverse(std::unordered_set<const TdagNode<T>*>& extraParents) const;
+        std::list<TdagNode<T>*> traverse();
+        std::list<TdagNode<T>*> traverse(std::unordered_set<TdagNode<T>*>& extraParents);
  
         /**
          * Find the single range cover of the leaves containing `range`.
          * Can return `nullptr`!!!
          */
-        const TdagNode<T>* findSrcRecur(const Range<T>& targetRange) const;
+        TdagNode<T>* findSrcRecur(const Range<T>& targetRange);
 
     public:
         /**
@@ -44,18 +44,18 @@ class TdagNode {
          * Find the single range cover of the leaves containing `range`.
          * If `range` not found in `this`, return `this`.
          */
-        const TdagNode<T>* findSrc(const Range<T>& targetRange) const;
+        TdagNode<T>* findSrc(const Range<T>& targetRange);
 
         /**
          * Get all leaf values from the subtree of `this`.
          */
-        std::list<Range<T>> traverseLeaves() const;
+        std::list<Range<T>> traverseLeaves();
 
         /**
          * Get all ancestors (i.e. covering nodes) of the leaf node with `leafRange` within the tree `this`,
          * including the leaf itself.
          */
-        std::list<const TdagNode<T>*> getLeafAncestors(const Range<T>& leafRange) const;
+        std::list<TdagNode<T>*> getLeafAncestors(const Range<T>& leafRange);
 
         /**
          * Get `this->range`.
@@ -66,15 +66,15 @@ class TdagNode {
          * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given maximum leaf value,
          * with consecutive size 1 ranges as leaves.
          */
-        static TdagNode<T>* buildTdag(const T& maxLeafVal);
+        static TdagNode<T>* buildTdag(T& maxLeafVal);
 
         /**
          * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given leaf values.
          * Leaf values must be disjoint but contiguous `Range`s; they are sorted in
          * ascending order by `set` based on the definition of the `<` operator for `Range`.
          */
-        static TdagNode<T>* buildTdag(const std::set<Range<T>>& leafVals);
+        static TdagNode<T>* buildTdag(std::set<Range<T>>& leafVals);
 
         template <typename T2>
-        friend std::ostream& operator <<(std::ostream& os, const TdagNode<T2>* const node);
+        friend std::ostream& operator <<(std::ostream& os, TdagNode<T2>* node);
 };

@@ -31,14 +31,14 @@ TdagNode<T>::~TdagNode() {
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
 // track `extraParent` nodes in an `unordered_set` to prevent duplicates
 template <typename T>
-std::list<const TdagNode<T>*> TdagNode<T>::traverse() const {
-    std::unordered_set<const TdagNode<T>*> nodes;
+std::list<TdagNode<T>*> TdagNode<T>::traverse() {
+    std::unordered_set<TdagNode<T>*> nodes;
     return this->traverse(nodes);
 }
 
 template <typename T>
-std::list<const TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<const TdagNode<T>*>& extraParents) const {
-    std::list<const TdagNode<T>*> nodes;
+std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& extraParents) {
+    std::list<TdagNode<T>*> nodes;
     nodes.push_front(this);
 
     if (this->left != nullptr) {
@@ -63,9 +63,9 @@ std::list<const TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<const Tda
 // TODO note assumptions for optimizations: ranges strictly increasing, balanced tree
 // TODO have to verify/prove early exits?
 template <typename T>
-const TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) const {
-    std::map<T, const TdagNode<T>*> srcCandidates;
-    auto addCandidate = [&](const TdagNode<T>* node) {
+TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) {
+    std::map<T, TdagNode<T>*> srcCandidates;
+    auto addCandidate = [&](TdagNode<T>* node) {
         if (node == nullptr || !node->range.contains(targetRange)) {
             return T(-1);
         }
@@ -101,14 +101,14 @@ const TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) const 
         return this;
     }
     if (this->left != nullptr) {
-        const TdagNode<T>* leftSrc = this->left->findSrc(targetRange);
+        TdagNode<T>* leftSrc = this->left->findSrc(targetRange);
         diff = addCandidate(leftSrc);
         if (diff == 0) {
             return leftSrc;
         }
     }
     if (this->right != nullptr) {
-        const TdagNode<T>* rightSrc = this->right->findSrc(targetRange);
+        TdagNode<T>* rightSrc = this->right->findSrc(targetRange);
         diff = addCandidate(rightSrc);
         if (diff == 0) {
             return rightSrc;
@@ -123,8 +123,8 @@ const TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) const 
 }
 
 template <typename T>
-const TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) const {
-    const TdagNode<T>* src = this->findSrcRecur(targetRange);
+TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
+    TdagNode<T>* src = this->findSrcRecur(targetRange);
     if (src == nullptr) {
         return this;
     }
@@ -132,10 +132,10 @@ const TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) const {
 }
 
 template <typename T>
-std::list<Range<T>> TdagNode<T>::traverseLeaves() const {
+std::list<Range<T>> TdagNode<T>::traverseLeaves() {
     std::list<Range<T>> leafVals;
-    std::list<const TdagNode<T>*> nodes = this->traverse();
-    for (const TdagNode<T>* node : nodes) {
+    std::list<TdagNode<T>*> nodes = this->traverse();
+    for (TdagNode<T>* node : nodes) {
         if (node->left == nullptr && node->right == nullptr) {
             leafVals.push_back(node->range);
         }
@@ -144,8 +144,8 @@ std::list<Range<T>> TdagNode<T>::traverseLeaves() const {
 }
 
 template <typename T>
-std::list<const TdagNode<T>*> TdagNode<T>::getLeafAncestors(const Range<T>& leafRange) const {
-    std::list<const TdagNode<T>*> ancestors = {this};
+std::list<TdagNode<T>*> TdagNode<T>::getLeafAncestors(const Range<T>& leafRange) {
+    std::list<TdagNode<T>*> ancestors = {this};
 
     if (this->left != nullptr && this->left->range.contains(leafRange)) {
         ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafRange));
@@ -166,7 +166,7 @@ Range<T> TdagNode<T>::getRange() const {
 }
 
 template <typename T>
-TdagNode<T>* TdagNode<T>::buildTdag(const T& maxLeafVal) {
+TdagNode<T>* TdagNode<T>::buildTdag(T& maxLeafVal) {
     std::set<Range<T>> leafVals;
     for (T i = 0; i <= maxLeafVal; i++) {
         leafVals.insert(Range<T> {i, i});
@@ -175,7 +175,7 @@ TdagNode<T>* TdagNode<T>::buildTdag(const T& maxLeafVal) {
 }
 
 template <typename T>
-TdagNode<T>* TdagNode<T>::buildTdag(const std::set<Range<T>>& leafVals) {
+TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
     if (leafVals.size() == 0) {
         std::cerr << "Error: `leafVals` passed to `TdagNode.buildTdag()` is empty :/" << std::endl;
         exit(EXIT_FAILURE);
@@ -238,7 +238,7 @@ TdagNode<T>* TdagNode<T>::buildTdag(const std::set<Range<T>>& leafVals) {
 }
 
 template <typename T>
-std::ostream& operator <<(std::ostream& os, const TdagNode<T>* const node) {
+std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
     std::list<TdagNode<T>*> nodes = node->traverse();
     for (TdagNode<T>* node : nodes) {
         os << node->getRange() << std::endl;
@@ -253,5 +253,5 @@ std::ostream& operator <<(std::ostream& os, const TdagNode<T>* const node) {
 template class TdagNode<Kw>;
 template class TdagNode<Id>;
 
-template std::ostream& operator <<(std::ostream& os, const TdagNode<Id>* const node);
-template std::ostream& operator <<(std::ostream& os, const TdagNode<Kw>* const node);
+template std::ostream& operator <<(std::ostream& os, TdagNode<Id>* node);
+template std::ostream& operator <<(std::ostream& os, TdagNode<Kw>* node);
