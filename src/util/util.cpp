@@ -114,6 +114,10 @@ ustring toUstr(const IEncryptable<T>& iEncryptable) {
     return iEncryptable.encode();
 }
 
+template class IEncryptable<int>;
+
+template ustring toUstr(const IEncryptable<int>& id);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Range
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,10 +215,8 @@ std::ostream& operator <<(std::ostream& os, const SrciDb1Doc& srciDb1Doc) {
     return os << "(" << srciDb1Doc.val.first << ", [" << srciDb1Doc.val.second << "])";
 }
 
-template class IEncryptable<int>;
 template class IEncryptable<std::pair<KwRange, IdRange>>;
 
-template ustring toUstr(const IEncryptable<int>& id);
 template ustring toUstr(const IEncryptable<std::pair<KwRange, IdRange>>& srciDb1Doc);
 
 ////////////////////////////////////////////////////////////////////////////////
