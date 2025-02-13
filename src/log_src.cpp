@@ -36,8 +36,8 @@ EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
     for (auto entry : db) {
         Id id = std::get<0>(entry);
         KwRange kwRange = std::get<1>(entry);
-        std::list<TdagNode<Kw>*> ancestors = this->tdag->getLeafAncestors(kwRange);
-        for (TdagNode<Kw>* ancestor : ancestors) {
+        std::list<const TdagNode<Kw>*> ancestors = this->tdag->getLeafAncestors(kwRange);
+        for (const TdagNode<Kw>* ancestor : ancestors) {
             KwRange ancestorKwRange = ancestor->getRange();
             if (tempProcessedDb.count(ancestorKwRange) == 0) {
                 tempProcessedDb[ancestorKwRange] = std::vector<Id> {id};
@@ -65,7 +65,7 @@ EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
 
 template <typename Underlying>
 QueryToken LogSrcClient<Underlying>::trpdr(ustring key, KwRange kwRange) {
-    TdagNode<Kw>* src = this->tdag->findSrc(kwRange);
+    const TdagNode<Kw>* src = this->tdag->findSrc(kwRange);
     return this->underlying.trpdrGeneric(key, src->getRange());
 }
 

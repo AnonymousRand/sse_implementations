@@ -18,11 +18,11 @@ static const int IV_SIZE    = 128 / 8;
 using ustring = std::basic_string<unsigned char>;
 
 ustring toUstr(int n);
-ustring toUstr(std::string s);
+ustring toUstr(const std::string& s);
 ustring toUstr(unsigned char* p, int len);
-std::string fromUstr(ustring ustr);
+std::string fromUstr(const ustring& ustr);
 
-std::ostream& operator <<(std::ostream& os, const ustring ustr);
+std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 ////////////////////////////////////////////////////////////////////////////////
 // IEncryptable
@@ -34,25 +34,25 @@ class IEncryptable {
         T val;
 
     public:
-        IEncryptable(T val);
-        T get();
+        IEncryptable(const T& val);
+        T get() const;
 
-        virtual ustring encode() = 0;
+        virtual ustring encode() const = 0;
 };
 
 class Id : public IEncryptable<int> {
     public:
-        Id(int val);
+        Id(int val); // todo may need const&?
 
-        ustring encode() override;
-        static Id decode(ustring ustr);
+        ustring encode() const override;
+        static Id decode(const ustring& ustr);
 
         friend Id abs(const Id& id);
         friend void operator ++(Id& id, int _); // `int _` required to mark as postfix
         friend Id operator +(const Id& id1, const Id& id2);
-        friend Id operator +(const Id& id, const int n);
+        friend Id operator +(const Id& id, int n);
         friend Id operator -(const Id& id1, const Id& id2);
-        friend Id operator -(const Id& id, const int n);
+        friend Id operator -(const Id& id, int n);
         friend bool operator ==(const Id& id1, const Id& id2);
         friend bool operator <(const Id& id1, const Id& id2);
         friend bool operator >(const Id& id1, const Id& id2);
@@ -62,7 +62,7 @@ class Id : public IEncryptable<int> {
 };
 
 template <typename T>
-ustring toUstr(IEncryptable<T>& iEncryptable);
+ustring toUstr(const IEncryptable<T>& iEncryptable);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Range
@@ -75,11 +75,12 @@ class Range : public std::pair<T, T> {
         Range();
         Range(const T& start, const T& end);
 
-        T size();
-        bool contains(Range<T> range);
-        bool isDisjointWith(Range<T> range);
+        T size() const;
+        bool contains(const Range<T>& range) const;
+        bool isDisjointWith(const Range<T>& range) const;
 
-        static Range<T> fromStr(std::string str);
+        static Range<T> fromStr(const std::string& str);
+
         template<typename T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
         // overload string concatenation (no way this worked)
@@ -87,21 +88,21 @@ class Range : public std::pair<T, T> {
         friend std::string operator +(const std::string& str, const Range<T2>& range);
 };
 
+template <typename T>
+ustring toUstr(const Range<T>& range);
+
 using Kw      = int;
 using IdRange = Range<Id>;
 using KwRange = Range<Kw>;
-
-template <typename T>
-ustring toUstr(Range<T> range);
 
 // todo temp?
 
 class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
     public:
-        SrciDb1Doc(KwRange kwRange, IdRange idRange);
+        SrciDb1Doc(const KwRange& kwRange, const IdRange& idRange);
 
-        ustring encode() override;
-        static SrciDb1Doc decode(ustring ustr);
+        ustring encode() const override;
+        static SrciDb1Doc decode(const ustring& ustr);
 
         friend std::ostream& operator <<(std::ostream& os, const SrciDb1Doc& srciDb1Doc);
 };

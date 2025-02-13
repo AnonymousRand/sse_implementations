@@ -10,8 +10,8 @@
 template <typename Underlying>
 class LogSrciClient : public IRangeSseClient<Underlying> {
     protected:
-        TdagNode<Kw>* tdag1;
-        TdagNode<Id>* tdag2;
+        const TdagNode<Kw>* tdag1;
+        const TdagNode<Id>* tdag2;
 
     public:
         LogSrciClient(Underlying underlying);
