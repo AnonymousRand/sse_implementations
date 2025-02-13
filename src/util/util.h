@@ -42,7 +42,7 @@ class IEncryptable {
 
 class Id : public IEncryptable<int> {
     public:
-        Id(int val); // todo may need const&?
+        Id(int val);
 
         ustring encode() const override;
         static Id decode(const ustring& ustr);

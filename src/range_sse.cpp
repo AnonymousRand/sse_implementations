@@ -1,7 +1,6 @@
 #include "pi_bas.h"
 #include "range_sse.h"
 
-// todo can we delete these?
 template class IRangeSseClient<PiBasClient>;
 template class IRangeSseServer<PiBasServer>;
 
