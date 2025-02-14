@@ -182,40 +182,40 @@ TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
     }
 
     // list to hold nodes while building; initialize with leaves
-    std::list<TdagNode<T>*> l;
+    std::list<TdagNode<T>*> arr;
     for (Range<T> leafVal : leafVals) {
-        l.push_back(new TdagNode<T>(leafVal));
+        arr.push_back(new TdagNode<T>(leafVal));
     }
 
     // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)
     // trees seem balanced though which is nice
-    while (l.size() > 1) {
+    while (arr.size() > 1) {
         // find first two nodes from `l` that have contiguous ranges and join them with a parent node
         // then delete these two nodes and append their new parent node to `l` to keep building tree
-        TdagNode<T>* node1 = l.front();
-        l.pop_front();
+        TdagNode<T>* node1 = arr.front();
+        arr.pop_front();
         // find a contiguous node
-        for (auto it = l.begin(); it != l.end(); it++) {
+        for (auto it = arr.begin(); it != arr.end(); it++) {
             TdagNode<T>* node2 = *it;
             if (node2->range.first - 1 == node1->range.second) {
                 // if `node1` is the left child of new parent node
                 TdagNode<T>* parent = new TdagNode<T>(node1, node2);
-                l.push_back(parent);
-                l.erase(it);
+                arr.push_back(parent);
+                arr.erase(it);
                 break;
             }
             if (node2->range.second + 1 == node1->range.first) {
                 // if `node2` is the left child of new parent node
                 TdagNode<T>* parent = new TdagNode<T>(node2, node1);
-                l.push_back(parent);
-                l.erase(it);
+                arr.push_back(parent);
+                arr.erase(it);
                 break;
             }
         }
     }
 
     // add extra TDAG nodes
-    TdagNode<T>* tdag = l.front();
+    TdagNode<T>* tdag = arr.front();
     std::list<TdagNode<T>*> nodes = tdag->traverse();
     while (!nodes.empty()) {
         TdagNode<T>* node = nodes.front();
