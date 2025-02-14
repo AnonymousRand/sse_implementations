@@ -9,8 +9,6 @@
 static std::random_device dev;
 static std::mt19937 rng(dev());
 
-// todo also check storage size of encrypted index and tdags? maybe just have to iterate through and count # of elements * size of each
-
 Db<> createDb(int dbSize, bool isDataSkewed) {
     Db<> db;
     if (isDataSkewed) {
