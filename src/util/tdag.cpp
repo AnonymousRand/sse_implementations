@@ -184,6 +184,7 @@ TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
     }
 
     // array to hold nodes while building; initialize with leaves
+    // `deque` seems to perform marginally better than `list` or `vector` and seems to be the most natural choice here
     std::deque<TdagNode<T>*> arr;
     for (Range<T> leafVal : leafVals) {
         arr.push_back(new TdagNode<T>(leafVal));
@@ -215,7 +216,7 @@ TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
         // then delete these two nodes and append their new parent node to `l` to keep building tree
         TdagNode<T>* node1 = arr.front();
         arr.pop_front();
-        // find a contiguous node
+        // find a contiguous node; I proved that this must either be the next node at the front, or the one at the back
         if (joinNodes(node1, arr.begin())) {
             continue;
         } 
