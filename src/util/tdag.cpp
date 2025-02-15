@@ -60,6 +60,15 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& 
     return nodes;
 }
 
+template <typename T>
+TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
+    TdagNode<T>* src = this->findSrcRecur(targetRange);
+    if (src == nullptr) {
+        return this;
+    }
+    return src;
+}
+
 // basically traverses tree with many early exits to find best SRC
 template <typename T>
 TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) {
@@ -119,15 +128,6 @@ TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) {
     } else {
         return srcCandidates.begin()->second; // take advantage of `std::map`s being sorted by key
     }
-}
-
-template <typename T>
-TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
-    TdagNode<T>* src = this->findSrcRecur(targetRange);
-    if (src == nullptr) {
-        return this;
-    }
-    return src;
 }
 
 template <typename T>
