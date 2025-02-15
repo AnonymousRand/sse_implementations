@@ -60,20 +60,19 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& 
     return nodes;
 }
 
-template <typename T>
-TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
-    TdagNode<T>* src = this->findSrcRecur(targetRange);
-    if (src == nullptr) {
-        return this;
-    }
-    return src;
-}
-
 // basically traverses tree with many early exits to find best SRC
 template <typename T>
-TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) {
+TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
+    // if the current node is disjoint with the target range, it is impossible for
+    // its children or extra TDAG parent to be the SRC, so we can early exit
+    if (this->range.isDisjointWith(targetRange)) {
+        return nullptr;
+    }
+
+    // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
+    // and extra TDAG parent 
     std::map<T, TdagNode<T>*> srcCandidates;
-    auto addCandidate = [&](TdagNode<T>* node) {
+    auto tryToAddCandidate = [&](TdagNode<T>* node) {
         if (node == nullptr || !node->range.contains(targetRange)) {
             return T(-1);
         }
@@ -83,17 +82,9 @@ TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) {
         return diff;
     };
 
-    // if the current node is disjoint with the target range, it is impossible for
-    // its children or extra TDAG parent to be the SRC, so we can early exit
-    if (this->range.isDisjointWith(targetRange)) {
-        return nullptr;
-    }
-
-    // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
-    // and extra TDAG parent 
     T diff = T(-1);
     if (this->extraParent != nullptr) {
-        diff = addCandidate(this->extraParent);
+        diff = tryToAddCandidate(this->extraParent);
         if (diff == 0) {
             return this->extraParent;
         }
@@ -104,20 +95,20 @@ TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) {
         return nullptr;
     }
 
-    diff = addCandidate(this);
+    diff = tryToAddCandidate(this);
     if (diff == 0) {
         return this;
     }
     if (this->left != nullptr) {
         TdagNode<T>* leftSrc = this->left->findSrc(targetRange);
-        diff = addCandidate(leftSrc);
+        diff = tryToAddCandidate(leftSrc);
         if (diff == 0) {
             return leftSrc;
         }
     }
     if (this->right != nullptr) {
         TdagNode<T>* rightSrc = this->right->findSrc(targetRange);
-        diff = addCandidate(rightSrc);
+        diff = tryToAddCandidate(rightSrc);
         if (diff == 0) {
             return rightSrc;
         }
@@ -125,9 +116,8 @@ TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) {
 
     if (srcCandidates.empty()) {
         return nullptr;
-    } else {
-        return srcCandidates.begin()->second; // take advantage of `std::map`s being sorted by key
     }
+    return srcCandidates.begin()->second; // take advantage of `std::map`s being sorted by key
 }
 
 template <typename T>

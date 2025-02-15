@@ -66,6 +66,10 @@ EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
 template <typename Underlying>
 QueryToken LogSrcClient<Underlying>::trpdr(ustring key, KwRange kwRange) {
     TdagNode<Kw>* src = this->tdag->findSrc(kwRange);
+    // if keyword not in TDAG/index; make sure server handles this and returns no results!
+    if (src == nullptr) { 
+        return this->underlying.trpdrGeneric(key, KwRange {-1, -1});
+    }
     return this->underlying.trpdrGeneric(key, src->getRange());
 }
 

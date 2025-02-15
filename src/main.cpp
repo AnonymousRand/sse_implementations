@@ -12,7 +12,7 @@ static std::mt19937 rng(dev());
 Db<> createDb(int dbSize, bool isDataSkewed) {
     Db<> db;
     if (isDataSkewed) {
-        std::normal_distribution dist((dbSize - 1) / 2.0, dbSize / 250.0);
+        std::normal_distribution dist((dbSize - 1) / 2.0, dbSize / 500.0);
         for (int i = 0; i < dbSize; i++) {
             Kw kw;
             do {
@@ -55,9 +55,9 @@ void exp1(LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>
     std::chrono::duration<double> buildIndexElapsed = buildIndexSplit - setupSplit;
     std::chrono::duration<double> queryElapsed      = querySplit - buildIndexSplit;
     std::cout << "\nExecution times:" << std::endl;
-    std::cout << "Total      : " << totalElapsed.count()              << "s" << std::endl;
-    std::cout << "BuildIndex : " << buildIndexElapsed.count()         << "s" << std::endl;
-    std::cout << "Query (avg): " << queryElapsed.count() / queryCount << "s" << std::endl;
+    std::cout << "Total      : "      << totalElapsed.count()              << "s" << std::endl;
+    std::cout << "BuildIndex : "      << buildIndexElapsed.count()         << "s" << std::endl;
+    std::cout << "Query (avg): "      << queryElapsed.count() / queryCount << "s" << std::endl;
     std::cout << std::endl;
 }
 
@@ -87,9 +87,9 @@ void exp1(LogSrciClient<UnderlyingClient>& client, LogSrciServer<UnderlyingServe
     std::chrono::duration<double> buildIndexElapsed = buildIndexSplit - setupSplit;
     std::chrono::duration<double> queryElapsed      = querySplit - buildIndexSplit;
     std::cout << "\nExecution times:" << std::endl;
-    std::cout << "Total      : " << totalElapsed.count()              << "s" << std::endl;
-    std::cout << "BuildIndex : " << buildIndexElapsed.count()         << "s" << std::endl;
-    std::cout << "Query (avg): " << queryElapsed.count() / queryCount << "s" << std::endl;
+    std::cout << "Total      : "      << totalElapsed.count()              << "s" << std::endl;
+    std::cout << "BuildIndex : "      << buildIndexElapsed.count()         << "s" << std::endl;
+    std::cout << "Query (avg): "      << queryElapsed.count() / queryCount << "s" << std::endl;
     std::cout << std::endl;
 }
 
@@ -160,7 +160,7 @@ void exp2(
         queryElapsed      += querySplit - buildIndexSplit;
     }
 
-    std::cout << "Execution times:" << std::endl;
+    std::cout << "Execution times:"   << std::endl;
     std::cout << "Total           : " << totalElapsed.count()                   << "s" << std::endl;
     std::cout << "BuildIndex (avg): " << buildIndexElapsed.count() / queryCount << "s" << std::endl;
     std::cout << "Query (avg)     : " << queryElapsed.count() / queryCount      << "s" << std::endl;
@@ -180,18 +180,18 @@ int main() {
     Db<> db = createDb(maxDbSize, false);
 
     std::cout << "---------- Experiment 1 for Log-SRC ----------" << std::endl;
-    std::cout << "DB size  : " << maxDbSize << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
-    std::cout << "Data skew: no" << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     logSrcClient = LogSrcClient(piBasClient);
     logSrcServer = LogSrcServer(piBasServer);
     exp1(logSrcClient, logSrcServer, db, maxDbSize);
 
     std::cout << "---------- Experiment 1 for Log-SRC-i ----------" << std::endl;
-    std::cout << "DB size  : " << maxDbSize << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
-    std::cout << "Data skew: no" << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     logSrciClient = LogSrciClient(piBasClient);
     logSrciServer = LogSrciServer(piBasServer);
@@ -201,18 +201,18 @@ int main() {
     db = createDb(maxDbSize, true);
 
     std::cout << "---------- Experiment 1.5 for Log-SRC ----------" << std::endl;
-    std::cout << "DB size  : " << maxDbSize << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
-    std::cout << "Data skew: yes" << std::endl;
+    std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     logSrcClient = LogSrcClient(piBasClient);
     logSrcServer = LogSrcServer(piBasServer);
     exp1(logSrcClient, logSrcServer, db, maxDbSize);
 
     std::cout << "---------- Experiment 1.5 for Log-SRC-i ----------" << std::endl;
-    std::cout << "DB size  : " << maxDbSize << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
-    std::cout << "Data skew: yes" << std::endl;
+    std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     logSrciClient = LogSrciClient(piBasClient);
     logSrciServer = LogSrciServer(piBasServer);
@@ -229,8 +229,8 @@ int main() {
     
     std::cout << "---------- Experiment 2 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : " << query << std::endl;
-    std::cout << "Data skew: no" << std::endl;
+    std::cout << "Query    : "            << query << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     logSrcClient = LogSrcClient(piBasClient);
     logSrcServer = LogSrcServer(piBasServer);
@@ -238,8 +238,8 @@ int main() {
 
     std::cout << "---------- Experiment 2 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : " << query << std::endl;
-    std::cout << "Data skew: no" << std::endl;
+    std::cout << "Query    : "            << query << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     logSrciClient = LogSrciClient(piBasClient);
     logSrciServer = LogSrciServer(piBasServer);
@@ -248,8 +248,8 @@ int main() {
     // experiment 2.5
     std::cout << "---------- Experiment 2.5 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : " << query << std::endl;
-    std::cout << "Data skew: yes" << std::endl;
+    std::cout << "Query    : "            << query << std::endl;
+    std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     logSrcClient = LogSrcClient(piBasClient);
     logSrcServer = LogSrcServer(piBasServer);
@@ -257,8 +257,8 @@ int main() {
 
     std::cout << "---------- Experiment 2.5 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : " << query << std::endl;
-    std::cout << "Data skew: yes" << std::endl;
+    std::cout << "Query    : "            << query << std::endl;
+    std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     logSrciClient = LogSrciClient(piBasClient);
     logSrciServer = LogSrciServer(piBasServer);

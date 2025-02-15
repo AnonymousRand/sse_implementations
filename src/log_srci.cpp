@@ -123,6 +123,9 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
 template <typename Underlying>
 QueryToken LogSrciClient<Underlying>::trpdr1(ustring key1, KwRange kwRange) {
     TdagNode<Kw>* src = this->tdag1->findSrc(kwRange);
+    if (src == nullptr) { 
+        return this->underlying.trpdrGeneric(key1, KwRange {-1, -1});
+    }
     return this->underlying.trpdrGeneric(key1, src->getRange());
 }
 
@@ -145,6 +148,9 @@ QueryToken LogSrciClient<Underlying>::trpdr2(ustring key2, KwRange kwRange, std:
 
     IdRange idRangeToQuery {minId, maxId};
     TdagNode<Id>* src = this->tdag2->findSrc(idRangeToQuery);
+    if (src == nullptr) { 
+        return this->underlying.trpdrGeneric(key2, IdRange {-1, -1});
+    }
     return this->underlying.trpdrGeneric(key2, src->getRange());
 }
 
