@@ -34,8 +34,8 @@ TdagNode<T>::~TdagNode() {
 // track `extraParent` nodes in an `unordered_set` to prevent duplicates
 template <typename T>
 std::list<TdagNode<T>*> TdagNode<T>::traverse() {
-    std::unordered_set<TdagNode<T>*> nodes;
-    return this->traverse(nodes);
+    std::unordered_set<TdagNode<T>*> extraParents;
+    return this->traverse(extraParents);
 }
 
 template <typename T>
@@ -60,10 +60,7 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& 
     return nodes;
 }
 
-// current algo uses divide-and-conquer with early exits to find best SRC
-// TODO time complexity
-// TODO note assumptions for optimizations: ranges strictly increasing, balanced tree
-// TODO have to verify/prove early exits?
+// basically traverses tree with many early exits to find best SRC
 template <typename T>
 TdagNode<T>* TdagNode<T>::findSrcRecur(const Range<T>& targetRange) {
     std::map<T, TdagNode<T>*> srcCandidates;
@@ -147,7 +144,7 @@ std::list<Range<T>> TdagNode<T>::traverseLeaves() {
 
 template <typename T>
 std::list<TdagNode<T>*> TdagNode<T>::getLeafAncestors(const Range<T>& leafRange) {
-    std::list<TdagNode<T>*> ancestors = {this};
+    std::list<TdagNode<T>*> ancestors {this};
 
     if (this->left != nullptr && this->left->range.contains(leafRange)) {
         ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafRange));
@@ -185,9 +182,9 @@ TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
 
     // array to hold nodes while building; initialize with leaves
     // `deque` seems to perform marginally better than `list` or `vector` and seems to be the most natural choice here
-    std::deque<TdagNode<T>*> arr;
+    std::deque<TdagNode<T>*> l;
     for (Range<T> leafVal : leafVals) {
-        arr.push_back(new TdagNode<T>(leafVal));
+        l.push_back(new TdagNode<T>(leafVal));
     }
 
     // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)
@@ -197,36 +194,36 @@ TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
         if (node2->range.first - 1 == node1->range.second) {
             // if `node1` is the left child of new parent node
             TdagNode<T>* parent = new TdagNode<T>(node1, node2);
-            arr.erase(it); // have to `erase()` before `push_back()` to avoid messy memory issues
-            arr.push_back(parent);
+            l.erase(it); // have to `erase()` before `push_back()` to avoid messy memory issues
+            l.push_back(parent);
             return true;
         }
         if (node2->range.second + 1 == node1->range.first) {
             // if `node2` is the left child of new parent node
             TdagNode<T>* parent = new TdagNode<T>(node2, node1);
-            arr.erase(it);
-            arr.push_back(parent);
+            l.erase(it);
+            l.push_back(parent);
             return true;
         }
         return false;
     };
 
-    while (arr.size() > 1) {
+    while (l.size() > 1) {
         // find first two nodes from `l` that have contiguous ranges and join them with a parent node
         // then delete these two nodes and append their new parent node to `l` to keep building tree
-        TdagNode<T>* node1 = arr.front();
-        arr.pop_front();
+        TdagNode<T>* node1 = l.front();
+        l.pop_front();
         // find a contiguous node; I proved that this must either be the next node at the front, or the one at the back
-        if (joinNodes(node1, arr.begin())) {
+        if (joinNodes(node1, l.begin())) {
             continue;
         } 
-        if (!joinNodes(node1, arr.end() - 1)) {
+        if (!joinNodes(node1, l.end() - 1)) {
             std::cout << "nani" << std::endl;
         }
     }
 
     // add extra TDAG nodes
-    TdagNode<T>* tdag = arr.front();
+    TdagNode<T>* tdag = l.front();
     std::list<TdagNode<T>*> nodes = tdag->traverse();
     while (!nodes.empty()) {
         TdagNode<T>* node = nodes.front();
