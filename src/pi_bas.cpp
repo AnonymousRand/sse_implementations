@@ -20,16 +20,8 @@ ustring PiBasClient::setup(int secParam) {
     return ustrKey;
 }
 
-EncInd PiBasClient::buildIndex(ustring key, Db<> db) {
-    return this->buildIndexGeneric(key, db);
-}
-
-QueryToken PiBasClient::trpdr(ustring key, KwRange kwRange) {
-    return this->trpdrGeneric(key, kwRange);
-}
-
 template <typename DbDocType, typename DbKwType>
-EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
+EncInd PiBasClient::buildIndex(ustring key, Db<DbDocType, DbKwType> db) {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     std::map<DbKwType, std::vector<DbDocType>> index;
     std::set<DbKwType> uniqueKws;
@@ -73,7 +65,7 @@ EncInd PiBasClient::buildIndexGeneric(ustring key, Db<DbDocType, DbKwType> db) {
 }
 
 template <typename RangeType>
-QueryToken PiBasClient::trpdrGeneric(ustring key, Range<RangeType> range) {
+QueryToken PiBasClient::trpdr(ustring key, Range<RangeType> range) {
     // the paper uses different notation for the key generation here vs. in `setup()`;
     // but I'm fairly sure they meant the same thing, otherwise it doesn't work
     ustring K = prf(key, toUstr(range));
@@ -83,23 +75,19 @@ QueryToken PiBasClient::trpdrGeneric(ustring key, Range<RangeType> range) {
     return QueryToken {subkey1, subkey2};
 }
 
-template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<> db);
-template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<SrciDb1Doc, KwRange> db);
-template EncInd PiBasClient::buildIndexGeneric(ustring key, Db<Id, IdRange> db);
+template EncInd PiBasClient::buildIndex(ustring key, Db<> db);
+template EncInd PiBasClient::buildIndex(ustring key, Db<SrciDb1Doc, KwRange> db);
+template EncInd PiBasClient::buildIndex(ustring key, Db<Id, IdRange> db);
 
-template QueryToken PiBasClient::trpdrGeneric(ustring key, Range<Id> range);
-template QueryToken PiBasClient::trpdrGeneric(ustring key, Range<Kw> range);
+template QueryToken PiBasClient::trpdr(ustring key, Range<Id> range);
+template QueryToken PiBasClient::trpdr(ustring key, Range<Kw> range);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Server
 ////////////////////////////////////////////////////////////////////////////////
 
-std::vector<Id> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
-    return this->searchGeneric(encInd, queryToken);
-}
-
 template <typename DbDocType>
-std::vector<DbDocType> PiBasServer::searchGeneric(EncInd encInd, QueryToken queryToken) {
+std::vector<DbDocType> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
     std::vector<DbDocType> results;
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
@@ -126,5 +114,5 @@ std::vector<DbDocType> PiBasServer::searchGeneric(EncInd encInd, QueryToken quer
     return results;
 }
 
-template std::vector<Id> PiBasServer::searchGeneric(EncInd encInd, QueryToken queryToken);
-template std::vector<SrciDb1Doc> PiBasServer::searchGeneric(EncInd encInd, QueryToken queryToken);
+template std::vector<Id> PiBasServer::search(EncInd encInd, QueryToken queryToken);
+template std::vector<SrciDb1Doc> PiBasServer::search(EncInd encInd, QueryToken queryToken);

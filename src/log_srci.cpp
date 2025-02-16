@@ -115,8 +115,8 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
         }
     }
 
-    EncInd encInd1 = this->underlying.buildIndexGeneric(key1, db1);
-    EncInd encInd2 = this->underlying.buildIndexGeneric(key2, db2);
+    EncInd encInd1 = this->underlying.buildIndex(key1, db1);
+    EncInd encInd2 = this->underlying.buildIndex(key2, db2);
     return std::pair<EncInd, EncInd> {encInd1, encInd2};
 }
 
@@ -124,9 +124,9 @@ template <typename Underlying>
 QueryToken LogSrciClient<Underlying>::trpdr1(ustring key1, KwRange kwRange) {
     TdagNode<Kw>* src = this->tdag1->findSrc(kwRange);
     if (src == nullptr) { 
-        return this->underlying.trpdrGeneric(key1, KwRange {-1, -1});
+        return this->underlying.trpdr(key1, KwRange {-1, -1});
     }
-    return this->underlying.trpdrGeneric(key1, src->getRange());
+    return this->underlying.trpdr(key1, src->getRange());
 }
 
 template <typename Underlying>
@@ -149,9 +149,9 @@ QueryToken LogSrciClient<Underlying>::trpdr2(ustring key2, KwRange kwRange, std:
     IdRange idRangeToQuery {minId, maxId};
     TdagNode<Id>* src = this->tdag2->findSrc(idRangeToQuery);
     if (src == nullptr) { 
-        return this->underlying.trpdrGeneric(key2, IdRange {-1, -1});
+        return this->underlying.trpdr(key2, IdRange {-1, -1});
     }
-    return this->underlying.trpdrGeneric(key2, src->getRange());
+    return this->underlying.trpdr(key2, src->getRange());
 }
 
 template class LogSrciClient<PiBasClient>;
@@ -165,12 +165,12 @@ LogSrciServer<Underlying>::LogSrciServer(Underlying underlying) : IRangeSseServe
 
 template <typename Underlying>
 std::vector<SrciDb1Doc> LogSrciServer<Underlying>::search1(EncInd encInd1, QueryToken queryToken) {
-    return this->underlying.template searchGeneric<SrciDb1Doc>(encInd1, queryToken);
+    return this->underlying.template search<SrciDb1Doc>(encInd1, queryToken);
 }
 
 template <typename Underlying>
 std::vector<Id> LogSrciServer<Underlying>::search2(EncInd encInd2, QueryToken queryToken) {
-    return this->underlying.template searchGeneric<Id>(encInd2, queryToken);
+    return this->underlying.template search<Id>(encInd2, queryToken);
 }
 
 template class LogSrciServer<PiBasServer>;

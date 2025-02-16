@@ -60,7 +60,7 @@ EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
         }
     }
 
-    return this->underlying.buildIndexGeneric(key, processedDb);
+    return this->underlying.buildIndex(key, processedDb);
 }
 
 template <typename Underlying>
@@ -68,9 +68,9 @@ QueryToken LogSrcClient<Underlying>::trpdr(ustring key, KwRange kwRange) {
     TdagNode<Kw>* src = this->tdag->findSrc(kwRange);
     // if keyword not in TDAG/index; make sure server handles this and returns no results!
     if (src == nullptr) { 
-        return this->underlying.trpdrGeneric(key, KwRange {-1, -1});
+        return this->underlying.trpdr(key, KwRange {-1, -1});
     }
-    return this->underlying.trpdrGeneric(key, src->getRange());
+    return this->underlying.trpdr(key, src->getRange());
 }
 
 template class LogSrcClient<PiBasClient>;
@@ -84,7 +84,7 @@ LogSrcServer<Underlying>::LogSrcServer(Underlying underlying) : IRangeSseServer<
 
 template <typename Underlying>
 std::vector<Id> LogSrcServer<Underlying>::search(EncInd encInd, QueryToken queryToken) {
-    return this->underlying.searchGeneric(encInd, queryToken);
+    return this->underlying.search(encInd, queryToken);
 }
 
 template class LogSrcServer<PiBasServer>;

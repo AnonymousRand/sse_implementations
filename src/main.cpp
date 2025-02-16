@@ -42,10 +42,9 @@ void exp1(LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>
 
     std::cout << "Querying..." << std::endl;
     int queryCount = 0;
-    // assume keywords are less than `dbSize`
-    for (int i = 0; i < (int)log2(dbSize); i++) {
+    for (int i = 0; i <= (int)log2(dbSize); i++) {
         queryCount++;
-        KwRange query {0, (int)pow(2, i)};
+        KwRange query {0, (int)pow(2, i) - 1};
         QueryToken queryToken = client.trpdr(key, query);
         std::vector<Id> results = server.search(encInd, queryToken);
     }
@@ -73,9 +72,9 @@ void exp1(LogSrciClient<UnderlyingClient>& client, LogSrciServer<UnderlyingServe
 
     std::cout << "Querying..." << std::endl;
     int queryCount = 0;
-    for (int i = 0; i < (int)log2(dbSize); i++) {
+    for (int i = 0; i <= (int)log2(dbSize); i++) {
         queryCount++;
-        KwRange query {0, (int)pow(2, i)};
+        KwRange query {0, (int)pow(2, i) - 1};
         QueryToken queryToken1 = client.trpdr1(keys.first, query);
         std::vector<SrciDb1Doc> results1 = server.search1(encInds.first, queryToken1);
         QueryToken queryToken2 = client.trpdr2(keys.second, query, results1);
