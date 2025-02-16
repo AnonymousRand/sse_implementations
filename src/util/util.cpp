@@ -131,7 +131,7 @@ Range<T>::Range(const T& start, const T& end) : std::pair<T, T>(start, end) {}
 
 template <typename T>
 T Range<T>::size() const {
-    return (T)abs(this->second - this->first);
+    return (T)abs(this->second - this->first + 1);
 }
 
 template <typename T>

@@ -71,14 +71,14 @@ TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
 
     // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
     // and extra TDAG parent 
-    std::map<T, TdagNode<T>*> srcCandidates;
+    std::map<T, TdagNode<T>*> candidates;
     auto tryToAddCandidate = [&](TdagNode<T>* node) {
         if (node == nullptr || !node->range.contains(targetRange)) {
             return T(-1);
         }
 
         T diff = (targetRange.first - node->range.first) + (node->range.second - targetRange.second);
-        srcCandidates[diff] = node;
+        candidates[diff] = node;
         return diff;
     };
 
@@ -89,10 +89,13 @@ TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
             return this->extraParent;
         }
     }
-    // if the current node's range is more than one narrower than the target range, it is impossible for
-    // its children to be the SRC, so we can early exit if we also know its extra TDAG parent cannot be an SRC
-    if (diff == -1 && this->range.size() < targetRange.size() - 1) {
-        return nullptr;
+    // if the current node's range is narrower than the target range, it is impossible for
+    // its children to be the SRC, so we only have to test its extra TDAG parent
+    if (this->range.size() < targetRange.size()) {
+        if (diff == -1) {
+            return nullptr;
+        }
+        return this->extraParent;
     }
 
     diff = tryToAddCandidate(this);
@@ -114,10 +117,10 @@ TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
         }
     }
 
-    if (srcCandidates.empty()) {
+    if (candidates.empty()) {
         return nullptr;
     }
-    return srcCandidates.begin()->second; // take advantage of `std::map`s being sorted by key
+    return candidates.begin()->second; // take advantage of `std::map`s being sorted by key
 }
 
 template <typename T>
@@ -178,7 +181,7 @@ TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
     }
 
     // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)
-    // trees seem balanced though which is nice
+    // trees are balanced though which is nice
     auto joinNodes = [&](TdagNode<T>* node1, auto it) {
         TdagNode<T>* node2 = *it;
         if (node2->range.first - 1 == node1->range.second) {
