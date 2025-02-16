@@ -48,7 +48,7 @@ class Id : public IEncryptable<int> {
         static Id decode(const ustring& ustr);
 
         friend Id abs(const Id& id);
-        friend void operator ++(Id& id, int _); // `int _` required to mark as postfix
+        friend void operator ++(Id& id, int _); // unused `int` parameter required to mark `++` as postfix
         friend Id operator +(const Id& id1, const Id& id2);
         friend Id operator +(const Id& id, int n);
         friend Id operator -(const Id& id1, const Id& id2);
@@ -83,8 +83,7 @@ class Range : public std::pair<T, T> {
 
         template<typename T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
-        // overload string concatenation (no way this worked)
-        template<typename T2>
+        template<typename T2> // overload string concatenation (no way this worked)
         friend std::string operator +(const std::string& str, const Range<T2>& range);
 };
 
