@@ -20,13 +20,13 @@ class PiBasClient {
          * Build the encrypted index.
          */
         template <typename DbDocType, typename DbKwType>
-        EncInd buildIndex(ustring key, Db<DbDocType, DbKwType> db);
+        EncInd buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& db);
 
         /**
          * Issue a query by computing its encrypted token.
          */
         template <typename RangeType>
-        QueryToken trpdr(ustring key, Range<RangeType> range);
+        QueryToken trpdr(const ustring& key, const Range<RangeType>& range);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,5 +39,5 @@ class PiBasServer {
          * Process a query and compute all results.
          */
         template <typename DbDocType = Id>
-        std::vector<DbDocType> search(EncInd encInd, QueryToken queryToken);
+        std::vector<DbDocType> search(const EncInd& encInd, const QueryToken& queryToken);
 };

@@ -17,7 +17,7 @@ ustring LogSrcClient<Underlying>::setup(int secParam) {
 }
 
 template <typename Underlying>
-EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
+EncInd LogSrcClient<Underlying>::buildIndex(const ustring& key, const Db<>& db) {
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = -1;
     for (auto entry : db) {
@@ -64,7 +64,7 @@ EncInd LogSrcClient<Underlying>::buildIndex(ustring key, Db<> db) {
 }
 
 template <typename Underlying>
-QueryToken LogSrcClient<Underlying>::trpdr(ustring key, KwRange kwRange) {
+QueryToken LogSrcClient<Underlying>::trpdr(const ustring& key, const KwRange& kwRange) {
     TdagNode<Kw>* src = this->tdag->findSrc(kwRange);
     // if keyword not in TDAG/index; make sure server handles this and returns no results!
     if (src == nullptr) { 
@@ -83,7 +83,7 @@ template <typename Underlying>
 LogSrcServer<Underlying>::LogSrcServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
 
 template <typename Underlying>
-std::vector<Id> LogSrcServer<Underlying>::search(EncInd encInd, QueryToken queryToken) {
+std::vector<Id> LogSrcServer<Underlying>::search(const EncInd& encInd, const QueryToken& queryToken) {
     return this->underlying.search(encInd, queryToken);
 }
 

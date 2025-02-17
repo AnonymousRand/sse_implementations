@@ -31,14 +31,14 @@ std::pair<ustring, ustring> LogSrciClient<Underlying>::setup(int secParam) {
 }
 
 template <typename Underlying>
-std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustring, ustring> key, Db<> db) {
-    ustring key1 = key.first;
-    ustring key2 = key.second;
+std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(const std::pair<ustring, ustring>& key, const Db<>& db) {
+    const ustring& key1 = key.first;
+    const ustring& key2 = key.second;
 
     // build TDAG1 over keywords
     Kw maxKw = -1;
     for (auto entry : db) {
-        KwRange kwRange = std::get<1>(entry);
+        const KwRange& kwRange = std::get<1>(entry);
         if (kwRange.second > maxKw) {
             maxKw = kwRange.second;
         }
@@ -50,7 +50,7 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
     std::set<KwRange> uniqueKwRanges;
     for (auto entry : db) {
         Id id = std::get<0>(entry);
-        KwRange kwRange = std::get<1>(entry);
+        const KwRange& kwRange = std::get<1>(entry);
 
         if (index.count(kwRange) == 0) {
             index[kwRange] = std::set<Id> {id};
@@ -63,7 +63,7 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
     // replicate every document (in this case pairs) to all keyword ranges/nodes in TDAG1 that cover it
     // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, id range), kw range/node)
     Db<SrciDb1Doc, KwRange> db1;
-    for (KwRange kwRange : uniqueKwRanges) {
+    for (const KwRange& kwRange : uniqueKwRanges) {
         auto itDocsWithSameKwRange = index.find(kwRange);
         std::set<Id> docsWithSameKwRange = itDocsWithSameKwRange->second;
         IdRange idRange {*docsWithSameKwRange.begin(), *docsWithSameKwRange.rbegin()}; // `set` moment
@@ -115,13 +115,13 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(std::pair<ustrin
         }
     }
 
-    EncInd encInd1 = this->underlying.buildIndex(key1, db1);
-    EncInd encInd2 = this->underlying.buildIndex(key2, db2);
+    const EncInd& encInd1 = this->underlying.buildIndex(key1, db1);
+    const EncInd& encInd2 = this->underlying.buildIndex(key2, db2);
     return std::pair<EncInd, EncInd> {encInd1, encInd2};
 }
 
 template <typename Underlying>
-QueryToken LogSrciClient<Underlying>::trpdr1(ustring key1, KwRange kwRange) {
+QueryToken LogSrciClient<Underlying>::trpdr1(const ustring& key1, const KwRange& kwRange) {
     TdagNode<Kw>* src = this->tdag1->findSrc(kwRange);
     if (src == nullptr) { 
         return this->underlying.trpdr(key1, KwRange {-1, -1});
@@ -130,7 +130,7 @@ QueryToken LogSrciClient<Underlying>::trpdr1(ustring key1, KwRange kwRange) {
 }
 
 template <typename Underlying>
-QueryToken LogSrciClient<Underlying>::trpdr2(ustring key2, KwRange kwRange, std::vector<SrciDb1Doc> choices) {
+QueryToken LogSrciClient<Underlying>::trpdr2(const ustring& key2, const KwRange& kwRange, const std::vector<SrciDb1Doc>& choices) {
     Id minId = -1, maxId = -1;
     // filter out unnecessary choices and merge remaining ones into a single id range
     for (SrciDb1Doc choice : choices) {
@@ -164,12 +164,12 @@ template <typename Underlying>
 LogSrciServer<Underlying>::LogSrciServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
 
 template <typename Underlying>
-std::vector<SrciDb1Doc> LogSrciServer<Underlying>::search1(EncInd encInd1, QueryToken queryToken) {
+std::vector<SrciDb1Doc> LogSrciServer<Underlying>::search1(const EncInd& encInd1, const QueryToken& queryToken) {
     return this->underlying.template search<SrciDb1Doc>(encInd1, queryToken);
 }
 
 template <typename Underlying>
-std::vector<Id> LogSrciServer<Underlying>::search2(EncInd encInd2, QueryToken queryToken) {
+std::vector<Id> LogSrciServer<Underlying>::search2(const EncInd& encInd2, const QueryToken& queryToken) {
     return this->underlying.template search<Id>(encInd2, queryToken);
 }
 

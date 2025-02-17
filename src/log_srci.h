@@ -17,10 +17,10 @@ class LogSrciClient : public IRangeSseClient<Underlying> {
         LogSrciClient(Underlying underlying);
 
         std::pair<ustring, ustring> setup(int secParam);
-        std::pair<EncInd, EncInd> buildIndex(std::pair<ustring, ustring> key, Db<> db);
+        std::pair<EncInd, EncInd> buildIndex(const std::pair<ustring, ustring>& key, const Db<>& db);
         // interactivity messes up the API, otherwise we could've had a unified API for all SSE (anger)
-        QueryToken trpdr1(ustring key1, KwRange kwRange);
-        QueryToken trpdr2(ustring key2, KwRange kwRange, std::vector<SrciDb1Doc> choices);
+        QueryToken trpdr1(const ustring& key1, const KwRange& kwRange);
+        QueryToken trpdr2(const ustring& key2, const KwRange& kwRange, const std::vector<SrciDb1Doc>& choices);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,6 +32,6 @@ class LogSrciServer : public IRangeSseServer<Underlying> {
     public:
         LogSrciServer(Underlying underlying);
 
-        std::vector<SrciDb1Doc> search1(EncInd encInd1, QueryToken queryToken);
-        std::vector<Id> search2(EncInd encInd2, QueryToken queryToken);
+        std::vector<SrciDb1Doc> search1(const EncInd& encInd1, const QueryToken& queryToken);
+        std::vector<Id> search2(const EncInd& encInd2, const QueryToken& queryToken);
 };

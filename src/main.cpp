@@ -12,7 +12,7 @@ static std::mt19937 rng(dev());
 Db<> createDb(int dbSize, bool isDataSkewed) {
     Db<> db;
     if (isDataSkewed) {
-        std::normal_distribution dist((dbSize - 1) / 2.0, dbSize / 500.0);
+        std::normal_distribution dist((dbSize - 1) / 2.0, dbSize / 1000.0);
         for (int i = 0; i < dbSize; i++) {
             Kw kw;
             do {

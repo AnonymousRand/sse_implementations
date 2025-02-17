@@ -21,7 +21,7 @@ ustring PiBasClient::setup(int secParam) {
 }
 
 template <typename DbDocType, typename DbKwType>
-EncInd PiBasClient::buildIndex(ustring key, Db<DbDocType, DbKwType> db) {
+EncInd PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& db) {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     std::map<DbKwType, std::vector<DbDocType>> index;
     std::set<DbKwType> uniqueKws;
@@ -65,7 +65,7 @@ EncInd PiBasClient::buildIndex(ustring key, Db<DbDocType, DbKwType> db) {
 }
 
 template <typename RangeType>
-QueryToken PiBasClient::trpdr(ustring key, Range<RangeType> range) {
+QueryToken PiBasClient::trpdr(const ustring& key, const Range<RangeType>& range) {
     // the paper uses different notation for the key generation here vs. in `setup()`;
     // but I'm fairly sure they meant the same thing, otherwise it doesn't work
     ustring K = prf(key, toUstr(range));
@@ -75,19 +75,19 @@ QueryToken PiBasClient::trpdr(ustring key, Range<RangeType> range) {
     return QueryToken {subkey1, subkey2};
 }
 
-template EncInd PiBasClient::buildIndex(ustring key, Db<> db);
-template EncInd PiBasClient::buildIndex(ustring key, Db<SrciDb1Doc, KwRange> db);
-template EncInd PiBasClient::buildIndex(ustring key, Db<Id, IdRange> db);
+template EncInd PiBasClient::buildIndex(const ustring& key, const Db<>& db);
+template EncInd PiBasClient::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db);
+template EncInd PiBasClient::buildIndex(const ustring& key, const Db<Id, IdRange>& db);
 
-template QueryToken PiBasClient::trpdr(ustring key, Range<Id> range);
-template QueryToken PiBasClient::trpdr(ustring key, Range<Kw> range);
+template QueryToken PiBasClient::trpdr(const ustring& key, const Range<Id>& range);
+template QueryToken PiBasClient::trpdr(const ustring& key, const Range<Kw>& range);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Server
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename DbDocType>
-std::vector<DbDocType> PiBasServer::search(EncInd encInd, QueryToken queryToken) {
+std::vector<DbDocType> PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken) {
     std::vector<DbDocType> results;
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
@@ -114,5 +114,5 @@ std::vector<DbDocType> PiBasServer::search(EncInd encInd, QueryToken queryToken)
     return results;
 }
 
-template std::vector<Id> PiBasServer::search(EncInd encInd, QueryToken queryToken);
-template std::vector<SrciDb1Doc> PiBasServer::search(EncInd encInd, QueryToken queryToken);
+template std::vector<Id> PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken);
+template std::vector<SrciDb1Doc> PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken);

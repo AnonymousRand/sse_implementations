@@ -16,8 +16,8 @@ class LogSrcClient : public IRangeSseClient<Underlying> {
         LogSrcClient(Underlying underlying);
 
         ustring setup(int secParam);
-        EncInd buildIndex(ustring key, Db<> db);
-        QueryToken trpdr(ustring key, KwRange kwRange);
+        EncInd buildIndex(const ustring& key, const Db<>& db);
+        QueryToken trpdr(const ustring& key, const KwRange& kwRange);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,5 +29,5 @@ class LogSrcServer : public IRangeSseServer<Underlying> {
     public:
         LogSrcServer(Underlying underlying);
 
-        std::vector<Id> search(EncInd encInd, QueryToken queryToken);
+        std::vector<Id> search(const EncInd& encInd, const QueryToken& queryToken);
 };
