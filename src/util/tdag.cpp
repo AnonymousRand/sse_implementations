@@ -60,7 +60,7 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& 
     return nodes;
 }
 
-// basically traverses tree with many early exits to find best SRC
+// basically traverses tree with DFS and early exits to find best SRC
 template <typename T>
 TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
     // if the current node is disjoint with the target range, it is impossible for
