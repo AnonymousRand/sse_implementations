@@ -28,6 +28,7 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 // IEncryptable
 ////////////////////////////////////////////////////////////////////////////////
 
+// interface for documents in dataset
 template <typename T>
 class IEncryptable {
     protected:
