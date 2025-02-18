@@ -51,7 +51,7 @@ void exp1(LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>
     int queryCount = 0;
     for (int i = 0; i <= (int)log2(dbSize); i++) {
         queryCount++;
-        KwRange query {0, (int)pow(2, i) - 1};
+        KwRange query {(int)pow(2, i - 1), (int)pow(2, i) - 1};
 
         auto queryStartTime = std::chrono::high_resolution_clock::now();
         QueryToken queryToken = client.trpdr(key, query);
@@ -91,7 +91,7 @@ void exp1(LogSrciClient<UnderlyingClient>& client, LogSrciServer<UnderlyingServe
     int queryCount = 0;
     for (int i = 0; i <= (int)log2(dbSize); i++) {
         queryCount++;
-        KwRange query {0, (int)pow(2, i) - 1};
+        KwRange query {(int)pow(2, i - 1), (int)pow(2, i) - 1};
 
         auto queryStartTime = std::chrono::high_resolution_clock::now();
         QueryToken queryToken1 = client.trpdr1(keys.first, query);
