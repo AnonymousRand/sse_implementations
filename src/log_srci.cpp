@@ -31,7 +31,9 @@ std::pair<ustring, ustring> LogSrciClient<Underlying>::setup(int secParam) {
 }
 
 template <typename Underlying>
-std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(const std::pair<ustring, ustring>& key, const Db<>& db) {
+std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(
+    const std::pair<ustring, ustring>& key, const Db<>& db
+) {
     const ustring& key1 = key.first;
     const ustring& key2 = key.second;
 
@@ -130,7 +132,9 @@ QueryToken LogSrciClient<Underlying>::trpdr1(const ustring& key1, const KwRange&
 }
 
 template <typename Underlying>
-QueryToken LogSrciClient<Underlying>::trpdr2(const ustring& key2, const KwRange& kwRange, const std::vector<SrciDb1Doc>& choices) {
+QueryToken LogSrciClient<Underlying>::trpdr2(
+    const ustring& key2, const KwRange& kwRange, const std::vector<SrciDb1Doc>& choices
+) {
     Id minId = -1, maxId = -1;
     // filter out unnecessary choices and merge remaining ones into a single id range
     for (SrciDb1Doc choice : choices) {

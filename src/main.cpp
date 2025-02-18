@@ -32,63 +32,83 @@ Db<> createDb(int dbSize, bool isDataSkewed) {
 
 template <typename UnderlyingClient, typename UnderlyingServer>
 void exp1(LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>& server, Db<> db, int dbSize) {
+    std::chrono::duration<double> queryElapsed;
     auto startTime = std::chrono::high_resolution_clock::now();
 
+    // setup
     ustring key = client.setup(KEY_SIZE);
-    auto setupSplit = std::chrono::high_resolution_clock::now();
     std::cout << "Building index..." << std::endl;
+    auto buildIndexStart = std::chrono::high_resolution_clock::now();
     EncInd encInd = client.buildIndex(key, db);
-    auto buildIndexSplit = std::chrono::high_resolution_clock::now();
+    auto buildIndexEnd = std::chrono::high_resolution_clock::now();
 
+    std::chrono::duration<double> buildIndexElapsed = buildIndexEnd - buildIndexStart;
+    std::cout << "Build index execution time: " << buildIndexElapsed.count() << " s" << std::endl;
+    std::cout << std::endl;
+
+    // query
     std::cout << "Querying..." << std::endl;
     int queryCount = 0;
     for (int i = 0; i <= (int)log2(dbSize); i++) {
         queryCount++;
         KwRange query {0, (int)pow(2, i) - 1};
+
+        auto queryStartTime = std::chrono::high_resolution_clock::now();
         QueryToken queryToken = client.trpdr(key, query);
         std::vector<Id> results = server.search(encInd, queryToken);
-    }
-    auto querySplit = std::chrono::high_resolution_clock::now();
+        auto queryEndTime = std::chrono::high_resolution_clock::now();
 
-    std::chrono::duration<double> totalElapsed      = querySplit - startTime;
-    std::chrono::duration<double> buildIndexElapsed = buildIndexSplit - setupSplit;
-    std::chrono::duration<double> queryElapsed      = querySplit - buildIndexSplit;
-    std::cout << "\nExecution times:" << std::endl;
-    std::cout << "Total      : "      << totalElapsed.count()              << "s" << std::endl;
-    std::cout << "BuildIndex : "      << buildIndexElapsed.count()         << "s" << std::endl;
-    std::cout << "Query (avg): "      << queryElapsed.count() / queryCount << "s" << std::endl;
+        queryElapsed = queryEndTime - queryStartTime;
+        std::cout << "Query execution time (size " << query.size() << "): " << queryElapsed.count() * 1000 << " ms"
+                  << std::endl;
+    }
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << std::endl;
+
+    std::chrono::duration<double> totalElapsed = endTime - startTime;
+    std::cout << "Total execution time: " << totalElapsed.count() << " s" << std::endl;
     std::cout << std::endl;
 }
 
 template <typename UnderlyingClient, typename UnderlyingServer>
 void exp1(LogSrciClient<UnderlyingClient>& client, LogSrciServer<UnderlyingServer>& server, Db<> db, int dbSize) {
+    std::chrono::duration<double> queryElapsed;
     auto startTime = std::chrono::high_resolution_clock::now();
 
+    // setup
     std::pair<ustring, ustring> keys = client.setup(KEY_SIZE);
-    auto setupSplit = std::chrono::high_resolution_clock::now();
     std::cout << "Building index..." << std::endl;
+    auto buildIndexStart = std::chrono::high_resolution_clock::now();
     std::pair<EncInd, EncInd> encInds = client.buildIndex(keys, db);
-    auto buildIndexSplit = std::chrono::high_resolution_clock::now();
+    auto buildIndexEnd = std::chrono::high_resolution_clock::now();
 
+    std::chrono::duration<double> buildIndexElapsed = buildIndexEnd - buildIndexStart;
+    std::cout << "Build index execution time: " << buildIndexElapsed.count() << " s" << std::endl;
+    std::cout << std::endl;
+
+    // query
     std::cout << "Querying..." << std::endl;
     int queryCount = 0;
     for (int i = 0; i <= (int)log2(dbSize); i++) {
         queryCount++;
         KwRange query {0, (int)pow(2, i) - 1};
+
+        auto queryStartTime = std::chrono::high_resolution_clock::now();
         QueryToken queryToken1 = client.trpdr1(keys.first, query);
         std::vector<SrciDb1Doc> results1 = server.search1(encInds.first, queryToken1);
         QueryToken queryToken2 = client.trpdr2(keys.second, query, results1);
         std::vector<Id> results2 = server.search2(encInds.second, queryToken2);
-    }
-    auto querySplit = std::chrono::high_resolution_clock::now();
+        auto queryEndTime = std::chrono::high_resolution_clock::now();
 
-    std::chrono::duration<double> totalElapsed      = querySplit - startTime;
-    std::chrono::duration<double> buildIndexElapsed = buildIndexSplit - setupSplit;
-    std::chrono::duration<double> queryElapsed      = querySplit - buildIndexSplit;
-    std::cout << "\nExecution times:" << std::endl;
-    std::cout << "Total      : "      << totalElapsed.count()              << "s" << std::endl;
-    std::cout << "BuildIndex : "      << buildIndexElapsed.count()         << "s" << std::endl;
-    std::cout << "Query (avg): "      << queryElapsed.count() / queryCount << "s" << std::endl;
+        queryElapsed = queryEndTime - queryStartTime;
+        std::cout << "Query execution time (size " << query.size() << "): " << queryElapsed.count() * 1000 << " ms"
+                  << std::endl;
+    }
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << std::endl;
+
+    std::chrono::duration<double> totalElapsed = endTime - startTime;
+    std::cout << "Total execution time: " << totalElapsed.count() << " s" << std::endl;
     std::cout << std::endl;
 }
 
@@ -97,34 +117,40 @@ void exp2(
     LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>& server,
     KwRange query, int maxDbSize, bool isDataSkewed
 ) {
-    std::chrono::duration<double> totalElapsed;
-    std::chrono::duration<double> buildIndexElapsed;
     std::chrono::duration<double> queryElapsed;
 
     int queryCount = 0;
+    auto startTime = std::chrono::high_resolution_clock::now();
     for (int i = 1; i <= (int)log2(maxDbSize); i++) {
         queryCount++;
-        Db<> db = createDb((int)pow(2, i), isDataSkewed);
-        auto startTime = std::chrono::high_resolution_clock::now();
+        int dbSize = (int)pow(2, i);
+        Db<> db = createDb(dbSize, isDataSkewed);
 
+        // setup
         ustring key = client.setup(KEY_SIZE);
-        auto setupSplit = std::chrono::high_resolution_clock::now();
+        auto buildIndexStart = std::chrono::high_resolution_clock::now();
         EncInd encInd = client.buildIndex(key, db);
-        auto buildIndexSplit = std::chrono::high_resolution_clock::now();
+        auto buildIndexEnd = std::chrono::high_resolution_clock::now();
 
+        std::chrono::duration<double> buildIndexElapsed = buildIndexEnd - buildIndexStart;
+        std::cout << "Build index execution time (size " << dbSize << "): "
+                  << buildIndexElapsed.count() * 1000 << " ms" << std::endl;
+
+        // query
+        auto queryStartTime = std::chrono::high_resolution_clock::now();
         QueryToken queryToken = client.trpdr(key, query);
         std::vector<Id> results = server.search(encInd, queryToken);
-        auto querySplit = std::chrono::high_resolution_clock::now();
+        auto queryEndTime = std::chrono::high_resolution_clock::now();
 
-        totalElapsed      += querySplit - startTime;
-        buildIndexElapsed += buildIndexSplit - setupSplit;
-        queryElapsed      += querySplit - buildIndexSplit;
+        queryElapsed = queryEndTime - queryStartTime;
+        std::cout << "Query execution time: " << queryElapsed.count() * 1000 << " ms" << std::endl;
+
     }
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << std::endl;
 
-    std::cout << "\nExecution times:" << std::endl;
-    std::cout << "Total           : " << totalElapsed.count()                   << "s" << std::endl;
-    std::cout << "BuildIndex (avg): " << buildIndexElapsed.count() / queryCount << "s" << std::endl;
-    std::cout << "Query (avg)     : " << queryElapsed.count() / queryCount      << "s" << std::endl;
+    std::chrono::duration<double> totalElapsed = endTime - startTime;
+    std::cout << "Total execution time:" << totalElapsed.count() << " s" << std::endl;
     std::cout << std::endl;
 }
 
@@ -133,36 +159,42 @@ void exp2(
     LogSrciClient<UnderlyingClient>& client, LogSrciServer<UnderlyingServer>& server,
     KwRange query, int maxDbSize, bool isDataSkewed
 ) {
-    std::chrono::duration<double> totalElapsed;
-    std::chrono::duration<double> buildIndexElapsed;
     std::chrono::duration<double> queryElapsed;
 
     int queryCount = 0;
+    auto startTime = std::chrono::high_resolution_clock::now();
     for (int i = 1; i <= (int)log2(maxDbSize); i++) {
         queryCount++;
-        Db<> db = createDb((int)pow(2, i), isDataSkewed);
-        auto startTime = std::chrono::high_resolution_clock::now();
+        int dbSize = (int)pow(2, i);
+        Db<> db = createDb(dbSize, isDataSkewed);
 
+        // setup
         std::pair<ustring, ustring> keys = client.setup(KEY_SIZE);
-        auto setupSplit = std::chrono::high_resolution_clock::now();
+        auto buildIndexStart = std::chrono::high_resolution_clock::now();
         std::pair<EncInd, EncInd> encInds = client.buildIndex(keys, db);
-        auto buildIndexSplit = std::chrono::high_resolution_clock::now();
+        auto buildIndexEnd = std::chrono::high_resolution_clock::now();
 
+        std::chrono::duration<double> buildIndexElapsed = buildIndexEnd - buildIndexStart;
+        std::cout << "Build index execution time (size " << dbSize << "): "
+                  << buildIndexElapsed.count() * 1000 << " ms" << std::endl;
+
+        // query
+        auto queryStartTime = std::chrono::high_resolution_clock::now();
         QueryToken queryToken1 = client.trpdr1(keys.first, query);
         std::vector<SrciDb1Doc> results1 = server.search1(encInds.first, queryToken1);
         QueryToken queryToken2 = client.trpdr2(keys.second, query, results1);
         std::vector<Id> results2 = server.search2(encInds.second, queryToken2);
-        auto querySplit = std::chrono::high_resolution_clock::now();
+        auto queryEndTime = std::chrono::high_resolution_clock::now();
 
-        totalElapsed      += querySplit - startTime;
-        buildIndexElapsed += buildIndexSplit - setupSplit;
-        queryElapsed      += querySplit - buildIndexSplit;
+        queryElapsed = queryEndTime - queryStartTime;
+        std::cout << "Query execution time: " << queryElapsed.count() * 1000 << " ms" << std::endl;
+
     }
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << std::endl;
 
-    std::cout << "Execution times:"   << std::endl;
-    std::cout << "Total           : " << totalElapsed.count()                   << "s" << std::endl;
-    std::cout << "BuildIndex (avg): " << buildIndexElapsed.count() / queryCount << "s" << std::endl;
-    std::cout << "Query (avg)     : " << queryElapsed.count() / queryCount      << "s" << std::endl;
+    std::chrono::duration<double> totalElapsed = endTime - startTime;
+    std::cout << "Total execution time:" << totalElapsed.count() << " s" << std::endl;
     std::cout << std::endl;
 }
 
