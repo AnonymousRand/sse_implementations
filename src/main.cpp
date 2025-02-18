@@ -150,7 +150,7 @@ void exp2(
     std::cout << std::endl;
 
     std::chrono::duration<double> totalElapsed = endTime - startTime;
-    std::cout << "Total execution time:" << totalElapsed.count() << " s" << std::endl;
+    std::cout << "Total execution time: " << totalElapsed.count() << " s" << std::endl;
     std::cout << std::endl;
 }
 
@@ -194,7 +194,7 @@ void exp2(
     std::cout << std::endl;
 
     std::chrono::duration<double> totalElapsed = endTime - startTime;
-    std::cout << "Total execution time:" << totalElapsed.count() << " s" << std::endl;
+    std::cout << "Total execution time: " << totalElapsed.count() << " s" << std::endl;
     std::cout << std::endl;
 }
 
