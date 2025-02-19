@@ -222,7 +222,11 @@ int main() {
     LogSrcServer logSrcServer(piBasServer);
     LogSrciClient logSrciClient(piBasClient);
     LogSrciServer logSrciServer(piBasServer);
-    int maxDbSize = pow(2, 20);
+
+    int maxDbSizeExp;
+    std::cout << "Enter database size (power of 2): ";
+    std::cin >> maxDbSizeExp;
+    int maxDbSize = pow(2, maxDbSizeExp);
 
     // experiment 1
     Db<> db = createDb(maxDbSize, false);
