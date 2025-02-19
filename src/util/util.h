@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
 static const int KEY_SIZE   = 256 / 8;
@@ -117,7 +118,8 @@ class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
 template <typename DbDocType = Id, typename DbKwType = KwRange>
 using Db         = std::vector<std::tuple<DbDocType, DbKwType>>;
 //                `std::map<label, std::pair<data, iv>>`
-using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
+// TODO https://stackoverflow.com/a/32685618 for maps and sets as much as possible
+using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
 using QueryToken = std::pair<ustring, ustring>;
 
 template <typename DbDocType, typename DbKwType>
