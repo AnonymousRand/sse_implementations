@@ -170,14 +170,14 @@ template <typename Underlying>
 void LogSrciServer<Underlying>::search1(
     const EncInd& encInd1, const QueryToken& queryToken, std::vector<SrciDb1Doc>& results1
 ) {
-    this->underlying.template search<SrciDb1Doc>(encInd1, queryToken, results1);
+    this->underlying.search(encInd1, queryToken, results1);
 }
 
 template <typename Underlying>
 void LogSrciServer<Underlying>::search2(
     const EncInd& encInd2, const QueryToken& queryToken, std::vector<Id>& results2
 ) {
-    this->underlying.template search<Id>(encInd2, queryToken, results2);
+    this->underlying.search(encInd2, queryToken, results2);
 }
 
 template class LogSrciServer<PiBasServer>;
