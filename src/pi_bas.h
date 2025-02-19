@@ -18,9 +18,11 @@ class PiBasClient {
 
         /**
          * Build the encrypted index.
+         *
+         * Pass out parameter `encInd` instead of returning it to avoid copying large amounts of data.
          */
         template <typename DbDocType, typename DbKwType>
-        EncInd buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& db);
+        void buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& db, EncInd& encInd);
 
         /**
          * Issue a query by computing its encrypted token.
@@ -39,5 +41,5 @@ class PiBasServer {
          * Process a query and compute all results.
          */
         template <typename DbDocType = Id>
-        std::vector<DbDocType> search(const EncInd& encInd, const QueryToken& queryToken);
+        void search(const EncInd& encInd, const QueryToken& queryToken, std::vector<DbDocType>& results);
 };

@@ -31,8 +31,8 @@ std::pair<ustring, ustring> LogSrciClient<Underlying>::setup(int secParam) {
 }
 
 template <typename Underlying>
-std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(
-    const std::pair<ustring, ustring>& key, const Db<>& db
+void LogSrciClient<Underlying>::buildIndex(
+    const std::pair<ustring, ustring>& key, const Db<>& db, std::pair<EncInd, EncInd>& encInds
 ) {
     const ustring& key1 = key.first;
     const ustring& key2 = key.second;
@@ -117,9 +117,8 @@ std::pair<EncInd, EncInd> LogSrciClient<Underlying>::buildIndex(
         }
     }
 
-    const EncInd& encInd1 = this->underlying.buildIndex(key1, db1);
-    const EncInd& encInd2 = this->underlying.buildIndex(key2, db2);
-    return std::pair<EncInd, EncInd> {encInd1, encInd2};
+    this->underlying.buildIndex(key1, db1, encInds.first);
+    this->underlying.buildIndex(key2, db2, encInds.second);
 }
 
 template <typename Underlying>
@@ -168,13 +167,17 @@ template <typename Underlying>
 LogSrciServer<Underlying>::LogSrciServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
 
 template <typename Underlying>
-std::vector<SrciDb1Doc> LogSrciServer<Underlying>::search1(const EncInd& encInd1, const QueryToken& queryToken) {
-    return this->underlying.template search<SrciDb1Doc>(encInd1, queryToken);
+void LogSrciServer<Underlying>::search1(
+    const EncInd& encInd1, const QueryToken& queryToken, std::vector<SrciDb1Doc>& results1
+) {
+    this->underlying.template search<SrciDb1Doc>(encInd1, queryToken, results1);
 }
 
 template <typename Underlying>
-std::vector<Id> LogSrciServer<Underlying>::search2(const EncInd& encInd2, const QueryToken& queryToken) {
-    return this->underlying.template search<Id>(encInd2, queryToken);
+void LogSrciServer<Underlying>::search2(
+    const EncInd& encInd2, const QueryToken& queryToken, std::vector<Id>& results2
+) {
+    this->underlying.template search<Id>(encInd2, queryToken, results2);
 }
 
 template class LogSrciServer<PiBasServer>;

@@ -17,7 +17,7 @@ ustring LogSrcClient<Underlying>::setup(int secParam) {
 }
 
 template <typename Underlying>
-EncInd LogSrcClient<Underlying>::buildIndex(const ustring& key, const Db<>& db) {
+void LogSrcClient<Underlying>::buildIndex(const ustring& key, const Db<>& db, EncInd& encInd) {
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = -1;
     for (auto entry : db) {
@@ -60,7 +60,7 @@ EncInd LogSrcClient<Underlying>::buildIndex(const ustring& key, const Db<>& db) 
         }
     }
 
-    return this->underlying.buildIndex(key, processedDb);
+    this->underlying.buildIndex(key, processedDb, encInd);
 }
 
 template <typename Underlying>
@@ -83,8 +83,8 @@ template <typename Underlying>
 LogSrcServer<Underlying>::LogSrcServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
 
 template <typename Underlying>
-std::vector<Id> LogSrcServer<Underlying>::search(const EncInd& encInd, const QueryToken& queryToken) {
-    return this->underlying.search(encInd, queryToken);
+void LogSrcServer<Underlying>::search(const EncInd& encInd, const QueryToken& queryToken, std::vector<Id>& results) {
+    this->underlying.search(encInd, queryToken, results);
 }
 
 template class LogSrcServer<PiBasServer>;

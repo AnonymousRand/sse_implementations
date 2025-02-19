@@ -36,7 +36,8 @@ void exp1(LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>
     ustring key = client.setup(KEY_SIZE);
     std::cout << "Building index..." << std::endl;
     auto buildIndexStart = std::chrono::high_resolution_clock::now();
-    EncInd encInd = client.buildIndex(key, db);
+    EncInd encInd;
+    client.buildIndex(key, db, encInd);
     auto buildIndexEnd = std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<double> buildIndexElapsed = buildIndexEnd - buildIndexStart;
@@ -59,7 +60,8 @@ void exp1(LogSrcClient<UnderlyingClient>& client, LogSrcServer<UnderlyingServer>
                   << std::endl;
 
         auto searchStartTime = std::chrono::high_resolution_clock::now();
-        std::vector<Id> results = server.search(encInd, queryToken);
+        std::vector<Id> results;
+        server.search(encInd, queryToken, results);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         searchElapsed = searchEndTime - searchStartTime;
         std::cout << "Search execution time (size " << query.size() << "): " << searchElapsed.count() * 1000 << " ms"
@@ -75,7 +77,8 @@ void exp1(LogSrciClient<UnderlyingClient>& client, LogSrciServer<UnderlyingServe
     std::pair<ustring, ustring> keys = client.setup(KEY_SIZE);
     std::cout << "Building index..." << std::endl;
     auto buildIndexStart = std::chrono::high_resolution_clock::now();
-    std::pair<EncInd, EncInd> encInds = client.buildIndex(keys, db);
+    std::pair<EncInd, EncInd> encInds;
+    client.buildIndex(keys, db, encInds);
     auto buildIndexEnd = std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<double> buildIndexElapsed = buildIndexEnd - buildIndexStart;
@@ -96,7 +99,8 @@ void exp1(LogSrciClient<UnderlyingClient>& client, LogSrciServer<UnderlyingServe
         trpdrElapsed = trpdrEndTime - trpdrStartTime;
 
         auto searchStartTime = std::chrono::high_resolution_clock::now();
-        std::vector<SrciDb1Doc> results1 = server.search1(encInds.first, queryToken1);
+        std::vector<SrciDb1Doc> results1;
+        server.search1(encInds.first, queryToken1, results1);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         searchElapsed = searchEndTime - searchStartTime;
 
@@ -108,7 +112,8 @@ void exp1(LogSrciClient<UnderlyingClient>& client, LogSrciServer<UnderlyingServe
                   << std::endl;
 
         searchStartTime = std::chrono::high_resolution_clock::now();
-        std::vector<Id> results2 = server.search2(encInds.second, queryToken2);
+        std::vector<Id> results2;
+        server.search2(encInds.second, queryToken2, results2);
         searchEndTime = std::chrono::high_resolution_clock::now();
         searchElapsed += searchEndTime - searchStartTime;
         std::cout << "Search execution time (size " << query.size() << "): " << searchElapsed.count() * 1000 << " ms"
@@ -132,7 +137,8 @@ void exp2(
         // setup
         ustring key = client.setup(KEY_SIZE);
         auto buildIndexStart = std::chrono::high_resolution_clock::now();
-        EncInd encInd = client.buildIndex(key, db);
+        EncInd encInd;
+        client.buildIndex(key, db, encInd);
         auto buildIndexEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> buildIndexElapsed = buildIndexEnd - buildIndexStart;
         std::cout << "Build index execution time (size " << dbSize << "): "
@@ -146,7 +152,8 @@ void exp2(
         std::cout << "Trpdr execution time: " << trpdrElapsed.count() * 1000 << " ms" << std::endl;
 
         auto searchStartTime = std::chrono::high_resolution_clock::now();
-        std::vector<Id> results = server.search(encInd, queryToken);
+        std::vector<Id> results;
+        server.search(encInd, queryToken, results);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         searchElapsed = searchEndTime - searchStartTime;
         std::cout << "Search execution time: " << searchElapsed.count() * 1000 << " ms" << std::endl;
@@ -170,7 +177,8 @@ void exp2(
         // setup
         std::pair<ustring, ustring> keys = client.setup(KEY_SIZE);
         auto buildIndexStart = std::chrono::high_resolution_clock::now();
-        std::pair<EncInd, EncInd> encInds = client.buildIndex(keys, db);
+        std::pair<EncInd, EncInd> encInds;
+        client.buildIndex(keys, db, encInds);
         auto buildIndexEnd = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double> buildIndexElapsed = buildIndexEnd - buildIndexStart;
@@ -184,7 +192,8 @@ void exp2(
         trpdrElapsed = trpdrEndTime - trpdrStartTime;
 
         auto searchStartTime = std::chrono::high_resolution_clock::now();
-        std::vector<SrciDb1Doc> results1 = server.search1(encInds.first, queryToken1);
+        std::vector<SrciDb1Doc> results1;
+        server.search1(encInds.first, queryToken1, results1);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         searchElapsed = searchEndTime - searchStartTime;
 
@@ -196,7 +205,8 @@ void exp2(
                   << std::endl;
 
         searchStartTime = std::chrono::high_resolution_clock::now();
-        std::vector<Id> results2 = server.search2(encInds.second, queryToken2);
+        std::vector<Id> results2;
+        server.search2(encInds.second, queryToken2, results2);
         searchEndTime = std::chrono::high_resolution_clock::now();
         searchElapsed += searchEndTime - searchStartTime;
         std::cout << "Search execution time: " << searchElapsed.count() * 1000 << " ms"

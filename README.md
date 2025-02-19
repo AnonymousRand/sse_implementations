@@ -15,6 +15,7 @@ Implementations of the following searchable symmetric encryption (SSE) schemes:
 # Compiling
 
 ```
+cd src/
 g++ main.cpp range_sse.cpp pi_bas.cpp log_src.cpp log_srci.cpp util/*.cpp -lcrypto -std=c++17
 ```
 

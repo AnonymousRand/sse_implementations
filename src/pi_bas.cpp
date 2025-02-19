@@ -21,7 +21,7 @@ ustring PiBasClient::setup(int secParam) {
 }
 
 template <typename DbDocType, typename DbKwType>
-EncInd PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& db) {
+void PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& db, EncInd& encInd) {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     std::map<DbKwType, std::vector<DbDocType>> index;
     std::set<DbKwType> uniqueKws;
@@ -37,7 +37,6 @@ EncInd PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>
         uniqueKws.insert(dbKw); // `std::set` will not insert duplicate elements
     }
 
-    EncInd encInd;
     // for each w in W
     for (DbKwType dbKw : uniqueKws) {
         // K_1 || K_2 <- F(K, w)
@@ -60,8 +59,6 @@ EncInd PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>
             encInd[label] = std::pair<ustring, ustring> {data, iv};
         }
     }
-
-    return encInd;
 }
 
 template <typename RangeType>
@@ -75,9 +72,9 @@ QueryToken PiBasClient::trpdr(const ustring& key, const Range<RangeType>& range)
     return QueryToken {subkey1, subkey2};
 }
 
-template EncInd PiBasClient::buildIndex(const ustring& key, const Db<>& db);
-template EncInd PiBasClient::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db);
-template EncInd PiBasClient::buildIndex(const ustring& key, const Db<Id, IdRange>& db);
+template void PiBasClient::buildIndex(const ustring& key, const Db<>& db, EncInd& encInd);
+template void PiBasClient::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db, EncInd& encInd);
+template void PiBasClient::buildIndex(const ustring& key, const Db<Id, IdRange>& db, EncInd& encInd);
 
 template QueryToken PiBasClient::trpdr(const ustring& key, const Range<Id>& range);
 template QueryToken PiBasClient::trpdr(const ustring& key, const Range<Kw>& range);
@@ -87,8 +84,7 @@ template QueryToken PiBasClient::trpdr(const ustring& key, const Range<Kw>& rang
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename DbDocType>
-std::vector<DbDocType> PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken) {
-    std::vector<DbDocType> results;
+void PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken, std::vector<DbDocType>& results) {
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
     int counter = 0;
@@ -110,9 +106,7 @@ std::vector<DbDocType> PiBasServer::search(const EncInd& encInd, const QueryToke
 
         counter++;
     }
-
-    return results;
 }
 
-template std::vector<Id> PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken);
-template std::vector<SrciDb1Doc> PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken);
+template void PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken, std::vector<Id>& results);
+template void PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken, std::vector<SrciDb1Doc>& results);
