@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <iostream>
 #include <string>
 #include <tuple>
@@ -22,6 +21,15 @@ ustring toUstr(int n);
 ustring toUstr(const std::string& s);
 ustring toUstr(unsigned char* p, int len);
 std::string fromUstr(const ustring& ustr);
+
+// provide hash function for `ustring`s to use `unordered_map`
+// and other faster hashmap-based structures for them instead of `map`
+template<>
+struct std::hash<ustring> {
+    std::size_t operator ()(const ustring& ustr) const noexcept {
+        return std::hash<std::string>{}(fromUstr(ustr));
+    }
+};
 
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
@@ -89,12 +97,22 @@ class Range : public std::pair<T, T> {
         friend std::string operator +(const std::string& str, const Range<T2>& range);
 };
 
-template <typename T>
-ustring toUstr(const Range<T>& range);
-
 using Kw      = int;
 using IdRange = Range<Id>;
 using KwRange = Range<Kw>;
+
+// todo why is this not static in class why fromStr is? why can't this just be normal member function?
+template <typename T>
+ustring toUstr(const Range<T>& range);
+
+// provide hash function as well
+template<>
+template<typename T>
+struct std::hash<Range<T>> {
+    std::size_t operator ()(const Range<T>& range) const noexcept {
+        return std::hash<ustring>{}(toUstr(range));
+    }
+};
 
 // todo temp?
 
@@ -117,8 +135,7 @@ class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
 // so just make sure `DbDocType` subclasses `IEncryptable` and `DbKwType` subclasses `Range`
 template <typename DbDocType = Id, typename DbKwType = KwRange>
 using Db         = std::vector<std::tuple<DbDocType, DbKwType>>;
-//                `std::map<label, std::pair<data, iv>>`
-// TODO https://stackoverflow.com/a/32685618 for maps and sets as much as possible
+//                `std::unordered_map<label, std::pair<data, iv>>`
 using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
 using QueryToken = std::pair<ustring, ustring>;
 

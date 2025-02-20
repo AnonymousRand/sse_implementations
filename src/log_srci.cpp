@@ -48,7 +48,7 @@ void LogSrciClient<Underlying>::buildIndex(
     this->tdag1 = TdagNode<Kw>::buildTdag(maxKw);
 
     // first figure out which documents share the same keywords by building index and list of unique kws like in PiBas
-    std::map<KwRange, std::set<Id>> index;
+    std::unordered_map<KwRange, std::set<Id>> index;
     std::set<KwRange> uniqueKwRanges;
     for (auto entry : db) {
         Id id = std::get<0>(entry);
@@ -90,7 +90,7 @@ void LogSrciClient<Underlying>::buildIndex(
 
     // replicate every document to all id ranges/nodes in TDAG2 that cover it
     // again need temporary `map` to shuffle
-    std::map<IdRange, std::vector<Id>> tempInd2;
+    std::unordered_map<IdRange, std::vector<Id>> tempInd2;
     for (auto entry : db) {
         Id id = std::get<0>(entry);
         std::list<TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(IdRange {id, id});

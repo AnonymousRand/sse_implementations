@@ -1,4 +1,5 @@
 #include <deque>
+#include <map>
 
 #include "tdag.h"
 

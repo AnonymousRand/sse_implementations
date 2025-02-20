@@ -31,7 +31,7 @@ void LogSrcClient<Underlying>::buildIndex(const ustring& key, const Db<>& db, En
     // replicate every document to all keyword ranges/nodes in TDAG that cover it
     // temporarily use `unordered_map` instead of `vector` to easily identify
     // which docs share the same `kwRange` for shuffling later
-    std::map<KwRange, std::vector<Id>> tempProcessedDb;
+    std::unordered_map<KwRange, std::vector<Id>> tempProcessedDb;
     int temp = 0;
     for (auto entry : db) {
         Id id = std::get<0>(entry);

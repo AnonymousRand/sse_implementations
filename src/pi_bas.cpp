@@ -1,4 +1,4 @@
-#include <set>
+#include <unordered_set>
 
 #include <openssl/rand.h>
 
@@ -23,8 +23,9 @@ ustring PiBasClient::setup(int secParam) {
 template <typename DbDocType, typename DbKwType>
 void PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& db, EncInd& encInd) {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::map<DbKwType, std::vector<DbDocType>> index;
-    std::set<DbKwType> uniqueKws;
+    // TODO why does using unordered_set make buildindex like twice as slow as set??? test again
+    std::unordered_map<DbKwType, std::vector<DbDocType>> index;
+    std::unordered_set<DbKwType> uniqueKws;
     for (auto entry : db) {
         DbDocType dbDoc = std::get<0>(entry);
         DbKwType dbKw = std::get<1>(entry);
@@ -34,7 +35,7 @@ void PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& 
         } else {
             index[dbKw].push_back(dbDoc);
         }
-        uniqueKws.insert(dbKw); // `std::set` will not insert duplicate elements
+        uniqueKws.insert(dbKw); // `unordered_set` will not insert duplicate elements
     }
 
     // for each w in W
