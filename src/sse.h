@@ -14,3 +14,14 @@ class ISse {
         // todo does compiler optimization bypass this? use out parameter `results` instead of returning it to avoid copying large amounts of data
         virtual std::vector<DbDocType> search(const KwRange& range) = 0;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// IDsse
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename DbDocType>
+class IDsse : public ISse<DbDocType> {
+    public:
+        // API functions
+        virtual void update();
+}
