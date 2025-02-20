@@ -7,12 +7,3 @@
 
 // stupid C++ makes you explicitly instantiate templates that are separated between header and cpp files
 template class ISse<Id>;
-
-////////////////////////////////////////////////////////////////////////////////
-// IRangeSse
-////////////////////////////////////////////////////////////////////////////////
-
-template <typename Underlying>
-IRangeSse<Underlying>::IRangeSse(const Underlying& underlying) : underlying(underlying) {}
-
-template class IRangeSse<PiBas<Id>>;

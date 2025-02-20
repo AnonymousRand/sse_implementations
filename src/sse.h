@@ -14,16 +14,3 @@ class ISse {
         // todo does compiler optimization bypass this? use out parameter `results` instead of returning it to avoid copying large amounts of data
         virtual std::vector<DbDocType> search(const KwRange& range) = 0;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// IRangeSse
-////////////////////////////////////////////////////////////////////////////////
-
-template <typename Underlying>
-class IRangeSse {
-    protected:
-        const Underlying& underlying;
-
-    public:
-        IRangeSse(const Underlying& underlying);
-};

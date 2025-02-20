@@ -3,15 +3,15 @@
 
 #include "log_src.h"
 
+template <typename DbDocType, typename Underlying>
+LogSrc<DbDocType, Underlying>::LogSrc(const Underlying& underlying) : underlying(underlying) {};
+
 ////////////////////////////////////////////////////////////////////////////////
 // API Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename DbDocType>
-LogSrc<DbDocType>::LogSrc(const PiBas<DbDocType>& underlying) : IRangeSse<PiBas<DbDocType>>(underlying) {}
-
-template <typename DbDocType>
-void LogSrc<DbDocType>::setup(int secParam, const Db<DbDocType>& db) {
+template <typename DbDocType, typename Underlying>
+void LogSrc<DbDocType, Underlying>::setup(int secParam, const Db<DbDocType>& db) {
     this->key = this->underlying.genKey(secParam);
 
     // build index
@@ -60,8 +60,8 @@ void LogSrc<DbDocType>::setup(int secParam, const Db<DbDocType>& db) {
     this->encInd = this->underlying.buildIndex(this->key, processedDb);
 }
 
-template <typename DbDocType>
-std::vector<DbDocType> LogSrc<DbDocType>::search(const KwRange& query) {
+template <typename DbDocType, typename Underlying>
+std::vector<DbDocType> LogSrc<DbDocType, Underlying>::search(const KwRange& query) {
     TdagNode<Kw>* src = this->tdag->findSrc(query);
     if (src == nullptr) { 
         return std::vector<DbDocType> {};
@@ -74,4 +74,4 @@ std::vector<DbDocType> LogSrc<DbDocType>::search(const KwRange& query) {
 // Template Instantiations
 ////////////////////////////////////////////////////////////////////////////////
 
-template class LogSrc<Id>;
+template class LogSrc<Id, PiBas<Id>>;

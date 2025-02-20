@@ -4,15 +4,16 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <typename DbDocType = Id>
-class LogSrc : public ISse<DbDocType>, public IRangeSse<PiBas<DbDocType>> {
+template <typename DbDocType = Id, typename Underlying = PiBas<DbDocType>>
+class LogSrc : public ISse<DbDocType> {
     private:
+        const Underlying& underlying;
         ustring key;
         EncInd encInd;
         TdagNode<Kw>* tdag;
 
     public:
-        LogSrc(const PiBas<DbDocType>& underlying);
+        LogSrc(const Underlying& underlying);
 
         // API functions
         void setup(int secParam, const Db<DbDocType>& db) override;
