@@ -191,7 +191,7 @@ template ustring toUstr(const Range<Kw>& range);
 // todo temp?
 
 SrciDb1Doc::SrciDb1Doc(const KwRange& kwRange, const IdRange& idRange)
-        : IEncryptable<std::pair<KwRange, IdRange>>(std::pair<KwRange, IdRange> {kwRange, idRange}) {}
+        : IEncryptable<std::pair<KwRange, IdRange>>(std::pair {kwRange, idRange}) {}
 
 ustring SrciDb1Doc::encode() const {
     std::string str = "(" + this->val.first + "," + this->val.second + ")";

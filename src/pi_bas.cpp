@@ -48,7 +48,7 @@ EncInd PiBas<DbDocType>::buildIndex(const ustring& key, const Db<DbDocType2, DbK
         DbKwType dbKw = std::get<1>(entry);
 
         if (index.count(dbKw) == 0) {
-            index[dbKw] = std::vector<DbDocType2> {dbDoc};
+            index[dbKw] = std::vector {dbDoc};
         } else {
             index[dbKw].push_back(dbDoc);
         }
@@ -75,7 +75,7 @@ EncInd PiBas<DbDocType>::buildIndex(const ustring& key, const Db<DbDocType2, DbK
             counter++;
             // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
             // also store IV in plain along with encrypted value
-            encInd[label] = std::pair<ustring, ustring> {data, iv};
+            encInd[label] = std::pair {data, iv};
         }
     }
 

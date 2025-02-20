@@ -37,7 +37,7 @@ void LogSrc<DbDocType, Underlying>::setup(int secParam, const Db<DbDocType>& db)
         for (TdagNode<Kw>* ancestor : ancestors) {
             KwRange ancestorKwRange = ancestor->getRange();
             if (tempProcessedDb.count(ancestorKwRange) == 0) {
-                tempProcessedDb[ancestorKwRange] = std::vector<Id> {id};
+                tempProcessedDb[ancestorKwRange] = std::vector {id};
             } else {
                 tempProcessedDb[ancestorKwRange].push_back(id);
             }
@@ -53,7 +53,7 @@ void LogSrc<DbDocType, Underlying>::setup(int secParam, const Db<DbDocType>& db)
         std::vector<Id> ids = pair.second;
         std::shuffle(ids.begin(), ids.end(), rng);
         for (Id id : ids) {
-            processedDb.push_back(std::make_tuple(id, kwRange));
+            processedDb.push_back(std::tuple {id, kwRange});
         }
     }
 

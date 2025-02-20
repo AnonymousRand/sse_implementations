@@ -7,36 +7,20 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
+template <typename DbDocType, typename Underlying>
+LogSrci<DbDocType, Underlying>::LogSrci(const Underlying& underlying) : underlying(underlying) {}
+
 ////////////////////////////////////////////////////////////////////////////////
-// Client
+// API Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename Underlying>
-LogSrciClient<Underlying>::LogSrciClient(Underlying underlying) : IRangeSseClient<Underlying>(underlying) {}
+template <typename DbDocType, typename Underlying>
+void LogSrci<DbDocType, Underlying>::setup(int secParam, const Db<DbDocType>& db) {
+    ustring key1 = this->underlying.genKey(secParam);
+    ustring key2 = this->underlying.genKey(secParam);
+    this->key = std::pair {key1, key2};
 
-template <typename Underlying>
-std::pair<ustring, ustring> LogSrciClient<Underlying>::setup(int secParam) {
-    unsigned char* key1 = new unsigned char[secParam];
-    unsigned char* key2 = new unsigned char[secParam];
-    int res1 = RAND_priv_bytes(key1, secParam);
-    int res2 = RAND_priv_bytes(key2, secParam);
-    if (res1 != 1 || res2 != 1) {
-        handleOpenSslErrors();
-    }
-
-    ustring ustrKey1 = toUstr(key1, secParam);
-    ustring ustrKey2 = toUstr(key2, secParam);
-    delete[] key1, key2;
-    return std::pair<ustring, ustring> {ustrKey1, ustrKey2};
-}
-
-template <typename Underlying>
-void LogSrciClient<Underlying>::buildIndex(
-    const std::pair<ustring, ustring>& key, const Db<>& db, std::pair<EncInd, EncInd>& encInds
-) {
-    const ustring& key1 = key.first;
-    const ustring& key2 = key.second;
-
+    // build indexes
     // build TDAG1 over keywords
     Kw maxKw = -1;
     for (auto entry : db) {
@@ -55,7 +39,7 @@ void LogSrciClient<Underlying>::buildIndex(
         const KwRange& kwRange = std::get<1>(entry);
 
         if (index.count(kwRange) == 0) {
-            index[kwRange] = std::set<Id> {id};
+            index[kwRange] = std::set {id};
         } else {
             index[kwRange].insert(id);
         }
@@ -97,7 +81,7 @@ void LogSrciClient<Underlying>::buildIndex(
         for (TdagNode<Id>* ancestor : ancestors) {
             IdRange ancestorIdRange = ancestor->getRange();
             if (tempInd2.count(ancestorIdRange) == 0) {
-                tempInd2[ancestorIdRange] = std::vector<Id> {id};
+                tempInd2[ancestorIdRange] = std::vector {id};
             } else {
                 tempInd2[ancestorIdRange].push_back(id);
             }
@@ -113,32 +97,31 @@ void LogSrciClient<Underlying>::buildIndex(
         std::vector<Id> ids = pair.second;
         std::shuffle(ids.begin(), ids.end(), rng);
         for (Id id: ids) {
-            db2.push_back(std::pair <Id, IdRange> {id, idRange});
+            db2.push_back(std::pair {id, idRange});
         }
     }
 
-    this->underlying.buildIndex(key1, db1, encInds.first);
-    this->underlying.buildIndex(key2, db2, encInds.second);
+    EncInd encInd1 = this->underlying.buildIndex(key1, db1);
+    EncInd encInd2 = this->underlying.buildIndex(key2, db2);
+    this->encInds = std::pair {encInd1, encInd2};
 }
 
-template <typename Underlying>
-QueryToken LogSrciClient<Underlying>::trpdr1(const ustring& key1, const KwRange& kwRange) {
-    TdagNode<Kw>* src = this->tdag1->findSrc(kwRange);
-    if (src == nullptr) { 
-        return this->underlying.trpdr(key1, KwRange {-1, -1});
+template <typename DbDocType, typename Underlying>
+std::vector<DbDocType> LogSrci<DbDocType, Underlying>::search(const KwRange& query) {
+    // query 1
+    TdagNode<Kw>* src1 = this->tdag1->findSrc(query);
+    if (src1 == nullptr) { 
+        return std::vector<DbDocType> {};
     }
-    return this->underlying.trpdr(key1, src->getRange());
-}
+    QueryToken queryToken1 = this->underlying.genQueryToken(this->key.first, src1->getRange());
+    std::vector<SrciDb1Doc> choices = this->underlying.template serverSearch<SrciDb1Doc>(this->encInds.first, queryToken1);
 
-template <typename Underlying>
-QueryToken LogSrciClient<Underlying>::trpdr2(
-    const ustring& key2, const KwRange& kwRange, const std::vector<SrciDb1Doc>& choices
-) {
+    // query 2
     Id minId = -1, maxId = -1;
     // filter out unnecessary choices and merge remaining ones into a single id range
     for (SrciDb1Doc choice : choices) {
         KwRange choiceKwRange = choice.get().first;
-        if (kwRange.contains(choiceKwRange)) {
+        if (query.contains(choiceKwRange)) {
             IdRange choiceIdRange = choice.get().second;
             if (choiceIdRange.first < minId || minId == -1) {
                 minId = choiceIdRange.first;
@@ -150,34 +133,16 @@ QueryToken LogSrciClient<Underlying>::trpdr2(
     }
 
     IdRange idRangeToQuery {minId, maxId};
-    TdagNode<Id>* src = this->tdag2->findSrc(idRangeToQuery);
-    if (src == nullptr) { 
-        return this->underlying.trpdr(key2, IdRange {-1, -1});
+    TdagNode<Id>* src2 = this->tdag2->findSrc(idRangeToQuery);
+    if (src2 == nullptr) { 
+        return std::vector<DbDocType> {};
     }
-    return this->underlying.trpdr(key2, src->getRange());
+    QueryToken queryToken2 = this->underlying.genQueryToken(this->key.second, src2->getRange());
+    return this->underlying.template serverSearch<DbDocType>(this->encInds.second, queryToken2);
 }
-
-template class LogSrciClient<PiBasClient>;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Server
+// Template Instantiations
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename Underlying>
-LogSrciServer<Underlying>::LogSrciServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
-
-template <typename Underlying>
-void LogSrciServer<Underlying>::search1(
-    const EncInd& encInd1, const QueryToken& queryToken, std::vector<SrciDb1Doc>& results1
-) {
-    this->underlying.search(encInd1, queryToken, results1);
-}
-
-template <typename Underlying>
-void LogSrciServer<Underlying>::search2(
-    const EncInd& encInd2, const QueryToken& queryToken, std::vector<Id>& results2
-) {
-    this->underlying.search(encInd2, queryToken, results2);
-}
-
-template class LogSrciServer<PiBasServer>;
+template class LogSrci<Id, PiBas<Id>>;

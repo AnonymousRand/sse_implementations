@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include "log_src.h"
+#include "log_srci.h"
 #include "pi_bas.h"
 
 Db<> createDb(int dbSize) {
@@ -21,11 +22,11 @@ int main() {
     Db<> db = createDb(maxDbSize);
 
     PiBas<> piBas;
-    LogSrc<> logSrc(piBas);
-    logSrc.setup(KEY_SIZE, db);
+    LogSrci<> logSrci(piBas);
+    logSrci.setup(KEY_SIZE, db);
 
     KwRange query = KwRange {3, 5};
-    std::vector<Id> results = logSrc.search(query);
+    std::vector<Id> results = logSrci.search(query);
     std::cout << "Results:";
     for (Id id : results) {
         std::cout << " " << id;
