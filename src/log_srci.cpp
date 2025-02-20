@@ -89,7 +89,7 @@ void LogSrciClient<Underlying>::buildIndex(
     this->tdag2 = TdagNode<Id>::buildTdag(maxId);
 
     // replicate every document to all id ranges/nodes in TDAG2 that cover it
-    // again need temporary `map` to shuffle
+    // again need temporary `unordered_map` to shuffle
     std::unordered_map<IdRange, std::vector<Id>> tempInd2;
     for (auto entry : db) {
         Id id = std::get<0>(entry);
@@ -104,7 +104,7 @@ void LogSrciClient<Underlying>::buildIndex(
         }
     }
 
-    // randomly permute documents associated with same id range/node and convert temporary `map` to `Db`
+    // randomly permute documents associated with same id range/node and convert temporary `unordered_map` to `Db`
     Db<Id, IdRange> db2;
     std::random_device rd;
     std::mt19937 rng(rd());

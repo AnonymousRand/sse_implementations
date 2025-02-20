@@ -44,7 +44,7 @@ void LogSrc<DbDocType, Underlying>::setup(int secParam, const Db<DbDocType>& db)
         }
     }
 
-    // randomly permute documents associated with same keyword range/node and convert temporary `map` to `Db`
+    // randomly permute documents associated with same keyword range/node and convert temporary `unordered_map` to `Db`
     Db<> processedDb;
     std::random_device rd;
     std::mt19937 rng(rd());
