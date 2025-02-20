@@ -296,23 +296,4 @@ int main() {
     exp2(logSrciClient, logSrciServer, query, maxDbSize, false);
     logSrciClient = LogSrciClient(piBasClient);
     logSrciServer = LogSrciServer(piBasServer);
-
-    // experiment 2.5
-    std::cout << "---------- Experiment 2.5 for Log-SRC ----------" << std::endl;
-    std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : "            << query << std::endl;
-    std::cout << "Data skew: yes"         << std::endl;
-    std::cout << std::endl;
-    exp2(logSrcClient, logSrcServer, query, maxDbSize, true);
-    logSrcClient = LogSrcClient(piBasClient);
-    logSrcServer = LogSrcServer(piBasServer);
-
-    std::cout << "---------- Experiment 2.5 for Log-SRC-i ----------" << std::endl;
-    std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : "            << query << std::endl;
-    std::cout << "Data skew: yes"         << std::endl;
-    std::cout << std::endl;
-    exp2(logSrciClient, logSrciServer, query, maxDbSize, true);
-    logSrciClient = LogSrciClient(piBasClient);
-    logSrciServer = LogSrciServer(piBasServer);
 }
