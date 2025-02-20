@@ -2,22 +2,19 @@
 #include <random>
 
 #include "log_src.h"
-#include "pi_bas.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// Client
+// API Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename Underlying>
-LogSrcClient<Underlying>::LogSrcClient(Underlying underlying) : IRangeSseClient<Underlying>(underlying) {}
+template <typename DbDocType>
+LogSrc<DbDocType>::LogSrc(const PiBas<DbDocType>& underlying) : IRangeSse<PiBas<DbDocType>>(underlying) {}
 
-template <typename Underlying>
-ustring LogSrcClient<Underlying>::setup(int secParam) {
-    return this->underlying.setup(secParam);
-}
+template <typename DbDocType>
+void LogSrc<DbDocType>::setup(int secParam, const Db<DbDocType>& db) {
+    this->key = this->underlying.genKey(secParam);
 
-template <typename Underlying>
-void LogSrcClient<Underlying>::buildIndex(const ustring& key, const Db<>& db, EncInd& encInd) {
+    // build index
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = -1;
     for (auto entry : db) {
@@ -60,31 +57,21 @@ void LogSrcClient<Underlying>::buildIndex(const ustring& key, const Db<>& db, En
         }
     }
 
-    this->underlying.buildIndex(key, processedDb, encInd);
+    this->encInd = this->underlying.buildIndex(this->key, processedDb);
 }
 
-template <typename Underlying>
-QueryToken LogSrcClient<Underlying>::trpdr(const ustring& key, const KwRange& kwRange) {
-    TdagNode<Kw>* src = this->tdag->findSrc(kwRange);
-    // if keyword not in TDAG/index; make sure server handles this and returns no results!
+template <typename DbDocType>
+std::vector<DbDocType> LogSrc<DbDocType>::search(const KwRange& query) {
+    TdagNode<Kw>* src = this->tdag->findSrc(query);
     if (src == nullptr) { 
-        return this->underlying.trpdr(key, KwRange {-1, -1});
+        return std::vector<DbDocType> {};
     }
-    return this->underlying.trpdr(key, src->getRange());
+    QueryToken queryToken = this->underlying.genQueryToken(this->key, src->getRange());
+    return this->underlying.template serverSearch<DbDocType>(this->encInd, queryToken);
 }
 
-template class LogSrcClient<PiBasClient>;
-
 ////////////////////////////////////////////////////////////////////////////////
-// Server
+// Template Instantiations
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename Underlying>
-LogSrcServer<Underlying>::LogSrcServer(Underlying underlying) : IRangeSseServer<Underlying>(underlying) {}
-
-template <typename Underlying>
-void LogSrcServer<Underlying>::search(const EncInd& encInd, const QueryToken& queryToken, std::vector<Id>& results) {
-    this->underlying.search(encInd, queryToken, results);
-}
-
-template class LogSrcServer<PiBasServer>;
+template class LogSrc<Id>;

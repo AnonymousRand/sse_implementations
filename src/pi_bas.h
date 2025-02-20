@@ -1,45 +1,29 @@
 #pragma once
 
-#include "util/util.h"
+#include "sse.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// Client
-////////////////////////////////////////////////////////////////////////////////
+template <typename DbDocType = Id>
+class PiBas : ISse<DbDocType> {
+    private:
+        ustring key;
+        EncInd encInd;
 
-class PiBasClient {
     public:
-        /**
-         * Generate a key.
-         *
-         * `Setup()` from original paper broken up into `setup()` and `buildIndex()`
-         * to be consistent with later papers.
-         */
-        ustring setup(int secParam);
+        // API functions
+        
+        void setup(int secParam, const Db<DbDocType>& db) override;
+        std::vector<DbDocType> search(const KwRange& query) override;
 
-        /**
-         * Build the encrypted index.
-         *
-         * Pass out parameter `encInd` instead of returning it to avoid copying large amounts of data.
-         */
-        template <typename DbDocType, typename DbKwType>
-        void buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& db, EncInd& encInd);
+        // non-API functions
+        
+        ustring genKey(int secParam) const;
 
-        /**
-         * Issue a query by computing its encrypted token.
-         */
+        template <typename DbDocType2, typename DbKwType>
+        EncInd buildIndex(const ustring& key, const Db<DbDocType2, DbKwType>& db) const;
+
         template <typename RangeType>
-        QueryToken trpdr(const ustring& key, const Range<RangeType>& range);
-};
+        QueryToken genQueryToken(const ustring& key, const Range<RangeType>& range) const;
 
-////////////////////////////////////////////////////////////////////////////////
-// Server
-////////////////////////////////////////////////////////////////////////////////
-
-class PiBasServer {
-    public:
-        /**
-         * Process a query and compute all results.
-         */
-        template <typename DbDocType = Id>
-        void search(const EncInd& encInd, const QueryToken& queryToken, std::vector<DbDocType>& results);
+        template <typename DbDocType2>
+        std::vector<DbDocType2> serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
 };

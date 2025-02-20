@@ -6,10 +6,27 @@
 #include "util/openssl.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// Client
+// API Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-ustring PiBasClient::setup(int secParam) {
+template <typename DbDocType>
+void PiBas<DbDocType>::setup(int secParam, const Db<DbDocType>& db) {
+    this->key = this->genKey(secParam);
+    this->encInd = this->buildIndex(this->key, db);
+}
+
+template <typename DbDocType>
+std::vector<DbDocType> PiBas<DbDocType>::search(const KwRange& query) {
+    QueryToken queryToken = this->genQueryToken(this->key, query);
+    return this->serverSearch<DbDocType>(this->encInd, queryToken);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Non-API Functions
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename DbDocType>
+ustring PiBas<DbDocType>::genKey(int secParam) const {
     unsigned char* key = new unsigned char[secParam];
     int res = RAND_priv_bytes(key, secParam);
     if (res != 1) {
@@ -20,24 +37,25 @@ ustring PiBasClient::setup(int secParam) {
     return ustrKey;
 }
 
-template <typename DbDocType, typename DbKwType>
-void PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& db, EncInd& encInd) {
+template <typename DbDocType>
+template <typename DbDocType2, typename DbKwType>
+EncInd PiBas<DbDocType>::buildIndex(const ustring& key, const Db<DbDocType2, DbKwType>& db) const {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    // TODO why does using unordered_set make buildindex like twice as slow as set??? test again
-    std::unordered_map<DbKwType, std::vector<DbDocType>> index;
+    std::unordered_map<DbKwType, std::vector<DbDocType2>> index;
     std::unordered_set<DbKwType> uniqueKws;
     for (auto entry : db) {
-        DbDocType dbDoc = std::get<0>(entry);
+        DbDocType2 dbDoc = std::get<0>(entry);
         DbKwType dbKw = std::get<1>(entry);
 
         if (index.count(dbKw) == 0) {
-            index[dbKw] = std::vector<DbDocType> {dbDoc};
+            index[dbKw] = std::vector<DbDocType2> {dbDoc};
         } else {
             index[dbKw].push_back(dbDoc);
         }
         uniqueKws.insert(dbKw); // `unordered_set` will not insert duplicate elements
     }
 
+    EncInd encInd;
     // for each w in W
     for (DbKwType dbKw : uniqueKws) {
         // K_1 || K_2 <- F(K, w)
@@ -49,7 +67,7 @@ void PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& 
         unsigned int counter = 0;
         // for each id in DB(w)
         auto itDocsWithSameKw = index.find(dbKw);
-        for (DbDocType dbDoc : itDocsWithSameKw->second) {
+        for (DbDocType2 dbDoc : itDocsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring label = prf(subkey1, toUstr(counter));
             ustring iv = genIv();
@@ -60,10 +78,13 @@ void PiBasClient::buildIndex(const ustring& key, const Db<DbDocType, DbKwType>& 
             encInd[label] = std::pair<ustring, ustring> {data, iv};
         }
     }
+
+    return encInd;
 }
 
+template <typename DbDocType>
 template <typename RangeType>
-QueryToken PiBasClient::trpdr(const ustring& key, const Range<RangeType>& range) {
+QueryToken PiBas<DbDocType>::genQueryToken(const ustring& key, const Range<RangeType>& range) const {
     // the paper uses different notation for the key generation here vs. in `setup()`;
     // but I'm fairly sure they meant the same thing, otherwise it doesn't work
     ustring K = prf(key, toUstr(range));
@@ -73,21 +94,12 @@ QueryToken PiBasClient::trpdr(const ustring& key, const Range<RangeType>& range)
     return QueryToken {subkey1, subkey2};
 }
 
-template void PiBasClient::buildIndex(const ustring& key, const Db<>& db, EncInd& encInd);
-template void PiBasClient::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db, EncInd& encInd);
-template void PiBasClient::buildIndex(const ustring& key, const Db<Id, IdRange>& db, EncInd& encInd);
-
-template QueryToken PiBasClient::trpdr(const ustring& key, const Range<Id>& range);
-template QueryToken PiBasClient::trpdr(const ustring& key, const Range<Kw>& range);
-
-////////////////////////////////////////////////////////////////////////////////
-// Server
-////////////////////////////////////////////////////////////////////////////////
-
 template <typename DbDocType>
-void PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken, std::vector<DbDocType>& results) {
+template <typename DbDocType2>
+std::vector<DbDocType2> PiBas<DbDocType>::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const {
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
+    std::vector<DbDocType2> results;
     int counter = 0;
     
     // for c = 0 until `Get` returns error
@@ -103,11 +115,26 @@ void PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken, std
         // id <- Dec(K_2, d)
         ustring iv = encIndV.second;
         ustring ptext = aesDecrypt(EVP_aes_256_cbc(), subkey2, data, iv);
-        results.push_back(DbDocType::decode(ptext));
+        results.push_back(DbDocType2::decode(ptext));
 
         counter++;
     }
+
+    return results;
 }
 
-template void PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken, std::vector<Id>& results);
-template void PiBasServer::search(const EncInd& encInd, const QueryToken& queryToken, std::vector<SrciDb1Doc>& results);
+////////////////////////////////////////////////////////////////////////////////
+// Template Instantiations
+////////////////////////////////////////////////////////////////////////////////
+
+template class PiBas<Id>;
+
+template EncInd PiBas<Id>::buildIndex(const ustring& key, const Db<>& db) const;
+template EncInd PiBas<Id>::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db) const;
+template EncInd PiBas<Id>::buildIndex(const ustring& key, const Db<Id, IdRange>& db) const;
+
+template QueryToken PiBas<Id>::genQueryToken(const ustring& key, const IdRange& range) const;
+template QueryToken PiBas<Id>::genQueryToken(const ustring& key, const KwRange& range) const;
+
+template std::vector<Id> PiBas<Id>::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+template std::vector<SrciDb1Doc> PiBas<Id>::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;

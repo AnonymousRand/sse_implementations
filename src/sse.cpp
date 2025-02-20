@@ -1,29 +1,18 @@
-#pragma once
-
-#include "util/util.h"
-
-////////////////////////////////////////////////////////////////////////////////
-// Client
-////////////////////////////////////////////////////////////////////////////////
-
-template <typename Underlying>
-class IRangeSseClient {
-    protected:
-        Underlying underlying;
-
-    public:
-        IRangeSseClient(Underlying underlying);
-};
+#include "pi_bas.h"
+#include "sse.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// Server
+// ISse
+////////////////////////////////////////////////////////////////////////////////
+
+// stupid C++ makes you explicitly instantiate templates that are separated between header and cpp files
+template class ISse<Id>;
+
+////////////////////////////////////////////////////////////////////////////////
+// IRangeSse
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename Underlying>
-class IRangeSseServer {
-    protected:
-        Underlying underlying;
+IRangeSse<Underlying>::IRangeSse(const Underlying& underlying) : underlying(underlying) {}
 
-    public:
-        IRangeSseServer(Underlying underlying);
-};
+template class IRangeSse<PiBas<Id>>;

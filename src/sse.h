@@ -3,38 +3,27 @@
 #include "util/util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// Server
+// ISse
 ////////////////////////////////////////////////////////////////////////////////
 
-class ISseServer {
+template <typename DbDocType>
+class ISse {
     public:
-        /**
-         * Process a query and compute all results.
-         */
-        virtual std::vector<Id> search(const EncInd& encInd, const QueryToken& queryToken) = 0;
+        // API functions
+        virtual void setup(int secParam, const Db<DbDocType>& db) = 0;
+        // todo does compiler optimization bypass this? use out parameter `results` instead of returning it to avoid copying large amounts of data
+        virtual std::vector<DbDocType> search(const KwRange& range) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Client
+// IRangeSse
 ////////////////////////////////////////////////////////////////////////////////
 
-class ISseClient {
+template <typename Underlying>
+class IRangeSse {
+    protected:
+        const Underlying& underlying;
+
     public:
-        /**
-         * Generate a key.
-         *
-         * `Setup()` from original paper broken up into `setup()` and `buildIndex()`
-         * to be consistent with later papers.
-         */
-        virtual ustring setup(int secParam) = 0;
-
-        /**
-         * Build the encrypted index.
-         */
-        virtual EncInd buildIndex(const ustring& key, const Db<>& db) = 0;
-
-        /**
-         * Issue a query by computing its encrypted token and return the results.
-         */
-        virtual QueryToken query(const ustring& key, const KwRange& range, const ISseServer& server) = 0;
+        IRangeSse(const Underlying& underlying);
 };
