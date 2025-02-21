@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <regex>
 
 #include "util.h"
@@ -31,154 +30,6 @@ std::string fromUstr(const ustring& ustr) {
 std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
     return os << fromUstr(ustr);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// `IRangeable`
-////////////////////////////////////////////////////////////////////////////////
-
-template <typename Derived>
-Derived* IRangeable<Derived>::derived() {
-    return static_cast<Derived*>(this);
-}
-
-template <typename Derived>
-Derived& IRangeable<Derived>::operator ++() {
-    this->setArith(this->getArith() + 1);
-    return *(this->derived());
-}
-
-template <typename Derived>
-Derived IRangeable<Derived>::operator ++(int) {
-    Derived old = *(this->derived());
-    ++(*this);
-    return old;
-}
-
-template <typename Derived>
-Derived& IRangeable<Derived>::operator +=(const Derived& iRangeable) {
-    this->setArith(this->getArith() + iRangeable.getArith());
-    return *(this->derived());
-}
-
-template <typename Derived>
-Derived& IRangeable<Derived>::operator -=(const Derived& iRangeable) {
-    this->setArith(this->getArith() - iRangeable.getArith());
-    return *(this->derived());
-}
-
-template <typename Derived>
-Derived operator +(Derived iRangeable1, const Derived& iRangeable2) {
-    iRangeable1 += iRangeable2;
-    return iRangeable1;
-}
-
-template <typename Derived>
-Derived operator +(Derived iRangeable, int n) {
-    iRangeable.setArith(iRangeable.getArith() + n);
-    return iRangeable;
-}
-
-template <typename Derived>
-Derived operator -(Derived iRangeable1, const Derived& iRangeable2) {
-    iRangeable1 -= iRangeable2;
-    return iRangeable1;
-}
-
-template <typename Derived>
-Derived operator -(Derived iRangeable, int n) {
-    iRangeable.setArith(iRangeable.getArith() - n);
-    return iRangeable;
-}
-
-template <typename Derived>
-bool operator ==(const Derived& iRangeable1, const Derived& iRangeable2) {
-    return iRangeable1.getArith() == iRangeable2.getArith();
-}
-
-template <typename Derived>
-bool operator ==(const Derived& iRangeable1, int n) {
-    return iRangeable1.getArith() == n;
-}
-
-template <typename Derived>
-bool operator <(const Derived& iRangeable1, const Derived& iRangeable2) {
-    return iRangeable1.getArith() < iRangeable2.getArith();
-}
-
-template <typename Derived>
-bool operator >(const Derived& iRangeable1, const Derived& iRangeable2) {
-    return iRangeable1.getArith() > iRangeable2.getArith();
-}
-
-template <typename Derived>
-bool operator <=(const Derived& iRangeable1, const Derived& iRangeable2) {
-    return iRangeable1.getArith() <= iRangeable2.getArith();
-}
-
-template <typename Derived>
-bool operator >=(const Derived& iRangeable1, const Derived& iRangeable2) {
-    return iRangeable1.getArith() >= iRangeable2.getArith();
-}
-
-template <typename Derived>
-std::string operator +(const std::string& str, const Derived& iRangeable) {
-    return str + std::to_string(iRangeable.getArith());
-}
-
-template <typename Derived>
-std::string operator +(const Derived& iRangeable, const std::string& str) {
-    return std::to_string(iRangeable.getArith()) + str;
-}
-
-// don't you love c++
-// java: *look what they need to mimic a fraction of my power*
-template class IRangeable<Id>;
-template class IRangeable<IdOp>;
-template class IRangeable<Kw>;
-
-template Id operator +(Id iRangeable1, const Id& iRangeable2);
-template IdOp operator +(IdOp iRangeable1, const IdOp& iRangeable2);
-template Kw operator +(Kw iRangeable1, const Kw& iRangeable2);
-
-template Id operator +(Id iRangeable1, int n);
-template IdOp operator +(IdOp iRangeable1, int n);
-template Kw operator +(Kw iRangeable1, int n);
-
-template Id operator -(Id iRangeable1, const Id& iRangeable2);
-template IdOp operator -(IdOp iRangeable1, const IdOp& iRangeable2);
-template Kw operator -(Kw iRangeable1, const Kw& iRangeable2);
-
-template Id operator -(Id iRangeable1, int n);
-template IdOp operator -(IdOp iRangeable1, int n);
-template Kw operator -(Kw iRangeable1, int n);
-
-template bool operator ==(const Id& iRangeable1, const Id& iRangeable2);
-template bool operator ==(const IdOp& iRangeable1, const IdOp& iRangeable2);
-template bool operator ==(const Kw& iRangeable1, const Kw& iRangeable2);
-
-template bool operator ==(const Id& iRangeable1, int n);
-template bool operator ==(const IdOp& iRangeable1, int n);
-template bool operator ==(const Kw& iRangeable1, int n);
-
-template bool operator <(const Id& iRangeable1, const Id& iRangeable2);
-template bool operator <(const IdOp& iRangeable1, const IdOp& iRangeable2);
-template bool operator >(const Kw& iRangeable1, const Kw& iRangeable2);
-
-template bool operator <=(const Id& iRangeable1, const Id& iRangeable2);
-template bool operator <=(const IdOp& iRangeable1, const IdOp& iRangeable2);
-template bool operator <=(const Kw& iRangeable1, const Kw& iRangeable2);
-
-template bool operator >=(const Id& iRangeable1, const Id& iRangeable2);
-template bool operator >=(const IdOp& iRangeable1, const IdOp& iRangeable2);
-template bool operator >=(const Kw& iRangeable1, const Kw& iRangeable2);
-
-template std::string operator +(const std::string& str, const Id& iRangeable);
-template std::string operator +(const std::string& str, const IdOp& iRangeable);
-template std::string operator +(const std::string& str, const Kw& iRangeable);
-
-template std::string operator +(const Id& iRangeable, const std::string& str);
-template std::string operator +(const IdOp& iRangeable, const std::string& str);
-template std::string operator +(const Kw& iRangeable, const std::string& str);
 
 ////////////////////////////////////////////////////////////////////////////////
 // `Range`
@@ -242,15 +93,12 @@ std::string operator +(const std::string& str, const Range<T>& range) {
 }
 
 template class Range<Id>;
-template class Range<IdOp>;
 template class Range<Kw>;
 
 template std::ostream& operator <<(std::ostream& os, const Range<Id>& range);
-template std::ostream& operator <<(std::ostream& os, const Range<IdOp>& range);
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
 
 template std::string operator +(const std::string& str, const Range<Id>& range);
-template std::string operator +(const std::string& str, const Range<IdOp>& range);
 template std::string operator +(const std::string& str, const Range<Kw>& range);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -309,16 +157,95 @@ Id Id::decode(const ustring& ustr) {
     return Id::fromStr(str);
 }
 
-int Id::getArith() const {
-    return this->val;
-}
-
-void Id::setArith(int val) {
-    this->val = val;
+Id Id::getMin() {
+    return Id(-1);
 }
 
 Id Id::fromStr(const std::string& str) {
     return Id(std::stoi(str));
+}
+
+Id& Id::operator ++() {
+    this->val = ++(this->val);
+    return *this;
+}
+
+Id Id::operator ++(int) {
+    Id old = *this;
+    ++(*this);
+    return old;
+}
+
+Id& Id::operator +=(const Id& id) {
+    this->val += id.val;
+    return *this;
+}
+
+Id& Id::operator -=(const Id& id) {
+    this->val -= id.val;
+    return *this;
+}
+
+Id& Id::operator +=(int n) {
+    this->val += n;
+    return *this;
+}
+
+Id& Id::operator -=(int n) {
+    this->val -= n;
+    return *this;
+}
+
+Id operator +(Id id1, const Id& id2) {
+    id1 += id2;
+    return id1;
+}
+
+Id operator +(Id id, int n) {
+    id += n;
+    return id;
+}
+
+Id operator -(Id id1, const Id& id2) {
+    id1 -= id2;
+    return id1;
+}
+
+Id operator -(Id id, int n) {
+    id -= n;
+    return id;
+}
+
+bool operator ==(const Id& id1, const Id& id2) {
+    return id1.val == id2.val;
+}
+
+bool operator ==(const Id& id1, int n) {
+    return id1.val == n;
+}
+
+bool operator <(const Id& id1, const Id& id2) {
+    return id1.val < id2.val;
+}
+
+bool operator >(const Id& id1, const Id& id2) {
+    return id1.val > id2.val;
+}
+
+bool operator <=(const Id& id1, const Id& id2) {
+    return id1.val <= id2.val;
+}
+
+bool operator >=(const Id& id1, const Id& id2) {
+    return id1.val >= id2.val;
+}
+
+std::string operator +(const std::string& str, const Id& id) {
+    return str + std::to_string(id.val);
+}
+
+std::string operator +(const Id& id, const std::string& str) {
+    return std::to_string(id.val) + str;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -350,70 +277,48 @@ std::string operator +(const std::string& str, const Op& op) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// `IdOp`
+// `Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
-IdOp::IdOp(const Id& id) : IEncryptable<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
+Doc::Doc(const Id& id) : IEncryptable<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
 
-IdOp::IdOp(const Id& id, const Op& op) : IEncryptable<std::pair<Id, Op>>(std::pair {id, op}) {}
+Doc::Doc(const Id& id, const Op& op) : IEncryptable<std::pair<Id, Op>>(std::pair {id, op}) {}
 
-IdOp IdOp::decode(const ustring& ustr) {
+Doc Doc::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
     if (!std::regex_search(str, matches, re) || matches.size() != 3) {
-        std::cerr << "Error: bad string passed to `IdOp.fromUstr()`, please panic calmly." << std::endl;
+        std::cerr << "Error: bad string passed to `Doc.fromUstr()`, please panic calmly." << std::endl;
         exit(EXIT_FAILURE);
     }
     Id id = Id::fromStr(matches[1].str());
     Op op = Op::fromStr(matches[2].str());
-    return IdOp {id, op};
+    return Doc {id, op};
 }
 
-std::string IdOp::toStr() const {
+std::string Doc::toStr() const {
     return "(" + this->val.first + "," + this->val.second + ")";
 }
 
-int IdOp::getArith() const {
-    return this->val.first.getArith();
+Doc Doc::getMin() {
+    return Doc(-1);
 }
 
-void IdOp::setArith(int val) {
-    this->val.first = val;
-}
-
-IdRange toIdRange(const IdOpRange& idOpRange) {
+IdRange toIdRange(const DocRange& idOpRange) {
     std::pair startPair = idOpRange.first.get();
     std::pair endPair = idOpRange.second.get();
     return IdRange {startPair.first, endPair.first};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// `Kw`
-////////////////////////////////////////////////////////////////////////////////
-
-Kw::Kw(int val) {
-    this->val = val;
-}
-
-int Kw::getArith() const {
-    return this->val;
-}
-
-void Kw::setArith(int val) {
-    this->val = val;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // `SrciDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename DbDoc>
-SrciDb1Doc<DbDoc>::SrciDb1Doc(const KwRange& kwRange, const Range<DbDoc>& dbDocRange)
-        : IEncryptable<std::pair<KwRange, Range<DbDoc>>>(std::pair {kwRange, dbDocRange}) {}
+SrciDb1Doc::SrciDb1Doc(const KwRange& kwRange, const IdRange& idRange)
+        : IEncryptable<std::pair<KwRange, IdRange>>(std::pair {kwRange, idRange}) {}
 
-template <typename DbDoc>
-SrciDb1Doc<DbDoc> SrciDb1Doc<DbDoc>::decode(const ustring& ustr) {
+SrciDb1Doc SrciDb1Doc::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
@@ -422,11 +327,10 @@ SrciDb1Doc<DbDoc> SrciDb1Doc<DbDoc>::decode(const ustring& ustr) {
         exit(EXIT_FAILURE);
     }
     KwRange kwRange = KwRange::fromStr(matches[1].str());
-    Range<DbDoc> dbDocRange = Range<DbDoc>::fromStr(matches[2].str());
-    return SrciDb1Doc {kwRange, dbDocRange};
+    IdRange idRange = IdRange::fromStr(matches[2].str());
+    return SrciDb1Doc {kwRange, idRange};
 }
 
-template <typename DbDoc>
-std::string SrciDb1Doc<DbDoc>::toStr() const {
+std::string SrciDb1Doc::toStr() const {
     return "(" + this->val.first + "," + this->val.second + ")";
 }
