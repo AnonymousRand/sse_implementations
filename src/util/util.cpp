@@ -305,10 +305,12 @@ Doc Doc::getMin() {
     return Doc(-1);
 }
 
-IdRange toIdRange(const DocRange& idOpRange) {
-    std::pair startPair = idOpRange.first.get();
-    std::pair endPair = idOpRange.second.get();
-    return IdRange {startPair.first, endPair.first};
+bool operator <(const Doc& doc1, const Doc& doc2) {
+    return doc1.val.first < doc2.val.first;
+}
+
+bool operator ==(const Doc& doc1, const Doc& doc2) {
+    return doc1.val.first == doc2.val.first;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

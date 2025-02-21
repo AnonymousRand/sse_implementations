@@ -123,7 +123,7 @@ std::vector<DbDoc> PiBas::serverSearch(const EncInd& encInd, const QueryToken& q
 
 template EncInd PiBas::buildIndex(const ustring& key, const Db<>& db) const;
 template EncInd PiBas::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db) const;
-template EncInd PiBas::buildIndex(const ustring& key, const Db<Doc, DocRange>& db) const;
+template EncInd PiBas::buildIndex(const ustring& key, const Db<Doc, IdRange>& db) const;
 
 template QueryToken PiBas::genQueryToken(const ustring& key, const IdRange& range) const;
 template QueryToken PiBas::genQueryToken(const ustring& key, const KwRange& range) const;

@@ -33,30 +33,28 @@ void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
     this->tdag1 = TdagNode<Kw>::buildTdag(maxKw);
 
     // first figure out which documents share the same keywords by building index and list of unique kws like in PiBas
-    std::unordered_map<KwRange, std::set<Doc>> ind1;
+    std::unordered_map<KwRange, std::set<Id>> ind1;
     std::unordered_set<KwRange> uniqueKwRanges;
     for (auto entry : db) {
         Doc doc = std::get<0>(entry);
+        Id id = doc.get().first;
         KwRange kwRange = std::get<1>(entry);
 
         if (ind1.count(kwRange) == 0) {
-            ind1[kwRange] = std::set {doc};
+            ind1[kwRange] = std::set {id};
         } else {
-            ind1[kwRange].insert(doc);
+            ind1[kwRange].insert(id);
         }
         uniqueKwRanges.insert(kwRange);
     }
 
     // replicate every document (in this case pairs) to all keyword ranges/nodes in TDAG1 that cover it
-    // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, [docs]), kw range/node)
-    Db<SrciDb1Doc> db1;
+    // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, [ids]), kw range/node)
+    Db<SrciDb1Doc, KwRange> db1;
     for (KwRange kwRange : uniqueKwRanges) {
         auto itDocsWithSameKwRange = ind1.find(kwRange);
-        std::set<Doc> docsWithSameKwRange = itDocsWithSameKwRange->second;
-        // this is why we used `set`
-        Doc minIdDoc = *docsWithSameKwRange.begin();
-        Doc maxIdDoc = *docsWithSameKwRange.rbegin();
-        IdRange idRange {minIdDoc.get().first, maxIdDoc.get().first};
+        std::set<Id> sameKwRangeIds = itDocsWithSameKwRange->second;
+        IdRange idRange {*sameKwRangeIds.begin(), *sameKwRangeIds.rbegin()}; // this is why we used `set`
         SrciDb1Doc pair {kwRange, idRange};
 
         std::list<TdagNode<Kw>*> ancestors = this->tdag1->getLeafAncestors(kwRange);

@@ -55,8 +55,6 @@ class Range : public std::pair<T, T> {
         static Range<T> fromStr(const std::string& str);
         ustring toUstr() const;
         template<typename T2>
-        friend bool operator <(const Range<T2>& range1, const Range<T2>& range2);
-        template<typename T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
         template<typename T2>
         // overload string concatenation (no way this worked)
@@ -174,9 +172,9 @@ class Doc : public IEncryptable<std::pair<Id, Op>> {
         std::string toStr() const override;
 
         static Doc getMin();
+        friend bool operator <(const Doc& doc1, const Doc& doc2);
+        friend bool operator ==(const Doc& doc1, const Doc& doc2);
 };
-
-using DocRange = Range<Doc>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // `SrciDb1Doc`
