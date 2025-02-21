@@ -8,7 +8,7 @@ Db<> createDb(int dbSize) {
     Db<> db;
     for (int i = 0; i < dbSize; i++) {
         Kw kw = i;
-        db.push_back(std::make_tuple(Id(i), KwRange {kw, kw}));
+        db.push_back(std::pair {Id(i), KwRange {kw, kw}});
     }
     sortDb(db);
     return db;
@@ -21,7 +21,7 @@ int main() {
     int maxDbSize = pow(2, maxDbSizeExp);
     Db<> db = createDb(maxDbSize);
 
-    PiBas<> piBas;
+    PiBas piBas;
     LogSrci<> logSrci(piBas);
     logSrci.setup(KEY_SIZE, db);
 

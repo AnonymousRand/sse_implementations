@@ -3,18 +3,19 @@
 
 #include "log_src.h"
 
-template <typename DbDocType, typename Underlying>
-LogSrc<DbDocType, Underlying>::LogSrc(const Underlying& underlying) : underlying(underlying) {};
+template <typename Underlying>
+LogSrc<Underlying>::LogSrc(const Underlying& underlying) : underlying(underlying) {};
 
 ////////////////////////////////////////////////////////////////////////////////
 // API Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename DbDocType, typename Underlying>
-void LogSrc<DbDocType, Underlying>::setup(int secParam, const Db<DbDocType>& db) {
+template <typename Underlying>
+void LogSrc<Underlying>::setup(int secParam, const Db<>& db) {
     this->key = this->underlying.genKey(secParam);
 
     // build index
+    
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = -1;
     for (auto entry : db) {
@@ -53,25 +54,25 @@ void LogSrc<DbDocType, Underlying>::setup(int secParam, const Db<DbDocType>& db)
         std::vector<Id> ids = pair.second;
         std::shuffle(ids.begin(), ids.end(), rng);
         for (Id id : ids) {
-            processedDb.push_back(std::tuple {id, kwRange});
+            processedDb.push_back(std::pair {id, kwRange});
         }
     }
 
     this->encInd = this->underlying.buildIndex(this->key, processedDb);
 }
 
-template <typename DbDocType, typename Underlying>
-std::vector<DbDocType> LogSrc<DbDocType, Underlying>::search(const KwRange& query) {
+template <typename Underlying>
+std::vector<Id> LogSrc<Underlying>::search(const KwRange& query) {
     TdagNode<Kw>* src = this->tdag->findSrc(query);
     if (src == nullptr) { 
-        return std::vector<DbDocType> {};
+        return std::vector<Id> {};
     }
     QueryToken queryToken = this->underlying.genQueryToken(this->key, src->getRange());
-    return this->underlying.template serverSearch<DbDocType>(this->encInd, queryToken);
+    return this->underlying.serverSearch(this->encInd, queryToken);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Template Instantiations
 ////////////////////////////////////////////////////////////////////////////////
 
-template class LogSrc<Id, PiBas<Id>>;
+template class LogSrc<PiBas>;
