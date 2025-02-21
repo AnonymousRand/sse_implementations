@@ -1,4 +1,5 @@
 #include <regex>
+#include <sstream>
 
 #include "util.h"
 
@@ -59,7 +60,9 @@ bool Range<T>::isDisjointWith(const Range<T>& range) const {
 
 template <typename T>
 std::string Range<T>::toStr() const {
-    return this->first + "-" + this->second;
+    std::stringstream ss;
+    ss << this->first << "-" << this->second;
+    return ss.str();
 }
 
 template <typename T>
@@ -87,19 +90,11 @@ std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
     return os << range.toStr();
 }
 
-template<typename T>
-std::string operator +(const std::string& str, const Range<T>& range) {
-    return str + range.toStr();
-}
-
 template class Range<Id>;
 template class Range<Kw>;
 
 template std::ostream& operator <<(std::ostream& os, const Range<Id>& range);
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
-
-template std::string operator +(const std::string& str, const Range<Id>& range);
-template std::string operator +(const std::string& str, const Range<Kw>& range);
 
 ////////////////////////////////////////////////////////////////////////////////
 // `IEncryptable`
@@ -240,14 +235,6 @@ bool operator >=(const Id& id1, const Id& id2) {
     return id1.val >= id2.val;
 }
 
-std::string operator +(const std::string& str, const Id& id) {
-    return str + std::to_string(id.val);
-}
-
-std::string operator +(const Id& id, const std::string& str) {
-    return std::to_string(id.val) + str;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // `Op`
 ////////////////////////////////////////////////////////////////////////////////
@@ -272,10 +259,6 @@ std::ostream& operator <<(std::ostream& os, const Op& op) {
     return os << op.toStr();
 }
 
-std::string operator +(const std::string& str, const Op& op) {
-    return str + op.toStr();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // `Doc`
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,7 +272,7 @@ Doc Doc::decode(const ustring& ustr) {
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
     if (!std::regex_search(str, matches, re) || matches.size() != 3) {
-        std::cerr << "Error: bad string passed to `Doc.fromUstr()`, please panic calmly." << std::endl;
+        std::cerr << "Error: bad string passed to `Doc.fromUstr()`, please panic (calmly)." << std::endl;
         exit(EXIT_FAILURE);
     }
     Id id = Id::fromStr(matches[1].str());
@@ -298,7 +281,9 @@ Doc Doc::decode(const ustring& ustr) {
 }
 
 std::string Doc::toStr() const {
-    return "(" + this->val.first + "," + this->val.second + ")";
+    std::stringstream ss;
+    ss << "(" << this->val.first << "," << this->val.second << ")";
+    return ss.str();
 }
 
 Doc Doc::getMin() {
@@ -334,5 +319,7 @@ SrciDb1Doc SrciDb1Doc::decode(const ustring& ustr) {
 }
 
 std::string SrciDb1Doc::toStr() const {
-    return "(" + this->val.first + "," + this->val.second + ")";
+    std::stringstream ss;
+    ss << "(" << this->val.first << "," << this->val.second << ")";
+    return ss.str();
 }

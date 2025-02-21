@@ -56,9 +56,6 @@ class Range : public std::pair<T, T> {
         ustring toUstr() const;
         template<typename T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
-        template<typename T2>
-        // overload string concatenation (no way this worked)
-        friend std::string operator +(const std::string& str, const Range<T2>& range);
 };
 
 // provide hash function as well
@@ -129,8 +126,6 @@ class Id : public IEncryptable<int> {
         friend bool operator >(const Id& id1, const Id& id2);
         friend bool operator <=(const Id& id1, const Id& id2);
         friend bool operator >=(const Id& id1, const Id& id2);
-        friend std::string operator +(const std::string& str, const Id& id);
-        friend std::string operator +(const Id& id, const std::string& str);
 };
 
 using IdRange = Range<Id>;
@@ -152,7 +147,6 @@ class Op {
         static Op fromStr(const std::string& val);
         friend bool operator ==(const Op& op1, const Op& op2);
         friend std::ostream& operator <<(std::ostream& os, const Op& Op);
-        friend std::string operator +(const std::string& str, const Op& op);
 };
 
 static const Op INSERT("INSERT");
@@ -185,8 +179,8 @@ class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
     public:
         SrciDb1Doc(const KwRange& kwRange, const IdRange& idRange);
 
-        std::string toStr() const override;
         static SrciDb1Doc decode(const ustring& ustr);
+        std::string toStr() const override;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

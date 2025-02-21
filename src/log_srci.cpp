@@ -24,8 +24,8 @@ void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
 
     // build TDAG1 over keywords
     Kw maxKw = -1;
-    for (auto entry : db) {
-        KwRange kwRange = std::get<1>(entry);
+    for (std::pair entry : db) {
+        KwRange kwRange = entry.second;
         if (kwRange.second > maxKw) {
             maxKw = kwRange.second;
         }
@@ -35,10 +35,10 @@ void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
     // first figure out which documents share the same keywords by building index and list of unique kws like in PiBas
     std::unordered_map<KwRange, std::set<Id>> ind1;
     std::unordered_set<KwRange> uniqueKwRanges;
-    for (auto entry : db) {
-        Doc doc = std::get<0>(entry);
+    for (std::pair entry : db) {
+        Doc doc = entry.first;
         Id id = doc.get().first;
-        KwRange kwRange = std::get<1>(entry);
+        KwRange kwRange = entry.second;
 
         if (ind1.count(kwRange) == 0) {
             ind1[kwRange] = std::set {id};
@@ -68,8 +68,8 @@ void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
 
     // build TDAG2 over document ids
     Id maxId = Id::getMin();
-    for (auto entry : db) {
-        Doc doc = std::get<0>(entry);
+    for (std::pair entry : db) {
+        Doc doc = entry.first;
         Id id = doc.get().first;
         if (id > maxId) {
             maxId = id;
@@ -80,8 +80,8 @@ void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
     // replicate every document to all id ranges/nodes in TDAG2 that cover it
     // again need temporary `unordered_map` index to shuffle
     std::unordered_map<IdRange, std::vector<Doc>> ind2;
-    for (auto entry : db) {
-        Doc doc = std::get<0>(entry);
+    for (std::pair entry : db) {
+        Doc doc = entry.first;
         Id id = doc.get().first;
         std::list<TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(Range<Id> {id, id});
         for (TdagNode<Id>* ancestor : ancestors) {
@@ -98,7 +98,7 @@ void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
     Db<Doc, IdRange> db2;
     std::random_device rd;
     std::mt19937 rng(rd());
-    for (auto pair : ind2) {
+    for (std::pair pair : ind2) {
         IdRange idRange = pair.first;
         std::vector<Doc> docs = pair.second;
         std::shuffle(docs.begin(), docs.end(), rng);

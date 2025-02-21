@@ -9,7 +9,7 @@ Db<> createDb(int dbSize) {
     Db<> db;
     for (int i = 0; i < dbSize; i++) {
         Kw kw = i;
-        db.push_back(std::pair {Id(i), KwRange {kw, kw}});
+        db.push_back(std::pair {Doc(i), KwRange {kw, kw}});
     }
     std::sort(db.begin(), db.end());
     return db;

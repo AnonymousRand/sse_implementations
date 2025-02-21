@@ -39,9 +39,9 @@ EncInd PiBas::buildIndex(const ustring& key, const Db<DbDoc, DbKw>& db) const {
     // generate (plaintext) index of keywords to dbDocuments/ids mapping and list of unique keywords
     std::unordered_map<DbKw, std::vector<DbDoc>> index;
     std::unordered_set<DbKw> uniqueKws;
-    for (auto entry : db) {
-        DbDoc dbDoc = std::get<0>(entry);
-        DbKw dbKw = std::get<1>(entry);
+    for (std::pair entry : db) {
+        DbDoc dbDoc = entry.first;
+        DbKw dbKw = entry.second;
 
         if (index.count(dbKw) == 0) {
             index[dbKw] = std::vector {dbDoc};

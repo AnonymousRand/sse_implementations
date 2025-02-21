@@ -18,8 +18,8 @@ void LogSrc<Underlying>::setup(int secParam, const Db<>& db) {
     
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = -1;
-    for (auto entry : db) {
-        KwRange kwRange = std::get<1>(entry);
+    for (std::pair entry : db) {
+        KwRange kwRange = entry.second;
         if (kwRange.second > maxKw) {
             maxKw = kwRange.second;
         }
@@ -31,9 +31,9 @@ void LogSrc<Underlying>::setup(int secParam, const Db<>& db) {
     // easily identify which docs share the same `kwRange` for shuffling later
     std::unordered_map<KwRange, std::vector<Doc>> index;
     int temp = 0;
-    for (auto entry : db) {
-        Doc doc = std::get<0>(entry);
-        KwRange kwRange = std::get<1>(entry);
+    for (std::pair entry : db) {
+        Doc doc = entry.first;
+        KwRange kwRange = entry.second;
         std::list<TdagNode<Kw>*> ancestors = this->tdag->getLeafAncestors(kwRange);
         for (TdagNode<Kw>* ancestor : ancestors) {
             KwRange ancestorKwRange = ancestor->getRange();
@@ -49,7 +49,7 @@ void LogSrc<Underlying>::setup(int secParam, const Db<>& db) {
     Db<Doc> processedDb;
     std::random_device rd;
     std::mt19937 rng(rd());
-    for (auto pair : index) {
+    for (std::pair pair : index) {
         KwRange kwRange = pair.first;
         std::vector<Doc> docs = pair.second;
         std::shuffle(docs.begin(), docs.end(), rng);
