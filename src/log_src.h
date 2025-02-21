@@ -4,8 +4,8 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <typename Underlying = PiBas>
-class LogSrc : public ISse {
+template <typename DbDoc = IdOp, typename Underlying = PiBas<DbDoc>>
+class LogSrc : public ISse<DbDoc> {
     private:
         const Underlying& underlying;
         ustring key;
@@ -16,6 +16,6 @@ class LogSrc : public ISse {
         LogSrc(const Underlying& underlying);
 
         // API functions
-        void setup(int secParam, const Db<>& db) override;
-        std::vector<Id> search(const KwRange& query) override;
+        void setup(int secParam, const Db<DbDoc>& db) override;
+        std::vector<DbDoc> search(const KwRange& query) override;
 };

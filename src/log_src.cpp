@@ -3,15 +3,15 @@
 
 #include "log_src.h"
 
-template <typename Underlying>
-LogSrc<Underlying>::LogSrc(const Underlying& underlying) : underlying(underlying) {};
+template <typename DbDoc, Underlying>
+LogSrc<DbDoc, Underlying>::LogSrc(const Underlying& underlying) : underlying(underlying) {};
 
 ////////////////////////////////////////////////////////////////////////////////
 // API Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename Underlying>
-void LogSrc<Underlying>::setup(int secParam, const Db<>& db) {
+template <typename DbDoc, Underlying>
+void LogSrc<DbDoc, Underlying>::setup(int secParam, const Db<DbDoc>& db) {
     this->key = this->underlying.genKey(secParam);
 
     // build index
@@ -27,45 +27,45 @@ void LogSrc<Underlying>::setup(int secParam, const Db<>& db) {
     this->tdag = TdagNode<Kw>::buildTdag(maxKw);
 
     // replicate every document to all keyword ranges/nodes in TDAG that cover it
-    // temporarily use `unordered_map` instead of `vector` to easily identify
-    // which docs share the same `kwRange` for shuffling later
-    std::unordered_map<KwRange, std::vector<Id>> tempProcessedDb;
+    // temporarily use `unordered_map` (an inverted index) instead of `vector` to
+    // easily identify which docs share the same `kwRange` for shuffling later
+    std::unordered_map<KwRange, std::vector<DbDoc>> index;
     int temp = 0;
     for (auto entry : db) {
-        Id id = std::get<0>(entry);
+        DbDoc dbDoc = std::get<0>(entry);
         KwRange kwRange = std::get<1>(entry);
         std::list<TdagNode<Kw>*> ancestors = this->tdag->getLeafAncestors(kwRange);
         for (TdagNode<Kw>* ancestor : ancestors) {
             KwRange ancestorKwRange = ancestor->getRange();
-            if (tempProcessedDb.count(ancestorKwRange) == 0) {
-                tempProcessedDb[ancestorKwRange] = std::vector {id};
+            if (index.count(ancestorKwRange) == 0) {
+                index[ancestorKwRange] = std::vector {dbDoc};
             } else {
-                tempProcessedDb[ancestorKwRange].push_back(id);
+                index[ancestorKwRange].push_back(dbDoc);
             }
         }
     }
 
     // randomly permute documents associated with same keyword range/node and convert temporary `unordered_map` to `Db`
-    Db<> processedDb;
+    Db<DbDoc> processedDb;
     std::random_device rd;
     std::mt19937 rng(rd());
-    for (auto pair : tempProcessedDb) {
+    for (auto pair : index) {
         KwRange kwRange = pair.first;
-        std::vector<Id> ids = pair.second;
-        std::shuffle(ids.begin(), ids.end(), rng);
-        for (Id id : ids) {
-            processedDb.push_back(std::pair {id, kwRange});
+        std::vector<DbDoc> dbDocs = pair.second;
+        std::shuffle(dbDocs.begin(), dbDocs.end(), rng);
+        for (DbDoc dbDoc : dbDocs) {
+            processedDb.push_back(std::pair {dbDoc, kwRange});
         }
     }
 
     this->encInd = this->underlying.buildIndex(this->key, processedDb);
 }
 
-template <typename Underlying>
-std::vector<Id> LogSrc<Underlying>::search(const KwRange& query) {
+template <typename DbDoc, Underlying>
+std::vector<DbDoc> LogSrc<DbDoc, Underlying>::search(const KwRange& query) {
     TdagNode<Kw>* src = this->tdag->findSrc(query);
     if (src == nullptr) { 
-        return std::vector<Id> {};
+        return std::vector<DbDoc> {};
     }
     QueryToken queryToken = this->underlying.genQueryToken(this->key, src->getRange());
     return this->underlying.serverSearch(this->encInd, queryToken);
@@ -75,4 +75,5 @@ std::vector<Id> LogSrc<Underlying>::search(const KwRange& query) {
 // Template Instantiations
 ////////////////////////////////////////////////////////////////////////////////
 
-template class LogSrc<PiBas>;
+template class LogSrc<Id, PiBas<Id>>;
+template class LogSrc<IdOp, PiBas<IdOp>>;

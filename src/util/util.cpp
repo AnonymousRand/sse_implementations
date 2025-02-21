@@ -1,7 +1,5 @@
 #include <algorithm>
-#include <cmath>
 #include <regex>
-#include <sstream>
 
 #include "util.h"
 
@@ -35,19 +33,80 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// `IRangeable`
+////////////////////////////////////////////////////////////////////////////////
+
+IRangeable& IRangeable::operator ++(int) {
+    this->setArith(this->getArith() + 1);
+    return *this;
+}
+
+IRangeable& IRangeable::operator +=(const IRangeable& iRangeable) {
+    this->setArith(this->getArith() + iRangeable.getArith());
+    return *this;
+}
+
+IRangeable& IRangeable::operator -=(const IRangeable& iRangeable) {
+    this->setArith(this->getArith() - iRangeable.getArith());
+    return *this;
+}
+
+IRangeable& IRangeable::operator +(int n) {
+    this->setArith(this->getArith() + n);
+    return *this;
+}
+
+IRangeable& IRangeable::operator -(int n) {
+    this->setArith(this->getArith() - n);
+    return *this;
+}
+
+bool operator ==(const IRangeable& iRangeable1, const IRangeable& iRangeable2) {
+    return iRangeable1.getArith() == iRangeable2.getArith();
+}
+
+bool operator ==(const IRangeable& iRangeable1, int n) {
+    return iRangeable1.getArith() == n;
+}
+
+bool operator <(const IRangeable& iRangeable1, const IRangeable& iRangeable2) {
+    return iRangeable1.getArith() < iRangeable2.getArith();
+}
+
+bool operator >(const IRangeable& iRangeable1, const IRangeable& iRangeable2) {
+    return iRangeable1.getArith() > iRangeable2.getArith();
+}
+
+bool operator <=(const IRangeable& iRangeable1, const IRangeable& iRangeable2) {
+    return iRangeable1.getArith() <= iRangeable2.getArith();
+}
+
+bool operator >=(const IRangeable& iRangeable1, const IRangeable& iRangeable2) {
+    return iRangeable1.getArith() >= iRangeable2.getArith();
+}
+
+std::string operator +(const std::string& str, const IRangeable& iRangeable) {
+    return str + std::to_string(iRangeable.getArith());
+}
+
+std::string operator +(const IRangeable& iRangeable, const std::string& str) {
+    return std::to_string(iRangeable.getArith()) + str;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // `Range`
 ////////////////////////////////////////////////////////////////////////////////
 
+// can't call default constructor or set `= default` without explicit vals (ill-formed default definition apparently)
 template <typename T>
-// can't call default constructor for `std::pair` without explicit vals? `0, 0` is supposed to be default
-Range<T>::Range() : std::pair<T, T>(0, 0) {}
+Range<T>::Range() : std::pair<T, T>(T(), T()) {}
 
 template <typename T>
-Range<T>::Range(const T& start, const T& end) : std::pair<T, T>(start, end) {}
+Range<T>::Range(const T& start, const T& end) : std::pair<T, T> {start, end} {}
 
 template <typename T>
 T Range<T>::size() const {
-    return (T)abs(this->second - this->first + 1);
+    return this->second - this->first + 1;
 }
 
 template <typename T>
@@ -58,6 +117,12 @@ bool Range<T>::contains(const Range<T>& range) const {
 template <typename T>
 bool Range<T>::isDisjointWith(const Range<T>& range) const {
     return this->second < range.first || this->first > range.second;
+}
+
+template <typename T>
+std::string Range<T>::toStr() const {
+    // todo may need reverse direction string concat overload in IRangeable
+    return this->first + "-" + this->second;
 }
 
 template <typename T>
@@ -76,61 +141,31 @@ Range<T> Range<T>::fromStr(const std::string& str) {
 }
 
 template <typename T>
+ustring Range<T>::toUstr() const {
+    return ::toUstr(this->toStr());
+}
+
+template <typename T>
 std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
-    return os << range.first << "-" << range.second;
+    return os << range.toStr();
 }
 
 template<typename T>
 std::string operator +(const std::string& str, const Range<T>& range) {
-    std::stringstream ss;
-    ss << str << range;
-    return ss.str();
-}
-
-template <typename T>
-ustring toUstr(const Range<T>& range) {
-    return toUstr(range.first) + toUstr("-") + toUstr(range.second);
+    return str + range.toStr();
 }
 
 template class Range<Id>;
+template class Range<IdOp>;
 template class Range<Kw>;
 
 template std::ostream& operator <<(std::ostream& os, const Range<Id>& range);
+template std::ostream& operator <<(std::ostream& os, const Range<IdOp>& range);
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
 
 template std::string operator +(const std::string& str, const Range<Id>& range);
+template std::string operator +(const std::string& str, const Range<IdOp>& range);
 template std::string operator +(const std::string& str, const Range<Kw>& range);
-
-template ustring toUstr(const Range<Id>& range);
-template ustring toUstr(const Range<Kw>& range);
-
-////////////////////////////////////////////////////////////////////////////////
-// `Op`
-////////////////////////////////////////////////////////////////////////////////
-
-Op::Op(const std::string& val) {
-    this->val = val;
-}
-
-std::string Op::toStr() const {
-    return this->val;
-}
-
-Op Op::fromStr(const std::string& val) {
-    return Op(val);
-}
-
-bool operator ==(const Op& op1, const Op& op2) {
-    return op1.toStr() == op2.toStr();
-}
-
-std::ostream& operator <<(std::ostream& os, const Op& op) {
-    return os << op.toStr();
-}
-
-std::string operator +(const std::string& str, const Op& op) {
-    return str + op.toStr();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // `IEncryptable`
@@ -179,70 +214,70 @@ template ustring toUstr(const IEncryptable<std::pair<KwRange, IdRange>>& srciDb1
 
 Id::Id(int val) : IEncryptable<int>(val) {}
 
+std::string Id::toStr() const {
+    return std::to_string(this->val);
+}
+
 Id Id::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     return Id::fromStr(str);
 }
 
-std::string Id::toStr() const {
-    return std::to_string(this->val);
+int Id::getArith() const {
+    return this->val;
+}
+
+void Id::setArith(int val) {
+    this->val = val;
 }
 
 Id Id::fromStr(const std::string& str) {
     return Id(std::stoi(str));
 }
 
-Id abs(const Id& id) {
-    return Id(abs(id.val));
+Id operator +(Id id1, const Id& id2) {
+    id1 += id2;
+    return id1;
 }
 
-void operator ++(Id& id, int _) {
-    id.val++;
+Id operator -(Id id1, const Id& id2) {
+    id1 -= id2;
+    return id1;
 }
 
-Id operator +(const Id& id1, const Id& id2) {
-    return id1.val + id2.val;
+////////////////////////////////////////////////////////////////////////////////
+// `Op`
+////////////////////////////////////////////////////////////////////////////////
+
+Op::Op(const std::string& val) {
+    this->val = val;
 }
 
-Id operator +(const Id& id1, int n) {
-    return Id(id1.val + n);
+std::string Op::toStr() const {
+    return this->val;
 }
 
-Id operator -(const Id& id1, const Id& id2) {
-    return id1.val - id2.val;
+Op Op::fromStr(const std::string& val) {
+    return Op(val);
 }
 
-Id operator -(const Id& id1, int n) {
-    return Id(id1.val - n);
+bool operator ==(const Op& op1, const Op& op2) {
+    return op1.toStr() == op2.toStr();
 }
 
-bool operator ==(const Id& id1, const Id& id2) {
-    return id1.val == id2.val;
+std::ostream& operator <<(std::ostream& os, const Op& op) {
+    return os << op.toStr();
 }
 
-bool operator <(const Id& id1, const Id& id2) {
-    return id1.val < id2.val;
-}
-
-bool operator >(const Id& id1, const Id& id2) {
-    return id1.val > id2.val;
-}
-
-bool operator <=(const Id& id1, const Id& id2) {
-    return id1.val <= id2.val;
-}
-
-bool operator >=(const Id& id1, const Id& id2) {
-    return id1.val >= id2.val;
-}
-
-std::string operator +(const std::string& str, const Id& id) {
-    return str + id.toStr();
+std::string operator +(const std::string& str, const Op& op) {
+    return str + op.toStr();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // `IdOp`
 ////////////////////////////////////////////////////////////////////////////////
+
+IdOp::IdOp(const Id& id) : IEncryptable<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
 
 IdOp::IdOp(const Id& id, const Op& op) : IEncryptable<std::pair<Id, Op>>(std::pair {id, op}) {}
 
@@ -263,18 +298,66 @@ std::string IdOp::toStr() const {
     return "(" + this->val.first + "," + this->val.second + ")";
 }
 
-bool operator <(const IdOp& idOp1, const IdOp& idOp2) {
-    return idOp1.get().first < idOp2.get().first;
+int IdOp::getArith() const {
+    return this->val.first.getArith();
+}
+
+void IdOp::setArith(int val) {
+    this->val.first = val;
+}
+
+IdOp operator +(IdOp idOp1, const IdOp& idOp2) {
+    idOp1 += idOp2;
+    return idOp1;
+}
+
+IdOp operator -(IdOp idOp1, const IdOp& idOp2) {
+    idOp1 -= idOp2;
+    return idOp1;
+}
+
+IdRange toIdRange(const IdOpRange& idOpRange) {
+    std::pair startPair = idOpRange.first.get();
+    std::pair endPair = idOpRange.second.get();
+    return IdRange {startPair.first, endPair.first};
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// `Kw`
+////////////////////////////////////////////////////////////////////////////////
+
+Kw::Kw(int val) {
+    this->val = val;
+}
+
+int Kw::getArith() const {
+    return this->val;
+}
+
+void Kw::setArith(int val) {
+    this->val = val;
+}
+
+Kw operator +(Kw kw1, const Kw& kw2) {
+    kw1 += kw2;
+    return kw1;
+}
+
+Kw operator -(Kw kw1, const Kw& kw2) {
+    kw1 -= kw2;
+    return kw1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // `SrciDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
-SrciDb1Doc::SrciDb1Doc(const KwRange& kwRange, const IdRange& idRange)
-        : IEncryptable<std::pair<KwRange, IdRange>>(std::pair {kwRange, idRange}) {}
+template <typename DbDoc>
+SrciDb1Doc<DbDoc>::SrciDb1Doc(const KwRange& kwRange, const Range<DbDoc>& dbDocRange)
+        : IEncryptable<std::pair<KwRange, Range<DbDoc>>>(std::pair {kwRange, dbDocRange}) {}
 
-SrciDb1Doc SrciDb1Doc::decode(const ustring& ustr) {
+template <typename DbDoc>
+SrciDb1Doc<DbDoc> SrciDb1Doc<DbDoc>::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
@@ -283,11 +366,12 @@ SrciDb1Doc SrciDb1Doc::decode(const ustring& ustr) {
         exit(EXIT_FAILURE);
     }
     KwRange kwRange = KwRange::fromStr(matches[1].str());
-    IdRange idRange = IdRange::fromStr(matches[2].str());
-    return SrciDb1Doc {kwRange, idRange};
+    Range<DbDoc> dbDocRange = Range<DbDoc>::fromStr(matches[2].str());
+    return SrciDb1Doc {kwRange, dbDocRange};
 }
 
-std::string SrciDb1Doc::toStr() const {
+template <typename DbDoc>
+std::string SrciDb1Doc<DbDoc>::toStr() const {
     return "(" + this->val.first + "," + this->val.second + ")";
 }
 

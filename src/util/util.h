@@ -1,7 +1,9 @@
 #pragma once
 
+#include <concepts>
 #include <iostream>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -9,6 +11,11 @@
 static const int KEY_SIZE   = 256 / 8;
 static const int BLOCK_SIZE = 128 / 8;
 static const int IV_SIZE    = 128 / 8;
+
+template <typename T, typename BaseClass>
+concept Derives = std::is_base_of_v<BaseClass, T>;
+
+// todo range and iencryptable and tdag store their member vairable as reference?
 
 ////////////////////////////////////////////////////////////////////////////////
 // `ustring`
@@ -34,11 +41,39 @@ struct std::hash<ustring> {
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 ////////////////////////////////////////////////////////////////////////////////
+// `IRangeable`
+////////////////////////////////////////////////////////////////////////////////
+
+class IRangeable {
+    public:
+        IRangeable() = default;
+        virtual int getArith() const = 0;
+        virtual void setArith(int val) = 0;
+
+        // unused `int` param marks `++` as postfix
+        virtual IRangeable& operator ++(int);
+        virtual IRangeable& operator +=(const IRangeable& iRangeable);
+        virtual IRangeable& operator -=(const IRangeable& iRangeable);
+        virtual IRangeable& operator +(int n);
+        virtual IRangeable& operator -(int n);
+        friend bool operator ==(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
+        friend bool operator ==(const IRangeable& iRangeable1, int n);
+        friend bool operator <(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
+        friend bool operator >(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
+        friend bool operator <=(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
+        friend bool operator >=(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
+        // overload string concatenation (no way this worked); unfortunately not symmetric overload
+        friend std::string operator +(const std::string& str, const IRangeable& iRangeable);
+        friend std::string operator +(const IRangeable& iRangeable, const std::string& str);
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // `Range`
 ////////////////////////////////////////////////////////////////////////////////
 
 // for generality, all keywords are ranges; single keywords are just size 1 ranges
-template <typename T>
+template <typename T> requires Derives<T, IRangeable>
+// todo enforce subclassing as well for db
 class Range : public std::pair<T, T> {
     public:
         Range();
@@ -48,16 +83,14 @@ class Range : public std::pair<T, T> {
         bool contains(const Range<T>& range) const;
         bool isDisjointWith(const Range<T>& range) const;
 
+        std::string toStr() const;
         static Range<T> fromStr(const std::string& str);
+        ustring toUstr() const; // todo is this ever used
         template<typename T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
-        template<typename T2> // overload string concatenation (no way this worked)
+        template<typename T2>
         friend std::string operator +(const std::string& str, const Range<T2>& range);
 };
-
-// todo why is this not static in class why fromStr is? why can't this just be normal member function?
-template <typename T>
-ustring toUstr(const Range<T>& range);
 
 // provide hash function as well
 template<>
@@ -67,28 +100,6 @@ struct std::hash<Range<T>> {
         return std::hash<ustring>{}(toUstr(range));
     }
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// `Op`
-////////////////////////////////////////////////////////////////////////////////
-
-class Op {
-    private:
-        std::string val;
-
-    public:
-        Op() = default;
-        Op(const std::string& val);
-        std::string toStr() const;
-
-        static Op fromStr(const std::string& val);
-        friend bool operator ==(const Op& op1, const Op& op2);
-        friend std::ostream& operator <<(std::ostream& os, const Op& Op);
-        friend std::string operator +(const std::string& str, const Op& op);
-};
-
-static const Op INSERT("INSERT");
-static const Op DELETE("DELETE");
 
 ////////////////////////////////////////////////////////////////////////////////
 // `IEncryptable`
@@ -103,10 +114,10 @@ class IEncryptable {
     public:
         IEncryptable() = default;
         IEncryptable(const T& val);
-        T get() const;
 
-        virtual std::string toStr() const = 0;
+        T get() const;
         virtual ustring encode() const;
+        virtual std::string toStr() const = 0;
 
         template <typename T2>
         friend std::ostream& operator <<(std::ostream& os, const IEncryptable<T2>& iEncryptable);
@@ -120,58 +131,112 @@ ustring toUstr(const IEncryptable<T>& iEncryptable);
 // `Id`
 ////////////////////////////////////////////////////////////////////////////////
 
-class Id : public IEncryptable<int> {
+class Id : public IEncryptable<int>, public IRangeable {
     public:
         Id() = default;
         Id(int val);
 
-        std::string toStr() const override;
         static Id decode(const ustring& ustr);
+        std::string toStr() const override;
 
-        static Id fromStr(const std::string& str); // todo should this be in here?
-        friend Id abs(const Id& id);
-        friend void operator ++(Id& id, int _); // unused `int` parameter required to mark `++` as postfix
-        friend Id operator +(const Id& id1, const Id& id2);
-        friend Id operator +(const Id& id, int n);
-        friend Id operator -(const Id& id1, const Id& id2);
-        friend Id operator -(const Id& id, int n);
-        friend bool operator ==(const Id& id1, const Id& id2);
-        friend bool operator <(const Id& id1, const Id& id2);
-        friend bool operator >(const Id& id1, const Id& id2);
-        friend bool operator <=(const Id& id1, const Id& id2);
-        friend bool operator >=(const Id& id1, const Id& id2);
-        friend std::string operator +(const std::string& str, const Id& id);
+        int getArith() const override;
+        void setArith(int val) override;
+
+        static Id fromStr(const std::string& str);
 };
+
+using IdRange = Range<Id>;
+
+////////////////////////////////////////////////////////////////////////////////
+// `Op`
+////////////////////////////////////////////////////////////////////////////////
+
+class Op {
+    private:
+        std::string val;
+
+    public:
+        Op() = default;
+        Op(const std::string& val);
+
+        std::string toStr() const;
+
+        static Op fromStr(const std::string& val);
+        friend bool operator ==(const Op& op1, const Op& op2);
+        friend std::ostream& operator <<(std::ostream& os, const Op& Op);
+        friend std::string operator +(const std::string& str, const Op& op);
+};
+
+static const Op INSERT("INSERT");
+static const Op DELETE("DELETE");
 
 ////////////////////////////////////////////////////////////////////////////////
 // `IdOp`
 ////////////////////////////////////////////////////////////////////////////////
 
-class IdOp : public IEncryptable<std::pair<Id, Op>> {
+class IdOp : public IEncryptable<std::pair<Id, Op>>, public IRangeable {
     public:
+        IdOp() = default;
+        IdOp(const Id& id);
         IdOp(const Id& id, const Op& op);
 
-        std::string toStr() const override;
         static IdOp decode(const ustring& ustr);
+        std::string toStr() const override;
 
-        friend bool operator <(const IdOp& idOp1, const IdOp& idOp2);
+        int getArith() const override;
+        void setArith(int val) override;
+
+        IdOp& operator ++(int) override;
+        IdOp& operator +=(const IRangeable& iRangeable) override;
+        IdOp& operator -=(const IRangeable& iRangeable) override;
+        IdOp& operator +(int n) override;
+        IdOp& operator -(int n) override;
+        friend IdOp operator +(IdOp idOp1, const IdOp& idOp2);
+        friend IdOp operator -(IdOp idOp1, const IdOp& idOp2);
 };
+
+using IdOpRange = Range<IdOp>;
+
+IdRange toIdRange(const IdOpRange& idOpRange);
+
+////////////////////////////////////////////////////////////////////////////////
+// `Kw`
+////////////////////////////////////////////////////////////////////////////////
+
+class Kw : public IRangeable {
+    private:
+        int val;
+
+    public:
+        Kw() = default;
+        Kw(int val);
+
+        int getArith() const override;
+        void setArith(int val) override;
+
+        Kw& operator ++(int) override;
+        Kw& operator +=(const IRangeable& iRangeable) override;
+        Kw& operator -=(const IRangeable& iRangeable) override;
+        Kw& operator +(int n) override;
+        Kw& operator -(int n) override;
+        friend Kw operator +(Kw kw1, const Kw& kw2);
+        friend Kw operator -(Kw kw1, const Kw& kw2);
+};
+
+using KwRange = Range<Kw>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // `SrciDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
-using Kw      = int;
-using IdRange = Range<Id>;
-using KwRange = Range<Kw>;
-
 // todo temp?
-class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
+template <typename DbDoc = IdOp>
+class SrciDb1Doc : public IEncryptable<std::pair<KwRange, Range<DbDoc>>> {
     public:
-        SrciDb1Doc(const KwRange& kwRange, const IdRange& idRange);
+        SrciDb1Doc(const KwRange& kwRange, const Range<DbDoc>& dbDocRange);
 
         std::string toStr() const override;
-        static SrciDb1Doc decode(const ustring& ustr);
+        static SrciDb1Doc<DbDoc> decode(const ustring& ustr);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -181,7 +246,7 @@ class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
 // allow polymophic document types for db (screw you Log-SRC-i for making everything a nonillion times more complicated)
 // no easy way to enforce (templated) base classes for clarity, like Java generics' `extends`
 // so just make sure `DbDoc` subclasses `IEncryptable` and `DbKw` subclasses `Range`
-template <typename DbDoc = Id, typename DbKw = KwRange>
+template <typename DbDoc = IdOp, typename DbKw = KwRange>
 using Db         = std::vector<std::pair<DbDoc, DbKw>>;
 //                `std::unordered_map<label, std::pair<data, iv>>`
 using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;

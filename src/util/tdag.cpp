@@ -161,7 +161,7 @@ Range<T> TdagNode<T>::getRange() const {
 template <typename T>
 TdagNode<T>* TdagNode<T>::buildTdag(T& maxLeafVal) {
     std::set<Range<T>> leafVals;
-    for (T i = 0; i <= maxLeafVal; i++) {
+    for (T i = T(0); i <= maxLeafVal; i++) {
         leafVals.insert(Range<T> {i, i});
     }
     return TdagNode<T>::buildTdag(leafVals);
@@ -252,8 +252,10 @@ std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
 // Template Instantiations
 ////////////////////////////////////////////////////////////////////////////////
 
-template class TdagNode<Kw>;
 template class TdagNode<Id>;
+template class TdagNode<IdOp>;
+template class TdagNode<Kw>;
 
 template std::ostream& operator <<(std::ostream& os, TdagNode<Id>* node);
+template std::ostream& operator <<(std::ostream& os, TdagNode<IdOp>* node);
 template std::ostream& operator <<(std::ostream& os, TdagNode<Kw>* node);

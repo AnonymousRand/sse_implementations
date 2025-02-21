@@ -4,19 +4,19 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <typename Underlying = PiBas>
-class LogSrci : public ISse {
+template <typename DbDoc = IdOp, typename Underlying = PiBas<DbDoc>>
+class LogSrci : public ISse<DbDoc> {
     protected:
         const Underlying& underlying;
         std::pair<ustring, ustring> key;
         std::pair<EncInd, EncInd> encInds;
         TdagNode<Kw>* tdag1;
-        TdagNode<Id>* tdag2;
+        TdagNode<DbDoc>* tdag2;
 
     public:
         LogSrci(const Underlying& underlying);
 
         // API functions
-        void setup(int secParam, const Db<>& db) override;
-        std::vector<Id> search(const KwRange& query) override;
+        void setup(int secParam, const Db<DbDoc>& db) override;
+        std::vector<DbDoc> search(const KwRange& query) override;
 };

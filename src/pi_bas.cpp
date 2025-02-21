@@ -9,12 +9,14 @@
 // API Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-void PiBas::setup(int secParam, const Db<>& db) {
+template <typename DbDoc>
+void PiBas<DbDoc>::setup(int secParam, const Db<DbDoc>& db) {
     this->key = this->genKey(secParam);
     this->encInd = this->buildIndex(this->key, db);
 }
 
-std::vector<Id> PiBas::search(const KwRange& query) {
+template <typename DbDoc>
+std::vector<Id> PiBas<DbDoc>::search(const KwRange& query) {
     QueryToken queryToken = this->genQueryToken(this->key, query);
     return this->serverSearch(this->encInd, queryToken);
 }
@@ -23,7 +25,8 @@ std::vector<Id> PiBas::search(const KwRange& query) {
 // Non-API Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-ustring PiBas::genKey(int secParam) const {
+template <typename DbDoc>
+ustring PiBas<DbDoc>::genKey(int secParam) const {
     unsigned char* key = new unsigned char[secParam];
     int res = RAND_priv_bytes(key, secParam);
     if (res != 1) {
@@ -34,13 +37,14 @@ ustring PiBas::genKey(int secParam) const {
     return ustrKey;
 }
 
-template <typename DbDoc, typename DbKw>
-EncInd PiBas::buildIndex(const ustring& key, const Db<DbDoc, DbKw>& db) const {
+template <typename DbDoc>
+template <typename DbDoc2, typename DbKw>
+EncInd PiBas<DbDoc>::buildIndex(const ustring& key, const Db<DbDoc2, DbKw>& db) const {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::unordered_map<DbKw, std::vector<DbDoc>> index;
+    std::unordered_map<DbKw, std::vector<DbDoc2>> index;
     std::unordered_set<DbKw> uniqueKws;
     for (auto entry : db) {
-        DbDoc dbDoc = std::get<0>(entry);
+        DbDoc2 dbDoc = std::get<0>(entry);
         DbKw dbKw = std::get<1>(entry);
 
         if (index.count(dbKw) == 0) {
@@ -63,7 +67,7 @@ EncInd PiBas::buildIndex(const ustring& key, const Db<DbDoc, DbKw>& db) const {
         unsigned int counter = 0;
         // for each id in DB(w)
         auto itDocsWithSameKw = index.find(dbKw);
-        for (DbDoc dbDoc : itDocsWithSameKw->second) {
+        for (DbDoc2 dbDoc : itDocsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring label = prf(subkey1, toUstr(counter));
             ustring iv = genIv();
@@ -78,8 +82,9 @@ EncInd PiBas::buildIndex(const ustring& key, const Db<DbDoc, DbKw>& db) const {
     return encInd;
 }
 
+template <typename DbDoc>
 template <typename RangeType>
-QueryToken PiBas::genQueryToken(const ustring& key, const Range<RangeType>& range) const {
+QueryToken PiBas<DbDoc>::genQueryToken(const ustring& key, const Range<RangeType>& range) const {
     // the paper uses different notation for the key generation here vs. in `setup()`;
     // but I'm fairly sure they meant the same thing, otherwise it doesn't work
     ustring K = prf(key, toUstr(range));
@@ -90,10 +95,11 @@ QueryToken PiBas::genQueryToken(const ustring& key, const Range<RangeType>& rang
 }
 
 template <typename DbDoc>
-std::vector<DbDoc> PiBas::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const {
+template <typename DbDoc2>
+std::vector<DbDoc2> PiBas<DbDoc>::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const {
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
-    std::vector<DbDoc> results;
+    std::vector<DbDoc2> results;
     int counter = 0;
     
     // for c = 0 until `Get` returns error
@@ -109,7 +115,7 @@ std::vector<DbDoc> PiBas::serverSearch(const EncInd& encInd, const QueryToken& q
         // id <- Dec(K_2, d)
         ustring iv = encIndV.second;
         ustring ptext = aesDecrypt(EVP_aes_256_cbc(), subkey2, data, iv);
-        results.push_back(DbDoc::decode(ptext));
+        results.push_back(DbDoc2::decode(ptext));
 
         counter++;
     }
@@ -121,12 +127,22 @@ std::vector<DbDoc> PiBas::serverSearch(const EncInd& encInd, const QueryToken& q
 // Template Instantiations
 ////////////////////////////////////////////////////////////////////////////////
 
-template EncInd PiBas::buildIndex(const ustring& key, const Db<>& db) const;
-template EncInd PiBas::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db) const;
-template EncInd PiBas::buildIndex(const ustring& key, const Db<Id, IdRange>& db) const;
+template class PiBas<Id>;
+template class PiBas<IdOp>;
 
-template QueryToken PiBas::genQueryToken(const ustring& key, const IdRange& range) const;
-template QueryToken PiBas::genQueryToken(const ustring& key, const KwRange& range) const;
+template EncInd PiBas<Id>::buildIndex(const ustring& key, const Db<Id>& db) const;
+template EncInd PiBas<IdOp>::buildIndex(const ustring& key, const Db<IdOp>& db) const;
+template EncInd PiBas<Id>::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db) const;
+template EncInd PiBas<IdOp>::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db) const;
+template EncInd PiBas<Id>::buildIndex(const ustring& key, const Db<Id, IdRange>& db) const;
+template EncInd PiBas<IdOp>::buildIndex(const ustring& key, const Db<IdOp, IdOpRange>& db) const;
 
-template std::vector<Id> PiBas::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
-template std::vector<SrciDb1Doc> PiBas::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+template QueryToken PiBas<Id>::genQueryToken(const ustring& key, const IdRange& range) const;
+template QueryToken PiBas<IdOp>::genQueryToken(const ustring& key, const IdRange& range) const;
+template QueryToken PiBas<Id>::genQueryToken(const ustring& key, const KwRange& range) const;
+template QueryToken PiBas<IdOp>::genQueryToken(const ustring& key, const KwRange& range) const;
+
+template std::vector<Id> PiBas<Id>::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+template std::vector<IdOp> PiBas<IdOp>::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+template std::vector<SrciDb1Doc> PiBas<Id>::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+template std::vector<SrciDb1Doc> PiBas<IdOp>::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
