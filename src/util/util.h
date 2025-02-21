@@ -44,27 +44,46 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 // `IRangeable`
 ////////////////////////////////////////////////////////////////////////////////
 
+// curiously recurring template pattern so the operator overloads can return the appropriate subclass
+template <typename Derived>
 class IRangeable {
+    private:
+        Derived* derived();
+
     public:
         IRangeable() = default;
         virtual int getArith() const = 0;
         virtual void setArith(int val) = 0;
 
-        // unused `int` param marks `++` as postfix
-        virtual IRangeable& operator ++(int);
-        virtual IRangeable& operator +=(const IRangeable& iRangeable);
-        virtual IRangeable& operator -=(const IRangeable& iRangeable);
-        virtual IRangeable& operator +(int n);
-        virtual IRangeable& operator -(int n);
-        friend bool operator ==(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
-        friend bool operator ==(const IRangeable& iRangeable1, int n);
-        friend bool operator <(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
-        friend bool operator >(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
-        friend bool operator <=(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
-        friend bool operator >=(const IRangeable& iRangeable1, const IRangeable& iRangeable2);
+        Derived& operator ++();
+        Derived operator ++(int); // unused `int` param marks `++` as postfix
+        Derived& operator +=(const Derived& iRangeable);
+        Derived& operator -=(const Derived& iRangeable);
+        template <typename Derived2>
+        friend Derived2 operator +(Derived2 iRangeable1, const Derived2& iRangeable2);
+        template <typename Derived2>
+        friend Derived2 operator +(Derived2 iRangeable, int n);
+        template <typename Derived2>
+        friend Derived2 operator -(Derived2 iRangeable1, const Derived2& iRangeable2);
+        template <typename Derived2>
+        friend Derived2 operator -(Derived2 iRangeable, int n);
+        template <typename Derived2>
+        friend bool operator ==(const Derived2& iRangeable1, const Derived2& iRangeable2);
+        template <typename Derived2>
+        friend bool operator ==(const Derived2& iRangeable1, int n);
+        template <typename Derived2>
+        friend bool operator <(const Derived2& iRangeable1, const Derived2& iRangeable2);
+        template <typename Derived2>
+        friend bool operator >(const Derived2& iRangeable1, const Derived2& iRangeable2);
+        template <typename Derived2>
+        friend bool operator <=(const Derived2& iRangeable1, const Derived2& iRangeable2);
+        template <typename Derived2>
+        friend bool operator >=(const Derived2& iRangeable1, const Derived2& iRangeable2);
         // overload string concatenation (no way this worked); unfortunately not symmetric overload
-        friend std::string operator +(const std::string& str, const IRangeable& iRangeable);
-        friend std::string operator +(const IRangeable& iRangeable, const std::string& str);
+        template <typename Derived2>
+        friend std::string operator +(const std::string& str, const Derived2& iRangeable);
+        template <typename Derived2>
+        friend std::string operator +(const Derived2& iRangeable, const std::string& str);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +91,7 @@ class IRangeable {
 ////////////////////////////////////////////////////////////////////////////////
 
 // for generality, all keywords are ranges; single keywords are just size 1 ranges
-template <typename T> requires Derives<T, IRangeable>
+template <typename T> requires Derives<T, IRangeable<T>>
 // todo enforce subclassing as well for db
 class Range : public std::pair<T, T> {
     public:
@@ -86,6 +105,8 @@ class Range : public std::pair<T, T> {
         std::string toStr() const;
         static Range<T> fromStr(const std::string& str);
         ustring toUstr() const; // todo is this ever used
+        template<typename T2>
+        friend bool operator <(const Range<T2>& range1, const Range<T2>& range2);
         template<typename T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
         template<typename T2>
@@ -131,7 +152,7 @@ ustring toUstr(const IEncryptable<T>& iEncryptable);
 // `Id`
 ////////////////////////////////////////////////////////////////////////////////
 
-class Id : public IEncryptable<int>, public IRangeable {
+class Id : public IEncryptable<int>, public IRangeable<Id> {
     public:
         Id() = default;
         Id(int val);
@@ -174,7 +195,7 @@ static const Op DELETE("DELETE");
 // `IdOp`
 ////////////////////////////////////////////////////////////////////////////////
 
-class IdOp : public IEncryptable<std::pair<Id, Op>>, public IRangeable {
+class IdOp : public IEncryptable<std::pair<Id, Op>>, public IRangeable<IdOp> {
     public:
         IdOp() = default;
         IdOp(const Id& id);
@@ -185,14 +206,6 @@ class IdOp : public IEncryptable<std::pair<Id, Op>>, public IRangeable {
 
         int getArith() const override;
         void setArith(int val) override;
-
-        IdOp& operator ++(int) override;
-        IdOp& operator +=(const IRangeable& iRangeable) override;
-        IdOp& operator -=(const IRangeable& iRangeable) override;
-        IdOp& operator +(int n) override;
-        IdOp& operator -(int n) override;
-        friend IdOp operator +(IdOp idOp1, const IdOp& idOp2);
-        friend IdOp operator -(IdOp idOp1, const IdOp& idOp2);
 };
 
 using IdOpRange = Range<IdOp>;
@@ -203,7 +216,7 @@ IdRange toIdRange(const IdOpRange& idOpRange);
 // `Kw`
 ////////////////////////////////////////////////////////////////////////////////
 
-class Kw : public IRangeable {
+class Kw : public IRangeable<Kw> {
     private:
         int val;
 
@@ -213,14 +226,6 @@ class Kw : public IRangeable {
 
         int getArith() const override;
         void setArith(int val) override;
-
-        Kw& operator ++(int) override;
-        Kw& operator +=(const IRangeable& iRangeable) override;
-        Kw& operator -=(const IRangeable& iRangeable) override;
-        Kw& operator +(int n) override;
-        Kw& operator -(int n) override;
-        friend Kw operator +(Kw kw1, const Kw& kw2);
-        friend Kw operator -(Kw kw1, const Kw& kw2);
 };
 
 using KwRange = Range<Kw>;
@@ -251,6 +256,3 @@ using Db         = std::vector<std::pair<DbDoc, DbKw>>;
 //                `std::unordered_map<label, std::pair<data, iv>>`
 using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
 using QueryToken = std::pair<ustring, ustring>;
-
-template <typename DbDoc, typename DbKw>
-void sortDb(Db<DbDoc, DbKw>& db);

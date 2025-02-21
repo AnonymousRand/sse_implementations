@@ -6,7 +6,7 @@
 
 #include "util.h"
 
-template <typename T> requires Derives<T, IRangeable>
+template <typename T>
 class TdagNode {
     private:
         Range<T> range;

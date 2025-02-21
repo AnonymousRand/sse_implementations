@@ -26,7 +26,7 @@ Db<> createDb(int dbSize, bool isDataSkewed) {
             db.push_back(std::pair {Id(i), KwRange {kw, kw}});
         }
     }
-    sortDb(db);
+    std::sort(db.begin(), db.end());
     return db;
 }
 
