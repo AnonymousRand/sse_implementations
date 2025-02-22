@@ -63,3 +63,4 @@ std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query
 }
 
 template class LogSrc<Doc, Kw, PiBas>;
+template class LogSrc<Id, Kw, PiBas>;

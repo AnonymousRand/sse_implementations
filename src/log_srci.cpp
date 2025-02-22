@@ -64,7 +64,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     Id maxId = Id(-1);
     for (std::pair entry : db) {
         DbDoc dbDoc = entry.first;
-        Id id = dbDoc.get().first;
+        Id id = dbDoc.getId();
         if (id > maxId) {
             maxId = id;
         }
@@ -76,7 +76,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     std::unordered_map<IdRange, std::vector<DbDoc>> ind2;
     for (std::pair entry : db) {
         DbDoc dbDoc = entry.first;
-        Id id = dbDoc.get().first;
+        Id id = dbDoc.getId();
         std::list<TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(Range<Id> {id, id});
         for (TdagNode<Id>* ancestor : ancestors) {
             Range<Id> ancestorIdRange = ancestor->getRange();
@@ -141,3 +141,4 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& quer
 }
 
 template class LogSrci<Doc, Kw, PiBas>;
+template class LogSrci<Id, Kw, PiBas>;

@@ -143,3 +143,6 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::genericSearch(const QueryToken& queryToke
 template class PiBas<Doc, Kw>;
 template class PiBas<SrciDb1Doc<Kw>, Kw>;
 template class PiBas<Doc, Id>;
+
+template class PiBas<Id, Id>;
+template class PiBas<Id, Kw>;
