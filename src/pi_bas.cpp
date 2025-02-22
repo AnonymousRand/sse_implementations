@@ -142,7 +142,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchIndBase(const QueryToken& queryToke
     return results;
 }
 
-// main
+// PiBas
 template class PiBas<Id, Kw>;
 template class PiBas<IdOp, Kw>;
 
