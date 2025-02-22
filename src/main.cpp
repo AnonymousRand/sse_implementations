@@ -36,7 +36,6 @@ template <class DbDoc, class DbKw>
 void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
     Db<DbDoc, DbKw> db = createDb(dbSize, false);
     // setup
-    std::cout << "Setting up..." << std::endl;
     auto setupStart = std::chrono::high_resolution_clock::now();
     sse.setup(KEY_SIZE, db);
     auto setupEnd = std::chrono::high_resolution_clock::now();
@@ -45,7 +44,6 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
     std::cout << std::endl;
 
     // search
-    std::cout << "Searching..." << std::endl;
     for (int i = 0; i <= (int)log2(dbSize); i++) {
         KwRange query {0, (int)pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
@@ -85,7 +83,6 @@ template <class DbDoc, class DbKw>
 void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
     Db<DbDoc, DbKw> db = createDb(dbSize, true);
     // setup
-    std::cout << "Setting up..." << std::endl;
     auto setupStart = std::chrono::high_resolution_clock::now();
     sse.setup(KEY_SIZE, db);
     auto setupEnd = std::chrono::high_resolution_clock::now();
@@ -94,7 +91,6 @@ void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
     std::cout << std::endl;
 
     // search
-    std::cout << "Searching..." << std::endl;
     KwRange query {1, dbSize - 1};
     auto searchStartTime = std::chrono::high_resolution_clock::now();
     sse.search(query);
