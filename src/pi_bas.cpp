@@ -17,7 +17,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
     // naive range search: just individually query every point in range
     for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
         QueryToken queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
-        std::vector<DbDoc> results = this->genericSearch(queryToken); // todo have to do something about deletinos and detcing if its a Doc
+        std::vector<DbDoc> results = this->genericSearch(queryToken); // todo have to do something about deletinos and detcing if its a IdOp
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
     return allResults;
@@ -61,8 +61,8 @@ void PiBas<DbDoc, DbKw>::buildIndex(const Db<DbDoc, DbKw>& db) {
         
         unsigned int counter = 0;
         // for each id in DB(w)
-        auto itDocsWithSameKw = index.find(dbKwRange);
-        for (DbDoc dbDoc : itDocsWithSameKw->second) {
+        auto itIdOpsWithSameKw = index.find(dbKwRange);
+        for (DbDoc dbDoc : itIdOpsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring label = prf(subkey1, toUstr(counter));
             ustring iv = genIv();
@@ -116,13 +116,13 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::genericSearch(const QueryToken& queryToke
 
 // todo if compiler doesnt optimize out returns; is constantly erasing from the vector really faster?
 //template <class DbDoc, class DbKw>
-//std::vector<Doc> PiBas<DbDoc, DbKw>::searchWithDels(const QueryToken& queryToken) const {
-//    std::vector<Doc> results = this->genericSearch(queryToken);
-//    std::vector<Doc> finalResults;
+//std::vector<IdOp> PiBas<DbDoc, DbKw>::searchWithDels(const QueryToken& queryToken) const {
+//    std::vector<IdOp> results = this->genericSearch(queryToken);
+//    std::vector<IdOp> finalResults;
 //    std::unordered_set<Id> deleted; // todo test is set is faster
 //
 //    // find deleted docs
-//    for (Doc result : results) {
+//    for (IdOp result : results) {
 //        Id id = result.get().first;
 //        Op op = result.get().second;
 //        if (op == DELETE) {
@@ -130,7 +130,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::genericSearch(const QueryToken& queryToke
 //        }
 //    }
 //    // copy over vector without deleted docs
-//    for (Doc result : results) {
+//    for (IdOp result : results) {
 //        Id id = result.get().first;
 //        Op op = result.get().second;
 //        if (op == INSERT && deleted.count(id) == 0) {
@@ -140,9 +140,9 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::genericSearch(const QueryToken& queryToke
 //    return finalResults;
 //}
 
-template class PiBas<Doc, Kw>;
+template class PiBas<IdOp, Kw>;
 template class PiBas<SrciDb1Doc<Kw>, Kw>;
-template class PiBas<Doc, Id>;
+template class PiBas<IdOp, Id>;
 
 template class PiBas<Id, Id>;
 template class PiBas<Id, Kw>;

@@ -4,7 +4,7 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <class DbDoc = Doc, class DbKw = Kw, template<class A, class B> class Underly = PiBas>
+template <class DbDoc = IdOp, class DbKw = Kw, template<class A, class B> class Underly = PiBas>
 class LogSrci : public ISse<DbDoc, DbKw> {
     protected:
         Underly<SrciDb1Doc<DbKw>, DbKw>& underlying1;

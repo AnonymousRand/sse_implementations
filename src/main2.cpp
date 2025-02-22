@@ -8,7 +8,7 @@ Db<> createDb(int dbSize) {
     Db<> db;
     for (int i = 0; i < dbSize; i++) {
         Kw kw = i;
-        db.push_back(std::pair {Doc(i), KwRange {kw, kw}});
+        db.push_back(std::pair {IdOp(i), KwRange {kw, kw}});
     }
     return db;
 }
@@ -25,9 +25,9 @@ int main() {
     logSrci.setup(KEY_SIZE, db);
 
     KwRange query = KwRange {3, 5};
-    std::vector<Doc> results = logSrci.search(query);
+    std::vector<IdOp> results = logSrci.search(query);
     std::cout << "Results:";
-    for (Doc doc : results) {
+    for (IdOp doc : results) {
         std::cout << " " << doc;
     }
     std::cout << std::endl;

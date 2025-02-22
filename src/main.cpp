@@ -9,7 +9,7 @@
 static std::random_device dev;
 static std::mt19937 rng(dev());
 
-template <class DbDoc = Doc, class DbKw = Kw>
+template <class DbDoc = IdOp, class DbKw = Kw>
 Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
     Db<DbDoc, DbKw> db;
     if (isDataSkewed) {
@@ -110,7 +110,7 @@ int main() {
     PiBas<> logSrcUnderly;
     LogSrc<> logSrc(logSrcUnderly);
     PiBas<SrciDb1Doc<>, Kw> logSrciUnderly1;
-    PiBas<Doc, Id> logSrciUnderly2;
+    PiBas<IdOp, Id> logSrciUnderly2;
     LogSrci<> logSrci(logSrciUnderly1, logSrciUnderly2);
 
     int maxDbSizeExp;

@@ -1,4 +1,4 @@
 #include "sse.h"
 
-template class ISse<Doc, Kw>;
-template class IDsse<Doc, Kw>;
+template class ISse<IdOp, Kw>;
+template class IDsse<IdOp, Kw>;

@@ -252,41 +252,41 @@ std::ostream& operator <<(std::ostream& os, const Op& op) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// `Doc`
+// `IdOp`
 ////////////////////////////////////////////////////////////////////////////////
 
-Doc::Doc(const Id& id) : IDbDoc<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
+IdOp::IdOp(const Id& id) : IDbDoc<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
 
-Doc::Doc(const Id& id, const Op& op) : IDbDoc<std::pair<Id, Op>>(std::pair {id, op}) {}
+IdOp::IdOp(const Id& id, const Op& op) : IDbDoc<std::pair<Id, Op>>(std::pair {id, op}) {}
 
-Doc Doc::decode(const ustring& ustr) {
+IdOp IdOp::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
     if (!std::regex_search(str, matches, re) || matches.size() != 3) {
-        std::cerr << "Error: bad string passed to `Doc.fromUstr()`, please panic (calmly)." << std::endl;
+        std::cerr << "Error: bad string passed to `IdOp.fromUstr()`, please panic (calmly)." << std::endl;
         exit(EXIT_FAILURE);
     }
     Id id = Id::fromStr(matches[1].str());
     Op op = Op::fromStr(matches[2].str());
-    return Doc {id, op};
+    return IdOp {id, op};
 }
 
-std::string Doc::toStr() const {
+std::string IdOp::toStr() const {
     std::stringstream ss;
     ss << "(" << this->val.first << "," << this->val.second << ")";
     return ss.str();
 }
 
-Id Doc::getId() const {
+Id IdOp::getId() const {
     return this->val.first;
 }
 
-bool operator <(const Doc& doc1, const Doc& doc2) {
+bool operator <(const IdOp& doc1, const IdOp& doc2) {
     return doc1.val.first < doc2.val.first;
 }
 
-bool operator ==(const Doc& doc1, const Doc& doc2) {
+bool operator ==(const IdOp& doc1, const IdOp& doc2) {
     return doc1.val.first == doc2.val.first;
 }
 

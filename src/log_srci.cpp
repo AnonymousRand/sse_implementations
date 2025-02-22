@@ -140,5 +140,5 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& quer
     return this->underlying2.search(src2->getRange());
 }
 
-template class LogSrci<Doc, Kw, PiBas>;
+template class LogSrci<IdOp, Kw, PiBas>;
 template class LogSrci<Id, Kw, PiBas>;

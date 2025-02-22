@@ -26,7 +26,7 @@ template <class T> class IDbDoc;
 class IMainDbDoc;
 class Id;
 class Op;
-class Doc;
+class IdOp;
 template <class DbKw = Kw> class SrciDb1Doc;
 
 using IdRange    = Range<Id>;
@@ -39,7 +39,7 @@ using QueryToken = std::pair<ustring, ustring>;
 // allow polymorphic document types for db (screw you Log-SRC-i for making everything a nonillion times more complicated)
 // no easy way to enforce templated base classes, like Java generics' `extends`
 // so just make sure `DbDoc` subclasses `IDbDoc` and `DbKw` subclasses `Range`
-template <class DbDoc = Doc, class DbKw = Kw> 
+template <class DbDoc = IdOp, class DbKw = Kw> 
 using Db         = std::vector<std::pair<DbDoc, Range<DbKw>>>;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,22 +183,22 @@ static const Op INSERT("INSERT");
 static const Op DELETE("DELETE");
 
 ////////////////////////////////////////////////////////////////////////////////
-// `Doc`
+// `IdOp`
 ////////////////////////////////////////////////////////////////////////////////
 
-class Doc : public IDbDoc<std::pair<Id, Op>>, public IMainDbDoc {
+class IdOp : public IDbDoc<std::pair<Id, Op>>, public IMainDbDoc {
     public:
-        Doc() = default;
-        Doc(const Id& id);
-        Doc(const Id& id, const Op& op);
+        IdOp() = default;
+        IdOp(const Id& id);
+        IdOp(const Id& id, const Op& op);
 
-        static Doc decode(const ustring& ustr);
+        static IdOp decode(const ustring& ustr);
         std::string toStr() const override;
 
         Id getId() const override;
 
-        friend bool operator <(const Doc& doc1, const Doc& doc2);
-        friend bool operator ==(const Doc& doc1, const Doc& doc2);
+        friend bool operator <(const IdOp& doc1, const IdOp& doc2);
+        friend bool operator ==(const IdOp& doc1, const IdOp& doc2);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

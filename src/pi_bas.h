@@ -2,7 +2,7 @@
 
 #include "sse.h"
 
-template <class DbDoc = Doc, class DbKw = Kw>
+template <class DbDoc = IdOp, class DbKw = Kw>
 class PiBas : public ISse<DbDoc, DbKw> {
     private:
         ustring key;
@@ -18,5 +18,5 @@ class PiBas : public ISse<DbDoc, DbKw> {
         void buildIndex(const Db<DbDoc, DbKw>& db);
         QueryToken genQueryToken(const Range<DbKw>& query) const;
         std::vector<DbDoc> genericSearch(const QueryToken& queryToken) const;
-        //std::vector<Doc> searchWithDels(const QueryToken& queryToken) const;
+        //std::vector<IdOp> searchWithDels(const QueryToken& queryToken) const;
 };
