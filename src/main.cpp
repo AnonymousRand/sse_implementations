@@ -153,21 +153,21 @@ int main() {
     std::cout << "Query    : "            << query << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp2(piBas, query, maxDbSize);
+    exp2(piBas, query, maxDbSize / 2); // halved db sizes due to heavy memory usage in experiment 2
     
     std::cout << "---------- Experiment 2 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
     std::cout << "Query    : "            << query << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp2(logSrc, query, maxDbSize);
+    exp2(logSrc, query, maxDbSize / 2);
 
     std::cout << "---------- Experiment 2 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
     std::cout << "Query    : "            << query << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp2(logSrci, query, maxDbSize);
+    exp2(logSrci, query, maxDbSize / 2);
 
     // experiment 3
     std::cout << "---------- Experiment 3 for Log-SRC ----------" << std::endl;
