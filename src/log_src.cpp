@@ -3,10 +3,10 @@
 
 #include "log_src.h"
 
-template <class DbDoc, class DbKw, template<class A, class B> class Underly>
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 LogSrc<DbDoc, DbKw, Underly>::LogSrc(Underly<DbDoc, DbKw>& underlying) : underlying(underlying) {};
 
-template <class DbDoc, class DbKw, template<class A, class B> class Underly>
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     DbKw maxDbKw = DbKw(-1);
@@ -53,7 +53,7 @@ void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db
     this->underlying.setup(secParam, processedDb);
 }
 
-template <class DbDoc, class DbKw, template<class A, class B> class Underly>
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
     TdagNode<DbKw>* src = this->tdag->findSrc(query);
     if (src == nullptr) {
@@ -62,5 +62,5 @@ std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query
     return this->underlying.search(src->getRange());
 }
 
-template class LogSrc<IdOp, Kw, PiBas>;
 template class LogSrc<Id, Kw, PiBas>;
+template class LogSrc<IdOp, Kw, PiBas>;

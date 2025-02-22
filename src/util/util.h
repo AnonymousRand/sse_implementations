@@ -1,8 +1,8 @@
 #pragma once
 
+#include <concepts>
 #include <iostream>
 #include <string>
-#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -29,17 +29,21 @@ class Op;
 class IdOp;
 template <class DbKw = Kw> class SrciDb1Doc;
 
+// black magic (https://stackoverflow.com/a/71921982)
+// (java generics `extends`: look what they need to mimic a fraction of my power)
+template <class T> concept IDbDocDeriv = requires(T t) {
+    []<typename X>(IDbDoc<X>&){}(t);
+};
+template <class T> concept IMainDbDocDeriv = std::derived_from<T, IMainDbDoc>;
+
 using IdRange    = Range<Id>;
 // for generality, all keywords are ranges; single keywords are just size 1 ranges
 using KwRange    = Range<Kw>;
-// for generality, all keywords are ranges; single keywords are just size 1 ranges
 //                `std::unordered_map<label, std::pair<data, iv>>`
 using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
 using QueryToken = std::pair<ustring, ustring>;
-// allow polymorphic document types for db (screw you Log-SRC-i for making everything a nonillion times more complicated)
-// no easy way to enforce templated base classes, like Java generics' `extends`
-// so just make sure `DbDoc` subclasses `IDbDoc` and `DbKw` subclasses `Range`
-template <class DbDoc = IdOp, class DbKw = Kw> 
+// allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
+template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw> 
 using Db         = std::vector<std::pair<DbDoc, Range<DbKw>>>;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,7 +100,6 @@ struct std::hash<Range<T>> {
 ////////////////////////////////////////////////////////////////////////////////
 
 // interface for documents in dataset
-// todo potentially force derivation? pibas dbdoc must extend IDbDoc, src and srci must extend IMainDbDoc
 template <class T>
 class IDbDoc {
     protected:

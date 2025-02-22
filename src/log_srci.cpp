@@ -7,12 +7,12 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
-template <class DbDoc, class DbKw, template<class A, class B> class Underly>
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 LogSrci<DbDoc, DbKw, Underly>::LogSrci(
     Underly<SrciDb1Doc<DbKw>, DbKw>& underlying1, Underly<DbDoc, Id>& underlying2
 ) : underlying1(underlying1), underlying2(underlying2) {}
 
-template <class DbDoc, class DbKw, template<class A, class B> class Underly>
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // build index 1
 
@@ -105,7 +105,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     this->underlying2.setup(secParam, db2);
 }
 
-template <class DbDoc, class DbKw, template<class A, class B> class Underly>
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
     // query 1
 
@@ -140,5 +140,5 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& quer
     return this->underlying2.search(src2->getRange());
 }
 
-template class LogSrci<IdOp, Kw, PiBas>;
 template class LogSrci<Id, Kw, PiBas>;
+template class LogSrci<IdOp, Kw, PiBas>;

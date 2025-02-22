@@ -5,26 +5,10 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
-template <class DbDoc, class DbKw>
+template <IDbDocDeriv DbDoc, class DbKw>
 void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
-    this->genKey(secParam);
-    this->buildIndex(db);
-}
+    // generate key
 
-template <class DbDoc, class DbKw>
-std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    std::vector<DbDoc> allResults;
-    // naive range search: just individually query every point in range
-    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-        QueryToken queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
-        std::vector<DbDoc> results = this->genericSearch(queryToken); // todo have to do something about deletinos and detcing if its a IdOp
-        allResults.insert(allResults.end(), results.begin(), results.end());
-    }
-    return allResults;
-}
-
-template <class DbDoc, class DbKw>
-void PiBas<DbDoc, DbKw>::genKey(int secParam) {
     unsigned char* key = new unsigned char[secParam];
     int res = RAND_priv_bytes(key, secParam);
     if (res != 1) {
@@ -32,10 +16,9 @@ void PiBas<DbDoc, DbKw>::genKey(int secParam) {
     }
     this->key = toUstr(key, secParam);
     delete[] key;
-}
 
-template <class DbDoc, class DbKw>
-void PiBas<DbDoc, DbKw>::buildIndex(const Db<DbDoc, DbKw>& db) {
+    // build index
+
     // generate (plaintext) index of keywords to dbDocuments/ids mapping and list of unique keywords
     std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
     std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
@@ -75,7 +58,19 @@ void PiBas<DbDoc, DbKw>::buildIndex(const Db<DbDoc, DbKw>& db) {
     }
 }
 
-template <class DbDoc, class DbKw>
+template <IDbDocDeriv DbDoc, class DbKw>
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    std::vector<DbDoc> allResults;
+    // naive range search: just individually query every point in range
+    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+        QueryToken queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
+        std::vector<DbDoc> results = this->searchInd(queryToken);
+        allResults.insert(allResults.end(), results.begin(), results.end());
+    }
+    return allResults;
+}
+
+template <IDbDocDeriv DbDoc, class DbKw>
 QueryToken PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // the paper uses different notation for the key generation here vs. in `setup()`;
     // but I'm fairly sure they meant the same thing, otherwise it doesn't work
@@ -86,8 +81,40 @@ QueryToken PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     return QueryToken {subkey1, subkey2};
 }
 
-template <class DbDoc, class DbKw>
-std::vector<DbDoc> PiBas<DbDoc, DbKw>::genericSearch(const QueryToken& queryToken) const {
+template <IDbDocDeriv DbDoc, class DbKw>
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchInd(const QueryToken& queryToken) const {
+    return this->searchIndBase(queryToken);
+}
+
+// todo if compiler doesnt optimize out returns; is constantly erasing from the vector really faster?
+template<>
+std::vector<IdOp> PiBas<IdOp, Kw>::searchInd(const QueryToken& queryToken) const {
+    std::vector<IdOp> results = this->searchIndBase(queryToken);
+    std::vector<IdOp> finalResults;
+    std::unordered_set<Id> deleted;
+
+    // find all deletion tuples
+    for (IdOp result : results) {
+        Id id = result.get().first;
+        Op op = result.get().second;
+        if (op == DELETE) {
+            deleted.insert(id);
+        }
+    }
+    // copy over vector without deleted docs
+    for (IdOp result : results) {
+        Id id = result.get().first;
+        Op op = result.get().second;
+        if (op == INSERT && deleted.count(id) == 0) {
+            finalResults.push_back(result);
+        }
+    }
+
+    return finalResults;
+}
+
+template <IDbDocDeriv DbDoc, class DbKw>
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchIndBase(const QueryToken& queryToken) const {
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
     std::vector<DbDoc> results;
@@ -95,54 +122,33 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::genericSearch(const QueryToken& queryToke
     
     // for c = 0 until `Get` returns error
     while (true) {
-        // d <- Get(D, F(K_1, c))
+        // d <- Get(D, F(K_1, c)); c++
         ustring label = prf(subkey1, toUstr(counter));
+        counter++;
         auto it = this->encInd.find(label);
         if (it == this->encInd.end()) {
             break;
         }
         std::pair<ustring, ustring> encIndV = it->second;
         ustring data = encIndV.first;
+
         // id <- Dec(K_2, d)
         ustring iv = encIndV.second;
         ustring ptext = aesDecrypt(EVP_aes_256_cbc(), subkey2, data, iv);
-        results.push_back(DbDoc::decode(ptext));
-
-        counter++;
+        DbDoc result = DbDoc::decode(ptext);
+        results.push_back(result);
     }
 
     return results;
 }
 
-// todo if compiler doesnt optimize out returns; is constantly erasing from the vector really faster?
-//template <class DbDoc, class DbKw>
-//std::vector<IdOp> PiBas<DbDoc, DbKw>::searchWithDels(const QueryToken& queryToken) const {
-//    std::vector<IdOp> results = this->genericSearch(queryToken);
-//    std::vector<IdOp> finalResults;
-//    std::unordered_set<Id> deleted; // todo test is set is faster
-//
-//    // find deleted docs
-//    for (IdOp result : results) {
-//        Id id = result.get().first;
-//        Op op = result.get().second;
-//        if (op == DELETE) {
-//            deleted.insert(id);
-//        }
-//    }
-//    // copy over vector without deleted docs
-//    for (IdOp result : results) {
-//        Id id = result.get().first;
-//        Op op = result.get().second;
-//        if (op == INSERT && deleted.count(id) == 0) {
-//            finalResults.push_back(result);
-//        }
-//    }
-//    return finalResults;
-//}
-
-template class PiBas<IdOp, Kw>;
-template class PiBas<SrciDb1Doc<Kw>, Kw>;
-template class PiBas<IdOp, Id>;
-
-template class PiBas<Id, Id>;
+// main
 template class PiBas<Id, Kw>;
+template class PiBas<IdOp, Kw>;
+
+// Log-SRC-i index 1
+template class PiBas<SrciDb1Doc<Kw>, Kw>;
+
+// Log-SRC-i index 2
+template class PiBas<Id, Id>;
+template class PiBas<IdOp, Id>;
