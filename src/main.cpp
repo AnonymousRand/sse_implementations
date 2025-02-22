@@ -170,13 +170,6 @@ int main() {
     exp2(logSrci, query, maxDbSize);
 
     // experiment 3
-    std::cout << "---------- Experiment 3 for PiBas ----------" << std::endl;
-    std::cout << "DB size  : "            << maxDbSize << std::endl;
-    std::cout << "Query    : varied size" << std::endl;
-    std::cout << "Data skew: yes"         << std::endl;
-    std::cout << std::endl;
-    exp3(piBas, maxDbSize);
-
     std::cout << "---------- Experiment 3 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
