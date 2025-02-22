@@ -8,11 +8,7 @@
 #include "util/openssl.h"
 
 template <typename Underlying>
-LogSrci<Underlying>::LogSrci(const Underlying& underlying) : underlying(underlying) {}
-
-////////////////////////////////////////////////////////////////////////////////
-// API Functions
-////////////////////////////////////////////////////////////////////////////////
+LogSrci<Underlying>::LogSrci(Underlying& underlying) : underlying(underlying) {}
 
 template <typename Underlying>
 void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
@@ -122,7 +118,7 @@ std::vector<Doc> LogSrci<Underlying>::search(const KwRange& query) {
     }
     QueryToken queryToken1 = this->underlying.genQueryToken(this->key.first, src1->getRange());
     std::vector<SrciDb1Doc> choices =
-            this->underlying.template serverSearch<SrciDb1Doc>(this->encInds.first, queryToken1);
+            this->underlying.template genericSearch<SrciDb1Doc>(this->encInds.first, queryToken1);
 
     // query 2
 
@@ -147,11 +143,16 @@ std::vector<Doc> LogSrci<Underlying>::search(const KwRange& query) {
         return std::vector<Doc> {};
     }
     QueryToken queryToken2 = this->underlying.genQueryToken(this->key.second, src2->getRange());
-    return this->underlying.serverSearch(this->encInds.second, queryToken2);
+    return this->underlying.search(this->encInds.second, queryToken2);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Template Instantiations
-////////////////////////////////////////////////////////////////////////////////
+template <typename Underlying>
+LogSrci<Underlying>& LogSrci<Underlying>::operator =(const LogSrci<Underlying>& other) {
+    if (this == &other) {
+        return *this;
+    }
+    this->underlying = other.underlying;
+    return *this;
+}
 
 template class LogSrci<PiBas>;

@@ -58,12 +58,12 @@ class Range : public std::pair<T, T> {
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 };
 
-// provide hash function as well
+// hash function
 template<>
 template<typename T>
 struct std::hash<Range<T>> {
     std::size_t operator ()(const Range<T>& range) const noexcept {
-        return std::hash<ustring>{}(range.toUstr());
+        return std::hash<std::string>{}(range.toStr());
     }
 };
 
@@ -126,6 +126,14 @@ class Id : public IEncryptable<int> {
         friend bool operator >(const Id& id1, const Id& id2);
         friend bool operator <=(const Id& id1, const Id& id2);
         friend bool operator >=(const Id& id1, const Id& id2);
+};
+
+// hash function
+template<>
+struct std::hash<Id> {
+    std::size_t operator ()(const Id& id) const noexcept {
+        return std::hash<std::string>{}(id.toStr());
+    }
 };
 
 using IdRange = Range<Id>;

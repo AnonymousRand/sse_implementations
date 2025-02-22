@@ -5,23 +5,21 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// API Functions
-////////////////////////////////////////////////////////////////////////////////
-
 void PiBas::setup(int secParam, const Db<>& db) {
     this->key = this->genKey(secParam);
     this->encInd = this->buildIndex(this->key, db);
 }
 
 std::vector<Doc> PiBas::search(const KwRange& query) {
-    QueryToken queryToken = this->genQueryToken(this->key, query);
-    return this->serverSearch(this->encInd, queryToken);
+    std::vector<Doc> allResults;
+    // naive range search: just individually query every point in range
+    for (Kw kw = query.first; kw <= query.second; kw++) {
+        QueryToken queryToken = this->genQueryToken(this->key, KwRange {kw, kw});
+        std::vector<Doc> results = this->search(this->encInd, queryToken);
+        allResults.insert(allResults.end(), results.begin(), results.end());
+    }
+    return allResults;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Non-API Functions
-////////////////////////////////////////////////////////////////////////////////
 
 ustring PiBas::genKey(int secParam) const {
     unsigned char* key = new unsigned char[secParam];
@@ -90,7 +88,7 @@ QueryToken PiBas::genQueryToken(const ustring& key, const Range<RangeType>& rang
 }
 
 template <typename DbDoc>
-std::vector<DbDoc> PiBas::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const {
+std::vector<DbDoc> PiBas::genericSearch(const EncInd& encInd, const QueryToken& queryToken) const {
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
     std::vector<DbDoc> results;
@@ -117,9 +115,30 @@ std::vector<DbDoc> PiBas::serverSearch(const EncInd& encInd, const QueryToken& q
     return results;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Template Instantiations
-////////////////////////////////////////////////////////////////////////////////
+// todo if compiler doesnt optimize out returns; is constantly erasing from the vector really faster?
+std::vector<Doc> PiBas::search(const EncInd& encInd, const QueryToken& queryToken) const {
+    std::vector<Doc> results = this->genericSearch<Doc>(encInd, queryToken);
+    std::vector<Doc> finalResults;
+    std::unordered_set<Id> deleted; // todo test is set is faster
+
+    // find deleted docs
+    for (Doc result : results) {
+        Id id = result.get().first;
+        Op op = result.get().second;
+        if (op == DELETE) {
+            deleted.insert(id);
+        }
+    }
+    // copy over vector without deleted docs
+    for (Doc result : results) {
+        Id id = result.get().first;
+        Op op = result.get().second;
+        if (op == INSERT && deleted.count(id) == 0) {
+            finalResults.push_back(result);
+        }
+    }
+    return finalResults;
+}
 
 template EncInd PiBas::buildIndex(const ustring& key, const Db<>& db) const;
 template EncInd PiBas::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db) const;
@@ -128,5 +147,5 @@ template EncInd PiBas::buildIndex(const ustring& key, const Db<Doc, IdRange>& db
 template QueryToken PiBas::genQueryToken(const ustring& key, const IdRange& range) const;
 template QueryToken PiBas::genQueryToken(const ustring& key, const KwRange& range) const;
 
-template std::vector<Doc> PiBas::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
-template std::vector<SrciDb1Doc> PiBas::serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+template std::vector<Doc> PiBas::genericSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+template std::vector<SrciDb1Doc> PiBas::genericSearch(const EncInd& encInd, const QueryToken& queryToken) const;

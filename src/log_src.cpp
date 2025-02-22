@@ -4,11 +4,7 @@
 #include "log_src.h"
 
 template <typename Underlying>
-LogSrc<Underlying>::LogSrc(const Underlying& underlying) : underlying(underlying) {};
-
-////////////////////////////////////////////////////////////////////////////////
-// API Functions
-////////////////////////////////////////////////////////////////////////////////
+LogSrc<Underlying>::LogSrc(Underlying& underlying) : underlying(underlying) {};
 
 template <typename Underlying>
 void LogSrc<Underlying>::setup(int secParam, const Db<>& db) {
@@ -68,11 +64,16 @@ std::vector<Doc> LogSrc<Underlying>::search(const KwRange& query) {
         return std::vector<Doc> {};
     }
     QueryToken queryToken = this->underlying.genQueryToken(this->key, src->getRange());
-    return this->underlying.serverSearch(this->encInd, queryToken);
+    return this->underlying.search(this->encInd, queryToken);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Template Instantiations
-////////////////////////////////////////////////////////////////////////////////
+template <typename Underlying>
+LogSrc<Underlying>& LogSrc<Underlying>::operator =(const LogSrc<Underlying>& other) {
+    if (this == &other) {
+        return *this;
+    }
+    this->underlying = other.underlying;
+    return *this;
+}
 
 template class LogSrc<PiBas>;

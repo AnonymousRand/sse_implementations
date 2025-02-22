@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <cmath>
 
 #include "log_src.h"
@@ -11,7 +10,6 @@ Db<> createDb(int dbSize) {
         Kw kw = i;
         db.push_back(std::pair {Doc(i), KwRange {kw, kw}});
     }
-    std::sort(db.begin(), db.end());
     return db;
 }
 
@@ -29,8 +27,8 @@ int main() {
     KwRange query = KwRange {3, 5};
     std::vector<Doc> results = logSrci.search(query);
     std::cout << "Results:";
-    for (Doc idOp : results) {
-        std::cout << " " << idOp;
+    for (Doc doc : results) {
+        std::cout << " " << doc;
     }
     std::cout << std::endl;
 }

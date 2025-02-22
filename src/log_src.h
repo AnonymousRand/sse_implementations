@@ -7,15 +7,18 @@
 template <typename Underlying = PiBas>
 class LogSrc : public ISse {
     private:
-        const Underlying& underlying;
+        Underlying& underlying;
         ustring key;
         EncInd encInd;
         TdagNode<Kw>* tdag;
 
     public:
-        LogSrc(const Underlying& underlying);
+        LogSrc(Underlying& underlying);
 
         // API functions
         void setup(int secParam, const Db<>& db) override;
         std::vector<Doc> search(const KwRange& query) override;
+
+        // non-API functions
+        LogSrc<Underlying>& operator =(const LogSrc<Underlying>& other);
 };

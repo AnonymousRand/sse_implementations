@@ -2,7 +2,7 @@
 
 #include "sse.h"
 
-class PiBas : ISse {
+class PiBas : public ISse {
     private:
         ustring key;
         EncInd encInd;
@@ -23,6 +23,8 @@ class PiBas : ISse {
         template <typename RangeType>
         QueryToken genQueryToken(const ustring& key, const Range<RangeType>& range) const;
 
-        template <typename DbDoc = Doc>
-        std::vector<DbDoc> serverSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+        template <typename DbDoc>
+        std::vector<DbDoc> genericSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+
+        std::vector<Doc> search(const EncInd& encInd, const QueryToken& queryToken) const;
 };
