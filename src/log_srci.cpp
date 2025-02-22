@@ -31,7 +31,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
     for (std::pair entry : db) {
         DbDoc dbDoc = entry.first;
-        Id id = dbDoc.get().first; // todo this needs polymorphing to also work with ids; add to iencrypted
+        Id id = dbDoc.getId();
         Range<DbKw> dbKwRange = entry.second;
 
         if (ind1.count(dbKwRange) == 0) {

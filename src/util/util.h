@@ -7,26 +7,51 @@
 #include <utility>
 #include <vector>
 
+// todo range and iencryptable and tdag store their member vairable as reference?
+
+////////////////////////////////////////////////////////////////////////////////
+// Basic Declarations
+////////////////////////////////////////////////////////////////////////////////
+
 static const int KEY_SIZE   = 256 / 8;
 static const int BLOCK_SIZE = 128 / 8;
 static const int IV_SIZE    = 128 / 8;
 
-// todo range and iencryptable and tdag store their member vairable as reference?
+// use `ustring` as much as possible instead of `unsigned char*` to avoid C-style hell
+using ustring = std::basic_string<unsigned char>;
+using Kw      = int;
+
+template <class T> class Range;
+template <class T> class IDbDoc;
+class IMainDbDoc;
+class Id;
+class Op;
+class Doc;
+template <class DbKw = Kw> class SrciDb1Doc;
+
+using IdRange    = Range<Id>;
+// for generality, all keywords are ranges; single keywords are just size 1 ranges
+using KwRange    = Range<Kw>;
+// for generality, all keywords are ranges; single keywords are just size 1 ranges
+//                `std::unordered_map<label, std::pair<data, iv>>`
+using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
+using QueryToken = std::pair<ustring, ustring>;
+// allow polymorphic document types for db (screw you Log-SRC-i for making everything a nonillion times more complicated)
+// no easy way to enforce templated base classes, like Java generics' `extends`
+// so just make sure `DbDoc` subclasses `IDbDoc` and `DbKw` subclasses `Range`
+template <class DbDoc = Doc, class DbKw = Kw> 
+using Db         = std::vector<std::pair<DbDoc, Range<DbKw>>>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // `ustring`
 ////////////////////////////////////////////////////////////////////////////////
-
-// use `ustring` as much as possible instead of `unsigned char*` to avoid C-style hell
-using ustring = std::basic_string<unsigned char>;
 
 ustring toUstr(int n);
 ustring toUstr(const std::string& s);
 ustring toUstr(unsigned char* p, int len);
 std::string fromUstr(const ustring& ustr);
 
-// provide hash function for `ustring`s to use `unordered_map`
-// and other faster hashmap-based structures for them instead of `map`
+// provide hash function for `ustring`s to use faster hashmap-based structures, like `unordered_map` instead of `map`
 template<>
 struct std::hash<ustring> {
     std::size_t operator ()(const ustring& ustr) const noexcept {
@@ -40,7 +65,6 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 // `Range`
 ////////////////////////////////////////////////////////////////////////////////
 
-// for generality, all keywords are ranges; single keywords are just size 1 ranges
 template <class T>
 class Range : public std::pair<T, T> {
     public:
@@ -67,47 +91,47 @@ struct std::hash<Range<T>> {
     }
 };
 
-using Kw = int;
-using KwRange = Range<Kw>;
-
 ////////////////////////////////////////////////////////////////////////////////
-// `IEncryptable`
+// `IDbDoc`
 ////////////////////////////////////////////////////////////////////////////////
 
 // interface for documents in dataset
-// todo rename to IDbDoc and potentially force derivation?
+// todo potentially force derivation? pibas dbdoc must extend IDbDoc, src and srci must extend IMainDbDoc
 template <class T>
-class IEncryptable {
+class IDbDoc {
     protected:
         T val;
 
     public:
-        IEncryptable() = default;
-        IEncryptable(const T& val);
+        IDbDoc() = default;
+        IDbDoc(const T& val);
 
         T get() const;
         virtual ustring encode() const;
         virtual std::string toStr() const = 0;
 
         template <class T2>
-        friend std::ostream& operator <<(std::ostream& os, const IEncryptable<T2>& iEncryptable);
+        friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2>& iEncryptable);
 };
 
-// todo is this used anywhere?
-template <class T>
-ustring toUstr(const IEncryptable<T>& iEncryptable);
+class IMainDbDoc {
+    public:
+        virtual Id getId() const = 0;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // `Id`
 ////////////////////////////////////////////////////////////////////////////////
 
-class Id : public IEncryptable<int> {
+class Id : public IDbDoc<int>, public IMainDbDoc {
     public:
         Id() = default;
         Id(int val);
 
         static Id decode(const ustring& ustr);
         std::string toStr() const override;
+
+        Id getId() const override;
 
         static Id fromStr(const std::string& str);
         Id& operator ++();
@@ -136,8 +160,6 @@ struct std::hash<Id> {
     }
 };
 
-using IdRange = Range<Id>;
-
 ////////////////////////////////////////////////////////////////////////////////
 // `Op`
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,7 +186,7 @@ static const Op DELETE("DELETE");
 // `Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
-class Doc : public IEncryptable<std::pair<Id, Op>> {
+class Doc : public IDbDoc<std::pair<Id, Op>>, public IMainDbDoc {
     public:
         Doc() = default;
         Doc(const Id& id);
@@ -172,6 +194,8 @@ class Doc : public IEncryptable<std::pair<Id, Op>> {
 
         static Doc decode(const ustring& ustr);
         std::string toStr() const override;
+
+        Id getId() const override;
 
         friend bool operator <(const Doc& doc1, const Doc& doc2);
         friend bool operator ==(const Doc& doc1, const Doc& doc2);
@@ -182,24 +206,11 @@ class Doc : public IEncryptable<std::pair<Id, Op>> {
 ////////////////////////////////////////////////////////////////////////////////
 
 // todo move?
-template <class DbKw = Kw>
-class SrciDb1Doc : public IEncryptable<std::pair<Range<DbKw>, IdRange>> {
+template <class DbKw>
+class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, IdRange>> {
     public:
         SrciDb1Doc(const Range<DbKw>& dbKwRange, const IdRange& idRange);
 
         static SrciDb1Doc<DbKw> decode(const ustring& ustr);
         std::string toStr() const override;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// Other
-////////////////////////////////////////////////////////////////////////////////
-
-// allow polymophic document types for db (screw you Log-SRC-i for making everything a nonillion times more complicated)
-// no easy way to enforce templated base classes, like Java generics' `extends`
-// so just make sure `DbDoc` subclasses `IEncryptable` and `DbKw` subclasses `Range`
-template <class DbDoc = Doc, class DbKw = Kw> 
-using Db         = std::vector<std::pair<DbDoc, Range<DbKw>>>;
-//                `std::unordered_map<label, std::pair<data, iv>>`
-using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
-using QueryToken = std::pair<ustring, ustring>;

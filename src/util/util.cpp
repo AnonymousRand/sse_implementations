@@ -98,51 +98,42 @@ template std::ostream& operator <<(std::ostream& os, const Range<Id>& range);
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
 
 ////////////////////////////////////////////////////////////////////////////////
-// `IEncryptable`
+// `IDbDoc`
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class T>
-IEncryptable<T>::IEncryptable(const T& val) {
+IDbDoc<T>::IDbDoc(const T& val) {
     this->val = val;
 }
 
 template <class T>
-T IEncryptable<T>::get() const {
+T IDbDoc<T>::get() const {
     return this->val;
 }
 
 template <class T>
-ustring IEncryptable<T>::encode() const {
+ustring IDbDoc<T>::encode() const {
     return ::toUstr(this->toStr());
 }
 
 template <class T>
-std::ostream& operator <<(std::ostream& os, const IEncryptable<T>& iEncryptable) {
+std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iEncryptable) {
     return os << iEncryptable.toStr();
 }
 
-template <class T>
-ustring toUstr(const IEncryptable<T>& iEncryptable) {
-    return iEncryptable.encode();
-}
+template class IDbDoc<int>;
+template class IDbDoc<std::pair<Id, Op>>;
+template class IDbDoc<std::pair<KwRange, IdRange>>;
 
-template class IEncryptable<int>;
-template class IEncryptable<std::pair<Id, Op>>;
-template class IEncryptable<std::pair<KwRange, IdRange>>;
-
-template std::ostream& operator <<(std::ostream& os, const IEncryptable<int>& iEncryptable);
-template std::ostream& operator <<(std::ostream& os, const IEncryptable<std::pair<Id, Op>>& iEncryptable);
-template std::ostream& operator <<(std::ostream& os, const IEncryptable<std::pair<KwRange, IdRange>>& iEncryptable);
-
-template ustring toUstr(const IEncryptable<int>& id);
-template ustring toUstr(const IEncryptable<std::pair<Id, Op>>& id);
-template ustring toUstr(const IEncryptable<std::pair<KwRange, IdRange>>& srciDb1Doc);
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<int>& iEncryptable);
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Id, Op>>& iEncryptable);
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<KwRange, IdRange>>& iEncryptable);
 
 ////////////////////////////////////////////////////////////////////////////////
 // `Id`
 ////////////////////////////////////////////////////////////////////////////////
 
-Id::Id(int val) : IEncryptable<int>(val) {}
+Id::Id(int val) : IDbDoc<int>(val) {}
 
 std::string Id::toStr() const {
     return std::to_string(this->val);
@@ -155,6 +146,10 @@ Id Id::decode(const ustring& ustr) {
 
 Id Id::fromStr(const std::string& str) {
     return Id(std::stoi(str));
+}
+
+Id Id::getId() const {
+    return this->val;
 }
 
 Id& Id::operator ++() {
@@ -260,9 +255,9 @@ std::ostream& operator <<(std::ostream& os, const Op& op) {
 // `Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
-Doc::Doc(const Id& id) : IEncryptable<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
+Doc::Doc(const Id& id) : IDbDoc<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
 
-Doc::Doc(const Id& id, const Op& op) : IEncryptable<std::pair<Id, Op>>(std::pair {id, op}) {}
+Doc::Doc(const Id& id, const Op& op) : IDbDoc<std::pair<Id, Op>>(std::pair {id, op}) {}
 
 Doc Doc::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
@@ -283,6 +278,10 @@ std::string Doc::toStr() const {
     return ss.str();
 }
 
+Id Doc::getId() const {
+    return this->val.first;
+}
+
 bool operator <(const Doc& doc1, const Doc& doc2) {
     return doc1.val.first < doc2.val.first;
 }
@@ -297,7 +296,7 @@ bool operator ==(const Doc& doc1, const Doc& doc2) {
 
 template <class DbKw>
 SrciDb1Doc<DbKw>::SrciDb1Doc(const Range<DbKw>& dbKwRange, const IdRange& idRange)
-        : IEncryptable<std::pair<Range<DbKw>, IdRange>>(std::pair {dbKwRange, idRange}) {}
+        : IDbDoc<std::pair<Range<DbKw>, IdRange>>(std::pair {dbKwRange, idRange}) {}
 
 template <class DbKw>
 SrciDb1Doc<DbKw> SrciDb1Doc<DbKw>::decode(const ustring& ustr) {

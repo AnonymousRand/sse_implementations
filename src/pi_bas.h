@@ -2,7 +2,7 @@
 
 #include "sse.h"
 
-// todo make sure everything works with id instead of doc, as is the point of templates
+// >todo make sure everything works with id instead of doc, as is the point of templates
 template <class DbDoc = Doc, class DbKw = Kw>
 class PiBas : public ISse<DbDoc, DbKw> {
     private:
