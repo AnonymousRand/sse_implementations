@@ -83,9 +83,9 @@ void exp2(ISse& sse, KwRange query, int maxDbSize) {
 }
 
 int main() {
-    PiBas piBas, underlying1, underlying2;
-    LogSrc<> logSrc(underlying1);
-    LogSrci<> logSrci(underlying2);
+    PiBas piBas;
+    LogSrc<> logSrc(PiBas());
+    LogSrci<> logSrci(PiBas());
 
     int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
@@ -101,7 +101,6 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp1(piBas, db, maxDbSize);
-    piBas = PiBas(); // reassign immediately to hopefully reclaim memory
 
     std::cout << "---------- Experiment 1 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -109,8 +108,6 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp1(logSrc, db, maxDbSize);
-    underlying1 = PiBas();
-    logSrc = LogSrc(underlying1);
 
     std::cout << "---------- Experiment 1 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -118,8 +115,6 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp1(logSrci, db, maxDbSize);
-    underlying2 = PiBas();
-    logSrci = LogSrci(underlying2);
 
     // experiment 1.5
     db = createDb(maxDbSize, true);
@@ -130,7 +125,6 @@ int main() {
     std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     exp1(piBas, db, maxDbSize);
-    piBas = PiBas();
 
     std::cout << "---------- Experiment 1.5 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -138,8 +132,6 @@ int main() {
     std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     exp1(logSrc, db, maxDbSize);
-    underlying1 = PiBas();
-    logSrc = LogSrc(underlying1);
 
     std::cout << "---------- Experiment 1.5 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -147,8 +139,6 @@ int main() {
     std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     exp1(logSrci, db, maxDbSize);
-    underlying2 = PiBas();
-    logSrci = LogSrci(underlying2);
 
     // experiment 2
     std::uniform_int_distribution dist(0, maxDbSize);
@@ -165,7 +155,6 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp2(piBas, query, maxDbSize);
-    piBas = PiBas();
     
     std::cout << "---------- Experiment 2 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
@@ -173,8 +162,6 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp2(logSrc, query, maxDbSize);
-    underlying1 = PiBas();
-    logSrc = LogSrc(underlying1);
 
     std::cout << "---------- Experiment 2 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
@@ -182,6 +169,4 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp2(logSrci, query, maxDbSize);
-    underlying2 = PiBas();
-    logSrci = LogSrci(underlying2);
 }

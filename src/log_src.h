@@ -18,7 +18,4 @@ class LogSrc : public ISse {
         // API functions
         void setup(int secParam, const Db<>& db) override;
         std::vector<Doc> search(const KwRange& query) override;
-
-        // non-API functions
-        LogSrc<Underlying>& operator =(const LogSrc<Underlying>& other);
 };
