@@ -1,5 +1,5 @@
-# vim
-*.swp
-
 # compiled binary
 src/a.out
+
+# vim
+*.swp
