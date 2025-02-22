@@ -180,8 +180,7 @@ TdagNode<T>* TdagNode<T>::buildTdag(T& maxLeafVal) {
 template <class T>
 TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
     if (leafVals.size() == 0) {
-        std::cerr << "Error: `leafVals` passed to `TdagNode.buildTdag()` is empty :/" << std::endl;
-        exit(EXIT_FAILURE);
+        return nullptr;
     }
 
     // array to hold nodes while building; initialize with leaves
