@@ -9,8 +9,8 @@
 
 template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 LogSrci<DbDoc, DbKw, Underly>::LogSrci(
-    Underly<SrciDb1Doc<DbKw>, DbKw>& underlying1, Underly<DbDoc, Id>& underlying2
-) : underlying1(underlying1), underlying2(underlying2) {}
+    Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, Underly<DbDoc, Id>& underly2
+) : underly1(underly1), underly2(underly2) {}
 
 template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
@@ -101,8 +101,8 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
         }
     }
 
-    this->underlying1.setup(secParam, db1);
-    this->underlying2.setup(secParam, db2);
+    this->underly1.setup(secParam, db1);
+    this->underly2.setup(secParam, db2);
 }
 
 template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
@@ -113,7 +113,7 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& quer
     if (src1 == nullptr) { 
         return std::vector<DbDoc> {};
     }
-    std::vector<SrciDb1Doc<DbKw>> choices = this->underlying1.search(src1->getRange());
+    std::vector<SrciDb1Doc<DbKw>> choices = this->underly1.search(src1->getRange());
 
     // query 2
 
@@ -137,7 +137,7 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& quer
     if (src2 == nullptr) { 
         return std::vector<DbDoc> {};
     }
-    return this->underlying2.search(src2->getRange());
+    return this->underly2.search(src2->getRange());
 }
 
 template class LogSrci<Id, Kw, PiBas>;

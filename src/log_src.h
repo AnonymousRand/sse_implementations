@@ -7,11 +7,11 @@
 template <IMainDbDocDeriv DbDoc = IdOp, class DbKw = Kw, template<class A, class B> class Underly = PiBas>
 class LogSrc : public ISse<DbDoc, DbKw> {
     private:
-        Underly<DbDoc, DbKw>& underlying;
+        Underly<DbDoc, DbKw>& underly;
         TdagNode<DbKw>* tdag;
 
     public:
-        LogSrc(Underly<DbDoc, DbKw>& underlying);
+        LogSrc(Underly<DbDoc, DbKw>& underly);
 
         // API functions
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;

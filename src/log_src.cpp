@@ -4,7 +4,7 @@
 #include "log_src.h"
 
 template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
-LogSrc<DbDoc, DbKw, Underly>::LogSrc(Underly<DbDoc, DbKw>& underlying) : underlying(underlying) {};
+LogSrc<DbDoc, DbKw, Underly>::LogSrc(Underly<DbDoc, DbKw>& underly) : underly(underly) {};
 
 template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
@@ -50,7 +50,7 @@ void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db
         }
     }
 
-    this->underlying.setup(secParam, processedDb);
+    this->underly.setup(secParam, processedDb);
 }
 
 template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
@@ -59,7 +59,7 @@ std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query
     if (src == nullptr) {
         return std::vector<DbDoc> {};
     }
-    return this->underlying.search(src->getRange());
+    return this->underly.search(src->getRange());
 }
 
 template class LogSrc<Id, Kw, PiBas>;
