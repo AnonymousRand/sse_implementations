@@ -2,29 +2,22 @@
 
 #include "sse.h"
 
-class PiBas : public ISse {
+// todo make sure everything works with id instead of doc, as is the point of templates
+template <class DbDoc = Doc, class DbKw = Kw>
+class PiBas : public ISse<DbDoc, DbKw> {
     private:
         ustring key;
         EncInd encInd;
 
     public:
         // API functions
-        
-        void setup(int secParam, const Db<>& db) override;
-        std::vector<Doc> search(const KwRange& query) override;
+        void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
+        std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 
         // non-API functions
-        
-        ustring genKey(int secParam) const;
-
-        template <typename DbDoc, typename DbKw>
-        EncInd buildIndex(const ustring& key, const Db<DbDoc, DbKw>& db) const;
-
-        template <typename RangeType>
-        QueryToken genQueryToken(const ustring& key, const Range<RangeType>& range) const;
-
-        template <typename DbDoc>
-        std::vector<DbDoc> genericSearch(const EncInd& encInd, const QueryToken& queryToken) const;
-
-        std::vector<Doc> search(const EncInd& encInd, const QueryToken& queryToken) const;
+        void genKey(int secParam);
+        void buildIndex(const Db<DbDoc, DbKw>& db);
+        QueryToken genQueryToken(const Range<DbKw>& query) const;
+        std::vector<DbDoc> genericSearch(const QueryToken& queryToken) const;
+        //std::vector<Doc> searchWithDels(const QueryToken& queryToken) const;
 };

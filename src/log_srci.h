@@ -4,22 +4,18 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <typename Underlying = PiBas>
-class LogSrci : public ISse {
+template <class DbDoc = Doc, class DbKw = Kw, template<class A, class B> class Underly = PiBas>
+class LogSrci : public ISse<DbDoc, DbKw> {
     protected:
-        Underlying& underlying;
-        std::pair<ustring, ustring> key;
-        std::pair<EncInd, EncInd> encInds;
-        TdagNode<Kw>* tdag1;
+        Underly<SrciDb1Doc<DbKw>, DbKw>& underlying1;
+        Underly<DbDoc, Id>& underlying2;
+        TdagNode<DbKw>* tdag1;
         TdagNode<Id>* tdag2;
 
     public:
-        LogSrci(Underlying& underlying);
+        LogSrci(Underly<SrciDb1Doc<DbKw>, DbKw>& underlying1, Underly<DbDoc, Id>& underlying2);
 
         // API functions
-        void setup(int secParam, const Db<>& db) override;
-        std::vector<Doc> search(const KwRange& query) override;
-
-        // non-API functions
-        LogSrci<Underlying>& operator =(const LogSrci<Underlying>& other);
+        void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
+        std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };

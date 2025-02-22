@@ -6,20 +6,21 @@
 // ISse
 ////////////////////////////////////////////////////////////////////////////////
 
+template <class DbDoc = Doc, class DbKw = Kw>
 class ISse {
     public:
-        // API functions
-        virtual void setup(int secParam, const Db<>& db) = 0;
+        virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         // todo does compiler optimization bypass this? use out parameter `results` instead of returning it to avoid copying large amounts of data
-        virtual std::vector<Doc> search(const KwRange& range) = 0;
+        virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // IDsse
 ////////////////////////////////////////////////////////////////////////////////
 
-class IDsse : public ISse {
+template <class DbDoc = Doc, class DbKw = Kw>
+class IDsse : public ISse<DbDoc, DbKw> {
     public:
         // API functions
-        virtual void update();
+        //virtual void update();
 };

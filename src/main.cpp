@@ -9,8 +9,9 @@
 static std::random_device dev;
 static std::mt19937 rng(dev());
 
-Db<> createDb(int dbSize, bool isDataSkewed) {
-    Db<> db;
+template <class DbDoc = Doc, class DbKw = Kw>
+Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
+    Db<DbDoc, DbKw> db;
     if (isDataSkewed) {
         // at most two unique keywords, each making up half the dataset
         std::uniform_int_distribution dist(0, dbSize - 1);
@@ -21,21 +22,22 @@ Db<> createDb(int dbSize, bool isDataSkewed) {
         } while (kw2 < kw1); // make sure we are sorted for Log-SRC-i: larger ids must have larger kws (`kw2` >= `kw1`)
 
         for (int i = 0; i < dbSize / 2; i++) {
-            db.push_back(std::pair {Id(i), KwRange {kw1, kw1}});
+            db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw1, kw1}});
         }
         for (int i = dbSize / 2; i < dbSize; i++) {
-            db.push_back(std::pair {Id(i), KwRange {kw2, kw2}});
+            db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw2, kw2}});
         }
     } else {
         for (int i = 0; i < dbSize; i++) {
             Kw kw = i;
-            db.push_back(std::pair {Id(i), KwRange {kw, kw}});
+            db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw, kw}});
         }
     }
     return db;
 }
 
-void exp1(ISse& sse, Db<> db, int dbSize) {
+template <class DbDoc, class DbKw>
+void exp1(ISse<DbDoc, DbKw>& sse, Db<DbDoc, DbKw> db, int dbSize) {
     // setup
     std::cout << "Setting up..." << std::endl;
     auto setupStart = std::chrono::high_resolution_clock::now();
@@ -50,7 +52,7 @@ void exp1(ISse& sse, Db<> db, int dbSize) {
     for (int i = 0; i <= (int)log2(dbSize); i++) {
         KwRange query {0, (int)pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
-        std::vector<Doc> results = sse.search(query);
+        std::vector<DbDoc> results = sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
         std::cout << "Search time (size " << query.size() << "): " << searchElapsed.count() * 1000 << " ms"
@@ -59,10 +61,11 @@ void exp1(ISse& sse, Db<> db, int dbSize) {
     std::cout << std::endl;
 }
 
-void exp2(ISse& sse, KwRange query, int maxDbSize) {
+template <class DbDoc, class DbKw>
+void exp2(ISse<DbDoc, DbKw>& sse, Range<DbKw> query, int maxDbSize) {
     for (int i = 1; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
-        Db<> db = createDb(dbSize, false);
+        Db<DbDoc, DbKw> db = createDb(dbSize, false);
         std::cout << "DB size: " << dbSize << std::endl;
 
         // setup
@@ -74,7 +77,7 @@ void exp2(ISse& sse, KwRange query, int maxDbSize) {
 
         // query
         auto searchStartTime = std::chrono::high_resolution_clock::now();
-        std::vector<Doc> results = sse.search(query);
+        std::vector<DbDoc> results = sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
         std::cout << "Search time: " << searchElapsed.count() * 1000 << " ms" << std::endl;
@@ -84,8 +87,11 @@ void exp2(ISse& sse, KwRange query, int maxDbSize) {
 
 int main() {
     PiBas piBas;
-    LogSrc<> logSrc(PiBas());
-    LogSrci<> logSrci(PiBas());
+    PiBas<> logSrcUnderly;
+    LogSrc<> logSrc(logSrcUnderly);
+    PiBas<SrciDb1Doc<>, Kw> logSrciUnderly1;
+    PiBas<Doc, Id> logSrciUnderly2;
+    LogSrci<> logSrci(logSrciUnderly1, logSrciUnderly2);
 
     int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";

@@ -7,55 +7,53 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
-template <typename Underlying>
-LogSrci<Underlying>::LogSrci(Underlying& underlying) : underlying(underlying) {}
+template <class DbDoc, class DbKw, template<class A, class B> class Underly>
+LogSrci<DbDoc, DbKw, Underly>::LogSrci(
+    Underly<SrciDb1Doc<DbKw>, DbKw>& underlying1, Underly<DbDoc, Id>& underlying2
+) : underlying1(underlying1), underlying2(underlying2) {}
 
-template <typename Underlying>
-void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
-    ustring key1 = this->underlying.genKey(secParam);
-    ustring key2 = this->underlying.genKey(secParam);
-    this->key = std::pair {key1, key2};
-
+template <class DbDoc, class DbKw, template<class A, class B> class Underly>
+void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // build index 1
 
     // build TDAG1 over keywords
-    Kw maxKw = -1;
+    DbKw maxDbKw = -1;
     for (std::pair entry : db) {
-        KwRange kwRange = entry.second;
-        if (kwRange.second > maxKw) {
-            maxKw = kwRange.second;
+        Range<DbKw> dbKwRange = entry.second;
+        if (dbKwRange.second > maxDbKw) {
+            maxDbKw = dbKwRange.second;
         }
     }
-    this->tdag1 = TdagNode<Kw>::buildTdag(maxKw);
+    this->tdag1 = TdagNode<DbKw>::buildTdag(maxDbKw);
 
-    // first figure out which documents share the same keywords by building index and list of unique kws like in PiBas
-    std::unordered_map<KwRange, std::set<Id>> ind1;
-    std::unordered_set<KwRange> uniqueKwRanges;
+    // figure out which documents share the same keywords by building index and list of unique kws like in PiBas
+    std::unordered_map<Range<DbKw>, std::set<Id>> ind1;
+    std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
     for (std::pair entry : db) {
-        Doc doc = entry.first;
-        Id id = doc.get().first;
-        KwRange kwRange = entry.second;
+        DbDoc dbDoc = entry.first;
+        Id id = dbDoc.get().first; // todo this needs polymorphing to also work with ids; add to iencrypted
+        Range<DbKw> dbKwRange = entry.second;
 
-        if (ind1.count(kwRange) == 0) {
-            ind1[kwRange] = std::set {id};
+        if (ind1.count(dbKwRange) == 0) {
+            ind1[dbKwRange] = std::set {id};
         } else {
-            ind1[kwRange].insert(id);
+            ind1[dbKwRange].insert(id);
         }
-        uniqueKwRanges.insert(kwRange);
+        uniqueDbKwRanges.insert(dbKwRange);
     }
 
     // replicate every document (in this case pairs) to all keyword ranges/nodes in TDAG1 that cover it
     // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, [ids]), kw range/node)
-    Db<SrciDb1Doc, KwRange> db1;
-    for (KwRange kwRange : uniqueKwRanges) {
-        auto itDocsWithSameKwRange = ind1.find(kwRange);
-        std::set<Id> sameKwRangeIds = itDocsWithSameKwRange->second;
-        IdRange idRange {*sameKwRangeIds.begin(), *sameKwRangeIds.rbegin()}; // this is why we used `set`
-        SrciDb1Doc pair {kwRange, idRange};
+    Db<SrciDb1Doc<DbKw>, DbKw> db1;
+    for (Range<DbKw> dbKwRange : uniqueDbKwRanges) {
+        auto itIdsWithSameKw = ind1.find(dbKwRange);
+        std::set<Id> idsWithSameKw = itIdsWithSameKw->second;
+        IdRange idRange {*idsWithSameKw.begin(), *idsWithSameKw.rbegin()}; // this is why we used `set`
+        SrciDb1Doc<DbKw> pair {dbKwRange, idRange};
 
-        std::list<TdagNode<Kw>*> ancestors = this->tdag1->getLeafAncestors(kwRange);
-        for (TdagNode<Kw>* ancestor : ancestors) {
-            std::pair<SrciDb1Doc, KwRange> finalEntry {pair, ancestor->getRange()};
+        std::list<TdagNode<DbKw>*> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
+        for (TdagNode<DbKw>* ancestor : ancestors) {
+            std::pair<SrciDb1Doc<DbKw>, Range<DbKw>> finalEntry {pair, ancestor->getRange()};
             db1.push_back(finalEntry);
         }
     }
@@ -63,10 +61,10 @@ void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
     // build index 2
 
     // build TDAG2 over document ids
-    Id maxId = Id::getMin();
+    Id maxId = Id(-1);
     for (std::pair entry : db) {
-        Doc doc = entry.first;
-        Id id = doc.get().first;
+        DbDoc dbDoc = entry.first;
+        Id id = dbDoc.get().first;
         if (id > maxId) {
             maxId = id;
         }
@@ -75,60 +73,57 @@ void LogSrci<Underlying>::setup(int secParam, const Db<>& db) {
 
     // replicate every document to all id ranges/nodes in TDAG2 that cover it
     // again need temporary `unordered_map` index to shuffle
-    std::unordered_map<IdRange, std::vector<Doc>> ind2;
+    std::unordered_map<IdRange, std::vector<DbDoc>> ind2;
     for (std::pair entry : db) {
-        Doc doc = entry.first;
-        Id id = doc.get().first;
+        DbDoc dbDoc = entry.first;
+        Id id = dbDoc.get().first;
         std::list<TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(Range<Id> {id, id});
         for (TdagNode<Id>* ancestor : ancestors) {
             Range<Id> ancestorIdRange = ancestor->getRange();
             if (ind2.count(ancestorIdRange) == 0) {
-                ind2[ancestorIdRange] = std::vector {doc};
+                ind2[ancestorIdRange] = std::vector {dbDoc};
             } else {
-                ind2[ancestorIdRange].push_back(doc);
+                ind2[ancestorIdRange].push_back(dbDoc);
             }
         }
     }
 
-    // randomly permute documents associated with same id range/node and convert temporary `unordered_map` to `Db`
-    Db<Doc, IdRange> db2;
+    // randomly permute dbDocuments associated with same id range/node and convert temporary `unordered_map` to `Db`
+    Db<DbDoc, Id> db2;
     std::random_device rd;
     std::mt19937 rng(rd());
     for (std::pair pair : ind2) {
         IdRange idRange = pair.first;
-        std::vector<Doc> docs = pair.second;
-        std::shuffle(docs.begin(), docs.end(), rng);
-        for (Doc doc: docs) {
-            db2.push_back(std::pair {doc, idRange});
+        std::vector<DbDoc> dbDocs = pair.second;
+        std::shuffle(dbDocs.begin(), dbDocs.end(), rng);
+        for (DbDoc dbDoc: dbDocs) {
+            db2.push_back(std::pair {dbDoc, idRange});
         }
     }
 
-    EncInd encInd1 = this->underlying.buildIndex(key1, db1);
-    EncInd encInd2 = this->underlying.buildIndex(key2, db2);
-    this->encInds = std::pair {encInd1, encInd2};
+    this->underlying1.setup(secParam, db1);
+    this->underlying2.setup(secParam, db2);
 }
 
-template <typename Underlying>
-std::vector<Doc> LogSrci<Underlying>::search(const KwRange& query) {
+template <class DbDoc, class DbKw, template<class A, class B> class Underly>
+std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
     // query 1
 
-    TdagNode<Kw>* src1 = this->tdag1->findSrc(query);
+    TdagNode<DbKw>* src1 = this->tdag1->findSrc(query);
     if (src1 == nullptr) { 
-        return std::vector<Doc> {};
+        return std::vector<DbDoc> {};
     }
-    QueryToken queryToken1 = this->underlying.genQueryToken(this->key.first, src1->getRange());
-    std::vector<SrciDb1Doc> choices =
-            this->underlying.template genericSearch<SrciDb1Doc>(this->encInds.first, queryToken1);
+    std::vector<SrciDb1Doc<DbKw>> choices = this->underlying1.search(src1->getRange());
 
     // query 2
 
-    Id minId = Id::getMin(), maxId = Id::getMin();
+    Id minId = Id(-1), maxId = Id(-1);
     // filter out unnecessary choices and merge remaining ones into a single id range
-    for (SrciDb1Doc choice : choices) {
-        KwRange choiceKwRange = choice.get().first;
+    for (SrciDb1Doc<DbKw> choice : choices) {
+        Range<DbKw> choiceKwRange = choice.get().first;
         if (query.contains(choiceKwRange)) {
             IdRange choiceIdRange = choice.get().second;
-            if (choiceIdRange.first < minId || minId == Id::getMin()) {
+            if (choiceIdRange.first < minId || minId == Id(-1)) {
                 minId = choiceIdRange.first;
             }
             if (choiceIdRange.second > maxId) {
@@ -140,19 +135,9 @@ std::vector<Doc> LogSrci<Underlying>::search(const KwRange& query) {
     IdRange idRangeToQuery {minId, maxId};
     TdagNode<Id>* src2 = this->tdag2->findSrc(idRangeToQuery);
     if (src2 == nullptr) { 
-        return std::vector<Doc> {};
+        return std::vector<DbDoc> {};
     }
-    QueryToken queryToken2 = this->underlying.genQueryToken(this->key.second, src2->getRange());
-    return this->underlying.search(this->encInds.second, queryToken2);
+    return this->underlying2.search(src2->getRange());
 }
 
-template <typename Underlying>
-LogSrci<Underlying>& LogSrci<Underlying>::operator =(const LogSrci<Underlying>& other) {
-    if (this == &other) {
-        return *this;
-    }
-    this->underlying = other.underlying;
-    return *this;
-}
-
-template class LogSrci<PiBas>;
+template class LogSrci<Doc, Kw, PiBas>;

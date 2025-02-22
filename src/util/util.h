@@ -41,7 +41,7 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 ////////////////////////////////////////////////////////////////////////////////
 
 // for generality, all keywords are ranges; single keywords are just size 1 ranges
-template <typename T>
+template <class T>
 class Range : public std::pair<T, T> {
     public:
         Range();
@@ -54,13 +54,13 @@ class Range : public std::pair<T, T> {
         std::string toStr() const;
         static Range<T> fromStr(const std::string& str);
         ustring toUstr() const;
-        template<typename T2>
+        template<class T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 };
 
 // hash function
 template<>
-template<typename T>
+template<class T>
 struct std::hash<Range<T>> {
     std::size_t operator ()(const Range<T>& range) const noexcept {
         return std::hash<std::string>{}(range.toStr());
@@ -75,7 +75,8 @@ using KwRange = Range<Kw>;
 ////////////////////////////////////////////////////////////////////////////////
 
 // interface for documents in dataset
-template <typename T>
+// todo rename to IDbDoc and potentially force derivation?
+template <class T>
 class IEncryptable {
     protected:
         T val;
@@ -88,12 +89,12 @@ class IEncryptable {
         virtual ustring encode() const;
         virtual std::string toStr() const = 0;
 
-        template <typename T2>
+        template <class T2>
         friend std::ostream& operator <<(std::ostream& os, const IEncryptable<T2>& iEncryptable);
 };
 
 // todo is this used anywhere?
-template <typename T>
+template <class T>
 ustring toUstr(const IEncryptable<T>& iEncryptable);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,7 +109,6 @@ class Id : public IEncryptable<int> {
         static Id decode(const ustring& ustr);
         std::string toStr() const override;
 
-        static Id getMin();
         static Id fromStr(const std::string& str);
         Id& operator ++();
         Id operator ++(int); // unused `int` param marks `++` as postfix
@@ -173,7 +173,6 @@ class Doc : public IEncryptable<std::pair<Id, Op>> {
         static Doc decode(const ustring& ustr);
         std::string toStr() const override;
 
-        static Doc getMin();
         friend bool operator <(const Doc& doc1, const Doc& doc2);
         friend bool operator ==(const Doc& doc1, const Doc& doc2);
 };
@@ -182,12 +181,13 @@ class Doc : public IEncryptable<std::pair<Id, Op>> {
 // `SrciDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
-// todo temp?
-class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
+// todo move?
+template <class DbKw = Kw>
+class SrciDb1Doc : public IEncryptable<std::pair<Range<DbKw>, IdRange>> {
     public:
-        SrciDb1Doc(const KwRange& kwRange, const IdRange& idRange);
+        SrciDb1Doc(const Range<DbKw>& dbKwRange, const IdRange& idRange);
 
-        static SrciDb1Doc decode(const ustring& ustr);
+        static SrciDb1Doc<DbKw> decode(const ustring& ustr);
         std::string toStr() const override;
 };
 
@@ -198,8 +198,8 @@ class SrciDb1Doc : public IEncryptable<std::pair<KwRange, IdRange>> {
 // allow polymophic document types for db (screw you Log-SRC-i for making everything a nonillion times more complicated)
 // no easy way to enforce templated base classes, like Java generics' `extends`
 // so just make sure `DbDoc` subclasses `IEncryptable` and `DbKw` subclasses `Range`
-template <typename DbDoc = Doc, typename DbKw = KwRange> 
-using Db         = std::vector<std::pair<DbDoc, DbKw>>;
+template <class DbDoc = Doc, class DbKw = Kw> 
+using Db         = std::vector<std::pair<DbDoc, Range<DbKw>>>;
 //                `std::unordered_map<label, std::pair<data, iv>>`
 using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
 using QueryToken = std::pair<ustring, ustring>;

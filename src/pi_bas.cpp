@@ -5,62 +5,63 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
-void PiBas::setup(int secParam, const Db<>& db) {
-    this->key = this->genKey(secParam);
-    this->encInd = this->buildIndex(this->key, db);
+template <class DbDoc, class DbKw>
+void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+    this->genKey(secParam);
+    this->buildIndex(db);
 }
 
-std::vector<Doc> PiBas::search(const KwRange& query) {
-    std::vector<Doc> allResults;
+template <class DbDoc, class DbKw>
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    std::vector<DbDoc> allResults;
     // naive range search: just individually query every point in range
-    for (Kw kw = query.first; kw <= query.second; kw++) {
-        QueryToken queryToken = this->genQueryToken(this->key, KwRange {kw, kw});
-        std::vector<Doc> results = this->search(this->encInd, queryToken);
+    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+        QueryToken queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
+        std::vector<DbDoc> results = this->genericSearch(queryToken); // todo have to do something about deletinos and detcing if its a Doc
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
     return allResults;
 }
 
-ustring PiBas::genKey(int secParam) const {
+template <class DbDoc, class DbKw>
+void PiBas<DbDoc, DbKw>::genKey(int secParam) {
     unsigned char* key = new unsigned char[secParam];
     int res = RAND_priv_bytes(key, secParam);
     if (res != 1) {
         handleOpenSslErrors();
     }
-    ustring ustrKey = toUstr(key, secParam);
+    this->key = toUstr(key, secParam);
     delete[] key;
-    return ustrKey;
 }
 
-template <typename DbDoc, typename DbKw>
-EncInd PiBas::buildIndex(const ustring& key, const Db<DbDoc, DbKw>& db) const {
+template <class DbDoc, class DbKw>
+void PiBas<DbDoc, DbKw>::buildIndex(const Db<DbDoc, DbKw>& db) {
     // generate (plaintext) index of keywords to dbDocuments/ids mapping and list of unique keywords
-    std::unordered_map<DbKw, std::vector<DbDoc>> index;
-    std::unordered_set<DbKw> uniqueKws;
+    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
+    std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
     for (std::pair entry : db) {
         DbDoc dbDoc = entry.first;
-        DbKw dbKw = entry.second;
+        Range<DbKw> dbKwRange = entry.second;
 
-        if (index.count(dbKw) == 0) {
-            index[dbKw] = std::vector {dbDoc};
+        if (index.count(dbKwRange) == 0) {
+            index[dbKwRange] = std::vector {dbDoc};
         } else {
-            index[dbKw].push_back(dbDoc);
+            index[dbKwRange].push_back(dbDoc);
         }
-        uniqueKws.insert(dbKw); // `unordered_set` will not insert duplicate elements
+        uniqueDbKwRanges.insert(dbKwRange); // `unordered_set` will not insert duplicate elements
     }
 
-    EncInd encInd;
     // for each w in W
-    for (DbKw dbKw : uniqueKws) {
+    for (Range<DbKw> dbKwRange : uniqueDbKwRanges) {
         // K_1 || K_2 <- F(K, w)
-        ustring K = prf(key, dbKw.toUstr());
+        ustring K = prf(this->key, dbKwRange.toUstr());
         int subkeyLen = K.length() / 2;
         ustring subkey1 = K.substr(0, subkeyLen);
         ustring subkey2 = K.substr(subkeyLen, subkeyLen);
         
         unsigned int counter = 0;
         // for each id in DB(w)
-        auto itDocsWithSameKw = index.find(dbKw);
+        auto itDocsWithSameKw = index.find(dbKwRange);
         for (DbDoc dbDoc : itDocsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id)
             ustring label = prf(subkey1, toUstr(counter));
@@ -69,26 +70,24 @@ EncInd PiBas::buildIndex(const ustring& key, const Db<DbDoc, DbKw>& db) const {
             counter++;
             // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
             // also store IV in plain along with encrypted value
-            encInd[label] = std::pair {data, iv};
+            this->encInd[label] = std::pair {data, iv};
         }
     }
-
-    return encInd;
 }
 
-template <typename RangeType>
-QueryToken PiBas::genQueryToken(const ustring& key, const Range<RangeType>& range) const {
+template <class DbDoc, class DbKw>
+QueryToken PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // the paper uses different notation for the key generation here vs. in `setup()`;
     // but I'm fairly sure they meant the same thing, otherwise it doesn't work
-    ustring K = prf(key, range.toUstr());
+    ustring K = prf(this->key, query.toUstr());
     int subkeyLen = K.length() / 2;
     ustring subkey1 = K.substr(0, subkeyLen);
     ustring subkey2 = K.substr(subkeyLen, subkeyLen);
     return QueryToken {subkey1, subkey2};
 }
 
-template <typename DbDoc>
-std::vector<DbDoc> PiBas::genericSearch(const EncInd& encInd, const QueryToken& queryToken) const {
+template <class DbDoc, class DbKw>
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::genericSearch(const QueryToken& queryToken) const {
     ustring subkey1 = queryToken.first;
     ustring subkey2 = queryToken.second;
     std::vector<DbDoc> results;
@@ -98,8 +97,8 @@ std::vector<DbDoc> PiBas::genericSearch(const EncInd& encInd, const QueryToken& 
     while (true) {
         // d <- Get(D, F(K_1, c))
         ustring label = prf(subkey1, toUstr(counter));
-        auto it = encInd.find(label);
-        if (it == encInd.end()) {
+        auto it = this->encInd.find(label);
+        if (it == this->encInd.end()) {
             break;
         }
         std::pair<ustring, ustring> encIndV = it->second;
@@ -116,36 +115,31 @@ std::vector<DbDoc> PiBas::genericSearch(const EncInd& encInd, const QueryToken& 
 }
 
 // todo if compiler doesnt optimize out returns; is constantly erasing from the vector really faster?
-std::vector<Doc> PiBas::search(const EncInd& encInd, const QueryToken& queryToken) const {
-    std::vector<Doc> results = this->genericSearch<Doc>(encInd, queryToken);
-    std::vector<Doc> finalResults;
-    std::unordered_set<Id> deleted; // todo test is set is faster
+//template <class DbDoc, class DbKw>
+//std::vector<Doc> PiBas<DbDoc, DbKw>::searchWithDels(const QueryToken& queryToken) const {
+//    std::vector<Doc> results = this->genericSearch(queryToken);
+//    std::vector<Doc> finalResults;
+//    std::unordered_set<Id> deleted; // todo test is set is faster
+//
+//    // find deleted docs
+//    for (Doc result : results) {
+//        Id id = result.get().first;
+//        Op op = result.get().second;
+//        if (op == DELETE) {
+//            deleted.insert(id);
+//        }
+//    }
+//    // copy over vector without deleted docs
+//    for (Doc result : results) {
+//        Id id = result.get().first;
+//        Op op = result.get().second;
+//        if (op == INSERT && deleted.count(id) == 0) {
+//            finalResults.push_back(result);
+//        }
+//    }
+//    return finalResults;
+//}
 
-    // find deleted docs
-    for (Doc result : results) {
-        Id id = result.get().first;
-        Op op = result.get().second;
-        if (op == DELETE) {
-            deleted.insert(id);
-        }
-    }
-    // copy over vector without deleted docs
-    for (Doc result : results) {
-        Id id = result.get().first;
-        Op op = result.get().second;
-        if (op == INSERT && deleted.count(id) == 0) {
-            finalResults.push_back(result);
-        }
-    }
-    return finalResults;
-}
-
-template EncInd PiBas::buildIndex(const ustring& key, const Db<>& db) const;
-template EncInd PiBas::buildIndex(const ustring& key, const Db<SrciDb1Doc, KwRange>& db) const;
-template EncInd PiBas::buildIndex(const ustring& key, const Db<Doc, IdRange>& db) const;
-
-template QueryToken PiBas::genQueryToken(const ustring& key, const IdRange& range) const;
-template QueryToken PiBas::genQueryToken(const ustring& key, const KwRange& range) const;
-
-template std::vector<Doc> PiBas::genericSearch(const EncInd& encInd, const QueryToken& queryToken) const;
-template std::vector<SrciDb1Doc> PiBas::genericSearch(const EncInd& encInd, const QueryToken& queryToken) const;
+template class PiBas<Doc, Kw>;
+template class PiBas<SrciDb1Doc<Kw>, Kw>;
+template class PiBas<Doc, Id>;

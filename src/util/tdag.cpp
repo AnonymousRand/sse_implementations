@@ -3,14 +3,15 @@
 
 #include "tdag.h"
 
-template <typename T>
+// todo don't pass range as initializer list if not changing to reference?
+template <class T>
 TdagNode<T>::TdagNode(const Range<T>& range) : range(range) {
     this->left = nullptr;
     this->right = nullptr;
     this->extraParent = nullptr;
 }
 
-template <typename T>
+template <class T>
 TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) {
     this->range = Range<T> {left->range.first, right->range.second};
     this->left = left;
@@ -18,7 +19,7 @@ TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) {
     this->extraParent = nullptr;
 }
 
-template <typename T>
+template <class T>
 TdagNode<T>::~TdagNode() {
     if (this->left != nullptr) {
         delete this->left;
@@ -33,13 +34,13 @@ TdagNode<T>::~TdagNode() {
 
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
 // track `extraParent` nodes in an `unordered_set` to prevent duplicates
-template <typename T>
+template <class T>
 std::list<TdagNode<T>*> TdagNode<T>::traverse() {
     std::unordered_set<TdagNode<T>*> extraParents;
     return this->traverse(extraParents);
 }
 
-template <typename T>
+template <class T>
 std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& extraParents) {
     std::list<TdagNode<T>*> nodes;
     nodes.push_front(this);
@@ -62,8 +63,17 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& 
 }
 
 // basically traverses tree with DFS and early exits to find best SRC
-template <typename T>
-TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
+template <class T>
+TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
+    // make sure that if the target range exceeds the tree's domain, we still return everything we can
+    // instead of returning `nullptr` from the range size early exit later
+    if (targetRange.first < this->range.first) {
+        targetRange.first = this->range.first;
+    }
+    if (targetRange.second > this->range.second) {
+        targetRange.second = this->range.second;
+    }
+
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
     if (this->range.isDisjointWith(targetRange)) {
@@ -124,7 +134,7 @@ TdagNode<T>* TdagNode<T>::findSrc(const Range<T>& targetRange) {
     return candidates.begin()->second; // take advantage of `std::map`s being sorted by key
 }
 
-template <typename T>
+template <class T>
 std::list<Range<T>> TdagNode<T>::traverseLeaves() {
     std::list<Range<T>> leafVals;
     std::list<TdagNode<T>*> nodes = this->traverse();
@@ -136,7 +146,7 @@ std::list<Range<T>> TdagNode<T>::traverseLeaves() {
     return leafVals;
 }
 
-template <typename T>
+template <class T>
 std::list<TdagNode<T>*> TdagNode<T>::getLeafAncestors(const Range<T>& leafRange) {
     std::list<TdagNode<T>*> ancestors {this};
 
@@ -153,12 +163,12 @@ std::list<TdagNode<T>*> TdagNode<T>::getLeafAncestors(const Range<T>& leafRange)
     return ancestors;
 }
 
-template <typename T>
+template <class T>
 Range<T> TdagNode<T>::getRange() const {
     return this->range;
 }
 
-template <typename T>
+template <class T>
 TdagNode<T>* TdagNode<T>::buildTdag(T& maxLeafVal) {
     std::set<Range<T>> leafVals;
     for (T i = T(0); i <= maxLeafVal; i++) {
@@ -167,7 +177,7 @@ TdagNode<T>* TdagNode<T>::buildTdag(T& maxLeafVal) {
     return TdagNode<T>::buildTdag(leafVals);
 }
 
-template <typename T>
+template <class T>
 TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
     if (leafVals.size() == 0) {
         std::cerr << "Error: `leafVals` passed to `TdagNode.buildTdag()` is empty :/" << std::endl;
@@ -239,7 +249,7 @@ TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
     return tdag;
 }
 
-template <typename T>
+template <class T>
 std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
     std::list<TdagNode<T>*> nodes = node->traverse();
     for (TdagNode<T>* node : nodes) {

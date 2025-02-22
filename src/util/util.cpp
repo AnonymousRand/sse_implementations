@@ -38,35 +38,35 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
 ////////////////////////////////////////////////////////////////////////////////
 
 // can't call default constructor or set `= default` without explicit vals (ill-formed default definition apparently)
-template <typename T>
+template <class T>
 Range<T>::Range() : std::pair<T, T> {T(), T()} {}
 
-template <typename T>
+template <class T>
 Range<T>::Range(const T& start, const T& end) : std::pair<T, T> {start, end} {}
 
-template <typename T>
+template <class T>
 T Range<T>::size() const {
     return this->second - this->first + 1;
 }
 
-template <typename T>
+template <class T>
 bool Range<T>::contains(const Range<T>& range) const {
     return this->first <= range.first && this->second >= range.second;
 }
 
-template <typename T>
+template <class T>
 bool Range<T>::isDisjointWith(const Range<T>& range) const {
     return this->second < range.first || this->first > range.second;
 }
 
-template <typename T>
+template <class T>
 std::string Range<T>::toStr() const {
     std::stringstream ss;
     ss << this->first << "-" << this->second;
     return ss.str();
 }
 
-template <typename T>
+template <class T>
 Range<T> Range<T>::fromStr(const std::string& str) {
     std::regex re("(.*?)-(.*)");
     std::smatch matches;
@@ -81,12 +81,12 @@ Range<T> Range<T>::fromStr(const std::string& str) {
     return range;
 }
 
-template <typename T>
+template <class T>
 ustring Range<T>::toUstr() const {
     return ::toUstr(this->toStr());
 }
 
-template <typename T>
+template <class T>
 std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
     return os << range.toStr();
 }
@@ -101,27 +101,27 @@ template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
 // `IEncryptable`
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
+template <class T>
 IEncryptable<T>::IEncryptable(const T& val) {
     this->val = val;
 }
 
-template <typename T>
+template <class T>
 T IEncryptable<T>::get() const {
     return this->val;
 }
 
-template <typename T>
+template <class T>
 ustring IEncryptable<T>::encode() const {
     return ::toUstr(this->toStr());
 }
 
-template <typename T>
+template <class T>
 std::ostream& operator <<(std::ostream& os, const IEncryptable<T>& iEncryptable) {
     return os << iEncryptable.toStr();
 }
 
-template <typename T>
+template <class T>
 ustring toUstr(const IEncryptable<T>& iEncryptable) {
     return iEncryptable.encode();
 }
@@ -151,10 +151,6 @@ std::string Id::toStr() const {
 Id Id::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     return Id::fromStr(str);
-}
-
-Id Id::getMin() {
-    return Id(-1);
 }
 
 Id Id::fromStr(const std::string& str) {
@@ -287,10 +283,6 @@ std::string Doc::toStr() const {
     return ss.str();
 }
 
-Doc Doc::getMin() {
-    return Doc(-1);
-}
-
 bool operator <(const Doc& doc1, const Doc& doc2) {
     return doc1.val.first < doc2.val.first;
 }
@@ -303,10 +295,12 @@ bool operator ==(const Doc& doc1, const Doc& doc2) {
 // `SrciDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
-SrciDb1Doc::SrciDb1Doc(const KwRange& kwRange, const IdRange& idRange)
-        : IEncryptable<std::pair<KwRange, IdRange>>(std::pair {kwRange, idRange}) {}
+template <class DbKw>
+SrciDb1Doc<DbKw>::SrciDb1Doc(const Range<DbKw>& dbKwRange, const IdRange& idRange)
+        : IEncryptable<std::pair<Range<DbKw>, IdRange>>(std::pair {dbKwRange, idRange}) {}
 
-SrciDb1Doc SrciDb1Doc::decode(const ustring& ustr) {
+template <class DbKw>
+SrciDb1Doc<DbKw> SrciDb1Doc<DbKw>::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
@@ -316,11 +310,14 @@ SrciDb1Doc SrciDb1Doc::decode(const ustring& ustr) {
     }
     KwRange kwRange = KwRange::fromStr(matches[1].str());
     IdRange idRange = IdRange::fromStr(matches[2].str());
-    return SrciDb1Doc {kwRange, idRange};
+    return SrciDb1Doc<DbKw> {kwRange, idRange};
 }
 
-std::string SrciDb1Doc::toStr() const {
+template <class DbKw>
+std::string SrciDb1Doc<DbKw>::toStr() const {
     std::stringstream ss;
     ss << "(" << this->val.first << "," << this->val.second << ")";
     return ss.str();
 }
+
+template class SrciDb1Doc<Kw>;

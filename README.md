@@ -15,7 +15,7 @@ Implementations of the following searchable symmetric encryption (SSE) schemes:
 
 ```
 cd src/
-g++ main.cpp pi_bas.cpp log_src.cpp log_srci.cpp util/*.cpp -lcrypto -std=c++17
+g++ main.cpp sse.cpp pi_bas.cpp log_src.cpp log_srci.cpp util/*.cpp -lcrypto -std=c++17
 ```
 
 Using GCC instead of G++ to compile will probably produce a wall of errors (different linking mechanics?).

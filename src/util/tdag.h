@@ -6,7 +6,7 @@
 
 #include "util.h"
 
-template <typename T>
+template <class T>
 class TdagNode {
     private:
         Range<T> range;
@@ -38,7 +38,7 @@ class TdagNode {
          * Find the single range cover of the leaves containing `range`.
          * If `range` not found in `this`, return `nullptr`.
          */
-        TdagNode<T>* findSrc(const Range<T>& targetRange);
+        TdagNode<T>* findSrc(Range<T> targetRange);
 
         /**
          * Get all leaf values from the subtree of `this`.
@@ -69,6 +69,6 @@ class TdagNode {
          */
         static TdagNode<T>* buildTdag(std::set<Range<T>>& leafVals);
 
-        template <typename T2>
+        template <class T2>
         friend std::ostream& operator <<(std::ostream& os, TdagNode<T2>* node);
 };
