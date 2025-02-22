@@ -13,13 +13,10 @@ template <class DbDoc = Doc, class DbKw = Kw>
 Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
     Db<DbDoc, DbKw> db;
     if (isDataSkewed) {
-        // at most two unique keywords, each making up half the dataset
-        std::uniform_int_distribution dist(0, dbSize - 1);
-        int kw1 = dist(rng);
-        int kw2;
-        do {
-            kw2 = dist(rng);
-        } while (kw2 < kw1); // make sure we are sorted for Log-SRC-i: larger ids must have larger kws (`kw2` >= `kw1`)
+        // two unique keywords, each making up half the dataset, with one being 0 and the other being the max
+        // this means half of them will be returned as false positives on the penultimate query
+        int kw1 = 0;
+        int kw2 = dbSize - 1;
 
         for (int i = 0; i < dbSize / 2; i++) {
             db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw1, kw1}});
@@ -37,7 +34,8 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
 }
 
 template <class DbDoc, class DbKw>
-void exp1(ISse<DbDoc, DbKw>& sse, Db<DbDoc, DbKw> db, int dbSize) {
+void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
+    Db<DbDoc, DbKw> db = createDb(dbSize, false);
     // setup
     std::cout << "Setting up..." << std::endl;
     auto setupStart = std::chrono::high_resolution_clock::now();
@@ -66,22 +64,44 @@ void exp2(ISse<DbDoc, DbKw>& sse, Range<DbKw> query, int maxDbSize) {
     for (int i = 1; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
         Db<DbDoc, DbKw> db = createDb(dbSize, false);
-        std::cout << "DB size: " << dbSize << std::endl;
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();
         sse.setup(KEY_SIZE, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time: " << setupElapsed.count() * 1000 << " ms" << std::endl;
+        std::cout << "Setup time (size " << dbSize << "): " << setupElapsed.count() * 1000 << " ms" << std::endl;
 
         // query
         auto searchStartTime = std::chrono::high_resolution_clock::now();
         std::vector<DbDoc> results = sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time: " << searchElapsed.count() * 1000 << " ms" << std::endl;
+        std::cout << "Search time (size " << dbSize << "): " << searchElapsed.count() * 1000 << " ms" << std::endl;
     }
+    std::cout << std::endl;
+}
+
+template <class DbDoc, class DbKw>
+void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
+    Db<DbDoc, DbKw> db = createDb(dbSize, true);
+    // setup
+    std::cout << "Setting up..." << std::endl;
+    auto setupStart = std::chrono::high_resolution_clock::now();
+    sse.setup(KEY_SIZE, db);
+    auto setupEnd = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
+    std::cout << "Setup time: " << setupElapsed.count() << " s" << std::endl;
+    std::cout << std::endl;
+
+    // search
+    std::cout << "Searching..." << std::endl;
+    KwRange query {1, dbSize - 1};
+    auto searchStartTime = std::chrono::high_resolution_clock::now();
+    std::vector<DbDoc> results = sse.search(query);
+    auto searchEndTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
+    std::cout << "Search time: " << searchElapsed.count() * 1000 << " ms" << std::endl;
     std::cout << std::endl;
 }
 
@@ -99,52 +119,26 @@ int main() {
     int maxDbSize = pow(2, maxDbSizeExp);
 
     // experiment 1
-    Db<> db = createDb(maxDbSize, false);
-
     std::cout << "---------- Experiment 1 for PiBas ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp1(piBas, db, maxDbSize);
+    exp1(piBas, maxDbSize);
 
     std::cout << "---------- Experiment 1 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp1(logSrc, db, maxDbSize);
+    exp1(logSrc, maxDbSize);
 
     std::cout << "---------- Experiment 1 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp1(logSrci, db, maxDbSize);
-
-    // experiment 1.5
-    db = createDb(maxDbSize, true);
-
-    std::cout << "---------- Experiment 1.5 for PiBas ----------" << std::endl;
-    std::cout << "DB size  : "            << maxDbSize << std::endl;
-    std::cout << "Query    : varied size" << std::endl;
-    std::cout << "Data skew: yes"         << std::endl;
-    std::cout << std::endl;
-    exp1(piBas, db, maxDbSize);
-
-    std::cout << "---------- Experiment 1.5 for Log-SRC ----------" << std::endl;
-    std::cout << "DB size  : "            << maxDbSize << std::endl;
-    std::cout << "Query    : varied size" << std::endl;
-    std::cout << "Data skew: yes"         << std::endl;
-    std::cout << std::endl;
-    exp1(logSrc, db, maxDbSize);
-
-    std::cout << "---------- Experiment 1.5 for Log-SRC-i ----------" << std::endl;
-    std::cout << "DB size  : "            << maxDbSize << std::endl;
-    std::cout << "Query    : varied size" << std::endl;
-    std::cout << "Data skew: yes"         << std::endl;
-    std::cout << std::endl;
-    exp1(logSrci, db, maxDbSize);
+    exp1(logSrci, maxDbSize);
 
     // experiment 2
     std::uniform_int_distribution dist(0, maxDbSize);
@@ -175,4 +169,26 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp2(logSrci, query, maxDbSize);
+
+    // experiment 3
+    std::cout << "---------- Experiment 3 for PiBas ----------" << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
+    std::cout << "Query    : varied size" << std::endl;
+    std::cout << "Data skew: yes"         << std::endl;
+    std::cout << std::endl;
+    exp3(piBas, maxDbSize);
+
+    std::cout << "---------- Experiment 3 for Log-SRC ----------" << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
+    std::cout << "Query    : varied size" << std::endl;
+    std::cout << "Data skew: yes"         << std::endl;
+    std::cout << std::endl;
+    exp3(logSrc, maxDbSize);
+
+    std::cout << "---------- Experiment 3 for Log-SRC-i ----------" << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
+    std::cout << "Query    : varied size" << std::endl;
+    std::cout << "Data skew: yes"         << std::endl;
+    std::cout << std::endl;
+    exp3(logSrci, maxDbSize);
 }
