@@ -4,6 +4,9 @@
 
 #include "openssl.h"
 
+// thanks to https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#C.2B.2B_Programs
+// and https://stackoverflow.com/a/34624592 for good reference code
+
 void handleOpenSslErrors() {
     ERR_print_errors_fp(stderr);
     exit(EXIT_FAILURE);
