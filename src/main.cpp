@@ -49,14 +49,11 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
     for (int i = 0; i <= (int)log2(dbSize); i++) {
         KwRange query {0, (int)pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
-        std::vector<DbDoc> results = sse.search(query);
+        sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
         std::cout << "Search time (size " << query.size() << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
-        for (auto res : results) {
-            std::cout << res << std::endl;
-        }
     }
     std::cout << std::endl;
 }
