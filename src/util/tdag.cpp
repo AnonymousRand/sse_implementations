@@ -64,8 +64,8 @@ std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<
 
 template <class T>
 TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
-    // make sure that if the target range exceeds the tree's domain, we still return everything we can
-    // instead of immediately returning `nullptr` from the range size early exit in `findSrcHelper`
+    // make sure that if the target range exceeds the TDAG's domain, we still return everything we can
+    // instead of immediately returning `nullptr` from the range size early exit in `findSrcHelper()`
     if (targetRange.first < this->range.first) {
         targetRange.first = this->range.first;
     }
