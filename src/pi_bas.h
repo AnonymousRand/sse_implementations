@@ -18,3 +18,5 @@ class PiBas : public ISse<DbDoc, DbKw> {
         std::vector<DbDoc> searchInd(const QueryToken& queryToken) const;
         std::vector<DbDoc> searchIndBase(const QueryToken& queryToken) const;
 };
+
+// todo have to make result-hiding pibas variant for dynamic
