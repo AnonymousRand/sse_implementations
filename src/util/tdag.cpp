@@ -37,19 +37,19 @@ TdagNode<T>::~TdagNode() {
 template <class T>
 std::list<TdagNode<T>*> TdagNode<T>::traverse() {
     std::unordered_set<TdagNode<T>*> extraParents;
-    return this->traverse(extraParents);
+    return this->traverseHelper(extraParents);
 }
 
 template <class T>
-std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& extraParents) {
+std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents) {
     std::list<TdagNode<T>*> nodes;
     nodes.push_front(this);
 
     if (this->left != nullptr) {
-        nodes.splice(nodes.end(), this->left->traverse(extraParents));
+        nodes.splice(nodes.end(), this->left->traverseHelper(extraParents));
     }
     if (this->right != nullptr) {
-        nodes.splice(nodes.end(), this->right->traverse(extraParents));
+        nodes.splice(nodes.end(), this->right->traverseHelper(extraParents));
     }
     if (this->extraParent != nullptr) {
         auto res = extraParents.insert(this->extraParent);
@@ -62,18 +62,22 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse(std::unordered_set<TdagNode<T>*>& 
     return nodes;
 }
 
-// basically traverses tree with DFS and early exits to find best SRC
 template <class T>
 TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
     // make sure that if the target range exceeds the tree's domain, we still return everything we can
-    // instead of returning `nullptr` from the range size early exit later
+    // instead of immediately returning `nullptr` from the range size early exit in `findSrcHelper`
     if (targetRange.first < this->range.first) {
         targetRange.first = this->range.first;
     }
     if (targetRange.second > this->range.second) {
         targetRange.second = this->range.second;
     }
+    return this->findSrcHelper(targetRange);
+}
 
+// basically traverses tree with DFS and early exits to find best SRC
+template <class T>
+TdagNode<T>* TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
     if (this->range.isDisjointWith(targetRange)) {
@@ -114,14 +118,14 @@ TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
         return this;
     }
     if (this->left != nullptr) {
-        TdagNode<T>* leftSrc = this->left->findSrc(targetRange);
+        TdagNode<T>* leftSrc = this->left->findSrcHelper(targetRange);
         diff = tryToAddCandidate(leftSrc);
         if (diff == 0) {
             return leftSrc;
         }
     }
     if (this->right != nullptr) {
-        TdagNode<T>* rightSrc = this->right->findSrc(targetRange);
+        TdagNode<T>* rightSrc = this->right->findSrcHelper(targetRange);
         diff = tryToAddCandidate(rightSrc);
         if (diff == 0) {
             return rightSrc;

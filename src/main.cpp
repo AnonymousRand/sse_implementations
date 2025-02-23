@@ -25,9 +25,12 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
             db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw2, kw2}});
         }
     } else {
-        for (int i = 0; i < dbSize; i++) {
-            db.push_back(std::pair {DbDoc(i), Range<DbKw> {i, i}});
-        }
+        //for (int i = 0; i < dbSize; i++) {
+        //    db.push_back(std::pair {DbDoc(i), Range<DbKw> {i, i}});
+        //}
+        db.push_back(std::pair {DbDoc(0), Range<DbKw> {0, 0}});
+        db.push_back(std::pair {DbDoc(1), Range<DbKw> {1, 1}});
+        db.push_back(std::pair {DbDoc(2), Range<DbKw> {2, 2}});
     }
     return db;
 }
@@ -47,11 +50,14 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
     for (int i = 0; i <= (int)log2(dbSize); i++) {
         KwRange query {0, (int)pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
-        sse.search(query);
+        auto results = sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
         std::cout << "Search time (size " << query.size() << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
+        for (auto res : results) {
+            std::cout << res << std::endl;
+        }
     }
     std::cout << std::endl;
 }

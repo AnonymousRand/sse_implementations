@@ -14,11 +14,8 @@ class TdagNode {
         TdagNode<T>* right;
         TdagNode<T>* extraParent;
 
-        /**
-         * Traverse subtree of `this` and return all traversed nodes.
-         */
-        std::list<TdagNode<T>*> traverse();
-        std::list<TdagNode<T>*> traverse(std::unordered_set<TdagNode<T>*>& extraParents);
+        std::list<TdagNode<T>*> traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents);
+        TdagNode<T>* findSrcHelper(const Range<T>& targetRange);
 
     public:
         /**
@@ -33,6 +30,11 @@ class TdagNode {
         TdagNode(TdagNode<T>* left, TdagNode<T>* right);
         
         ~TdagNode();
+
+        /**
+         * Traverse subtree of `this` and return all traversed nodes.
+         */
+        std::list<TdagNode<T>*> traverse();
 
         /**
          * Find the single range cover of the leaves containing `range`.
