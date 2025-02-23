@@ -129,11 +129,14 @@ template std::ostream& operator <<(std::ostream& os, const IDbDoc<int>& iEncrypt
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Id, Op>>& iEncryptable);
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<KwRange, IdRange>>& iEncryptable);
 
+template class IMainDbDoc<int>;
+template class IMainDbDoc<std::pair<Id, Op>>;
+
 ////////////////////////////////////////////////////////////////////////////////
 // `Id`
 ////////////////////////////////////////////////////////////////////////////////
 
-Id::Id(int val) : IDbDoc<int>(val) {}
+Id::Id(int val) : IMainDbDoc<int>(val) {}
 
 std::string Id::toStr() const {
     return std::to_string(this->val);
@@ -255,9 +258,9 @@ std::ostream& operator <<(std::ostream& os, const Op& op) {
 // `IdOp`
 ////////////////////////////////////////////////////////////////////////////////
 
-IdOp::IdOp(const Id& id) : IDbDoc<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
+IdOp::IdOp(const Id& id) : IMainDbDoc<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
 
-IdOp::IdOp(const Id& id, const Op& op) : IDbDoc<std::pair<Id, Op>>(std::pair {id, op}) {}
+IdOp::IdOp(const Id& id, const Op& op) : IMainDbDoc<std::pair<Id, Op>>(std::pair {id, op}) {}
 
 IdOp IdOp::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);

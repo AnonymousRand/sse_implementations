@@ -21,7 +21,7 @@ using Kw      = int;
 
 template <class T> class Range;
 template <class T> class IDbDoc;
-class IMainDbDoc;
+template <class T> class IMainDbDoc;
 class Id;
 class Op;
 class IdOp;
@@ -32,7 +32,9 @@ template <class DbKw = Kw> class SrciDb1Doc;
 template <class T> concept IDbDocDeriv = requires(T t) {
     []<typename X>(IDbDoc<X>&){}(t);
 };
-template <class T> concept IMainDbDocDeriv = std::derived_from<T, IMainDbDoc>;
+template <class T> concept IMainDbDocDeriv = requires(T t) {
+    []<typename X>(IMainDbDoc<X>&){}(t);
+};
 
 using IdRange    = Range<Id>;
 // for generality, all keywords are ranges; single keywords are just size 1 ranges
@@ -115,8 +117,11 @@ class IDbDoc {
         friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2>& iEncryptable);
 };
 
-class IMainDbDoc {
+template <class T>
+class IMainDbDoc : public IDbDoc<T> {
     public:
+        using IDbDoc<T>::IDbDoc;
+
         virtual Id getId() const = 0;
 };
 
@@ -124,7 +129,7 @@ class IMainDbDoc {
 // `Id`
 ////////////////////////////////////////////////////////////////////////////////
 
-class Id : public IDbDoc<int>, public IMainDbDoc {
+class Id : public IMainDbDoc<int> {
     public:
         Id() = default;
         Id(int val);
@@ -187,7 +192,7 @@ static const Op DELETE("DELETE");
 // `IdOp`
 ////////////////////////////////////////////////////////////////////////////////
 
-class IdOp : public IDbDoc<std::pair<Id, Op>>, public IMainDbDoc {
+class IdOp : public IMainDbDoc<std::pair<Id, Op>> {
     public:
         IdOp() = default;
         IdOp(const Id& id);
