@@ -57,8 +57,9 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
 }
 
 template <class DbDoc, class DbKw>
-void exp2(ISse<DbDoc, DbKw>& sse, Range<DbKw> query, int maxDbSize) {
-    for (int i = 1; i <= (int)log2(maxDbSize); i++) {
+void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
+    Range<DbKw> query {0, 3};
+    for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
         Db<DbDoc, DbKw> db = createDb(dbSize, false);
 
@@ -67,7 +68,7 @@ void exp2(ISse<DbDoc, DbKw>& sse, Range<DbKw> query, int maxDbSize) {
         sse.setup(KEY_SIZE, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size " << dbSize << "): " << setupElapsed.count() * 1000 << " ms" << std::endl;
+        std::cout << "Setup time (size " << dbSize << "): " << setupElapsed.count() << " s" << std::endl;
 
         // query
         auto searchStartTime = std::chrono::high_resolution_clock::now();
@@ -88,7 +89,6 @@ void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
     auto setupEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
     std::cout << "Setup time: " << setupElapsed.count() << " s" << std::endl;
-    std::cout << std::endl;
 
     // search
     KwRange query {1, dbSize - 1};
@@ -114,6 +114,7 @@ int main() {
     int maxDbSize = pow(2, maxDbSizeExp);
 
     // experiment 1
+
     std::cout << "---------- Experiment 1 for PiBas ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
@@ -139,39 +140,33 @@ int main() {
     logSrci.setup(KEY_SIZE, Db<>());
 
     // experiment 2
-    std::uniform_int_distribution dist(0, maxDbSize);
-    Kw lowerEnd = dist(rng);
-    Kw upperEnd;
-    do {
-       upperEnd = dist(rng);
-    } while (upperEnd < lowerEnd);
-    KwRange query = KwRange {lowerEnd, upperEnd};
 
     std::cout << "---------- Experiment 2 for PiBas ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : "            << query << std::endl;
+    std::cout << "Query    : 0-3"         << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp2(piBas, query, maxDbSize / 2); // halved db sizes due to heavy memory usage in experiment 2
-    piBas.setup(KEY_SIZE, Db<>());     // hopefully clear memory asap
+    exp2(piBas, maxDbSize / 2);    // halved db sizes due to heavy memory usage in experiment 2
+    piBas.setup(KEY_SIZE, Db<>()); // hopefully clear memory asap
     
     std::cout << "---------- Experiment 2 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : "            << query << std::endl;
+    std::cout << "Query    : 0-3"         << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp2(logSrc, query, maxDbSize / 2);
+    exp2(logSrc, maxDbSize / 2);
     logSrc.setup(KEY_SIZE, Db<>());
 
     std::cout << "---------- Experiment 2 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : "            << query << std::endl;
+    std::cout << "Query    : 0-3"         << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp2(logSrci, query, maxDbSize / 2);
+    exp2(logSrci, maxDbSize / 2);
     logSrci.setup(KEY_SIZE, Db<>());
 
     // experiment 3
+
     std::cout << "---------- Experiment 3 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
