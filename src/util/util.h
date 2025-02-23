@@ -208,7 +208,6 @@ class IdOp : public IDbDoc<std::pair<Id, Op>>, public IMainDbDoc {
 // `SrciDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
-// todo move?
 template <class DbKw>
 class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, IdRange>> {
     public:
