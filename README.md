@@ -8,7 +8,7 @@ Implementations of the following searchable symmetric encryption (SSE) schemes:
 
 # Requirements
 
-- C++20 is required, which requires at least G++/GCC version 8. To check the currently installed G++ version, use `g++ --version` at the command line.
+- C++20 is required, which requires at least G++ version 8. To check the currently installed G++ version, use `g++ --version` at the command line.
 - The OpenSSL library needed to compile the program can be installed with `sudo apt install libssl-dev` (if using `apt`).
 
 # Compiling
