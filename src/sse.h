@@ -6,7 +6,7 @@
 // ISse
 ////////////////////////////////////////////////////////////////////////////////
 
-template <class DbDoc = IdOp, class DbKw = Kw>
+template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
 class ISse {
     public:
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
@@ -17,7 +17,7 @@ class ISse {
 // IDsse
 ////////////////////////////////////////////////////////////////////////////////
 
-template <class DbDoc = IdOp, class DbKw = Kw>
+template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
 class IDsse : public ISse<DbDoc, DbKw> {
     public:
         // API functions
