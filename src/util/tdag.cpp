@@ -3,9 +3,9 @@
 
 #include "tdag.h"
 
-// todo don't pass range as initializer list if not changing to reference?
 template <class T>
-TdagNode<T>::TdagNode(const Range<T>& range) : range(range) {
+TdagNode<T>::TdagNode(const Range<T>& range) {
+    this->range = range;
     this->left = nullptr;
     this->right = nullptr;
     this->extraParent = nullptr;

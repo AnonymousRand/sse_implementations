@@ -86,7 +86,6 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchInd(const QueryToken& queryToken) c
     return this->searchIndBase(queryToken);
 }
 
-// todo if compiler doesnt optimize out returns; is constantly erasing from the vector really faster?
 template<>
 std::vector<IdOp> PiBas<IdOp, Kw>::searchInd(const QueryToken& queryToken) const {
     std::vector<IdOp> results = this->searchIndBase(queryToken);
