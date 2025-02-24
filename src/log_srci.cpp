@@ -17,12 +17,18 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     // build index 1
 
     // build TDAG1 over keywords
-    DbKw maxDbKw = -1;
-    for (std::pair entry : db) {
-        Range<DbKw> dbKwRange = entry.second;
-        if (dbKwRange.second > maxDbKw) {
-            maxDbKw = dbKwRange.second;
+    DbKw maxDbKw;
+    if (!db.empty()) {
+        Range<DbKw> firstDbKwRange = db[0].second;
+        maxDbKw = firstDbKwRange.second;
+        for (std::pair entry : db) {
+            Range<DbKw> dbKwRange = entry.second;
+            if (dbKwRange.second > maxDbKw) {
+                maxDbKw = dbKwRange.second;
+            }
         }
+    } else {
+        maxDbKw = DbKw(0);
     }
     this->tdag1 = TdagNode<DbKw>::buildTdag(maxDbKw);
 
@@ -61,6 +67,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     // build index 2
 
     // build TDAG2 over document ids
+    // PRECONDITION: document ids are positive
     Id maxId = Id(-1);
     for (std::pair entry : db) {
         DbDoc dbDoc = entry.first;

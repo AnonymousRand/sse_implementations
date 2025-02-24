@@ -16,6 +16,13 @@ Implementations of the following searchable symmetric encryption (SSE) schemes:
 ```
 cd src/
 g++ main.cpp pi_bas.cpp log_src.cpp log_srci.cpp util/*.cpp -lcrypto -std=c++20
+./a.out
 ```
 
 Using GCC instead of G++ to compile will probably produce a wall of errors (different linking mechanics?).
+
+# Notes
+
+- Keyword search is supported (i.e. one document can have multiple keywords). To insert such documents into the dataset, put in one tuple per keyword, all with the same id.
+- Ids and keywords must be integers.
+- Keywords can be negative, but ids must be positive! Otherwise, bad things will happen.

@@ -14,7 +14,7 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
     Db<DbDoc, DbKw> db;
     if (isDataSkewed) {
         // two unique keywords, each making up half the dataset, with one being 0 and the other being the max
-        // this means half of them will be returned as false positives on the penultimate query
+        // this means half of them will be returned as false positives on a [1, n - 1] query if the root node is the SRC
         int kw1 = 0;
         int kw2 = dbSize - 1;
 
@@ -35,6 +35,7 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
 template <class DbDoc, class DbKw>
 void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
     Db<DbDoc, DbKw> db = createDb(dbSize, false);
+
     // setup
     auto setupStart = std::chrono::high_resolution_clock::now();
     sse.setup(KEY_SIZE, db);
@@ -83,6 +84,7 @@ void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
 template <class DbDoc, class DbKw>
 void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
     Db<DbDoc, DbKw> db = createDb(dbSize, true);
+
     // setup
     auto setupStart = std::chrono::high_resolution_clock::now();
     sse.setup(KEY_SIZE, db);

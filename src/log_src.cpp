@@ -9,12 +9,18 @@ LogSrc<DbDoc, DbKw, Underly>::LogSrc(Underly<DbDoc, DbKw>& underly) : underly(un
 template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
 void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
-    DbKw maxDbKw = DbKw(-1);
-    for (std::pair entry : db) {
-        Range<DbKw> dbKwRange = entry.second;
-        if (dbKwRange.second > maxDbKw) {
-            maxDbKw = dbKwRange.second;
+    DbKw maxDbKw;
+    if (!db.empty()) {
+        Range<DbKw> firstDbKwRange = db[0].second;
+        maxDbKw = firstDbKwRange.second;
+        for (std::pair entry : db) {
+            Range<DbKw> dbKwRange = entry.second;
+            if (dbKwRange.second > maxDbKw) {
+                maxDbKw = dbKwRange.second;
+            }
         }
+    } else {
+        maxDbKw = DbKw(0);
     }
     this->tdag = TdagNode<DbKw>::buildTdag(maxDbKw);
 
