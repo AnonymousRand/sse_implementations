@@ -37,19 +37,18 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // for each w in W
     for (Range<DbKw> dbKwRange : uniqueDbKwRanges) {
         // K_1 || K_2 <- F(K, w)
-        ustring K = prf(this->key, dbKwRange.toUstr());
-        int subkeyLen = K.length() / 2;
-        ustring subkey1 = K.substr(0, subkeyLen);
-        ustring subkey2 = K.substr(subkeyLen, subkeyLen);
+        // the paper uses different notation for the key generation here vs. in `genQueryToken()`
+        // (`Trpdr`), but I'm fairly sure they mean the same thing, otherwise it doesn't work
+        QueryToken subkeys = this->genQueryToken(dbKwRange);
         
         unsigned int counter = 0;
         // for each id in DB(w)
         auto itIdOpsWithSameKw = index.find(dbKwRange);
         for (DbDoc dbDoc : itIdOpsWithSameKw->second) {
-            // l <- F(K_1, c); d <- Enc(K_2, id)
-            ustring label = prf(subkey1, toUstr(counter));
+            // l <- F(K_1, c); d <- Enc(K_2, id); c++
+            ustring label = prf(subkeys.first, toUstr(counter));
             ustring iv = genIv();
-            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkey2, dbDoc.encode(), iv);
+            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkeys.second, dbDoc.encode(), iv);
             counter++;
             // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
             // also store IV in plain along with encrypted value
@@ -72,8 +71,6 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
 
 template <IDbDocDeriv DbDoc, class DbKw>
 QueryToken PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
-    // the paper uses different notation for the key generation here vs. in `setup()`;
-    // but I'm fairly sure they meant the same thing, otherwise it doesn't work
     ustring K = prf(this->key, query.toUstr());
     int subkeyLen = K.length() / 2;
     ustring subkey1 = K.substr(0, subkeyLen);
