@@ -21,7 +21,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     if (!db.empty()) {
         Range<DbKw> firstDbKwRange = db[0].second;
         maxDbKw = firstDbKwRange.second;
-        for (std::pair entry : db) {
+        for (DbEntry<DbDoc, DbKw> entry : db) {
             Range<DbKw> dbKwRange = entry.second;
             if (dbKwRange.second > maxDbKw) {
                 maxDbKw = dbKwRange.second;
@@ -35,7 +35,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     // figure out which documents share the same keywords by building index and list of unique kws like in PiBas
     std::unordered_map<Range<DbKw>, std::set<Id>> ind1;
     std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
-    for (std::pair entry : db) {
+    for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();
         Range<DbKw> dbKwRange = entry.second;
@@ -69,7 +69,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     // build TDAG2 over document ids
     // PRECONDITION: document ids are positive
     Id maxId = Id(-1);
-    for (std::pair entry : db) {
+    for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();
         if (id > maxId) {
@@ -81,7 +81,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     // replicate every document to all id ranges/nodes in TDAG2 that cover it
     // again need temporary `unordered_map` index to shuffle
     std::unordered_map<IdRange, std::vector<DbDoc>> ind2;
-    for (std::pair entry : db) {
+    for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();
         std::list<TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(Range<Id> {id, id});

@@ -44,7 +44,9 @@ using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
 using QueryToken = std::pair<ustring, ustring>;
 // allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
 template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw> 
-using Db         = std::vector<std::pair<DbDoc, Range<DbKw>>>;
+using DbEntry    = std::pair<DbDoc, Range<DbKw>>;
+template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
+using Db         = std::vector<DbEntry<DbDoc, DbKw>>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // `ustring`

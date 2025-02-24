@@ -13,7 +13,7 @@ void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db
     if (!db.empty()) {
         Range<DbKw> firstDbKwRange = db[0].second;
         maxDbKw = firstDbKwRange.second;
-        for (std::pair entry : db) {
+        for (DbEntry<DbDoc, DbKw> entry : db) {
             Range<DbKw> dbKwRange = entry.second;
             if (dbKwRange.second > maxDbKw) {
                 maxDbKw = dbKwRange.second;
@@ -29,7 +29,7 @@ void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db
     // easily identify which docs share the same keyword range for shuffling later
     std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
     int temp = 0;
-    for (std::pair entry : db) {
+    for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
         std::list<TdagNode<DbKw>*> ancestors = this->tdag->getLeafAncestors(dbKwRange);

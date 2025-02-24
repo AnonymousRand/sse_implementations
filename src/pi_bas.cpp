@@ -22,7 +22,7 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // generate (plaintext) index of keywords to dbDocuments/ids mapping and list of unique keywords
     std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
     std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
-    for (std::pair entry : db) {
+    for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
 
