@@ -21,5 +21,5 @@ template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
 class IDsse : public ISse<DbDoc, DbKw> {
     public:
         // API functions
-        //virtual void update();
+        //virtual void update(const DbEntry<DbDoc, DbKw>& newEntry);
 };
