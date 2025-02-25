@@ -35,8 +35,7 @@ ustring genIv(int ivLen) {
     return ustrIv;
 }
 
-// todo make all these take ustring etc as const reference?
-ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, ustring input) {
+ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (!ctx) {
         handleErrors();
@@ -66,20 +65,20 @@ ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, ustring input) {
 }
 
 // PRF implemented with HMAC-SHA512, as done in Private Practical Range Search Revisited
-ustring prf(ustring key, ustring input) {
+ustring prf(const ustring& key, const ustring& input) {
     unsigned int outputLen;
     unsigned char* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen);
     return toUstr(output, outputLen);
 }
 
-ustring encrypt(const EVP_CIPHER* cipher, ustring key, ustring ptext, ustring iv) {
+ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
         handleErrors();
     }
 
     // initialize encryption
-    unsigned char* ucharIv;
+    const unsigned char* ucharIv;
     if (iv == ustring()) {
         ucharIv = nullptr;
     } else {
@@ -107,14 +106,14 @@ ustring encrypt(const EVP_CIPHER* cipher, ustring key, ustring ptext, ustring iv
     return ctext;
 }
 
-ustring decrypt(const EVP_CIPHER* cipher, ustring key, ustring ctext, ustring iv) {
+ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
         handleErrors();
     }
 
     // initialize decryption
-    unsigned char* ucharIv;
+    const unsigned char* ucharIv;
     if (iv == ustring()) {
         ucharIv = nullptr;
     } else {

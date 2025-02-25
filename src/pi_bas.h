@@ -43,4 +43,4 @@ class PiBasResHiding : public ISse<DbDoc, DbKw> {
         QueryToken genQueryToken(const Range<DbKw>& query) const;
         std::vector<DbDoc> searchInd(const QueryToken& queryToken) const;
         std::vector<DbDoc> searchIndBase(const QueryToken& queryToken) const;
-}
+};

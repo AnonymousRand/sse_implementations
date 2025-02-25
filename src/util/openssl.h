@@ -7,8 +7,8 @@
 ustring genKey(int keyLen);
 ustring genIv(int ivLen);
 
-ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, ustring input);
-ustring prf(ustring key, ustring input);
+ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input);
+ustring prf(const ustring& key, const ustring& input);
 
-ustring encrypt(const EVP_CIPHER* cipher, ustring key, ustring ptext, ustring iv = ustring());
-ustring decrypt(const EVP_CIPHER* cipher, ustring key, ustring ctext, ustring iv = ustring());
+ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv = ustring());
+ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv = ustring());
