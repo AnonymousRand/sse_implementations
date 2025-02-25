@@ -19,4 +19,4 @@ class PiBas : public ISse<DbDoc, DbKw> {
         std::vector<DbDoc> searchIndBase(const QueryToken& queryToken) const;
 };
 
-// todo have to make result-hiding pibas variant for dynamic
+// todo have to make result-hiding pibas variant for dynamic; also track if index is emtpy (ie db passed to setup is empty? depending on how clear is done)
