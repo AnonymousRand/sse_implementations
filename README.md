@@ -2,9 +2,9 @@
 
 Implementations of the following searchable symmetric encryption (SSE) schemes:
 
-- `PiBas` ([Cash et al. 2014](https://eprint.iacr.org/2014/853.pdf))
-- `Logarithmic-SRC` ([Demertzis et al. 2016](https://idemertzis.com/Papers/sigmod16.pdf))
-- `Logarithmic-SRC-i` ([Demertzis et al. 2016](https://idemertzis.com/Papers/sigmod16.pdf))
+- PiBas ([Cash et al. 2014](https://eprint.iacr.org/2014/853.pdf))
+- Logarithmic-SRC ([Demertzis et al. 2016](https://idemertzis.com/Papers/sigmod16.pdf))
+- Logarithmic-SRC-i ([Demertzis et al. 2016](https://idemertzis.com/Papers/sigmod16.pdf))
 
 # Requirements
 
