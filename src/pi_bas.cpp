@@ -5,17 +5,15 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
+////////////////////////////////////////////////////////////////////////////////
+// PiBas
+////////////////////////////////////////////////////////////////////////////////
+
 template <IDbDocDeriv DbDoc, class DbKw>
 void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // generate key
 
-    unsigned char* key = new unsigned char[secParam];
-    int res = RAND_priv_bytes(key, secParam);
-    if (res != 1) {
-        handleOpenSslErrors();
-    }
-    this->key = toUstr(key, secParam);
-    delete[] key;
+    this->key = genKey(secParam);
 
     // build index
 
@@ -47,8 +45,8 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         for (DbDoc dbDoc : itIdOpsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id); c++
             ustring label = prf(subkeys.first, toUstr(counter));
-            ustring iv = genIv();
-            ustring data = aesEncrypt(EVP_aes_256_cbc(), subkeys.second, dbDoc.encode(), iv);
+            ustring iv = genIv(IV_LEN);
+            ustring data = encrypt(EVP_aes_256_cbc(), subkeys.second, dbDoc.encode(), iv);
             counter++;
             // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
             // also store IV in plain along with encrypted value
@@ -130,7 +128,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchIndBase(const QueryToken& queryToke
 
         // id <- Dec(K_2, d)
         ustring iv = encIndV.second;
-        ustring ptext = aesDecrypt(EVP_aes_256_cbc(), subkey2, data, iv);
+        ustring ptext = decrypt(EVP_aes_256_cbc(), subkey2, data, iv);
         DbDoc result = DbDoc::decode(ptext);
         results.push_back(result);
     }
@@ -148,3 +146,12 @@ template class PiBas<SrciDb1Doc<Kw>, Kw>;
 // Log-SRC-i index 2
 template class PiBas<Id, Id>;
 template class PiBas<IdOp, Id>;
+
+////////////////////////////////////////////////////////////////////////////////
+// PiBas (Result-Hiding)
+////////////////////////////////////////////////////////////////////////////////
+
+template <IDbDocDeriv DbDoc, class DbKw>
+void PiBasResHiding<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+    
+}

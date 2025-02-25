@@ -38,7 +38,7 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
 
     // setup
     auto setupStart = std::chrono::high_resolution_clock::now();
-    sse.setup(KEY_SIZE, db);
+    sse.setup(KEY_LEN, db);
     auto setupEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
     std::cout << "Setup time: " << setupElapsed.count() * 1000 << " ms" << std::endl;
@@ -66,7 +66,7 @@ void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();
-        sse.setup(KEY_SIZE, db);
+        sse.setup(KEY_LEN, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
         std::cout << "Setup time (size " << dbSize << "): " << setupElapsed.count() * 1000 << " ms" << std::endl;
@@ -87,7 +87,7 @@ void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
 
     // setup
     auto setupStart = std::chrono::high_resolution_clock::now();
-    sse.setup(KEY_SIZE, db);
+    sse.setup(KEY_LEN, db);
     auto setupEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
     std::cout << "Setup time: " << setupElapsed.count() * 1000 << " ms" << std::endl;
@@ -123,7 +123,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
-    piBas.setup(KEY_SIZE, Db<>());
+    piBas.setup(KEY_LEN, Db<>());
 
     std::cout << "---------- Experiment 1 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -131,7 +131,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp1(logSrc, maxDbSize);
-    logSrc.setup(KEY_SIZE, Db<>());
+    logSrc.setup(KEY_LEN, Db<>());
 
     std::cout << "---------- Experiment 1 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -139,7 +139,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp1(logSrci, maxDbSize);
-    logSrci.setup(KEY_SIZE, Db<>());
+    logSrci.setup(KEY_LEN, Db<>());
 
     // experiment 2
 
@@ -149,7 +149,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp2(piBas, maxDbSize / 2);    // halved db sizes due to heavy memory usage in experiment 2
-    piBas.setup(KEY_SIZE, Db<>()); // hopefully clear memory asap
+    piBas.setup(KEY_LEN, Db<>()); // hopefully clear memory asap
     
     std::cout << "---------- Experiment 2 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
@@ -157,7 +157,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp2(logSrc, maxDbSize / 2);
-    logSrc.setup(KEY_SIZE, Db<>());
+    logSrc.setup(KEY_LEN, Db<>());
 
     std::cout << "---------- Experiment 2 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
@@ -165,7 +165,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp2(logSrci, maxDbSize / 2);
-    logSrci.setup(KEY_SIZE, Db<>());
+    logSrci.setup(KEY_LEN, Db<>());
 
     // experiment 3
 
@@ -175,7 +175,7 @@ int main() {
     std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     exp3(logSrc, maxDbSize);
-    logSrc.setup(KEY_SIZE, Db<>());
+    logSrc.setup(KEY_LEN, Db<>());
 
     std::cout << "---------- Experiment 3 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -183,5 +183,5 @@ int main() {
     std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     exp3(logSrci, maxDbSize);
-    logSrci.setup(KEY_SIZE, Db<>());
+    logSrci.setup(KEY_LEN, Db<>());
 }

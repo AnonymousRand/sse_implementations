@@ -11,9 +11,9 @@
 // Basic Declarations
 ////////////////////////////////////////////////////////////////////////////////
 
-static const int KEY_SIZE   = 256 / 8;
+static const int KEY_LEN    = 256 / 8;
+static const int IV_LEN     = 128 / 8;
 static const int BLOCK_SIZE = 128 / 8;
-static const int IV_SIZE    = 128 / 8;
 
 // use `ustring` as much as possible instead of `unsigned char*` to avoid C-style hell
 using ustring = std::basic_string<unsigned char>;
