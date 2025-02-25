@@ -104,11 +104,11 @@ void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
 
 int main() {
     PiBas piBas;
-    PiBas<> logSrcUnderly;
-    LogSrc<> logSrc(logSrcUnderly);
-    PiBas<SrciDb1Doc<>, Kw> logSrciUnderly1;
-    PiBas<IdOp, Id> logSrciUnderly2;
-    LogSrci<> logSrci(logSrciUnderly1, logSrciUnderly2);
+    PiBas<> logSrcUndrly;
+    LogSrc<> logSrc(logSrcUndrly);
+    PiBas<SrciDb1Doc<>, Kw> logSrciUndrly1;
+    PiBas<IdOp, Id> logSrciUndrly2;
+    LogSrci<> logSrci(logSrciUndrly1, logSrciUndrly2);
 
     int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";

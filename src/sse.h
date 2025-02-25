@@ -9,8 +9,15 @@
 template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
 class ISse {
     public:
+        bool isIndEmpty = false;
+
+        // API functions
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
+};
+
+template <template<class ...> class T, class T1, class T2> concept ISseDeriv = requires(T<T1, T2> t) {
+    []<class X, class Y>(ISse<X, Y>&){}(t);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

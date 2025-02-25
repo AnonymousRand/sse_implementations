@@ -293,6 +293,30 @@ bool operator ==(const IdOp& doc1, const IdOp& doc2) {
     return doc1.val.first == doc2.val.first;
 }
 
+std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps) {
+    std::vector<IdOp> newIdOps;
+    std::unordered_set<Id> deleted;
+
+    // find all deletion tuples
+    for (IdOp idOp : idOps) {
+        Id id = idOp.get().first;
+        Op op = idOp.get().second;
+        if (op == DELETE) {
+            deleted.insert(id);
+        }
+    }
+    // copy over vector without deleted docs
+    for (IdOp idOp : idOps) {
+        Id id = idOp.get().first;
+        Op op = idOp.get().second;
+        if (op == INSERT && deleted.count(id) == 0) {
+            newIdOps.push_back(idOp);
+        }
+    }
+
+    return newIdOps;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // `SrciDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////

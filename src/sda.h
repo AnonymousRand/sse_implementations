@@ -2,10 +2,10 @@
 
 #include "sse.h"
 
-template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw, template<class A, class B> class Underly = PiBasResHiding>
+template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw, template<class A, class B> class Undrly = PiBasResHiding>
 class Sda : public IDsse<DbDoc, DbKw> {
     private:
-        std::vector<Underly<DbDoc, DbKw>&> underlys;
+        std::vector<Undrly<DbDoc, DbKw>&> undrlys;
 
     public:
         // API functions

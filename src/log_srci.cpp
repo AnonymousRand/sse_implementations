@@ -7,13 +7,13 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
-template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
-LogSrci<DbDoc, DbKw, Underly>::LogSrci(
-    Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, Underly<DbDoc, Id>& underly2
-) : underly1(underly1), underly2(underly2) {}
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Undrly> requires ISseDeriv<Undrly, DbDoc, DbKw>
+LogSrci<DbDoc, DbKw, Undrly>::LogSrci(
+    Undrly<SrciDb1Doc<DbKw>, DbKw>& undrly1, Undrly<DbDoc, Id>& undrly2
+) : undrly1(undrly1), undrly2(undrly2) {}
 
-template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
-void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Undrly> requires ISseDeriv<Undrly, DbDoc, DbKw>
+void LogSrci<DbDoc, DbKw, Undrly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // build index 1
 
     // build TDAG1 over keywords
@@ -108,19 +108,19 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
         }
     }
 
-    this->underly1.setup(secParam, db1);
-    this->underly2.setup(secParam, db2);
+    this->undrly1.setup(secParam, db1);
+    this->undrly2.setup(secParam, db2);
 }
 
-template <IMainDbDocDeriv DbDoc, class DbKw, template<class A, class B> class Underly>
-std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Undrly> requires ISseDeriv<Undrly, DbDoc, DbKw>
+std::vector<DbDoc> LogSrci<DbDoc, DbKw, Undrly>::search(const Range<DbKw>& query) const {
     // query 1
 
     TdagNode<DbKw>* src1 = this->tdag1->findSrc(query);
     if (src1 == nullptr) { 
         return std::vector<DbDoc> {};
     }
-    std::vector<SrciDb1Doc<DbKw>> choices = this->underly1.search(src1->getRange());
+    std::vector<SrciDb1Doc<DbKw>> choices = this->undrly1.search(src1->getRange());
 
     // query 2
 
@@ -144,7 +144,7 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& quer
     if (src2 == nullptr) { 
         return std::vector<DbDoc> {};
     }
-    return this->underly2.search(src2->getRange());
+    return this->undrly2.search(src2->getRange());
 }
 
 template class LogSrci<Id, Kw, PiBas>;

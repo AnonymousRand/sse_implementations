@@ -4,14 +4,15 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <IMainDbDocDeriv DbDoc = IdOp, class DbKw = Kw, template<class A, class B> class Underly = PiBas>
+template <IMainDbDocDeriv DbDoc = IdOp, class DbKw = Kw, template<class ...> class Undrly = PiBas>
+        requires ISseDeriv<Undrly, DbDoc, DbKw>
 class LogSrc : public ISse<DbDoc, DbKw> {
     private:
-        Underly<DbDoc, DbKw>& underly;
+        Undrly<DbDoc, DbKw>& undrly;
         TdagNode<DbKw>* tdag;
 
     public:
-        LogSrc(Underly<DbDoc, DbKw>& underly);
+        LogSrc(Undrly<DbDoc, DbKw>& undrly);
 
         // API functions
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
