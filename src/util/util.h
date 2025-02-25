@@ -213,6 +213,7 @@ class IdOp : public IMainDbDoc<std::pair<Id, Op>> {
 // `SrciDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
+// PRECONDITION: since this just indexes a range of `Id`s, we need document ids to be consecutive
 template <class DbKw>
 class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, IdRange>> {
     public:
