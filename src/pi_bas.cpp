@@ -8,7 +8,7 @@
 // PiBas
 ////////////////////////////////////////////////////////////////////////////////
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // generate key
 
@@ -63,12 +63,12 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     }
 }
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
     return this->db;
 }
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
 
@@ -104,7 +104,7 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchWithoutHandlingDels(const Range
     return allResults;
 }
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 std::pair<ustring, ustring> PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     ustring K = prf(this->key, query.toUstr());
     int subkeyLen = K.length() / 2;
@@ -113,7 +113,7 @@ std::pair<ustring, ustring> PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<Db
     return std::pair<ustring, ustring> {subkey1, subkey2};
 }
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
     return this->searchWithoutHandlingDels(query);
 }
@@ -139,7 +139,7 @@ template class PiBas<IdOp, Id>;
 // PiBas (Result-Hiding)
 ////////////////////////////////////////////////////////////////////////////////
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // generate keys
 
@@ -187,12 +187,12 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
     }
 }
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 Db<DbDoc, DbKw> PiBasResHidingBase<DbDoc, DbKw>::getDb() const {
     return this->db;
 }
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
     for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
@@ -223,12 +223,12 @@ std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutHandlingDels(co
     return allResults;
 }
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 ustring PiBasResHidingBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     return prf(this->key1, query.toUstr());
 }
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
     return this->searchWithoutHandlingDels(query);
 }

@@ -7,14 +7,12 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
-template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Underly>
-        requires IUnderlyDeriv<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
 LogSrci<DbDoc, DbKw, Underly>::LogSrci(
     Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, Underly<DbDoc, Id>& underly2
 ) : underly1(underly1), underly2(underly2) {}
 
-template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Underly>
-        requires IUnderlyDeriv<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
 void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // build index 1
 
@@ -114,8 +112,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     this->underly2.setup(secParam, db2);
 }
 
-template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Underly>
-        requires IUnderlyDeriv<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
     // query 1
 

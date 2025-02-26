@@ -4,8 +4,8 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <IMainDbDocDeriv DbDoc = IdOp, class DbKw = Kw, template<class ...> class Underly = PiBas>
-        requires IUnderlyDeriv<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw, template<class ...> class Underly = PiBas>
+        requires IUnderly_<Underly, DbDoc, DbKw>
 class LogSrci : public ISse<DbDoc, DbKw> {
     private:
         Underly<SrciDb1Doc<DbKw>, DbKw>& underly1;

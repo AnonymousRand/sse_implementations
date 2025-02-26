@@ -29,10 +29,10 @@ template <class DbKw = Kw> class SrciDb1Doc;
 
 // black magic (https://stackoverflow.com/a/71921982)
 // (java generics `extends`: look what they need to mimic a fraction of my power)
-template <class T> concept IDbDocDeriv = requires(T t) {
+template <class T> concept IDbDoc_ = requires(T t) {
     []<class X>(IDbDoc<X>&){}(t);
 };
-template <class T> concept IMainDbDocDeriv = requires(T t) {
+template <class T> concept IMainDbDoc_ = requires(T t) {
     []<class X>(IMainDbDoc<X>&){}(t);
 };
 
@@ -42,9 +42,9 @@ using KwRange    = Range<Kw>;
 //                `std::unordered_map<label, std::pair<data, iv>>`
 using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
 // allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
-template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw> 
+template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw> 
 using DbEntry    = std::pair<DbDoc, Range<DbKw>>;
-template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
+template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 using Db         = std::vector<DbEntry<DbDoc, DbKw>>;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,7 +11,7 @@ static const int HASH_OUTPUT_LEN = 512;
 // PiBas
 ////////////////////////////////////////////////////////////////////////////////
 
-template <IDbDocDeriv DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 class PiBasBase : public IUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
@@ -29,7 +29,7 @@ class PiBasBase : public IUnderly<DbDoc, DbKw> {
 };
 
 // this is literally just so I can partially specialize `searchInd()`'s template
-template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
+template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 class PiBas : public PiBasBase<DbDoc, DbKw> {
     public:
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
@@ -45,7 +45,7 @@ class PiBas<IdOp, DbKw> : public PiBasBase<IdOp, DbKw> {
 // PiBas (Result-Hiding)
 ///////////////////////////////////////////////////////////////////////////////
 
-template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
+template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 class PiBasResHidingBase : public IUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
@@ -62,7 +62,7 @@ class PiBasResHidingBase : public IUnderly<DbDoc, DbKw> {
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 };
 
-template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
+template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 class PiBasResHiding : public PiBasResHidingBase<DbDoc, DbKw> {
     public:
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;

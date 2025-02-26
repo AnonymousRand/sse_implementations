@@ -3,12 +3,10 @@
 
 #include "log_src.h"
 
-template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Underly>
-        requires IUnderlyDeriv<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
 LogSrc<DbDoc, DbKw, Underly>::LogSrc(Underly<DbDoc, DbKw>& underly) : underly(underly) {};
 
-template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Underly>
-        requires IUnderlyDeriv<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
 void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     DbKw maxDbKw;
@@ -61,8 +59,7 @@ void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db
     this->underly.setup(secParam, processedDb);
 }
 
-template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Underly>
-        requires IUnderlyDeriv<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
     TdagNode<DbKw>* src = this->tdag->findSrc(query);
     if (src == nullptr) {
