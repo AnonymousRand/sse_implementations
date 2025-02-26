@@ -11,24 +11,33 @@ static const int HASH_OUTPUT_LEN = 512;
 // PiBas
 ////////////////////////////////////////////////////////////////////////////////
 
-template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
-class PiBas : public ISse<DbDoc, DbKw> {
-    private:
+template <IDbDocDeriv DbDoc, class DbKw>
+class PiBasBase : public ISse<DbDoc, DbKw> {
+    protected:
         Db<DbDoc, DbKw> db;
         ustring key;
         EncInd encInd;
 
+        std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
+        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const;
+
     public:
-        // API functions
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
-        std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 
         Db<DbDoc, DbKw> getDb() const override;
+};
 
-        // non-API functions
-        std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
-        std::vector<DbDoc> searchInd(const std::pair<ustring, ustring>& queryToken) const;
-        std::vector<DbDoc> searchIndBase(const std::pair<ustring, ustring>& queryToken) const;
+// this is literally just so I can partially specialize `searchInd()`'s template
+template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
+class PiBas : public PiBasBase<DbDoc, DbKw> {
+    public:
+        std::vector<DbDoc> search(const Range<DbKw>& query) const override;
+};
+
+template <class DbKw>
+class PiBas<IdOp, DbKw> : public PiBasBase<IdOp, DbKw> {
+    public:
+        std::vector<IdOp> search(const Range<DbKw>& query) const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,22 +45,30 @@ class PiBas : public ISse<DbDoc, DbKw> {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
-class PiBasResHiding : public ISse<DbDoc, DbKw> {
-    private:
+class PiBasResHidingBase : public ISse<DbDoc, DbKw> {
+    protected:
         Db<DbDoc, DbKw> db;
         ustring key1;
         ustring key2;
         EncInd encInd;
 
+        ustring genQueryToken(const Range<DbKw>& query) const;
+        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const;
+
     public:
-        // API functions
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
-        std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 
         Db<DbDoc, DbKw> getDb() const override;
+};
 
-        // non-API functions
-        ustring genQueryToken(const Range<DbKw>& query) const;
-        std::vector<DbDoc> searchInd(const ustring& queryToken) const;
-        std::vector<DbDoc> searchIndBase(const ustring& queryToken) const;
+template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
+class PiBasResHiding : public PiBasResHidingBase<DbDoc, DbKw> {
+    public:
+        std::vector<DbDoc> search(const Range<DbKw>& query) const override;
+};
+
+template <class DbKw>
+class PiBasResHiding<IdOp, DbKw> : public PiBasResHidingBase<IdOp, DbKw> {
+    public:
+        std::vector<IdOp> search(const Range<DbKw>& query) const override;
 };

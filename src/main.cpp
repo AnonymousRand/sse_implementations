@@ -5,6 +5,7 @@
 #include "log_src.h"
 #include "log_srci.h"
 #include "pi_bas.h"
+#include "sda.h"
 
 static std::random_device dev;
 static std::mt19937 rng(dev());
@@ -114,6 +115,11 @@ int main() {
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
     int maxDbSize = pow(2, maxDbSizeExp);
+
+    Sda<> sda;
+    sda.setup(KEY_LEN, Db<> {std::pair {Id(0), KwRange {0, 0}}, std::pair {Id(1), KwRange {1, 1}}});
+
+    return 0;
 
     // experiment 1
 

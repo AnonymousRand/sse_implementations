@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 template <IDbDocDeriv DbDoc, class DbKw>
-void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // generate key
 
     this->secParam = secParam;
@@ -64,24 +64,12 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
-std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    std::vector<DbDoc> allResults;
-    // naive range search: just individually query every point in range
-    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-        std::pair<ustring, ustring> queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
-        std::vector<DbDoc> results = this->searchInd(queryToken);
-        allResults.insert(allResults.end(), results.begin(), results.end());
-    }
-    return allResults;
-}
-
-template <IDbDocDeriv DbDoc, class DbKw>
-Db<DbDoc, DbKw> PiBas<DbDoc, DbKw>::getDb() const {
+Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
     return this->db;
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
-std::pair<ustring, ustring> PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
+std::pair<ustring, ustring> PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     ustring K = prf(this->key, query.toUstr());
     int subkeyLen = K.length() / 2;
     ustring subkey1 = K.substr(0, subkeyLen);
@@ -90,44 +78,50 @@ std::pair<ustring, ustring> PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>&
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
-std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchInd(const std::pair<ustring, ustring>& queryToken) const {
-    return this->searchIndBase(queryToken);
-}
+std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+    std::vector<DbDoc> allResults;
 
-// gahh why no partial template specialization >:(
-// guess you'll have to deal with `DbKw = Kw` only
-template<>
-std::vector<IdOp> PiBas<IdOp, Kw>::searchInd(const std::pair<ustring, ustring>& queryToken) const {
-    std::vector<IdOp> results = this->searchIndBase(queryToken);
-    return removeDeletedIdOps(results);
+    // naive range search: just individually query every point in range
+    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+        std::pair<ustring, ustring> queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
+        ustring subkey1 = queryToken.first;
+        ustring subkey2 = queryToken.second;
+        std::vector<DbDoc> results;
+        int counter = 0;
+        
+        // for c = 0 until `Get` returns error
+        while (true) {
+            // d <- Get(D, F(K_1, c)); c++
+            ustring label = prf(subkey1, toUstr(counter));
+            auto it = this->encInd.find(label);
+            if (it == this->encInd.end()) {
+                break;
+            }
+            std::pair<ustring, ustring> encIndV = it->second;
+            ustring data = encIndV.first;
+            // id <- Dec(K_2, d)
+            ustring iv = encIndV.second;
+            ustring ptext = decrypt(ENC_CIPHER, subkey2, data, iv);
+            DbDoc result = DbDoc::decode(ptext);
+            results.push_back(result);
+            counter++;
+        }
+
+        allResults.insert(allResults.end(), results.begin(), results.end());
+    }
+
+    return allResults;
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
-std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchIndBase(const std::pair<ustring, ustring>& queryToken) const {
-    ustring subkey1 = queryToken.first;
-    ustring subkey2 = queryToken.second;
-    std::vector<DbDoc> results;
-    int counter = 0;
-    
-    // for c = 0 until `Get` returns error
-    while (true) {
-        // d <- Get(D, F(K_1, c)); c++
-        ustring label = prf(subkey1, toUstr(counter));
-        auto it = this->encInd.find(label);
-        if (it == this->encInd.end()) {
-            break;
-        }
-        std::pair<ustring, ustring> encIndV = it->second;
-        ustring data = encIndV.first;
-        // id <- Dec(K_2, d)
-        ustring iv = encIndV.second;
-        ustring ptext = decrypt(ENC_CIPHER, subkey2, data, iv);
-        DbDoc result = DbDoc::decode(ptext);
-        results.push_back(result);
-        counter++;
-    }
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    return this->searchBase(query);
+}
 
-    return results;
+template <class DbKw>
+std::vector<IdOp> PiBas<IdOp, DbKw>::search(const Range<DbKw>& query) const {
+    std::vector<IdOp> results = this->searchBase(query);
+    return removeDeletedIdOps(results);
 }
 
 // PiBas
@@ -146,7 +140,7 @@ template class PiBas<IdOp, Id>;
 ////////////////////////////////////////////////////////////////////////////////
 
 template <IDbDocDeriv DbDoc, class DbKw>
-void PiBasResHiding<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // generate keys
 
     this->key1 = genKey(secParam);
@@ -187,61 +181,55 @@ void PiBasResHiding<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db)
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
-std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    std::vector<DbDoc> allResults;
-    // naive range search: just individually query every point in range
-    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-        ustring queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
-        std::vector<DbDoc> results = this->searchInd(queryToken);
-        allResults.insert(allResults.end(), results.begin(), results.end());
-    }
-    return allResults;
-}
-
-template <IDbDocDeriv DbDoc, class DbKw>
-Db<DbDoc, DbKw> PiBasResHiding<DbDoc, DbKw>::getDb() const {
+Db<DbDoc, DbKw> PiBasResHidingBase<DbDoc, DbKw>::getDb() const {
     return this->db;
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
-ustring PiBasResHiding<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
+ustring PiBasResHidingBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     return prf(this->key1, query.toUstr());
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
-std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::searchInd(const ustring& queryToken) const {
-    return this->searchIndBase(queryToken);
-}
+std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+    std::vector<DbDoc> allResults;
+    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+        ustring queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
+        std::vector<DbDoc> results;
+        int counter = 0;
+        
+        while (true) {
+            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
+            auto it = this->encInd.find(label);
+            if (it == this->encInd.end()) {
+                break;
+            }
+            std::pair<ustring, ustring> encIndV = it->second;
+            ustring data = encIndV.first;
+            ustring iv = encIndV.second;
+            // technically we decrypt in the client, but since there's no client-server distinction
+            // in this implementation we'll just decrypt immediately to make the code cleaner
+            ustring ptext = decrypt(ENC_CIPHER, this->key2, data, iv);
+            DbDoc result = DbDoc::decode(ptext);
+            results.push_back(result);
+            counter++;
+        }
 
-template<>
-std::vector<IdOp> PiBasResHiding<IdOp, Kw>::searchInd(const ustring& queryToken) const {
-    std::vector<IdOp> results = this->searchIndBase(queryToken);
-    return removeDeletedIdOps(results);
+        allResults.insert(allResults.end(), results.begin(), results.end());
+    }
+
+    return allResults;
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
-std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::searchIndBase(const ustring& queryToken) const {
-    std::vector<DbDoc> results;
-    int counter = 0;
-    
-    while (true) {
-        ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
-        auto it = this->encInd.find(label);
-        if (it == this->encInd.end()) {
-            break;
-        }
-        std::pair<ustring, ustring> encIndV = it->second;
-        ustring data = encIndV.first;
-        ustring iv = encIndV.second;
-        // technically we decrypt in the client, but since there's no client-server distinction
-        // in this implementation we'll just decrypt immediately to make the code cleaner
-        ustring ptext = decrypt(ENC_CIPHER, this->key2, data, iv);
-        DbDoc result = DbDoc::decode(ptext);
-        results.push_back(result);
-        counter++;
-    }
+std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    return this->searchBase(query);
+}
 
-    return results;
+template <class DbKw>
+std::vector<IdOp> PiBasResHiding<IdOp, DbKw>::search(const Range<DbKw>& query) const {
+    std::vector<IdOp> results = this->searchBase(query);
+    return removeDeletedIdOps(results);
 }
 
 template class PiBasResHiding<Id, Kw>;

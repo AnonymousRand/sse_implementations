@@ -6,7 +6,7 @@
 // ISse
 ////////////////////////////////////////////////////////////////////////////////
 
-template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
+template <IDbDocDeriv DbDoc, class DbKw>
 class ISse {
     protected:
         int secParam;
@@ -29,7 +29,7 @@ template <template<class ...> class T, class T1, class T2> concept ISseDeriv = r
 // IDsse
 ////////////////////////////////////////////////////////////////////////////////
 
-template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
+template <IDbDocDeriv DbDoc, class DbKw>
 class IDsse : public ISse<DbDoc, DbKw> {
     public:
         // API functions
