@@ -1,4 +1,4 @@
-# SSE-Implementations
+# SSE Implementations
 
 Implementations of the following searchable symmetric encryption (SSE) schemes:
 
