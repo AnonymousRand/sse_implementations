@@ -28,7 +28,7 @@ class PiBasBase : public IUnderly<DbDoc, DbKw> {
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 };
 
-// this is literally just so I can partially specialize `searchInd()`'s template
+// this is literally just so I can partially specialize `search()`'s template
 template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 class PiBas : public PiBasBase<DbDoc, DbKw> {
     public:
