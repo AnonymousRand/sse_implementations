@@ -14,6 +14,7 @@ static const int HASH_OUTPUT_LEN = 512;
 template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
 class PiBas : public ISse<DbDoc, DbKw> {
     private:
+        Db<DbDoc, DbKw> db;
         ustring key;
         EncInd encInd;
 
@@ -21,6 +22,8 @@ class PiBas : public ISse<DbDoc, DbKw> {
         // API functions
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
+
+        Db<DbDoc, DbKw> getDb() const override;
 
         // non-API functions
         std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
@@ -35,6 +38,7 @@ class PiBas : public ISse<DbDoc, DbKw> {
 template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
 class PiBasResHiding : public ISse<DbDoc, DbKw> {
     private:
+        Db<DbDoc, DbKw> db;
         ustring key1;
         ustring key2;
         EncInd encInd;
@@ -43,6 +47,8 @@ class PiBasResHiding : public ISse<DbDoc, DbKw> {
         // API functions
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
+
+        Db<DbDoc, DbKw> getDb() const override;
 
         // non-API functions
         ustring genQueryToken(const Range<DbKw>& query) const;

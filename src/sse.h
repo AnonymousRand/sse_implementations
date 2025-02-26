@@ -8,12 +8,17 @@
 
 template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
 class ISse {
+    protected:
+        int secParam;
+
     public:
-        bool isIndEmpty = false;
+        bool isEmpty = false;
 
         // API functions
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
+
+        virtual Db<DbDoc, DbKw> getDb() const = 0;
 };
 
 template <template<class ...> class T, class T1, class T2> concept ISseDeriv = requires(T<T1, T2> t) {

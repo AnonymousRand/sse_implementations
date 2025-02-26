@@ -17,4 +17,6 @@ class LogSrc : public ISse<DbDoc, DbKw> {
         // API functions
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
+
+        Db<DbDoc, DbKw> getDb() const override;
 };

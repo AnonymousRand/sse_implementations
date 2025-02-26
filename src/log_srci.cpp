@@ -14,6 +14,8 @@ LogSrci<DbDoc, DbKw, Undrly>::LogSrci(
 
 template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Undrly> requires ISseDeriv<Undrly, DbDoc, DbKw>
 void LogSrci<DbDoc, DbKw, Undrly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+    this->db = db; 
+
     // build index 1
 
     // build TDAG1 over keywords
@@ -145,6 +147,11 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Undrly>::search(const Range<DbKw>& query
         return std::vector<DbDoc> {};
     }
     return this->undrly2.search(src2->getRange());
+}
+
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Undrly> requires ISseDeriv<Undrly, DbDoc, DbKw>
+Db<DbDoc, DbKw> LogSrci<DbDoc, DbKw, Undrly>::getDb() const {
+    return this->db;
 }
 
 template class LogSrci<Id, Kw, PiBas>;

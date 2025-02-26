@@ -68,5 +68,10 @@ std::vector<DbDoc> LogSrc<DbDoc, DbKw, Undrly>::search(const Range<DbKw>& query)
     return this->undrly.search(src->getRange());
 }
 
+template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Undrly> requires ISseDeriv<Undrly, DbDoc, DbKw>
+Db<DbDoc, DbKw> LogSrc<DbDoc, DbKw, Undrly>::getDb() const {
+    return this->undrly.getDb();
+}
+
 template class LogSrc<Id, Kw, PiBas>;
 template class LogSrc<IdOp, Kw, PiBas>;

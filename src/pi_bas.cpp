@@ -12,21 +12,23 @@ template <IDbDocDeriv DbDoc, class DbKw>
 void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // generate key
 
-    this->key = genKey(secParam);
+    this->secParam = secParam;
+    this->key = genKey(this->secParam);
 
     // build index
 
-    if (db.empty()) {
-        this->isIndEmpty = true;
+    this->db = db;
+    if (this->db.empty()) {
+        this->isEmpty = true;
         this->encInd = EncInd {};
         return;
     }
-    this->isIndEmpty = false;
+    this->isEmpty = false;
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
     std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
+    for (DbEntry<DbDoc, DbKw> entry : this->db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
 
@@ -74,6 +76,11 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
+Db<DbDoc, DbKw> PiBas<DbDoc, DbKw>::getDb() const {
+    return this->db;
+}
+
+template <IDbDocDeriv DbDoc, class DbKw>
 std::pair<ustring, ustring> PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     ustring K = prf(this->key, query.toUstr());
     int subkeyLen = K.length() / 2;
@@ -87,6 +94,8 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchInd(const std::pair<ustring, ustrin
     return this->searchIndBase(queryToken);
 }
 
+// gahh why no partial template specialization >:(
+// guess you'll have to deal with `DbKw = Kw` only
 template<>
 std::vector<IdOp> PiBas<IdOp, Kw>::searchInd(const std::pair<ustring, ustring>& queryToken) const {
     std::vector<IdOp> results = this->searchIndBase(queryToken);
@@ -145,10 +154,11 @@ void PiBasResHiding<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db)
 
     // build index
 
+    this->db = db;
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
     std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
+    for (DbEntry<DbDoc, DbKw> entry : this->db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
 
@@ -186,6 +196,11 @@ std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query)
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
     return allResults;
+}
+
+template <IDbDocDeriv DbDoc, class DbKw>
+Db<DbDoc, DbKw> PiBasResHiding<DbDoc, DbKw>::getDb() const {
+    return this->db;
 }
 
 template <IDbDocDeriv DbDoc, class DbKw>
