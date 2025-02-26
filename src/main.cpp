@@ -20,14 +20,14 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
         int kw2 = dbSize - 1;
 
         for (int i = 0; i < dbSize / 2; i++) {
-            db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw1, kw1}});
+            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {kw1, kw1}});
         }
         for (int i = dbSize / 2; i < dbSize; i++) {
-            db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw2, kw2}});
+            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {kw2, kw2}});
         }
     } else {
         for (int i = 0; i < dbSize; i++) {
-            db.push_back(std::pair {DbDoc(i), Range<DbKw> {i, i}});
+            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {i, i}});
         }
     }
     return db;
@@ -105,11 +105,11 @@ void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
 
 int main() {
     PiBas piBas;
-    PiBas<> logSrcUndrly;
-    LogSrc<> logSrc(logSrcUndrly);
-    PiBas<SrciDb1Doc<>, Kw> logSrciUndrly1;
-    PiBas<IdOp, Id> logSrciUndrly2;
-    LogSrci<> logSrci(logSrciUndrly1, logSrciUndrly2);
+    PiBas<> logSrcUnderly;
+    LogSrc<> logSrc(logSrcUnderly);
+    PiBas<SrciDb1Doc<>, Kw> logSrciUnderly1;
+    PiBas<IdOp, Id> logSrciUnderly2;
+    LogSrci<> logSrci(logSrciUnderly1, logSrciUnderly2);
 
     int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
@@ -117,7 +117,24 @@ int main() {
     int maxDbSize = pow(2, maxDbSizeExp);
 
     Sda<> sda;
-    sda.setup(KEY_LEN, Db<> {std::pair {Id(0), KwRange {0, 0}}, std::pair {Id(1), KwRange {1, 1}}});
+    Db<> db;
+    for (int i = 0; i < maxDbSize; i++) {
+        db.push_back(DbEntry {IdOp(i), KwRange {i, i}});
+    }
+    sda.setup(KEY_LEN, db);
+    auto results = sda.search(KwRange {2, 4});
+    std::cout << "\nresults:" << std::endl;
+    for (auto result : results) {
+        std::cout << result << std::endl;
+    }
+
+    sda.update(DbEntry {IdOp(maxDbSize + 1), KwRange {3, 3}});
+    sda.update(DbEntry {IdOp(4, DELETE), KwRange {4, 4}});
+    results = sda.search(KwRange {2, 4});
+    std::cout << "\nresults:" << std::endl;
+    for (auto result : results) {
+        std::cout << result << std::endl;
+    }
 
     return 0;
 

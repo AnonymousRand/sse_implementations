@@ -3,7 +3,7 @@
 #include "util/util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// ISse
+// `ISse`
 ////////////////////////////////////////////////////////////////////////////////
 
 template <IDbDocDeriv DbDoc, class DbKw>
@@ -17,16 +17,10 @@ class ISse {
         // API functions
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
-
-        virtual Db<DbDoc, DbKw> getDb() const = 0;
-};
-
-template <template<class ...> class T, class T1, class T2> concept ISseDeriv = requires(T<T1, T2> t) {
-    []<class X, class Y>(ISse<X, Y>&){}(t);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// IDsse
+// `IDsse`
 ////////////////////////////////////////////////////////////////////////////////
 
 template <IDbDocDeriv DbDoc, class DbKw>
@@ -35,4 +29,18 @@ class IDsse : public ISse<DbDoc, DbKw> {
         // API functions
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
         // todo note in readme that deletion tuples are same id and ke but diff operation
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// `IUnderly`
+////////////////////////////////////////////////////////////////////////////////
+
+template <IDbDocDeriv DbDoc, class DbKw>
+class IUnderly : public ISse<DbDoc, DbKw> {
+    public:
+        virtual Db<DbDoc, DbKw> getDb() const = 0;
+};
+
+template <template<class ...> class T, class T1, class T2> concept IUnderlyDeriv = requires(T<T1, T2> t) {
+    []<class X, class Y>(IUnderly<X, Y>&){}(t);
 };

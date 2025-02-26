@@ -12,19 +12,20 @@ static const int HASH_OUTPUT_LEN = 512;
 ////////////////////////////////////////////////////////////////////////////////
 
 template <IDbDocDeriv DbDoc, class DbKw>
-class PiBasBase : public ISse<DbDoc, DbKw> {
+class PiBasBase : public IUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key;
         EncInd encInd;
 
         std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
-        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const;
 
     public:
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         Db<DbDoc, DbKw> getDb() const override;
+        // public since `Sda` uses it to not prematurely remove deletion tuples
+        std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 };
 
 // this is literally just so I can partially specialize `searchInd()`'s template
@@ -45,7 +46,7 @@ class PiBas<IdOp, DbKw> : public PiBasBase<IdOp, DbKw> {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
-class PiBasResHidingBase : public ISse<DbDoc, DbKw> {
+class PiBasResHidingBase : public IUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key1;
@@ -53,12 +54,12 @@ class PiBasResHidingBase : public ISse<DbDoc, DbKw> {
         EncInd encInd;
 
         ustring genQueryToken(const Range<DbKw>& query) const;
-        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const;
 
     public:
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         Db<DbDoc, DbKw> getDb() const override;
+        std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 };
 
 template <IDbDocDeriv DbDoc = IdOp, class DbKw = Kw>
