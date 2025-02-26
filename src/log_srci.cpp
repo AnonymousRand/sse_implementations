@@ -8,9 +8,8 @@
 #include "util/openssl.h"
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
-LogSrci<DbDoc, DbKw, Underly>::LogSrci(
-    Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, Underly<DbDoc, Id>& underly2
-) : underly1(underly1), underly2(underly2) {}
+LogSrci<DbDoc, DbKw, Underly>::LogSrci( Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, Underly<DbDoc, Id>& underly2)
+        : underly1(underly1), underly2(underly2) {}
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
 void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
