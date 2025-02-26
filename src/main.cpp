@@ -20,14 +20,14 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
         int kw2 = dbSize - 1;
 
         for (int i = 0; i < dbSize / 2; i++) {
-            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {kw1, kw1}});
+            db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw1, kw1}});
         }
         for (int i = dbSize / 2; i < dbSize; i++) {
-            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {kw2, kw2}});
+            db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw2, kw2}});
         }
     } else {
         for (int i = 0; i < dbSize; i++) {
-            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {i, i}});
+            db.push_back(std::pair {DbDoc(i), Range<DbKw> {i, i}});
         }
     }
     return db;
@@ -105,38 +105,18 @@ void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
 
 int main() {
     PiBas piBas;
-    PiBas<> logSrcUnderly;
-    LogSrc<> logSrc(logSrcUnderly);
-    PiBas<SrciDb1Doc<>, Kw> logSrciUnderly1;
-    PiBas<IdOp, Id> logSrciUnderly2;
-    LogSrci<> logSrci(logSrciUnderly1, logSrciUnderly2);
+    PiBasResHiding piBasResHiding;
+    PiBas<> logSrcUndrly;
+    LogSrc<> logSrc(logSrcUndrly);
+    PiBas<SrciDb1Doc<>, Kw> logSrciUndrly1;
+    PiBas<IdOp, Id> logSrciUndrly2;
+    LogSrci<> logSrci(logSrciUndrly1, logSrciUndrly2);
+    Sda<> sda;
 
     int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
     int maxDbSize = pow(2, maxDbSizeExp);
-
-    Sda<> sda;
-    Db<> db;
-    for (int i = 0; i < maxDbSize; i++) {
-        db.push_back(DbEntry {IdOp(i), KwRange {i, i}});
-    }
-    sda.setup(KEY_LEN, db);
-    auto results = sda.search(KwRange {2, 4});
-    std::cout << "\nresults:" << std::endl;
-    for (auto result : results) {
-        std::cout << result << std::endl;
-    }
-
-    sda.update(DbEntry {IdOp(maxDbSize + 1), KwRange {3, 3}});
-    sda.update(DbEntry {IdOp(4, DELETE), KwRange {4, 4}});
-    results = sda.search(KwRange {2, 4});
-    std::cout << "\nresults:" << std::endl;
-    for (auto result : results) {
-        std::cout << result << std::endl;
-    }
-
-    return 0;
 
     // experiment 1
 
@@ -146,7 +126,23 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
-    piBas.setup(KEY_LEN, Db<>());
+    piBas.setup(KEY_LEN, Db {});
+
+    std::cout << "---------- Experiment 1 for PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
+    std::cout << "Query    : varied size" << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
+    std::cout << std::endl;
+    exp1(piBasResHiding, maxDbSize);
+    piBasResHiding.setup(KEY_LEN, Db {});
+
+    std::cout << "---------- Experiment 1 for SDa with PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
+    std::cout << "Query    : varied size" << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
+    std::cout << std::endl;
+    exp1(sda, maxDbSize);
+    sda.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Experiment 1 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -154,7 +150,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp1(logSrc, maxDbSize);
-    logSrc.setup(KEY_LEN, Db<>());
+    logSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Experiment 1 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -162,7 +158,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp1(logSrci, maxDbSize);
-    logSrci.setup(KEY_LEN, Db<>());
+    logSrci.setup(KEY_LEN, Db {});
 
     // experiment 2
 
@@ -171,8 +167,24 @@ int main() {
     std::cout << "Query    : 0-3"         << std::endl;
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
-    exp2(piBas, maxDbSize / 2);    // halved db sizes due to heavy memory usage in experiment 2
-    piBas.setup(KEY_LEN, Db<>()); // hopefully clear memory asap
+    exp2(piBas, maxDbSize / 2);  // halved db sizes due to heavy memory usage in experiment 2
+    piBas.setup(KEY_LEN, Db {}); // hopefully clear memory asap
+
+    std::cout << "---------- Experiment 2 for PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "DB size  : varied size" << std::endl;
+    std::cout << "Query    : 0-3"         << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
+    std::cout << std::endl;
+    exp2(piBasResHiding, maxDbSize / 2);
+    piBasResHiding.setup(KEY_LEN, Db {});
+
+    std::cout << "---------- Experiment 2 for SDa with PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "DB size  : varied size" << std::endl;
+    std::cout << "Query    : 0-3"         << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
+    std::cout << std::endl;
+    exp2(sda, maxDbSize / 2);
+    sda.setup(KEY_LEN, Db {});
     
     std::cout << "---------- Experiment 2 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
@@ -180,7 +192,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp2(logSrc, maxDbSize / 2);
-    logSrc.setup(KEY_LEN, Db<>());
+    logSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Experiment 2 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
@@ -188,7 +200,7 @@ int main() {
     std::cout << "Data skew: no"          << std::endl;
     std::cout << std::endl;
     exp2(logSrci, maxDbSize / 2);
-    logSrci.setup(KEY_LEN, Db<>());
+    logSrci.setup(KEY_LEN, Db {});
 
     // experiment 3
 
@@ -198,7 +210,7 @@ int main() {
     std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     exp3(logSrc, maxDbSize);
-    logSrc.setup(KEY_LEN, Db<>());
+    logSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Experiment 3 for Log-SRC-i ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
@@ -206,5 +218,5 @@ int main() {
     std::cout << "Data skew: yes"         << std::endl;
     std::cout << std::endl;
     exp3(logSrci, maxDbSize);
-    logSrci.setup(KEY_LEN, Db<>());
+    logSrci.setup(KEY_LEN, Db {});
 }

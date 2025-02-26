@@ -14,7 +14,7 @@ template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Underly>
 void SdaBase<DbDoc, DbKw, Underly>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
-        Underly<DbDoc, DbKw> underly; // todo does this need to be pointers?
+        Underly<DbDoc, DbKw> underly;
         underly.setup(this->secParam, Db<DbDoc, DbKw> {newEntry});
         this->underlys.push_back(underly);
         this->firstEmptyInd = 1;
@@ -49,19 +49,6 @@ void SdaBase<DbDoc, DbKw, Underly>::update(const DbEntry<DbDoc, DbKw>& newEntry)
         }
     }
     this->firstEmptyInd = firstEmpty;
-
-    // todo temp
-    int c = 0;
-    std::cout << "\nInserting " << newEntry.first << ": " << newEntry.second << " ---------------------------------" << std::endl;
-    for (auto underly : this->underlys) {
-        std::cout << "Index " << c << ":" << std::endl;
-        auto db = underly.getDb();
-        for (auto entry : db) {
-            std::cout << entry.first << ": " << entry.second << std::endl;
-        }
-    std::cout << "first emtpy index: " << this->firstEmptyInd << std::endl;
-        c++;
-    }
 }
 
 template <IMainDbDocDeriv DbDoc, class DbKw, template<class ...> class Underly>
