@@ -17,6 +17,7 @@ class PiBasBase : public IUnderly<DbDoc, DbKw> {
         Db<DbDoc, DbKw> db;
         ustring key;
         EncInd encInd;
+        bool _isEmpty = false;
 
         std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
 
@@ -24,6 +25,7 @@ class PiBasBase : public IUnderly<DbDoc, DbKw> {
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         Db<DbDoc, DbKw> getDb() const override;
+        bool isEmpty() const override;
         // public since `Sda` uses it to not prematurely remove deletion tuples
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 };
@@ -52,6 +54,7 @@ class PiBasResHidingBase : public IUnderly<DbDoc, DbKw> {
         ustring key1;
         ustring key2;
         EncInd encInd;
+        bool _isEmpty = false;
 
         ustring genQueryToken(const Range<DbKw>& query) const;
 
@@ -59,6 +62,7 @@ class PiBasResHidingBase : public IUnderly<DbDoc, DbKw> {
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         Db<DbDoc, DbKw> getDb() const override;
+        bool isEmpty() const override;
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 };
 

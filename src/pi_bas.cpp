@@ -18,12 +18,12 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // build index
 
     this->db = db;
+    this->_isEmpty = this->db.empty();
     if (this->db.empty()) {
-        this->isEmpty = true;
+        // clear memory
         this->encInd = EncInd {};
         return;
     }
-    this->isEmpty = false;
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
@@ -66,6 +66,11 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 template <IDbDoc_ DbDoc, class DbKw>
 Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
     return this->db;
+}
+
+template <IDbDoc_ DbDoc, class DbKw>
+bool PiBasBase<DbDoc, DbKw>::isEmpty() const {
+    return this->_isEmpty;
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
@@ -150,11 +155,11 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
 
     this->db = db;
     if (this->db.empty()) {
-        this->isEmpty = true;
+        this->_isEmpty = true;
         this->encInd = EncInd {};
         return;
     }
-    this->isEmpty = false;
+    this->_isEmpty = false;
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
@@ -190,6 +195,11 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
 template <IDbDoc_ DbDoc, class DbKw>
 Db<DbDoc, DbKw> PiBasResHidingBase<DbDoc, DbKw>::getDb() const {
     return this->db;
+}
+
+template <IDbDoc_ DbDoc, class DbKw>
+bool PiBasResHidingBase<DbDoc, DbKw>::isEmpty() const {
+    return this->_isEmpty;
 }
 
 template <IDbDoc_ DbDoc, class DbKw>

@@ -22,6 +22,9 @@ void SdaBase<DbDoc, DbKw, Underly>::update(const DbEntry<DbDoc, DbKw>& newEntry)
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`; always merge/insert into first index if it's empty
     Db<DbDoc, DbKw> mergedDb;
     for (int i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
+        // original paper fetches encrypted index and decrypts instead of `getDb()`
+        // but that could get messy with Log-SRC-i as it has two indexes
+        // instead we just store and get plaintext DB for convenience of implementation
         Db<DbDoc, DbKw> underlyDb = this->underlys[i].getDb();
         mergedDb.insert(mergedDb.begin(), underlyDb.begin(), underlyDb.end());
     }
@@ -42,7 +45,7 @@ void SdaBase<DbDoc, DbKw, Underly>::update(const DbEntry<DbDoc, DbKw>& newEntry)
     // update the pointer to the first empty index
     int firstEmpty;
     for (firstEmpty = 0; firstEmpty < this->underlys.size(); firstEmpty++) {
-        if (this->underlys[firstEmpty].isEmpty) {
+        if (this->underlys[firstEmpty].isEmpty()) {
             break;
         }
     }
@@ -54,7 +57,7 @@ std::vector<DbDoc> SdaBase<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(cons
     std::vector<DbDoc> allResults;
     // search through all non-empty indexes
     for (Underly<DbDoc, DbKw> underly : this->underlys) {
-        if (underly.isEmpty) {
+        if (underly.isEmpty()) {
             continue;
         }
         // don't use `underly.search()` here that filters out deleted tuples possibly prematurely

@@ -7,12 +7,15 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
 LogSrci<DbDoc, DbKw, Underly>::LogSrci( Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, Underly<DbDoc, Id>& underly2)
         : underly1(underly1), underly2(underly2) {}
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
 void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+    this->db = db;
+    this->_isEmpty = this->db.empty();
+
     // build index 1
 
     // build TDAG1 over keywords
@@ -111,7 +114,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     this->underly2.setup(secParam, db2);
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
     // query 1
 
@@ -144,6 +147,16 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& quer
         return std::vector<DbDoc> {};
     }
     return this->underly2.search(src2->getRange());
+}
+
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
+Db<DbDoc, DbKw> LogSrci<DbDoc, DbKw, Underly>::getDb() const {
+    return this->db;
+}
+
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
+bool LogSrci<DbDoc, DbKw, Underly>::isEmpty() const {
+    return this->_isEmpty;
 }
 
 template class LogSrci<Id, Kw, PiBas>;

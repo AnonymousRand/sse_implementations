@@ -7,7 +7,7 @@ template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requ
 class SdaBase : public IDsse<DbDoc, DbKw> {
     protected:
         std::vector<Underly<DbDoc, DbKw>> underlys;
-        int firstEmptyInd;
+        int firstEmptyInd = 0;
 
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 
