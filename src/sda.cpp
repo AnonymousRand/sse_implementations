@@ -1,6 +1,6 @@
 #include "sda.h"
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, DbDoc, DbKw>
 void SdaBase<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     for (DbEntry<DbDoc, DbKw> entry : db) {
@@ -8,7 +8,7 @@ void SdaBase<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     }
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, DbDoc, DbKw>
 void SdaBase<DbDoc, DbKw, Underly>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
@@ -52,7 +52,7 @@ void SdaBase<DbDoc, DbKw, Underly>::update(const DbEntry<DbDoc, DbKw>& newEntry)
     this->firstEmptyInd = firstEmpty;
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> SdaBase<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
     // search through all non-empty indexes
@@ -69,12 +69,12 @@ std::vector<DbDoc> SdaBase<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(cons
     return allResults;
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> Sda<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
     return this->searchWithoutHandlingDels(query);
 }
 
-template <class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, IdOp, DbKw>
+template <class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, IdOp, DbKw>
 std::vector<IdOp> Sda<IdOp, DbKw, Underly>::search(const Range<DbKw>& query) const {
     std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
     return removeDeletedIdOps(results);

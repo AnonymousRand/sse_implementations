@@ -12,7 +12,7 @@ static const int HASH_OUTPUT_LEN = 512;
 ////////////////////////////////////////////////////////////////////////////////
 
 template <IDbDoc_ DbDoc, class DbKw>
-class PiBasBase : public IUnderly<DbDoc, DbKw> {
+class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key;
@@ -48,7 +48,7 @@ class PiBas<IdOp, DbKw> : public PiBasBase<IdOp, DbKw> {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
-class PiBasResHidingBase : public IUnderly<DbDoc, DbKw> {
+class PiBasResHidingBase : public ISdaUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key1;

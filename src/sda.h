@@ -3,7 +3,7 @@
 #include "pi_bas.h"
 #include "sse.h"
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, DbDoc, DbKw>
 class SdaBase : public IDsse<DbDoc, DbKw> {
     protected:
         std::vector<Underly<DbDoc, DbKw>> underlys;
@@ -17,13 +17,13 @@ class SdaBase : public IDsse<DbDoc, DbKw> {
 };
 
 template <IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw, template<class ...> class Underly = PiBasResHiding>
-        requires IUnderly_<Underly, DbDoc, DbKw>
+        requires ISdaUnderly_<Underly, DbDoc, DbKw>
 class Sda : public SdaBase<DbDoc, DbKw, Underly> {
     public:
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };
 
-template <class DbKw, template<class ...> class Underly> requires IUnderly_<Underly, IdOp, DbKw>
+template <class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, IdOp, DbKw>
 class Sda<IdOp, DbKw, Underly> : public SdaBase<IdOp, DbKw, Underly> {
     public:
         std::vector<IdOp> search(const Range<DbKw>& query) const;

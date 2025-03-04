@@ -6,7 +6,7 @@
 
 template <IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw, template<class ...> class Underly = PiBas>
         requires ISse_<Underly, DbDoc, DbKw>
-class LogSrci : public IUnderly<DbDoc, DbKw> {
+class LogSrci : public ISdaUnderly<DbDoc, DbKw> {
     private:
         Underly<SrciDb1Doc<DbKw>, DbKw>& underly1;
         Underly<DbDoc, Id>& underly2;

@@ -31,16 +31,16 @@ class IDsse : public ISse<DbDoc, DbKw> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// `IUnderly`
+// `ISdaUnderly`
 ////////////////////////////////////////////////////////////////////////////////
 
 template <IDbDoc_ DbDoc, class DbKw>
-class IUnderly : public ISse<DbDoc, DbKw> {
+class ISdaUnderly : public ISse<DbDoc, DbKw> {
     public:
         virtual Db<DbDoc, DbKw> getDb() const = 0;
         virtual bool isEmpty() const = 0;
 };
 
-template <template<class ...> class T, class T1, class T2> concept IUnderly_ = requires(T<T1, T2> t) {
-    []<class X, class Y>(IUnderly<X, Y>&){}(t);
+template <template<class ...> class T, class T1, class T2> concept ISdaUnderly_ = requires(T<T1, T2> t) {
+    []<class X, class Y>(ISdaUnderly<X, Y>&){}(t);
 };
