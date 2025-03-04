@@ -353,8 +353,8 @@ template class SrciDb1Doc<Kw>;
 // SSE Utils
 ////////////////////////////////////////////////////////////////////////////////
 
-template <class DbDoc, class DbKw>
-Db<DbDoc, DbKw> indToDb(const std::unordered_map<Range<DbKw>, std::vector<DbDoc>>& ind) {
+template <class DbKw, class DbDoc>
+Db<DbDoc, DbKw> indToDb(const Ind<DbKw, DbDoc>& ind) {
     Db<DbDoc, DbKw> db;
     for (std::pair pair : ind) {
         Range<DbKw> dbKwRange = pair.first;
@@ -366,12 +366,11 @@ Db<DbDoc, DbKw> indToDb(const std::unordered_map<Range<DbKw>, std::vector<DbDoc>
     return db;
 }
 
-template <class IndKw, class IndDoc>
-void shuffleInd(std::unordered_map<IndKw, std::vector<IndDoc>>& ind) {
+template <class DbKw, class DbDoc>
+void shuffleInd(Ind<DbKw, DbDoc>& ind) {
     for (std::pair pair : ind) {
-        IndKw indKw = pair.first;
-        std::vector<IndDoc> indDocs = pair.second;
-        std::shuffle(indDocs.begin(), indDocs.end(), RNG);
+        std::vector<DbDoc> dbDocs = pair.second;
+        std::shuffle(dbDocs.begin(), dbDocs.end(), RNG);
     }
 }
 
@@ -401,15 +400,15 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
     return uniqDbKwRanges;
 }
 
-template Db<Id, Kw> indToDb(const std::unordered_map<Range<Kw>, std::vector<Id>>& ind);
-template Db<IdOp, Kw> indToDb(const std::unordered_map<Range<Kw>, std::vector<IdOp>>& ind);
-template Db<Id, Id> indToDb(const std::unordered_map<Range<Id>, std::vector<Id>>& ind);
-template Db<IdOp, Id> indToDb(const std::unordered_map<Range<Id>, std::vector<IdOp>>& ind);
+template Db<Id, Kw> indToDb(const Ind<Kw, Id>& ind);
+template Db<IdOp, Kw> indToDb(const Ind<Kw, IdOp>& ind);
+template Db<Id, Id> indToDb(const Ind<Id, Id>& ind);
+template Db<IdOp, Id> indToDb(const Ind<Id, IdOp>& ind);
 
-template void shuffleInd(std::unordered_map<Range<Kw>, std::vector<Id>>& ind);
-template void shuffleInd(std::unordered_map<Range<Kw>, std::vector<IdOp>>& ind);
-template void shuffleInd(std::unordered_map<Range<Id>, std::vector<Id>>& ind);
-template void shuffleInd(std::unordered_map<Range<Id>, std::vector<IdOp>>& ind);
+template void shuffleInd(Ind<Kw, Id>& ind);
+template void shuffleInd(Ind<Kw, IdOp>& ind);
+template void shuffleInd(Ind<Id, Id>& ind);
+template void shuffleInd(Ind<Id, IdOp>& ind);
 
 template Kw findMaxDbKw(const Db<Id, Kw>& db);
 template Kw findMaxDbKw(const Db<IdOp, Kw>& db);

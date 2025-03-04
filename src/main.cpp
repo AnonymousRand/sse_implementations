@@ -132,14 +132,6 @@ int main() {
     exp1(piBasResHiding, maxDbSize);
     piBasResHiding.setup(KEY_LEN, Db {});
 
-    std::cout << "---------- Experiment 1 for SDa with PiBas (result-hiding) ----------" << std::endl;
-    std::cout << "DB size  : "            << maxDbSize << std::endl;
-    std::cout << "Query    : varied size" << std::endl;
-    std::cout << "Data skew: no"          << std::endl;
-    std::cout << std::endl;
-    exp1(sda, maxDbSize);
-    sda.setup(KEY_LEN, Db {});
-
     std::cout << "---------- Experiment 1 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : "            << maxDbSize << std::endl;
     std::cout << "Query    : varied size" << std::endl;
@@ -155,6 +147,14 @@ int main() {
     std::cout << std::endl;
     exp1(logSrci, maxDbSize);
     logSrci.setup(KEY_LEN, Db {});
+
+    std::cout << "---------- Experiment 1 for SDa with PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "DB size  : "            << maxDbSize << std::endl;
+    std::cout << "Query    : varied size" << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
+    std::cout << std::endl;
+    exp1(sda, maxDbSize);
+    sda.setup(KEY_LEN, Db {});
 
     // experiment 2
 
@@ -174,14 +174,6 @@ int main() {
     exp2(piBasResHiding, maxDbSize / 2);
     piBasResHiding.setup(KEY_LEN, Db {});
 
-    std::cout << "---------- Experiment 2 for SDa with PiBas (result-hiding) ----------" << std::endl;
-    std::cout << "DB size  : varied size" << std::endl;
-    std::cout << "Query    : 0-3"         << std::endl;
-    std::cout << "Data skew: no"          << std::endl;
-    std::cout << std::endl;
-    exp2(sda, maxDbSize / 2);
-    sda.setup(KEY_LEN, Db {});
-    
     std::cout << "---------- Experiment 2 for Log-SRC ----------" << std::endl;
     std::cout << "DB size  : varied size" << std::endl;
     std::cout << "Query    : 0-3"         << std::endl;
@@ -198,6 +190,14 @@ int main() {
     exp2(logSrci, maxDbSize / 2);
     logSrci.setup(KEY_LEN, Db {});
 
+    std::cout << "---------- Experiment 2 for SDa with PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "DB size  : varied size" << std::endl;
+    std::cout << "Query    : 0-3"         << std::endl;
+    std::cout << "Data skew: no"          << std::endl;
+    std::cout << std::endl;
+    exp2(sda, maxDbSize / 2);
+    sda.setup(KEY_LEN, Db {});
+    
     // experiment 3
 
     std::cout << "---------- Experiment 3 for Log-SRC ----------" << std::endl;

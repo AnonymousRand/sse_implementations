@@ -24,7 +24,7 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     }
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> ind;
+    Ind<DbKw, DbDoc> ind;
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
@@ -159,7 +159,7 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
     this->_isEmpty = false;
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> ind;
+    Ind<DbKw, DbDoc> ind;
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;

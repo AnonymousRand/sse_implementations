@@ -53,6 +53,8 @@ template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 using DbEntry    = std::pair<DbDoc, Range<DbKw>>;
 template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 using Db         = std::vector<DbEntry<DbDoc, DbKw>>;
+template <class DbKw = Kw, class DbDoc = IdOp>
+using Ind        = std::unordered_map<Range<DbKw>, std::vector<DbDoc>>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // `ustring`
@@ -235,11 +237,11 @@ class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, IdRange>> {
 // SSE Utils
 ////////////////////////////////////////////////////////////////////////////////
 
-template <class DbDoc, class DbKw>
-Db<DbDoc, DbKw> indToDb(const std::unordered_map<Range<DbKw>, std::vector<DbDoc>>& ind);
+template <class DbKw, class DbDoc>
+Db<DbDoc, DbKw> indToDb(const Ind<DbKw, DbDoc>& ind);
 
-template <class IndKw, class IndDoc>
-void shuffleInd(std::unordered_map<IndKw, std::vector<IndDoc>>& ind);
+template <class DbKw, class DbDoc>
+void shuffleInd(Ind<DbKw, DbDoc>& ind);
 
 template <class DbDoc, class DbKw>
 DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db);

@@ -20,17 +20,16 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     this->tdag1 = TdagNode<DbKw>::buildTdag(maxDbKw);
 
     // figure out which documents share the same keywords by building index and list of unique kws like in PiBas
-    // todo test if set is faster or just vector and then linearly scan for largest element
-    std::unordered_map<Range<DbKw>, std::set<Id>> ind1;
+    Ind<DbKw, Id> ind1;
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();
         Range<DbKw> dbKwRange = entry.second;
 
         if (ind1.count(dbKwRange) == 0) {
-            ind1[dbKwRange] = std::set {id};
+            ind1[dbKwRange] = std::vector {id};
         } else {
-            ind1[dbKwRange].insert(id);
+            ind1[dbKwRange].push_back(id);
         }
     }
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
@@ -40,8 +39,17 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     Db<SrciDb1Doc<DbKw>, DbKw> db1;
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto itIdsWithSameKw = ind1.find(dbKwRange);
-        std::set<Id> idsWithSameKw = itIdsWithSameKw->second;
-        IdRange idRange {*idsWithSameKw.begin(), *idsWithSameKw.rbegin()}; // this is why we used `set`
+        std::vector<Id> idsWithSameKw = itIdsWithSameKw->second;
+        Id minId = Id(0), maxId = Id(0);
+        for (Id id : idsWithSameKw) {
+            if (id > maxId) {
+                maxId = id;
+            }
+            if (id < minId || minId == Id(0)) {
+                minId = id;
+            }
+        }
+        IdRange idRange {minId, maxId}; // this is why we used `set`
         SrciDb1Doc<DbKw> pair {dbKwRange, idRange};
 
         std::list<TdagNode<DbKw>*> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
@@ -67,7 +75,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
 
     // replicate every document to all id ranges/nodes in TDAG2 that cover it
     // again need temporary `unordered_map` index to shuffle
-    std::unordered_map<IdRange, std::vector<DbDoc>> ind2;
+    Ind<Id, DbDoc> ind2;
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();

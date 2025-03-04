@@ -12,7 +12,7 @@ void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db
     // replicate every document to all keyword ranges/nodes in TDAG that cover it
     // temporarily use `unordered_map` (an inverted index) instead of `vector` to
     // easily identify which docs share the same keyword range for shuffling later
-    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> ind;
+    Ind<DbKw, DbDoc> ind;
     int temp = 0;
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
