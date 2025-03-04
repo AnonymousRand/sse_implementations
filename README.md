@@ -25,5 +25,5 @@ Using GCC instead of G++ to compile will probably produce a wall of errors (diff
 
 # Notes
 
+- Ids and keywords must be positive integers. In addition, ids must be consecutive. Otherwise, bad things may happen.
 - Keyword search is supported (i.e. one document can have multiple keywords). To insert such documents into the dataset, put in one tuple per keyword, all with the same id.
-- Ids and keywords must be integers. In addition, ids must be positive and consecutive. Otherwise, bad things may happen.

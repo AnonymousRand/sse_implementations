@@ -175,7 +175,7 @@ Range<T> TdagNode<T>::getRange() const {
 template <class T>
 TdagNode<T>* TdagNode<T>::buildTdag(T& maxLeafVal) {
     std::set<Range<T>> leafVals;
-    for (T i = T(0); i <= maxLeafVal; i++) {
+    for (T i = T(DB_KW_MIN); i <= maxLeafVal; i++) {
         leafVals.insert(Range<T> {i, i});
     }
     return TdagNode<T>::buildTdag(leafVals);

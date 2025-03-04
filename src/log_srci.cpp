@@ -16,24 +16,12 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     // build index 1
 
     // build TDAG1 over keywords
-    DbKw maxDbKw;
-    if (!db.empty()) {
-        Range<DbKw> firstDbKwRange = db[0].second;
-        maxDbKw = firstDbKwRange.second;
-        for (DbEntry<DbDoc, DbKw> entry : db) {
-            Range<DbKw> dbKwRange = entry.second;
-            if (dbKwRange.second > maxDbKw) {
-                maxDbKw = dbKwRange.second;
-            }
-        }
-    } else {
-        maxDbKw = DbKw(0);
-    }
+    DbKw maxDbKw = findMaxDbKw(db);
     this->tdag1 = TdagNode<DbKw>::buildTdag(maxDbKw);
 
     // figure out which documents share the same keywords by building index and list of unique kws like in PiBas
+    // todo test if set is faster or just vector and then linearly scan for largest element
     std::unordered_map<Range<DbKw>, std::set<Id>> ind1;
-    std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();
@@ -44,13 +32,13 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
         } else {
             ind1[dbKwRange].insert(id);
         }
-        uniqueDbKwRanges.insert(dbKwRange);
     }
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
 
     // replicate every document (in this case pairs) to all keyword ranges/nodes in TDAG1 that cover it
     // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, [ids]), kw range/node)
     Db<SrciDb1Doc<DbKw>, DbKw> db1;
-    for (Range<DbKw> dbKwRange : uniqueDbKwRanges) {
+    for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto itIdsWithSameKw = ind1.find(dbKwRange);
         std::set<Id> idsWithSameKw = itIdsWithSameKw->second;
         IdRange idRange {*idsWithSameKw.begin(), *idsWithSameKw.rbegin()}; // this is why we used `set`
@@ -67,7 +55,7 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
 
     // build TDAG2 over document ids
     // PRECONDITION: document ids are positive
-    Id maxId = Id(-1);
+    Id maxId = Id(0);
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();

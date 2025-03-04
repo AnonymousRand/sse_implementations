@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -15,6 +16,8 @@
 static const int KEY_LEN    = 256 / 8;
 static const int IV_LEN     = 128 / 8;
 static const int BLOCK_SIZE = 128 / 8;
+// PRECONDITION: keywords are always positive
+static const int DB_KW_MIN  = 0;
 
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
@@ -229,11 +232,17 @@ class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, IdRange>> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Other
+// SSE Utils
 ////////////////////////////////////////////////////////////////////////////////
+
+template <class DbDoc, class DbKw>
+Db<DbDoc, DbKw> indToDb(const std::unordered_map<Range<DbKw>, std::vector<DbDoc>>& ind);
 
 template <class IndKw, class IndDoc>
 void shuffleInd(std::unordered_map<IndKw, std::vector<IndDoc>>& ind);
 
 template <class DbDoc, class DbKw>
-Db<DbDoc, DbKw> indToDb(const std::unordered_map<Range<DbKw>, std::vector<DbDoc>>& ind);
+DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db);
+
+template <class DbDoc, class DbKw>
+std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);

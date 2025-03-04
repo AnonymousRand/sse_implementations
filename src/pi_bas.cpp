@@ -1,5 +1,3 @@
-#include <unordered_set>
-
 #include <openssl/rand.h>
 
 #include "pi_bas.h"
@@ -18,30 +16,29 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // build index
 
     this->db = db;
-    this->_isEmpty = this->db.empty();
-    if (this->db.empty()) {
+    this->_isEmpty = db.empty();
+    if (db.empty()) {
         // clear memory
         this->encInd = EncInd {};
         return;
     }
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
-    std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
-    for (DbEntry<DbDoc, DbKw> entry : this->db) {
+    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> ind;
+    for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
 
-        if (index.count(dbKwRange) == 0) {
-            index[dbKwRange] = std::vector {dbDoc};
+        if (ind.count(dbKwRange) == 0) {
+            ind[dbKwRange] = std::vector {dbDoc};
         } else {
-            index[dbKwRange].push_back(dbDoc);
+            ind[dbKwRange].push_back(dbDoc);
         }
-        uniqueDbKwRanges.insert(dbKwRange); // `unordered_set` will not insert duplicate elements
     }
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
 
     // for each w in W
-    for (Range<DbKw> dbKwRange : uniqueDbKwRanges) {
+    for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         // K_1 || K_2 <- F(K, w)
         // the paper uses different notation for the key generation here vs. in `genQueryToken()`
         // (`Trpdr`), but I'm fairly sure they mean the same thing, otherwise it doesn't work
@@ -49,7 +46,7 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         
         unsigned int counter = 0;
         // for each id in DB(w)
-        auto itIdOpsWithSameKw = index.find(dbKwRange);
+        auto itIdOpsWithSameKw = ind.find(dbKwRange);
         for (DbDoc dbDoc : itIdOpsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id); c++
             ustring label = prf(subkeys.first, toUstr(counter));
@@ -154,7 +151,7 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
     // build index
 
     this->db = db;
-    if (this->db.empty()) {
+    if (db.empty()) {
         this->_isEmpty = true;
         this->encInd = EncInd {};
         return;
@@ -162,26 +159,25 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
     this->_isEmpty = false;
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
-    std::unordered_set<Range<DbKw>> uniqueDbKwRanges;
-    for (DbEntry<DbDoc, DbKw> entry : this->db) {
+    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> ind;
+    for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
 
-        if (index.count(dbKwRange) == 0) {
-            index[dbKwRange] = std::vector {dbDoc};
+        if (ind.count(dbKwRange) == 0) {
+            ind[dbKwRange] = std::vector {dbDoc};
         } else {
-            index[dbKwRange].push_back(dbDoc);
+            ind[dbKwRange].push_back(dbDoc);
         }
-        uniqueDbKwRanges.insert(dbKwRange);
     }
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
 
     // for each w in W
-    for (Range<DbKw> dbKwRange : uniqueDbKwRanges) {
+    for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         ustring prfOutput = this->genQueryToken(dbKwRange);
         
         unsigned int counter = 0;
-        auto itIdOpsWithSameKw = index.find(dbKwRange);
+        auto itIdOpsWithSameKw = ind.find(dbKwRange);
         for (DbDoc dbDoc : itIdOpsWithSameKw->second) {
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, prfOutput + toUstr(counter));
             ustring iv = genIv(IV_LEN);

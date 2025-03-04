@@ -10,7 +10,7 @@ template <class DbDoc = IdOp, class DbKw = Kw>
 Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
     Db<DbDoc, DbKw> db;
     if (isDataSkewed) {
-        // two unique keywords, each making up half the dataset, with one being 0 and the other being the max
+        // two uniq keywords, each making up half the dataset, with one being 0 and the other being the max
         // this means half of them will be returned as false positives on a [1, n - 1] query if the root node is the SRC
         int kw1 = 0;
         int kw2 = dbSize - 1;
