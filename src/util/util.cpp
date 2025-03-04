@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <regex>
 #include <sstream>
 #include <unordered_set>
@@ -347,3 +348,39 @@ std::string SrciDb1Doc<DbKw>::toStr() const {
 }
 
 template class SrciDb1Doc<Kw>;
+
+////////////////////////////////////////////////////////////////////////////////
+// Other
+////////////////////////////////////////////////////////////////////////////////
+
+template <class IndKw, class IndDoc>
+void shuffleInd(std::unordered_map<IndKw, std::vector<IndDoc>>& ind) {
+    for (std::pair pair : ind) {
+        IndKw indKw = pair.first;
+        std::vector<IndDoc> indDocs = pair.second;
+        std::shuffle(indDocs.begin(), indDocs.end(), RNG);
+    }
+}
+
+template <class DbDoc, class DbKw>
+Db<DbDoc, DbKw> indToDb(const std::unordered_map<Range<DbKw>, std::vector<DbDoc>>& ind) {
+    Db<DbDoc, DbKw> db;
+    for (std::pair pair : ind) {
+        Range<DbKw> dbKwRange = pair.first;
+        std::vector<DbDoc> dbDocs = pair.second;
+        for (DbDoc dbDoc: dbDocs) {
+            db.push_back(std::pair {dbDoc, dbKwRange});
+        }
+    }
+    return db;
+}
+
+template void shuffleInd(std::unordered_map<Range<Kw>, std::vector<Id>>& ind);
+template void shuffleInd(std::unordered_map<Range<Kw>, std::vector<IdOp>>& ind);
+template void shuffleInd(std::unordered_map<Range<Id>, std::vector<Id>>& ind);
+template void shuffleInd(std::unordered_map<Range<Id>, std::vector<IdOp>>& ind);
+
+template Db<Id, Kw> indToDb(const std::unordered_map<Range<Kw>, std::vector<Id>>& ind);
+template Db<IdOp, Kw> indToDb(const std::unordered_map<Range<Kw>, std::vector<IdOp>>& ind);
+template Db<Id, Id> indToDb(const std::unordered_map<Range<Id>, std::vector<Id>>& ind);
+template Db<IdOp, Id> indToDb(const std::unordered_map<Range<Id>, std::vector<IdOp>>& ind);

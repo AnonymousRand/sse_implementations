@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <iostream>
+#include <random>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -14,6 +15,9 @@
 static const int KEY_LEN    = 256 / 8;
 static const int IV_LEN     = 128 / 8;
 static const int BLOCK_SIZE = 128 / 8;
+
+static std::random_device RAND_DEV;
+static std::mt19937 RNG(RAND_DEV());
 
 // use `ustring` as much as possible instead of `unsigned char*` to avoid C-style hell
 using ustring = std::basic_string<unsigned char>;
@@ -223,3 +227,13 @@ class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, IdRange>> {
         static SrciDb1Doc<DbKw> decode(const ustring& ustr);
         std::string toStr() const override;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// Other
+////////////////////////////////////////////////////////////////////////////////
+
+template <class IndKw, class IndDoc>
+void shuffleInd(std::unordered_map<IndKw, std::vector<IndDoc>>& ind);
+
+template <class DbDoc, class DbKw>
+Db<DbDoc, DbKw> indToDb(const std::unordered_map<Range<DbKw>, std::vector<DbDoc>>& ind);

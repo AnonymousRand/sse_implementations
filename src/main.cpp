@@ -1,14 +1,10 @@
 #include <chrono>
 #include <cmath>
-#include <random>
 
 #include "log_src.h"
 #include "log_srci.h"
 #include "pi_bas.h"
 #include "sda.h"
-
-static std::random_device dev;
-static std::mt19937 rng(dev());
 
 template <class DbDoc = IdOp, class DbKw = Kw>
 Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {

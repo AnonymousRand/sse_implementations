@@ -1,6 +1,3 @@
-#include <algorithm>
-#include <random>
-
 #include <openssl/rand.h>
 
 #include "log_srci.h"
@@ -97,18 +94,9 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
         }
     }
 
-    // randomly permute dbDocuments associated with same id range/node and convert temporary `unordered_map` to `Db`
-    Db<DbDoc, Id> db2;
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    for (std::pair pair : ind2) {
-        IdRange idRange = pair.first;
-        std::vector<DbDoc> dbDocs = pair.second;
-        std::shuffle(dbDocs.begin(), dbDocs.end(), rng);
-        for (DbDoc dbDoc: dbDocs) {
-            db2.push_back(std::pair {dbDoc, idRange});
-        }
-    }
+    // randomly permute documents associated with same id range/node and convert temporary `unordered_map` to `Db`
+    shuffleInd(ind2);
+    Db<DbDoc, Id> db2 = indToDb(ind2);
 
     this->underly1.setup(secParam, db1);
     this->underly2.setup(secParam, db2);

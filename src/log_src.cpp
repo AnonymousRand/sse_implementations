@@ -1,6 +1,3 @@
-#include <algorithm>
-#include <random>
-
 #include "log_src.h"
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
@@ -27,7 +24,7 @@ void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db
     // replicate every document to all keyword ranges/nodes in TDAG that cover it
     // temporarily use `unordered_map` (an inverted index) instead of `vector` to
     // easily identify which docs share the same keyword range for shuffling later
-    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> index;
+    std::unordered_map<Range<DbKw>, std::vector<DbDoc>> ind;
     int temp = 0;
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
@@ -35,26 +32,17 @@ void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db
         std::list<TdagNode<DbKw>*> ancestors = this->tdag->getLeafAncestors(dbKwRange);
         for (TdagNode<DbKw>* ancestor : ancestors) {
             Range<DbKw> ancestorDbKwRange = ancestor->getRange();
-            if (index.count(ancestorDbKwRange) == 0) {
-                index[ancestorDbKwRange] = std::vector {dbDoc};
+            if (ind.count(ancestorDbKwRange) == 0) {
+                ind[ancestorDbKwRange] = std::vector {dbDoc};
             } else {
-                index[ancestorDbKwRange].push_back(dbDoc);
+                ind[ancestorDbKwRange].push_back(dbDoc);
             }
         }
     }
 
     // randomly permute documents associated with same keyword range/node and convert temporary `unordered_map` to `Db`
-    Db<DbDoc, DbKw> processedDb;
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    for (std::pair pair : index) {
-        Range<DbKw> dbKwRange = pair.first;
-        std::vector<DbDoc> dbDocs = pair.second;
-        std::shuffle(dbDocs.begin(), dbDocs.end(), rng);
-        for (DbDoc dbDoc : dbDocs) {
-            processedDb.push_back(std::pair {dbDoc, dbKwRange});
-        }
-    }
+    shuffleInd(ind);
+    Db<DbDoc, DbKw> processedDb = indToDb(ind);
 
     this->underly.setup(secParam, processedDb);
 }
