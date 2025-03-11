@@ -48,7 +48,7 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size " << (int)log2(query.size()) << "): " << searchElapsed.count() * 1000 << " ms"
+        std::cout << "Search time (size 2^" << (int)log2(query.size()) << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
     }
     std::cout << std::endl;
@@ -66,14 +66,16 @@ void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
         sse.setup(KEY_LEN, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size " << (int)log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms" << std::endl;
+        std::cout << "Setup time (size 2^" << (int)log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
+                << std::endl;
 
         // query
         auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size " << (int)log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms" << std::endl;
+        std::cout << "Search time (size 2^" << (int)log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
+                << std::endl;
     }
     std::cout << std::endl;
 }
