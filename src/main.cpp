@@ -119,7 +119,7 @@ int main() {
     // experiment 1
 
     std::cout << "-------------------- Experiment 1 --------------------" << std::endl;
-    std::cout << "DB size  : 2^"      << maxDbSizeExp << " (8 times smaller for SDa)" << std::endl;
+    std::cout << "DB size  : 2^"      << maxDbSizeExp << " (16 times smaller for SDa)" << std::endl;
     std::cout << "Query    : varied " << std::endl;
     std::cout << "Data skew: no"      << std::endl;
     std::cout << std::endl;
@@ -146,17 +146,17 @@ int main() {
 
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaPiBas, maxDbSize / 8);
+    exp1(sdaPiBas, maxDbSize / 16);
     sdaPiBas.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrc, maxDbSize / 8);
+    exp1(sdaLogSrc, maxDbSize / 16);
     sdaLogSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrci, maxDbSize / 8);
+    exp1(sdaLogSrci, maxDbSize / 16);
     sdaLogSrci.setup(KEY_LEN, Db {});
 
     // experiment 2

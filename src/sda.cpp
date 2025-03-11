@@ -5,6 +5,10 @@
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly, DbDoc, DbKw>
 void SdaBase<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
+    if (db.empty()) {
+        this->underlys.clear();
+        return;
+    }
     for (DbEntry<DbDoc, DbKw> entry : db) {
         this->update(entry);
     }

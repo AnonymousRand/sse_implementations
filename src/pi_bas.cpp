@@ -19,7 +19,7 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->_isEmpty = db.empty();
     if (db.empty()) {
         // clear memory
-        this->encInd = EncInd {};
+        this->encInd.clear();
         return;
     }
 
