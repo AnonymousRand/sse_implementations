@@ -5,8 +5,12 @@
 #include "util/openssl.h"
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-LogSrci<DbDoc, DbKw, Underly>::LogSrci( Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, Underly<DbDoc, Id>& underly2)
-        : underly1(underly1), underly2(underly2) {}
+LogSrci<DbDoc, DbKw, Underly>::LogSrci() : LogSrci(Underly<SrciDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>()) {}
+
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
+LogSrci<DbDoc, DbKw, Underly>::LogSrci(
+    const Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2
+) : underly1(underly1), underly2(underly2) {}
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
 void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
@@ -99,12 +103,12 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
 }
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
+TdagNode<Id>* LogSrci<DbDoc, DbKw, Underly>::searchBase(const Range<DbKw>& query) const {
     // query 1
 
     TdagNode<DbKw>* src1 = this->tdag1->findSrc(query);
     if (src1 == nullptr) { 
-        return std::vector<DbDoc> {};
+        return nullptr;
     }
     std::vector<SrciDb1Doc<DbKw>> choices = this->underly1.search(src1->getRange());
 
@@ -127,10 +131,25 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& quer
 
     IdRange idRangeToQuery {minId, maxId};
     TdagNode<Id>* src2 = this->tdag2->findSrc(idRangeToQuery);
-    if (src2 == nullptr) { 
+    return src2;
+}
+
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
+std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
+    TdagNode<Id>* src2 = this->searchBase(query);
+    if (src2 == nullptr) {
         return std::vector<DbDoc> {};
     }
     return this->underly2.search(src2->getRange());
+}
+
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
+std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
+    TdagNode<Id>* src2 = this->searchBase(query);
+    if (src2 == nullptr) {
+        return std::vector<DbDoc> {};
+    }
+    return this->underly2.searchWithoutHandlingDels(src2->getRange());
 }
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
@@ -145,3 +164,6 @@ bool LogSrci<DbDoc, DbKw, Underly>::isEmpty() const {
 
 template class LogSrci<Id, Kw, PiBas>;
 template class LogSrci<IdOp, Kw, PiBas>;
+
+template class LogSrci<Id, Kw, PiBasResHiding>;
+template class LogSrci<IdOp, Kw, PiBasResHiding>;

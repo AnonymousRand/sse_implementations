@@ -245,5 +245,13 @@ std::vector<IdOp> PiBasResHiding<IdOp, DbKw>::search(const Range<DbKw>& query) c
     return removeDeletedIdOps(results);
 }
 
+// PiBas
 template class PiBasResHiding<Id, Kw>;
 template class PiBasResHiding<IdOp, Kw>;
+
+// Log-SRC-i index 1
+template class PiBasResHiding<SrciDb1Doc<Kw>, Kw>;
+
+// Log-SRC-i index 2
+template class PiBasResHiding<Id, Id>;
+template class PiBasResHiding<IdOp, Id>;

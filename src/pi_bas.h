@@ -24,10 +24,9 @@ class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
     public:
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
+        std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
-        // public since `Sda` uses it to not prematurely remove deletion tuples
-        std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 };
 
 // this is literally just so I can partially specialize `search()`'s template
@@ -61,9 +60,9 @@ class PiBasResHidingBase : public ISdaUnderly<DbDoc, DbKw> {
     public:
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
+        std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
-        std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 };
 
 template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>

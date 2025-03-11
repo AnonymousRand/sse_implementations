@@ -1,6 +1,8 @@
+#include "log_src.h"
+#include "log_srci.h"
 #include "sda.h"
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, class Underly> requires ISdaUnderly_<Underly>
 void SdaBase<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     for (DbEntry<DbDoc, DbKw> entry : db) {
@@ -8,11 +10,11 @@ void SdaBase<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     }
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, class Underly> requires ISdaUnderly_<Underly>
 void SdaBase<DbDoc, DbKw, Underly>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
-        Underly<DbDoc, DbKw> underly;
+        Underly underly;
         underly.setup(this->secParam, Db<DbDoc, DbKw> {newEntry});
         this->underlys.push_back(underly);
         this->firstEmptyInd = 1;
@@ -32,7 +34,7 @@ void SdaBase<DbDoc, DbKw, Underly>::update(const DbEntry<DbDoc, DbKw>& newEntry)
     if (this->firstEmptyInd < this->underlys.size() - 1) {
         this->underlys[this->firstEmptyInd].setup(this->secParam, mergedDb);
     } else {
-        Underly<DbDoc, DbKw> newUnderly;
+        Underly newUnderly;
         newUnderly.setup(this->secParam, mergedDb);
         this->underlys.push_back(newUnderly);
     }
@@ -52,11 +54,11 @@ void SdaBase<DbDoc, DbKw, Underly>::update(const DbEntry<DbDoc, DbKw>& newEntry)
     this->firstEmptyInd = firstEmpty;
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, class Underly> requires ISdaUnderly_<Underly>
 std::vector<DbDoc> SdaBase<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
     // search through all non-empty indexes
-    for (Underly<DbDoc, DbKw> underly : this->underlys) {
+    for (Underly underly : this->underlys) {
         if (underly.isEmpty()) {
             continue;
         }
@@ -69,16 +71,22 @@ std::vector<DbDoc> SdaBase<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(cons
     return allResults;
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, DbDoc, DbKw>
+template <IMainDbDoc_ DbDoc, class DbKw, class Underly> requires ISdaUnderly_<Underly>
 std::vector<DbDoc> Sda<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
     return this->searchWithoutHandlingDels(query);
 }
 
-template <class DbKw, template<class ...> class Underly> requires ISdaUnderly_<Underly, IdOp, DbKw>
+template <class DbKw, class Underly> requires ISdaUnderly_<Underly>
 std::vector<IdOp> Sda<IdOp, DbKw, Underly>::search(const Range<DbKw>& query) const {
     std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
     return removeDeletedIdOps(results);
 }
 
-template class Sda<Id, Kw, PiBasResHiding>;
-template class Sda<IdOp, Kw, PiBasResHiding>;
+template class Sda<Id, Kw, PiBasResHiding<Id, Kw>>;
+template class Sda<IdOp, Kw, PiBasResHiding<IdOp, Kw>>;
+
+template class Sda<Id, Kw, LogSrc<Id, Kw, PiBasResHiding>>;
+template class Sda<IdOp, Kw, LogSrc<IdOp, Kw, PiBasResHiding>>;
+
+template class Sda<Id, Kw, LogSrci<Id, Kw, PiBasResHiding>>;
+template class Sda<IdOp, Kw, LogSrci<IdOp, Kw, PiBasResHiding>>;

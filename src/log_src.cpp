@@ -1,7 +1,10 @@
 #include "log_src.h"
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-LogSrc<DbDoc, DbKw, Underly>::LogSrc(Underly<DbDoc, DbKw>& underly) : underly(underly) {};
+LogSrc<DbDoc, DbKw, Underly>::LogSrc() : LogSrc(Underly<DbDoc, DbKw>()) {};
+
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
+LogSrc<DbDoc, DbKw, Underly>::LogSrc(const Underly<DbDoc, DbKw>& underly) : underly(underly) {};
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
 void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
@@ -45,6 +48,11 @@ std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query
 }
 
 template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
+std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
+    return this->underly.searchWithoutHandlingDels(query);
+}
+
+template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
 Db<DbDoc, DbKw> LogSrc<DbDoc, DbKw, Underly>::getDb() const {
     return this->underly.getDb();
 }
@@ -56,3 +64,6 @@ bool LogSrc<DbDoc, DbKw, Underly>::isEmpty() const {
 
 template class LogSrc<Id, Kw, PiBas>;
 template class LogSrc<IdOp, Kw, PiBas>;
+
+template class LogSrc<Id, Kw, PiBasResHiding>;
+template class LogSrc<IdOp, Kw, PiBasResHiding>;

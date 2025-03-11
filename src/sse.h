@@ -37,10 +37,11 @@ class IDsse : public ISse<DbDoc, DbKw> {
 template <IDbDoc_ DbDoc, class DbKw>
 class ISdaUnderly : public ISse<DbDoc, DbKw> {
     public:
+        virtual std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const = 0;
         virtual Db<DbDoc, DbKw> getDb() const = 0;
         virtual bool isEmpty() const = 0;
 };
 
-template <template<class ...> class T, class T1, class T2> concept ISdaUnderly_ = requires(T<T1, T2> t) {
+template <class T> concept ISdaUnderly_ = requires(T t) {
     []<class X, class Y>(ISdaUnderly<X, Y>&){}(t);
 };
