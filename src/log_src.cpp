@@ -1,13 +1,13 @@
 #include "log_src.h"
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-LogSrc<DbDoc, DbKw, Underly>::LogSrc() : LogSrc(Underly<DbDoc, DbKw>()) {};
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+LogSrc<Underly, DbDoc, DbKw>::LogSrc() : LogSrc(Underly<DbDoc, DbKw>()) {};
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-LogSrc<DbDoc, DbKw, Underly>::LogSrc(const Underly<DbDoc, DbKw>& underly) : underly(underly) {};
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+LogSrc<Underly, DbDoc, DbKw>::LogSrc(const Underly<DbDoc, DbKw>& underly) : underly(underly) {};
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     DbKw maxDbKw = findMaxDbKw(db);
     this->tdag = TdagNode<DbKw>::buildTdag(maxDbKw);
@@ -38,8 +38,8 @@ void LogSrc<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db
     this->underly.setup(secParam, processedDb);
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+std::vector<DbDoc> LogSrc<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
     TdagNode<DbKw>* src = this->tdag->findSrc(query);
     if (src == nullptr) {
         return std::vector<DbDoc> {};
@@ -47,23 +47,23 @@ std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query
     return this->underly.search(src->getRange());
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-std::vector<DbDoc> LogSrc<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+std::vector<DbDoc> LogSrc<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     return this->underly.searchWithoutHandlingDels(query);
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-Db<DbDoc, DbKw> LogSrc<DbDoc, DbKw, Underly>::getDb() const {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+Db<DbDoc, DbKw> LogSrc<Underly, DbDoc, DbKw>::getDb() const {
     return this->underly.getDb();
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-bool LogSrc<DbDoc, DbKw, Underly>::isEmpty() const {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+bool LogSrc<Underly, DbDoc, DbKw>::isEmpty() const {
     return this->underly.isEmpty();
 }
 
-template class LogSrc<Id, Kw, PiBas>;
-template class LogSrc<IdOp, Kw, PiBas>;
+template class LogSrc<PiBas, Id, Kw>;
+template class LogSrc<PiBas, IdOp, Kw>;
 
-template class LogSrc<Id, Kw, PiBasResHiding>;
-template class LogSrc<IdOp, Kw, PiBasResHiding>;
+template class LogSrc<PiBasResHiding, Id, Kw>;
+template class LogSrc<PiBasResHiding, IdOp, Kw>;

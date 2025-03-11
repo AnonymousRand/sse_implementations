@@ -102,8 +102,8 @@ void exp3(ISse<DbDoc, DbKw>& sse, int dbSize) {
 int main() {
     PiBas piBas;
     PiBasResHiding piBasResHiding;
-    LogSrc<> logSrc;
-    LogSrci<> logSrci;
+    LogSrc<PiBas> logSrc;
+    LogSrci<PiBas> logSrci;
     Sda<PiBasResHiding<>> sda;
 
     int maxDbSizeExp;

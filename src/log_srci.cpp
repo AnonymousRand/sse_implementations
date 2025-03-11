@@ -4,16 +4,16 @@
 #include "pi_bas.h"
 #include "util/openssl.h"
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-LogSrci<DbDoc, DbKw, Underly>::LogSrci() : LogSrci(Underly<SrciDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>()) {}
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+LogSrci<Underly, DbDoc, DbKw>::LogSrci() : LogSrci(Underly<SrciDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>()) {}
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-LogSrci<DbDoc, DbKw, Underly>::LogSrci(
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+LogSrci<Underly, DbDoc, DbKw>::LogSrci(
     const Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2
 ) : underly1(underly1), underly2(underly2) {}
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->db = db;
     this->_isEmpty = this->db.empty();
 
@@ -102,8 +102,8 @@ void LogSrci<DbDoc, DbKw, Underly>::setup(int secParam, const Db<DbDoc, DbKw>& d
     this->underly2.setup(secParam, db2);
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-TdagNode<Id>* LogSrci<DbDoc, DbKw, Underly>::searchBase(const Range<DbKw>& query) const {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+TdagNode<Id>* LogSrci<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     // query 1
 
     TdagNode<DbKw>* src1 = this->tdag1->findSrc(query);
@@ -134,8 +134,8 @@ TdagNode<Id>* LogSrci<DbDoc, DbKw, Underly>::searchBase(const Range<DbKw>& query
     return src2;
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& query) const {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+std::vector<DbDoc> LogSrci<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
     TdagNode<Id>* src2 = this->searchBase(query);
     if (src2 == nullptr) {
         return std::vector<DbDoc> {};
@@ -143,8 +143,8 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::search(const Range<DbKw>& quer
     return this->underly2.search(src2->getRange());
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+std::vector<DbDoc> LogSrci<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     TdagNode<Id>* src2 = this->searchBase(query);
     if (src2 == nullptr) {
         return std::vector<DbDoc> {};
@@ -152,18 +152,18 @@ std::vector<DbDoc> LogSrci<DbDoc, DbKw, Underly>::searchWithoutHandlingDels(cons
     return this->underly2.searchWithoutHandlingDels(src2->getRange());
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-Db<DbDoc, DbKw> LogSrci<DbDoc, DbKw, Underly>::getDb() const {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+Db<DbDoc, DbKw> LogSrci<Underly, DbDoc, DbKw>::getDb() const {
     return this->db;
 }
 
-template <IMainDbDoc_ DbDoc, class DbKw, template<class ...> class Underly> requires ISse_<Underly, DbDoc, DbKw>
-bool LogSrci<DbDoc, DbKw, Underly>::isEmpty() const {
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+bool LogSrci<Underly, DbDoc, DbKw>::isEmpty() const {
     return this->_isEmpty;
 }
 
-template class LogSrci<Id, Kw, PiBas>;
-template class LogSrci<IdOp, Kw, PiBas>;
+template class LogSrci<PiBas, Id, Kw>;
+template class LogSrci<PiBas, IdOp, Kw>;
 
-template class LogSrci<Id, Kw, PiBasResHiding>;
-template class LogSrci<IdOp, Kw, PiBasResHiding>;
+template class LogSrci<PiBasResHiding, Id, Kw>;
+template class LogSrci<PiBasResHiding, IdOp, Kw>;

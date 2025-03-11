@@ -85,8 +85,8 @@ std::vector<IdOp> Sda<Underly, IdOp, DbKw>::search(const Range<DbKw>& query) con
 template class Sda<PiBasResHiding<Id, Kw>, Id, Kw>;
 template class Sda<PiBasResHiding<IdOp, Kw>, IdOp, Kw>;
 
-template class Sda<LogSrc<Id, Kw, PiBasResHiding>, Id, Kw>;
-template class Sda<LogSrc<IdOp, Kw, PiBasResHiding>, IdOp, Kw>;
+template class Sda<LogSrc<PiBasResHiding, Id, Kw>, Id, Kw>;
+template class Sda<LogSrc<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
 
-template class Sda<LogSrci<Id, Kw, PiBasResHiding>, Id, Kw>;
-template class Sda<LogSrci<IdOp, Kw, PiBasResHiding>, IdOp, Kw>;
+template class Sda<LogSrci<PiBasResHiding, Id, Kw>, Id, Kw>;
+template class Sda<LogSrci<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
