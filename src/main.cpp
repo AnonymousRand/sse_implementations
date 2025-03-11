@@ -146,17 +146,17 @@ int main() {
 
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaPiBas, maxDbSize);
+    exp1(sdaPiBas, maxDbSize / 4);
     sdaPiBas.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrc, maxDbSize);
+    exp1(sdaLogSrc, maxDbSize / 4);
     sdaLogSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrci, maxDbSize);
+    exp1(sdaLogSrci, maxDbSize / 4);
     sdaLogSrci.setup(KEY_LEN, Db {});
 
     // experiment 2
@@ -169,37 +169,37 @@ int main() {
 
     std::cout << "---------- PiBas ----------" << std::endl;
     std::cout << std::endl;
-    exp2(piBas, maxDbSize);
+    exp2(piBas, maxDbSize / 2);
     piBas.setup(KEY_LEN, Db {});
 
     std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp2(piBasResHiding, maxDbSize);
+    exp2(piBasResHiding, maxDbSize / 2);
     piBasResHiding.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Log-SRC ----------" << std::endl;
     std::cout << std::endl;
-    exp2(logSrc, maxDbSize);
+    exp2(logSrc, maxDbSize / 2);
     logSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
-    exp2(logSrci, maxDbSize);
+    exp2(logSrci, maxDbSize / 2);
     logSrci.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaPiBas, maxDbSize);
+    exp2(sdaPiBas, maxDbSize / 2);
     sdaPiBas.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrc, maxDbSize);
+    exp2(sdaLogSrc, maxDbSize / 2);
     sdaLogSrc.setup(KEY_LEN, Db {});
     
     std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrci, maxDbSize);
+    exp2(sdaLogSrci, maxDbSize / 2);
     sdaLogSrci.setup(KEY_LEN, Db {});
     
     // experiment 3
