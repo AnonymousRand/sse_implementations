@@ -3,7 +3,9 @@
 #include "pi_bas.h"
 #include "sse.h"
 
-template <IMainDbDoc_ DbDoc, class DbKw, class Underly> requires ISdaUnderly_<Underly>
+// don't use template template parameter for `Underly` because they may have other deeper templates (like for Log-SRC)
+// and it can get very complicated so probably best to just explicitly specify everything here
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly, DbDoc, DbKw>
 class SdaBase : public IDsse<DbDoc, DbKw> {
     protected:
         std::vector<Underly> underlys;
@@ -16,15 +18,14 @@ class SdaBase : public IDsse<DbDoc, DbKw> {
         void update(const DbEntry<DbDoc, DbKw>& newEntry) override;
 };
 
-template <IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw, class Underly = PiBasResHiding<DbDoc, DbKw>>
-        requires ISdaUnderly_<Underly>
-class Sda : public SdaBase<DbDoc, DbKw, Underly> {
+template <class Underly, IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw> requires ISdaUnderly_<Underly, DbDoc, DbKw>
+class Sda : public SdaBase<Underly, DbDoc, DbKw> {
     public:
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };
 
-template <class DbKw, class Underly> requires ISdaUnderly_<Underly>
-class Sda<IdOp, DbKw, Underly> : public SdaBase<IdOp, DbKw, Underly> {
+template <class Underly, class DbKw> requires ISdaUnderly_<Underly, IdOp, DbKw>
+class Sda<Underly, IdOp, DbKw> : public SdaBase<Underly, IdOp, DbKw> {
     public:
         std::vector<IdOp> search(const Range<DbKw>& query) const;
 };

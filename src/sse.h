@@ -16,7 +16,7 @@ class ISse {
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
 };
 
-template <template<class ...> class T, class T1, class T2> concept ISse_ = requires(T<T1, T2> t) {
+template <template<class ...> class T, class DbDoc, class DbKw> concept ISse_ = requires(T<DbDoc, DbKw> t) {
     []<class X, class Y>(ISse<X, Y>&){}(t);
 };
 
@@ -42,6 +42,4 @@ class ISdaUnderly : public ISse<DbDoc, DbKw> {
         virtual bool isEmpty() const = 0;
 };
 
-template <class T> concept ISdaUnderly_ = requires(T t) {
-    []<class X, class Y>(ISdaUnderly<X, Y>&){}(t);
-};
+template <class T, class DbDoc, class DbKw> concept ISdaUnderly_ = std::derived_from<T, ISdaUnderly<DbDoc, DbKw>>;
