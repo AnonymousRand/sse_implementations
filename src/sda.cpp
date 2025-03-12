@@ -26,6 +26,7 @@ void SdaBase<Underly, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry)
     }
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`; always merge/insert into first index if it's empty
+    // todo try list instead of vector dbs for faster merging???
     Db<DbDoc, DbKw> mergedDb;
     for (int i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
         // original paper fetches encrypted index and decrypts instead of `getDb()`

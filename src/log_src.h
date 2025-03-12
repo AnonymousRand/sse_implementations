@@ -10,6 +10,7 @@ class LogSrc : public ISdaUnderly<DbDoc, DbKw> {
     private:
         Underly<DbDoc, DbKw> underly;
         TdagNode<DbKw>* tdag;
+        Db<DbDoc, DbKw> db; // store instead of using underlying instance's `db` since that one has replications
 
     public:
         LogSrc();
