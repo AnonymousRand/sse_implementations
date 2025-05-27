@@ -18,6 +18,7 @@ static const int IV_LEN     = 128 / 8;
 static const int BLOCK_SIZE = 128 / 8;
 // PRECONDITION: keywords are always positive
 static const int DB_KW_MIN  = 0;
+static const int DUMMY      = -1;
 
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
