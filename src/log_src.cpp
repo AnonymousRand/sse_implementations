@@ -12,7 +12,7 @@ void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db
 
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     DbKw maxDbKw = findMaxDbKw(db);
-    this->tdag = TdagNode<DbKw>::buildTdag(maxDbKw);
+    this->tdag = new TdagNode<DbKw>(maxDbKw);
 
     // replicate every document to all keyword ranges/nodes in TDAG that cover it
     // temporarily use `unordered_map` (an inverted index) instead of `vector` to

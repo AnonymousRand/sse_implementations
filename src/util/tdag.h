@@ -27,6 +27,12 @@ class TdagNode {
          * to the union of its children's ranges.
          */
         TdagNode(TdagNode<T>* left, TdagNode<T>* right);
+
+        /**
+         * Construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up from the given maximum leaf value,
+         * with consecutive size 1 ranges as leaves.
+         */
+        TdagNode(T& maxLeafVal);
         
         ~TdagNode();
 
@@ -56,19 +62,6 @@ class TdagNode {
          * Get `this->range`.
          */
         Range<T> getRange() const;
-
-        /**
-         * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given maximum leaf value,
-         * with consecutive size 1 ranges as leaves.
-         */
-        static TdagNode<T>* buildTdag(T& maxLeafVal);
-
-        /**
-         * Construct a TDAG (full binary tree + intermediate nodes) bottom-up from the given leaf values.
-         * Leaf values must be disjoint but contiguous `Range`s; they are sorted in
-         * ascending order by `set` based on the definition of the `<` operator for `Range`.
-         */
-        static TdagNode<T>* buildTdag(std::set<Range<T>>& leafVals);
 
         template <class T2>
         friend std::ostream& operator <<(std::ostream& os, TdagNode<T2>* node);

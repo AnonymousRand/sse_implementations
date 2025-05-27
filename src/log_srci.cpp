@@ -21,7 +21,7 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 
     // build TDAG1 over keywords
     DbKw maxDbKw = findMaxDbKw(db);
-    this->tdag1 = TdagNode<DbKw>::buildTdag(maxDbKw);
+    this->tdag1 = new TdagNode<DbKw>(maxDbKw);
 
     // figure out which documents share the same keywords by building index and list of unique kws like in PiBas
     Ind<DbKw, Id> ind1;
@@ -75,7 +75,7 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
             maxId = id;
         }
     }
-    this->tdag2 = TdagNode<Id>::buildTdag(maxId);
+    this->tdag2 = new TdagNode<Id>(maxId);
 
     // replicate every document to all id ranges/nodes in TDAG2 that cover it
     // again need temporary `unordered_map` index to shuffle

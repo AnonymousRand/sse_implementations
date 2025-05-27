@@ -20,6 +20,78 @@ TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) {
 }
 
 template <class T>
+TdagNode<T>::TdagNode(T& maxLeafVal) {
+    std::set<Range<T>> leafVals; // `set` automatically sorts leaf values in ascending order
+    for (T i = T(DB_KW_MIN); i <= maxLeafVal; i++) {
+        leafVals.insert(Range<T> {i, i});
+    }
+
+    // array to hold nodes while building; initialize with leaves
+    // `deque` seems to perform marginally better than `list` or `vector` and seems to be the most natural choice here
+    std::deque<TdagNode<T>*> l;
+    for (Range<T> leafVal : leafVals) {
+        l.push_back(new TdagNode<T>(leafVal));
+    }
+
+    // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)
+    // trees are balanced though which is nice
+    auto joinNodes = [&](TdagNode<T>* node1, auto it) {
+        TdagNode<T>* node2 = *it;
+        if (node2->range.first - 1 == node1->range.second) {
+            // if `node1` is the left child of new parent node
+            TdagNode<T>* parent = new TdagNode<T>(node1, node2);
+            l.erase(it); // have to `erase()` before `push_back()` to avoid messy memory issues
+            l.push_back(parent);
+            return true;
+        }
+        if (node2->range.second + 1 == node1->range.first) {
+            // if `node2` is the left child of new parent node
+            TdagNode<T>* parent = new TdagNode<T>(node2, node1);
+            l.erase(it);
+            l.push_back(parent);
+            return true;
+        }
+        return false;
+    };
+
+    while (l.size() > 1) {
+        // find first two nodes from `l` that have contiguous ranges and join them with a parent node
+        // then delete these two nodes and append their new parent node to `l` to keep building tree
+        TdagNode<T>* node1 = l.front();
+        l.pop_front();
+        // find a contiguous node; I proved that this must either be the next node at the front, or the one at the back
+        if (joinNodes(node1, l.begin())) {
+            continue;
+        } 
+        if (!joinNodes(node1, l.end() - 1)) {
+            std::cout << "im sorry what" << std::endl;
+        }
+    }
+
+    // add extra TDAG nodes
+    TdagNode<T>* tdag = l.front();
+    std::list<TdagNode<T>*> nodes = tdag->traverse();
+    while (!nodes.empty()) {
+        TdagNode<T>* node = nodes.front();
+        nodes.pop_front();
+        if (node->left == nullptr
+                || node->right == nullptr
+                || node->left->right == nullptr
+                || node->right->left == nullptr) {
+            continue;
+        }
+
+        TdagNode<T>* extraParent = new TdagNode<T>(node->left->right, node->right->left);
+        node->left->right->extraParent = extraParent;
+        node->right->left->extraParent = extraParent;
+        // using my method of finding places to add extra nodes, extra nodes themselves must also be checked
+        nodes.push_back(extraParent);
+    }
+
+    *this = *tdag;
+}
+
+template <class T>
 TdagNode<T>::~TdagNode() {
     if (this->left != nullptr) {
         delete this->left;
@@ -170,86 +242,6 @@ std::list<TdagNode<T>*> TdagNode<T>::getLeafAncestors(const Range<T>& leafRange)
 template <class T>
 Range<T> TdagNode<T>::getRange() const {
     return this->range;
-}
-
-template <class T>
-TdagNode<T>* TdagNode<T>::buildTdag(T& maxLeafVal) {
-    std::set<Range<T>> leafVals;
-    for (T i = T(DB_KW_MIN); i <= maxLeafVal; i++) {
-        leafVals.insert(Range<T> {i, i});
-    }
-    return TdagNode<T>::buildTdag(leafVals);
-}
-
-template <class T>
-TdagNode<T>* TdagNode<T>::buildTdag(std::set<Range<T>>& leafVals) {
-    if (leafVals.size() == 0) {
-        return nullptr;
-    }
-
-    // array to hold nodes while building; initialize with leaves
-    // `deque` seems to perform marginally better than `list` or `vector` and seems to be the most natural choice here
-    std::deque<TdagNode<T>*> l;
-    for (Range<T> leafVal : leafVals) {
-        l.push_back(new TdagNode<T>(leafVal));
-    }
-
-    // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)
-    // trees are balanced though which is nice
-    auto joinNodes = [&](TdagNode<T>* node1, auto it) {
-        TdagNode<T>* node2 = *it;
-        if (node2->range.first - 1 == node1->range.second) {
-            // if `node1` is the left child of new parent node
-            TdagNode<T>* parent = new TdagNode<T>(node1, node2);
-            l.erase(it); // have to `erase()` before `push_back()` to avoid messy memory issues
-            l.push_back(parent);
-            return true;
-        }
-        if (node2->range.second + 1 == node1->range.first) {
-            // if `node2` is the left child of new parent node
-            TdagNode<T>* parent = new TdagNode<T>(node2, node1);
-            l.erase(it);
-            l.push_back(parent);
-            return true;
-        }
-        return false;
-    };
-
-    while (l.size() > 1) {
-        // find first two nodes from `l` that have contiguous ranges and join them with a parent node
-        // then delete these two nodes and append their new parent node to `l` to keep building tree
-        TdagNode<T>* node1 = l.front();
-        l.pop_front();
-        // find a contiguous node; I proved that this must either be the next node at the front, or the one at the back
-        if (joinNodes(node1, l.begin())) {
-            continue;
-        } 
-        if (!joinNodes(node1, l.end() - 1)) {
-            std::cout << "nani" << std::endl;
-        }
-    }
-
-    // add extra TDAG nodes
-    TdagNode<T>* tdag = l.front();
-    std::list<TdagNode<T>*> nodes = tdag->traverse();
-    while (!nodes.empty()) {
-        TdagNode<T>* node = nodes.front();
-        nodes.pop_front();
-        if (node->left == nullptr
-                || node->right == nullptr
-                || node->left->right == nullptr
-                || node->right->left == nullptr) {
-            continue;
-        }
-
-        TdagNode<T>* extraParent = new TdagNode<T>(node->left->right, node->right->left);
-        node->left->right->extraParent = extraParent;
-        node->right->left->extraParent = extraParent;
-        // using my method of finding places to add extra nodes, extra nodes themselves must also be checked
-        nodes.push_back(extraParent);
-    }
-
-    return tdag;
 }
 
 template <class T>
