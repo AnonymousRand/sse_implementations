@@ -47,7 +47,7 @@ class TdagNode {
         std::list<Range<T>> traverseLeaves();
 
         /**
-         * Get all ancestors (i.e. covering nodes) of the leaf node with `leafRange` within the tree `this`,
+         * Get all ancestors (i.e. covering nodes) of the leaf node with range `leafRange` within the tree `this`,
          * including the leaf itself.
          */
         std::list<TdagNode<T>*> getLeafAncestors(const Range<T>& leafRange);
