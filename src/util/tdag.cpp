@@ -20,7 +20,7 @@ TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) {
 }
 
 template <class T>
-TdagNode<T>::TdagNode(T& maxLeafVal) {
+TdagNode<T>::TdagNode(const T& maxLeafVal) {
     std::set<Range<T>> leafVals; // `set` automatically sorts leaf values in ascending order
     for (T i = T(DB_KW_MIN); i <= maxLeafVal; i++) {
         leafVals.insert(Range<T> {i, i});
@@ -159,7 +159,7 @@ TdagNode<T>* TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
     // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
     // and extra TDAG parent 
     std::map<T, TdagNode<T>*> candidates;
-    auto tryToAddCandidate = [&](TdagNode<T>* node) {
+    auto tryAddCandidate = [&](TdagNode<T>* node) {
         if (node == nullptr || !node->range.contains(targetRange)) {
             return T(-1);
         }
@@ -171,7 +171,7 @@ TdagNode<T>* TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
 
     T diff = T(-1);
     if (this->extraParent != nullptr) {
-        diff = tryToAddCandidate(this->extraParent);
+        diff = tryAddCandidate(this->extraParent);
         if (diff == 0) {
             return this->extraParent;
         }
@@ -185,20 +185,20 @@ TdagNode<T>* TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
         return this->extraParent;
     }
 
-    diff = tryToAddCandidate(this);
+    diff = tryAddCandidate(this);
     if (diff == 0) {
         return this;
     }
     if (this->left != nullptr) {
         TdagNode<T>* leftSrc = this->left->findSrcHelper(targetRange);
-        diff = tryToAddCandidate(leftSrc);
+        diff = tryAddCandidate(leftSrc);
         if (diff == 0) {
             return leftSrc;
         }
     }
     if (this->right != nullptr) {
         TdagNode<T>* rightSrc = this->right->findSrcHelper(targetRange);
-        diff = tryToAddCandidate(rightSrc);
+        diff = tryAddCandidate(rightSrc);
         if (diff == 0) {
             return rightSrc;
         }
@@ -208,18 +208,6 @@ TdagNode<T>* TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
         return nullptr;
     }
     return candidates.begin()->second; // take advantage of `std::map`s being sorted by key
-}
-
-template <class T>
-std::list<Range<T>> TdagNode<T>::traverseLeaves() {
-    std::list<Range<T>> leafVals;
-    std::list<TdagNode<T>*> nodes = this->traverse();
-    for (TdagNode<T>* node : nodes) {
-        if (node->left == nullptr && node->right == nullptr) {
-            leafVals.push_back(node->range);
-        }
-    }
-    return leafVals;
 }
 
 template <class T>

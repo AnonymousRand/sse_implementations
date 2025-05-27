@@ -66,7 +66,7 @@ ustring toUstr(unsigned char* p, int len);
 std::string fromUstr(const ustring& ustr);
 
 // provide hash function for `ustring`s to use faster hashmap-based structures, like `unordered_map` instead of `map`
-template<>
+template <>
 struct std::hash<ustring> {
     std::size_t operator ()(const ustring& ustr) const noexcept {
         return std::hash<std::string>{}(fromUstr(ustr));
@@ -92,13 +92,13 @@ class Range : public std::pair<T, T> {
         std::string toStr() const;
         static Range<T> fromStr(const std::string& str);
         ustring toUstr() const;
-        template<class T2>
+        template <class T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 };
 
 // hash function
-template<>
-template<class T>
+template <>
+template <class T>
 struct std::hash<Range<T>> {
     std::size_t operator ()(const Range<T>& range) const noexcept {
         return std::hash<std::string>{}(range.toStr());
@@ -169,7 +169,7 @@ class Id : public IMainDbDoc<int> {
 };
 
 // hash function
-template<>
+template <>
 struct std::hash<Id> {
     std::size_t operator ()(const Id& id) const noexcept {
         return std::hash<std::string>{}(id.toStr());

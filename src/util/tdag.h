@@ -32,12 +32,12 @@ class TdagNode {
          * Construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up from the given maximum leaf value,
          * with consecutive size 1 ranges as leaves.
          */
-        TdagNode(T& maxLeafVal);
+        TdagNode(const T& maxLeafVal);
         
         ~TdagNode();
 
         /**
-         * Traverse subtree of `this` and return all traversed nodes.
+         * Traverse subtree of `this` and return all traversed nodes in preorder.
          */
         std::list<TdagNode<T>*> traverse();
 
@@ -46,11 +46,6 @@ class TdagNode {
          * If `range` not found in `this`, return `nullptr`.
          */
         TdagNode<T>* findSrc(Range<T> targetRange);
-
-        /**
-         * Get all leaf values from the subtree of `this`.
-         */
-        std::list<Range<T>> traverseLeaves();
 
         /**
          * Get all ancestors (i.e. covering nodes) of the leaf node with range `leafRange` within the tree `this`,
