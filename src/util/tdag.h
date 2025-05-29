@@ -25,7 +25,7 @@ class TdagNode {
         TdagNode(TdagNode<T>* left, TdagNode<T>* right);
 
         std::list<TdagNode<T>*> traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents);
-        TdagNode<T>* findSrcHelper(const Range<T>& targetRange);
+        Range<T> findSrcHelper(const Range<T>& targetRange);
 
     public:
         /**
@@ -45,7 +45,7 @@ class TdagNode {
          * Find the single range cover of the leaves containing `range`.
          * If `range` not found in `this`, return `nullptr`.
          */
-        TdagNode<T>* findSrc(Range<T> targetRange);
+        Range<T> findSrc(Range<T> targetRange);
 
         /**
          * Get all ancestors (i.e. covering nodes) of the leaf node with range `leafRange` within the tree `this`,

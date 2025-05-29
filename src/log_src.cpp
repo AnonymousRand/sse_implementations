@@ -42,11 +42,11 @@ void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> LogSrc<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    TdagNode<DbKw>* src = this->tdag->findSrc(query);
-    if (src == nullptr) {
+    Range<DbKw> src = this->tdag->findSrc(query);
+    if (src == DUMMY_RANGE<DbKw>()) {
         return std::vector<DbDoc> {};
     }
-    return this->underly.search(src->getRange());
+    return this->underly.search(src);
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>

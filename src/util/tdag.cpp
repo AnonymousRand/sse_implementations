@@ -135,9 +135,9 @@ std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<
 }
 
 template <class T>
-TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
+Range<T> TdagNode<T>::findSrc(Range<T> targetRange) {
     // make sure that if the target range exceeds the TDAG's domain, we still return everything we can
-    // instead of immediately returning `nullptr` from the range size early exit in `findSrcHelper()`
+    // instead of immediately returning nothing/dummy from the range size early exit in `findSrcHelper()`
     if (targetRange.first < this->range.first) {
         targetRange.first = this->range.first;
     }
@@ -149,55 +149,58 @@ TdagNode<T>* TdagNode<T>::findSrc(Range<T> targetRange) {
 
 // basically traverses tree with DFS and early exits to find best SRC
 template <class T>
-TdagNode<T>* TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
+Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
     if (this->range.isDisjointWith(targetRange)) {
-        return nullptr;
+        return DUMMY_RANGE<T>();
     }
 
     // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
     // and extra TDAG parent 
-    std::map<T, TdagNode<T>*> candidates;
-    auto tryAddCandidate = [&](TdagNode<T>* node) {
-        if (node == nullptr || !node->range.contains(targetRange)) {
+    std::map<T, Range<T>> candidates;
+    auto tryAddCandidate = [&](Range<T> range) {
+        if (range == DUMMY_RANGE<T>() || !range.contains(targetRange)) {
             return T(-1);
         }
 
-        T diff = (targetRange.first - node->range.first) + (node->range.second - targetRange.second);
-        candidates[diff] = node;
+        T diff = (targetRange.first - range.first) + (range.second - targetRange.second);
+        candidates[diff] = range;
         return diff;
     };
 
     T diff = T(-1);
     if (this->extraParent != nullptr) {
-        diff = tryAddCandidate(this->extraParent);
+        Range<T> extraParentRange = this->extraParent->getRange();
+        diff = tryAddCandidate(extraParentRange);
         if (diff == 0) {
-            return this->extraParent;
+            return extraParentRange;
         }
     }
     // if the current node's range is narrower than the target range, it is impossible for
     // its children to be the SRC, so we only have to test its extra TDAG parent
     if (this->range.size() < targetRange.size()) {
+        // if the earlier `if` case concluded that `extraParent` is not a valid cover
         if (diff == -1) {
-            return nullptr;
+            return DUMMY_RANGE<T>();
         }
-        return this->extraParent;
+        // else if already seen that `extraParent` is valid (just not a perfect cover)
+        return this->extraParent->getRange();
     }
 
-    diff = tryAddCandidate(this);
+    diff = tryAddCandidate(this->range);
     if (diff == 0) {
-        return this;
+        return this->range;
     }
     if (this->left != nullptr) {
-        TdagNode<T>* leftSrc = this->left->findSrcHelper(targetRange);
+        Range<T> leftSrc = this->left->findSrcHelper(targetRange);
         diff = tryAddCandidate(leftSrc);
         if (diff == 0) {
             return leftSrc;
         }
     }
     if (this->right != nullptr) {
-        TdagNode<T>* rightSrc = this->right->findSrcHelper(targetRange);
+        Range<T> rightSrc = this->right->findSrcHelper(targetRange);
         diff = tryAddCandidate(rightSrc);
         if (diff == 0) {
             return rightSrc;
@@ -205,7 +208,7 @@ TdagNode<T>* TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
     }
 
     if (candidates.empty()) {
-        return nullptr;
+        return DUMMY_RANGE<T>();
     }
     return candidates.begin()->second; // take advantage of `std::map`s being sorted by key
 }

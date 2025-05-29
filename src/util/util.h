@@ -13,13 +13,6 @@
 // Basic Declarations
 ////////////////////////////////////////////////////////////////////////////////
 
-static const int KEY_LEN    = 256 / 8;
-static const int IV_LEN     = 128 / 8;
-static const int BLOCK_SIZE = 128 / 8;
-// PRECONDITION: keywords are always positive
-static const int DB_KW_MIN  = 0;
-static const int DUMMY      = -1;
-
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
 
@@ -56,6 +49,13 @@ template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 using Db         = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class DbKw = Kw, class DbDoc = IdOp>
 using Ind        = std::unordered_map<Range<DbKw>, std::vector<DbDoc>>;
+
+static const int KEY_LEN    = 256 / 8;
+static const int IV_LEN     = 128 / 8;
+static const int BLOCK_SIZE = 128 / 8;
+// PRECONDITION: keywords are always positive
+static const int DB_KW_MIN  = 0;
+static const int DUMMY      = -1;
 
 ////////////////////////////////////////////////////////////////////////////////
 // `ustring`
@@ -105,6 +105,11 @@ struct std::hash<Range<T>> {
         return std::hash<std::string>{}(range.toStr());
     }
 };
+
+template <class T>
+static Range<T> DUMMY_RANGE() {
+    return Range<T>(T(DUMMY), T(DUMMY));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // `IDbDoc`

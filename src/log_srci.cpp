@@ -103,14 +103,14 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-TdagNode<Id>* LogSrci<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+Range<Id> LogSrci<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     // query 1
 
-    TdagNode<DbKw>* src1 = this->tdag1->findSrc(query);
-    if (src1 == nullptr) { 
-        return nullptr;
+    Range<DbKw> src1 = this->tdag1->findSrc(query);
+    if (src1 == DUMMY_RANGE<DbKw>()) { 
+        return DUMMY_RANGE<Id>();
     }
-    std::vector<SrciDb1Doc<DbKw>> choices = this->underly1.search(src1->getRange());
+    std::vector<SrciDb1Doc<DbKw>> choices = this->underly1.search(src1);
 
     // query 2
 
@@ -130,26 +130,26 @@ TdagNode<Id>* LogSrci<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query
     }
 
     IdRange idRangeToQuery {minId, maxId};
-    TdagNode<Id>* src2 = this->tdag2->findSrc(idRangeToQuery);
+    Range<Id> src2 = this->tdag2->findSrc(idRangeToQuery);
     return src2;
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> LogSrci<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    TdagNode<Id>* src2 = this->searchBase(query);
-    if (src2 == nullptr) {
+    Range<Id> src2 = this->searchBase(query);
+    if (src2 == DUMMY_RANGE<Id>()) {
         return std::vector<DbDoc> {};
     }
-    return this->underly2.search(src2->getRange());
+    return this->underly2.search(src2);
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> LogSrci<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
-    TdagNode<Id>* src2 = this->searchBase(query);
-    if (src2 == nullptr) {
+    Range<Id> src2 = this->searchBase(query);
+    if (src2 == DUMMY_RANGE<Id>()) {
         return std::vector<DbDoc> {};
     }
-    return this->underly2.searchWithoutHandlingDels(src2->getRange());
+    return this->underly2.searchWithoutHandlingDels(src2);
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>

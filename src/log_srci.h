@@ -15,7 +15,7 @@ class LogSrci : public ISdaUnderly<DbDoc, DbKw> {
         Db<DbDoc, DbKw> db; // store since neither underlying instance contains the original DB
         bool _isEmpty = false;
 
-        TdagNode<Id>* searchBase(const Range<DbKw>& query) const;
+        Range<Id> searchBase(const Range<DbKw>& query) const;
 
     public:
         LogSrci();
