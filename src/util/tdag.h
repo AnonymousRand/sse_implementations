@@ -13,10 +13,6 @@ class TdagNode {
         TdagNode<T>* right;
         TdagNode<T>* extraParent;
 
-        std::list<TdagNode<T>*> traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents);
-        TdagNode<T>* findSrcHelper(const Range<T>& targetRange);
-
-    public:
         /**
          * Construct a `TdagNode` with the given `Range`, leaving its children `nullptr`.
          */
@@ -28,11 +24,15 @@ class TdagNode {
          */
         TdagNode(TdagNode<T>* left, TdagNode<T>* right);
 
+        std::list<TdagNode<T>*> traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents);
+        TdagNode<T>* findSrcHelper(const Range<T>& targetRange);
+
+    public:
         /**
-         * Construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up from the given maximum leaf value,
+         * Construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up from the given leaf count,
          * with consecutive size 1 ranges as leaves.
          */
-        TdagNode(const T& maxLeafVal);
+        TdagNode(T leafCount);
         
         ~TdagNode();
 

@@ -20,9 +20,9 @@ TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) {
 }
 
 template <class T>
-TdagNode<T>::TdagNode(const T& maxLeafVal) {
+TdagNode<T>::TdagNode(T leafCount) {
     std::set<Range<T>> leafVals; // `set` automatically sorts leaf values in ascending order
-    for (T i = T(DB_KW_MIN); i <= maxLeafVal; i++) {
+    for (T i = T(DB_KW_MIN); i <= leafCount; i++) {
         leafVals.insert(Range<T> {i, i});
     }
 
