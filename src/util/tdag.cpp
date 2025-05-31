@@ -117,6 +117,7 @@ std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<
     std::list<TdagNode<T>*> nodes;
     nodes.push_front(this);
 
+    // `list` returned so this splicing is fast
     if (this->left != nullptr) {
         nodes.splice(nodes.end(), this->left->traverseHelper(extraParents));
     }
