@@ -134,22 +134,9 @@ std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<
     return nodes;
 }
 
-template <class T>
-Range<T> TdagNode<T>::findSrc(Range<T> targetRange) {
-    // make sure that if the target range exceeds the TDAG's domain, we still return everything we can
-    // instead of immediately returning nothing/dummy from the range size early exit in `findSrcHelper()`
-    if (targetRange.first < this->range.first) {
-        targetRange.first = this->range.first;
-    }
-    if (targetRange.second > this->range.second) {
-        targetRange.second = this->range.second;
-    }
-    return this->findSrcHelper(targetRange);
-}
-
 // basically traverses tree with DFS and early exits to find best SRC
 template <class T>
-Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
+Range<T> TdagNode<T>::findSrc(const Range<T>& targetRange) {
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
     if (this->range.isDisjointWith(targetRange)) {
@@ -193,14 +180,14 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
         return this->range;
     }
     if (this->left != nullptr) {
-        Range<T> leftSrc = this->left->findSrcHelper(targetRange);
+        Range<T> leftSrc = this->left->findSrc(targetRange);
         diff = tryAddCandidate(leftSrc);
         if (diff == 0) {
             return leftSrc;
         }
     }
     if (this->right != nullptr) {
-        Range<T> rightSrc = this->right->findSrcHelper(targetRange);
+        Range<T> rightSrc = this->right->findSrc(targetRange);
         diff = tryAddCandidate(rightSrc);
         if (diff == 0) {
             return rightSrc;
