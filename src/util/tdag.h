@@ -52,9 +52,6 @@ class TdagNode {
          */
         std::list<TdagNode<T>*> getLeafAncestors(const Range<T>& leafRange);
 
-        /**
-         * Get `this->range`.
-         */
         Range<T> getRange() const;
 
         template <class T2>
