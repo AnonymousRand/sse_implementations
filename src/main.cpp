@@ -118,8 +118,8 @@ int main() {
     int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
-    std::cout << std::endl;
     int maxDbSize = pow(2, maxDbSizeExp);
+    std::cout << std::endl;
 
     // experiment 1
 
