@@ -29,10 +29,10 @@ class TdagNode {
 
     public:
         /**
-         * Construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up from the given leaf count,
-         * with consecutive size 1 ranges as leaves.
+         * Construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up up to and including the given max
+         * leaf value, with consecutive size 1 ranges as leaves.
          */
-        TdagNode(T leafCount);
+        TdagNode(T maxLeafVal);
         
         ~TdagNode();
 
