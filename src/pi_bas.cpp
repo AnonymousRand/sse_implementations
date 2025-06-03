@@ -131,7 +131,7 @@ template class PiBas<Id, Kw>;
 template class PiBas<IdOp, Kw>;
 
 // Log-SRC-i index 1
-template class PiBas<SrciDb1Doc<Kw>, Kw>;
+template class PiBas<SrcIDb1Doc<Kw>, Kw>;
 
 // Log-SRC-i index 2
 template class PiBas<Id, Id>;
@@ -250,7 +250,7 @@ template class PiBasResHiding<Id, Kw>;
 template class PiBasResHiding<IdOp, Kw>;
 
 // Log-SRC-i index 1
-template class PiBasResHiding<SrciDb1Doc<Kw>, Kw>;
+template class PiBasResHiding<SrcIDb1Doc<Kw>, Kw>;
 
 // Log-SRC-i index 2
 template class PiBasResHiding<Id, Id>;

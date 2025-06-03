@@ -26,7 +26,7 @@ template <class T> class IMainDbDoc;
 class Id;
 class Op;
 class IdOp;
-template <class DbKw = Kw> class SrciDb1Doc;
+template <class DbKw = Kw> class SrcIDb1Doc;
 
 // black magic (https://stackoverflow.com/a/71921982)
 // (java generics `extends`: look what they need to mimic a fraction of my power)
@@ -224,16 +224,16 @@ class IdOp : public IMainDbDoc<std::pair<Id, Op>> {
 std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps);
 
 ////////////////////////////////////////////////////////////////////////////////
-// `SrciDb1Doc`
+// `SrcIDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
 // PRECONDITION: since this just indexes a range of `Id`s, we need document ids to be consecutive
 template <class DbKw>
-class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<Id>>> {
+class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<Id>>> {
     public:
-        SrciDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange);
+        SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange);
 
-        static SrciDb1Doc<DbKw> decode(const ustring& ustr);
+        static SrcIDb1Doc<DbKw> decode(const ustring& ustr);
         std::string toStr() const override;
 };
 

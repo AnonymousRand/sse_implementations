@@ -318,35 +318,35 @@ std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// `SrciDb1Doc`
+// `SrcIDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class DbKw>
-SrciDb1Doc<DbKw>::SrciDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange)
+SrcIDb1Doc<DbKw>::SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange)
         : IDbDoc<std::pair<Range<DbKw>, Range<Id>>>(std::pair {dbKwRange, idRange}) {}
 
 template <class DbKw>
-SrciDb1Doc<DbKw> SrciDb1Doc<DbKw>::decode(const ustring& ustr) {
+SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
     if (!std::regex_search(str, matches, re) || matches.size() != 3) {
-        std::cerr << "Error: bad string passed to `SrciDb1Doc.fromUstr()`, the world is going to end" << std::endl;
+        std::cerr << "Error: bad string passed to `SrcIDb1Doc.fromUstr()`, the world is going to end" << std::endl;
         exit(EXIT_FAILURE);
     }
     Range<Kw> kwRange = Range<Kw>::fromStr(matches[1].str());
     Range<Id> idRange = Range<Id>::fromStr(matches[2].str());
-    return SrciDb1Doc<DbKw> {kwRange, idRange};
+    return SrcIDb1Doc<DbKw> {kwRange, idRange};
 }
 
 template <class DbKw>
-std::string SrciDb1Doc<DbKw>::toStr() const {
+std::string SrcIDb1Doc<DbKw>::toStr() const {
     std::stringstream ss;
     ss << "(" << this->val.first << "," << this->val.second << ")";
     return ss.str();
 }
 
-template class SrciDb1Doc<Kw>;
+template class SrcIDb1Doc<Kw>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // SSE Utils
@@ -414,6 +414,6 @@ template Kw findMaxDbKw(const Db<IdOp, Kw>& db);
 
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Id, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<IdOp, Kw>& db);
-template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrciDb1Doc<Kw>, Kw>& db);
+template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc<Kw>, Kw>& db);
 template std::unordered_set<Range<Id>> getUniqDbKwRanges(const Db<Id, Id>& db);
 template std::unordered_set<Range<Id>> getUniqDbKwRanges(const Db<IdOp, Id>& db);

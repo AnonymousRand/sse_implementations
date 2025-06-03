@@ -1,5 +1,5 @@
 #include "log_src.h"
-#include "log_srci.h"
+#include "log_src_i.h"
 #include "sda.h"
 
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly, DbDoc, DbKw>
@@ -92,5 +92,5 @@ template class Sda<PiBasResHiding<IdOp, Kw>, IdOp, Kw>;
 template class Sda<LogSrc<PiBasResHiding, Id, Kw>, Id, Kw>;
 template class Sda<LogSrc<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
 
-template class Sda<LogSrci<PiBasResHiding, Id, Kw>, Id, Kw>;
-template class Sda<LogSrci<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
+template class Sda<LogSrcI<PiBasResHiding, Id, Kw>, Id, Kw>;
+template class Sda<LogSrcI<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;

@@ -2,7 +2,7 @@
 #include <cmath>
 
 #include "log_src.h"
-#include "log_srci.h"
+#include "log_src_i.h"
 #include "pi_bas.h"
 #include "sda.h"
 
@@ -110,10 +110,10 @@ int main() {
     PiBas piBas;
     PiBasResHiding piBasResHiding;
     LogSrc<PiBas> logSrc;
-    LogSrci<PiBas> logSrci;
+    LogSrcI<PiBas> logSrcI;
     Sda<PiBasResHiding<>> sdaPiBas;
     Sda<LogSrc<PiBasResHiding>> sdaLogSrc;
-    Sda<LogSrci<PiBasResHiding>> sdaLogSrci;
+    Sda<LogSrcI<PiBasResHiding>> sdaLogSrcI;
 
     int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
@@ -147,8 +147,8 @@ int main() {
 
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
-    exp1(logSrci, maxDbSize);
-    logSrci.setup(KEY_LEN, Db {});
+    exp1(logSrcI, maxDbSize);
+    logSrcI.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
@@ -162,8 +162,8 @@ int main() {
 
     std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrci, maxDbSize / 32);
-    sdaLogSrci.setup(KEY_LEN, Db {});
+    exp1(sdaLogSrcI, maxDbSize / 32);
+    sdaLogSrcI.setup(KEY_LEN, Db {});
 
     // experiment 2
 
@@ -192,8 +192,8 @@ int main() {
 
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
-    exp2(logSrci, maxDbSize / 2);
-    logSrci.setup(KEY_LEN, Db {});
+    exp2(logSrcI, maxDbSize / 2);
+    logSrcI.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
@@ -207,8 +207,8 @@ int main() {
     
     std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrci, maxDbSize / 64);
-    sdaLogSrci.setup(KEY_LEN, Db {});
+    exp2(sdaLogSrcI, maxDbSize / 64);
+    sdaLogSrcI.setup(KEY_LEN, Db {});
     
     // experiment 3
 
@@ -226,6 +226,6 @@ int main() {
 
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
-    exp3(logSrci, maxDbSize);
-    logSrci.setup(KEY_LEN, Db {});
+    exp3(logSrcI, maxDbSize);
+    logSrcI.setup(KEY_LEN, Db {});
 }
