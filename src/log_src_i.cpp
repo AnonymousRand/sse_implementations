@@ -123,16 +123,17 @@ Range<Id> LogSrcI<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
 
     // query 2
 
-    Id minId = Id(-1), maxId = Id(-1);
+    Id minId = DUMMY;
+    Id maxId = DUMMY;
     // filter out unnecessary choices and merge remaining ones into a single id range
     for (SrcIDb1Doc<DbKw> choice : choices) {
         Range<DbKw> choiceKwRange = choice.get().first;
         if (query.contains(choiceKwRange)) {
             Range<Id> choiceIdRange = choice.get().second;
-            if (choiceIdRange.first < minId || minId == Id(-1)) {
+            if (choiceIdRange.first < minId || minId == DUMMY) {
                 minId = choiceIdRange.first;
             }
-            if (choiceIdRange.second > maxId) {
+            if (choiceIdRange.second > maxId || maxId == DUMMY) {
                 maxId = choiceIdRange.second;
             }
         }
