@@ -15,11 +15,11 @@ class LogSrci : public ISdaUnderly<DbDoc, DbKw> {
         Db<DbDoc, DbKw> db; // store since neither underlying instance contains the original DB
         bool _isEmpty = false;
 
+        LogSrci(const Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2);
         Range<Id> searchBase(const Range<DbKw>& query) const;
 
     public:
         LogSrci();
-        LogSrci(const Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2);
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;

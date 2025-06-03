@@ -123,11 +123,11 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iEncryptable) {
 
 template class IDbDoc<int>;
 template class IDbDoc<std::pair<Id, Op>>;
-template class IDbDoc<std::pair<KwRange, IdRange>>;
+template class IDbDoc<std::pair<Range<Kw>, Range<Id>>>;
 
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<int>& iEncryptable);
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Id, Op>>& iEncryptable);
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<KwRange, IdRange>>& iEncryptable);
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Range<Kw>, Range<Id>>>& iEncryptable);
 
 template class IMainDbDoc<int>;
 template class IMainDbDoc<std::pair<Id, Op>>;
@@ -322,8 +322,8 @@ std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps) {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class DbKw>
-SrciDb1Doc<DbKw>::SrciDb1Doc(const Range<DbKw>& dbKwRange, const IdRange& idRange)
-        : IDbDoc<std::pair<Range<DbKw>, IdRange>>(std::pair {dbKwRange, idRange}) {}
+SrciDb1Doc<DbKw>::SrciDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange)
+        : IDbDoc<std::pair<Range<DbKw>, Range<Id>>>(std::pair {dbKwRange, idRange}) {}
 
 template <class DbKw>
 SrciDb1Doc<DbKw> SrciDb1Doc<DbKw>::decode(const ustring& ustr) {
@@ -334,8 +334,8 @@ SrciDb1Doc<DbKw> SrciDb1Doc<DbKw>::decode(const ustring& ustr) {
         std::cerr << "Error: bad string passed to `SrciDb1Doc.fromUstr()`, the world is going to end" << std::endl;
         exit(EXIT_FAILURE);
     }
-    KwRange kwRange = KwRange::fromStr(matches[1].str());
-    IdRange idRange = IdRange::fromStr(matches[2].str());
+    Range<Kw> kwRange = Range<Kw>::fromStr(matches[1].str());
+    Range<Id> idRange = Range<Id>::fromStr(matches[2].str());
     return SrciDb1Doc<DbKw> {kwRange, idRange};
 }
 

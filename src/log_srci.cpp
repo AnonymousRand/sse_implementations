@@ -5,12 +5,12 @@
 #include "util/openssl.h"
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-LogSrci<Underly, DbDoc, DbKw>::LogSrci() : LogSrci(Underly<SrciDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>()) {}
-
-template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 LogSrci<Underly, DbDoc, DbKw>::LogSrci(
     const Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2
 ) : underly1(underly1), underly2(underly2) {}
+
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+LogSrci<Underly, DbDoc, DbKw>::LogSrci() : LogSrci(Underly<SrciDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>()) {}
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
@@ -53,7 +53,7 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
                 minId = id;
             }
         }
-        IdRange idRange {minId, maxId}; // this is why we used `set`
+        Range<Id> idRange {minId, maxId}; // this is why we used `set`
         SrciDb1Doc<DbKw> pair {dbKwRange, idRange};
 
         std::list<TdagNode<DbKw>*> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
@@ -119,7 +119,7 @@ Range<Id> LogSrci<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
     for (SrciDb1Doc<DbKw> choice : choices) {
         Range<DbKw> choiceKwRange = choice.get().first;
         if (query.contains(choiceKwRange)) {
-            IdRange choiceIdRange = choice.get().second;
+            Range<Id> choiceIdRange = choice.get().second;
             if (choiceIdRange.first < minId || minId == Id(-1)) {
                 minId = choiceIdRange.first;
             }
@@ -129,7 +129,7 @@ Range<Id> LogSrci<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
         }
     }
 
-    IdRange idRangeToQuery {minId, maxId};
+    Range<Id> idRangeToQuery {minId, maxId};
     Range<Id> src2 = this->tdag2->findSrc(idRangeToQuery);
     return src2;
 }

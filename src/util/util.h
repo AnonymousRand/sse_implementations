@@ -37,9 +37,6 @@ template <class T> concept IMainDbDoc_ = requires(T t) {
     []<class X>(IMainDbDoc<X>&){}(t);
 };
 
-using IdRange    = Range<Id>;
-// for generality, all keywords are ranges; single keywords are just size 1 ranges
-using KwRange    = Range<Kw>;
 //                `std::unordered_map<label, std::pair<data, iv>>`
 using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
 // allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
@@ -232,9 +229,9 @@ std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps);
 
 // PRECONDITION: since this just indexes a range of `Id`s, we need document ids to be consecutive
 template <class DbKw>
-class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, IdRange>> {
+class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<Id>>> {
     public:
-        SrciDb1Doc(const Range<DbKw>& dbKwRange, const IdRange& idRange);
+        SrciDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange);
 
         static SrciDb1Doc<DbKw> decode(const ustring& ustr);
         std::string toStr() const override;

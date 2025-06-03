@@ -43,7 +43,7 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
 
     // search
     for (int i = 0; i <= (int)log2(dbSize); i++) {
-        KwRange query {0, (int)pow(2, i) - 1};
+        Range<Kw> query {0, (int)pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
@@ -95,7 +95,7 @@ void exp3(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
                   << std::endl;
 
         // search
-        KwRange query {1, dbSize - 1};
+        Range<Kw> query {1, dbSize - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
