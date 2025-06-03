@@ -7,6 +7,13 @@ template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requ
 LogSrc<Underly, DbDoc, DbKw>::LogSrc() : LogSrc(Underly<DbDoc, DbKw>()) {};
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+LogSrc<Underly, DbDoc, DbKw>::~LogSrc() {
+    if (this->tdag != nullptr) {
+        delete this->tdag;
+    }
+}
+
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->db = db;
 

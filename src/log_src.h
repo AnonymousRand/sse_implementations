@@ -16,6 +16,7 @@ class LogSrc : public ISdaUnderly<DbDoc, DbKw> {
 
     public:
         LogSrc();
+        ~LogSrc();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;

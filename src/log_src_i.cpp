@@ -13,6 +13,16 @@ template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requ
 LogSrcI<Underly, DbDoc, DbKw>::LogSrcI() : LogSrcI(Underly<SrcIDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>()) {}
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+LogSrcI<Underly, DbDoc, DbKw>::~LogSrcI() {
+    if (this->tdag1 != nullptr) {
+        delete this->tdag1;
+    }
+    if (this->tdag2 != nullptr) {
+        delete this->tdag2;
+    }
+}
+
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->db = db;
     this->_isEmpty = this->db.empty();
