@@ -77,7 +77,7 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 // `Range`
 ////////////////////////////////////////////////////////////////////////////////
 
-// PRECONDITION: range end is at least range start
+// PRECONDITION: range end is greater than or equal to range start
 template <class T>
 class Range : public std::pair<T, T> {
     public:
