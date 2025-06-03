@@ -29,13 +29,12 @@ void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
-        std::list<TdagNode<DbKw>*> ancestors = this->tdag->getLeafAncestors(dbKwRange);
-        for (TdagNode<DbKw>* ancestor : ancestors) {
-            Range<DbKw> ancestorDbKwRange = ancestor->getRange();
-            if (ind.count(ancestorDbKwRange) == 0) {
-                ind[ancestorDbKwRange] = std::vector {dbDoc};
+        std::list<Range<DbKw>> ancestors = this->tdag->getLeafAncestors(dbKwRange);
+        for (Range<DbKw> ancestor : ancestors) {
+            if (ind.count(ancestor) == 0) {
+                ind[ancestor] = std::vector {dbDoc};
             } else {
-                ind[ancestorDbKwRange].push_back(dbDoc);
+                ind[ancestor].push_back(dbDoc);
             }
         }
     }

@@ -159,7 +159,7 @@ Range<T> TdagNode<T>::findSrc(const Range<T>& targetRange) {
 
     T diff = T(-1);
     if (this->extraParent != nullptr) {
-        Range<T> extraParentRange = this->extraParent->getRange();
+        Range<T> extraParentRange = this->extraParent->range;
         diff = tryAddCandidate(extraParentRange);
         if (diff == 0) {
             return extraParentRange;
@@ -173,7 +173,7 @@ Range<T> TdagNode<T>::findSrc(const Range<T>& targetRange) {
             return DUMMY_RANGE<T>();
         }
         // else if already seen that `extraParent` is valid (just not a perfect cover)
-        return this->extraParent->getRange();
+        return this->extraParent->range;
     }
 
     diff = tryAddCandidate(this->range);
@@ -202,17 +202,17 @@ Range<T> TdagNode<T>::findSrc(const Range<T>& targetRange) {
 }
 
 template <class T>
-std::list<TdagNode<T>*> TdagNode<T>::getLeafAncestors(const Range<T>& leafRange) {
-    std::list<TdagNode<T>*> ancestors {this};
+std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) {
+    std::list<Range<T>> ancestors {this->range};
 
-    if (this->left != nullptr && this->left->range.contains(leafRange)) {
-        ancestors.splice(ancestors.end(), this->left->getLeafAncestors(leafRange));
+    if (this->left != nullptr && this->left->range.contains(target)) {
+        ancestors.splice(ancestors.end(), this->left->getLeafAncestors(target));
     }
-    if (this->right != nullptr && this->right->range.contains(leafRange)) {
-        ancestors.splice(ancestors.end(), this->right->getLeafAncestors(leafRange));
+    if (this->right != nullptr && this->right->range.contains(target)) {
+        ancestors.splice(ancestors.end(), this->right->getLeafAncestors(target));
     }
-    if (this->extraParent != nullptr && this->extraParent->range.contains(leafRange)) {
-        ancestors.push_back(this->extraParent);
+    if (this->extraParent != nullptr && this->extraParent->range.contains(target)) {
+        ancestors.push_back(this->extraParent->range);
     }
 
     return ancestors;

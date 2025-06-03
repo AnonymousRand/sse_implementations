@@ -47,10 +47,10 @@ class TdagNode {
         Range<T> findSrc(const Range<T>& targetRange);
 
         /**
-         * Get all ancestors (i.e. covering nodes) of the leaf node with range `leafRange` within the tree `this`,
+         * Get all ancestors (i.e. covering nodes) of the leaf node with range `target` within the tree `this`,
          * including the leaf itself.
          */
-        std::list<TdagNode<T>*> getLeafAncestors(const Range<T>& leafRange);
+        std::list<Range<T>> getLeafAncestors(const Range<T>& target);
 
         Range<T> getRange() const;
 

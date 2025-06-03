@@ -66,9 +66,9 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
         Range<Id> idRange {minId, maxId}; // this is why we used `set`
         SrcIDb1Doc<DbKw> pair {dbKwRange, idRange};
 
-        std::list<TdagNode<DbKw>*> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
-        for (TdagNode<DbKw>* ancestor : ancestors) {
-            std::pair<SrcIDb1Doc<DbKw>, Range<DbKw>> finalEntry {pair, ancestor->getRange()};
+        std::list<Range<DbKw>> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
+        for (Range<DbKw> ancestor : ancestors) {
+            std::pair<SrcIDb1Doc<DbKw>, Range<DbKw>> finalEntry {pair, ancestor};
             db1.push_back(finalEntry);
         }
     }
@@ -93,13 +93,12 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();
-        std::list<TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(Range<Id> {id, id});
-        for (TdagNode<Id>* ancestor : ancestors) {
-            Range<Id> ancestorIdRange = ancestor->getRange();
-            if (ind2.count(ancestorIdRange) == 0) {
-                ind2[ancestorIdRange] = std::vector {dbDoc};
+        std::list<Range<Id>> ancestors = this->tdag2->getLeafAncestors(Range<Id> {id, id});
+        for (Range<Id> ancestor : ancestors) {
+            if (ind2.count(ancestor) == 0) {
+                ind2[ancestor] = std::vector {dbDoc};
             } else {
-                ind2[ancestorIdRange].push_back(dbDoc);
+                ind2[ancestor].push_back(dbDoc);
             }
         }
     }
