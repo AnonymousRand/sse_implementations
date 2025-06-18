@@ -34,6 +34,7 @@ void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db
     }
 
     // randomly permute documents associated with same keyword range/node and convert temporary `unordered_map` to `Db`
+    // (need temporary index to facilitate shuffling)
     shuffleInd(ind);
     Db<DbDoc, DbKw> processedDb = indToDb(ind);
 
