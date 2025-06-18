@@ -12,9 +12,11 @@ class LogSrc : public ISdaUnderly<DbDoc, DbKw> {
         TdagNode<DbKw>* tdag;
         Db<DbDoc, DbKw> db; // store instead of using underlying instance's `db` since that one has replications
 
+        LogSrc(const Underly<DbDoc, DbKw>& underly);
+
     public:
         LogSrc();
-        LogSrc(const Underly<DbDoc, DbKw>& underly);
+        ~LogSrc();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;

@@ -38,9 +38,8 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
 // `Range`
 ////////////////////////////////////////////////////////////////////////////////
 
-// can't call default constructor or set `= default` without explicit vals (ill-formed default definition apparently)
 template <class T>
-Range<T>::Range() : std::pair<T, T> {T(), T()} {}
+Range<T>::Range() : std::pair<T, T> {T(DUMMY), T(DUMMY)} {}
 
 template <class T>
 Range<T>::Range(const T& start, const T& end) : std::pair<T, T> {start, end} {}
@@ -124,11 +123,11 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iEncryptable) {
 
 template class IDbDoc<int>;
 template class IDbDoc<std::pair<Id, Op>>;
-template class IDbDoc<std::pair<KwRange, IdRange>>;
+template class IDbDoc<std::pair<Range<Kw>, Range<Id>>>;
 
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<int>& iEncryptable);
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Id, Op>>& iEncryptable);
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<KwRange, IdRange>>& iEncryptable);
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Range<Kw>, Range<Id>>>& iEncryptable);
 
 template class IMainDbDoc<int>;
 template class IMainDbDoc<std::pair<Id, Op>>;
@@ -319,35 +318,35 @@ std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// `SrciDb1Doc`
+// `SrcIDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class DbKw>
-SrciDb1Doc<DbKw>::SrciDb1Doc(const Range<DbKw>& dbKwRange, const IdRange& idRange)
-        : IDbDoc<std::pair<Range<DbKw>, IdRange>>(std::pair {dbKwRange, idRange}) {}
+SrcIDb1Doc<DbKw>::SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange)
+        : IDbDoc<std::pair<Range<DbKw>, Range<Id>>>(std::pair {dbKwRange, idRange}) {}
 
 template <class DbKw>
-SrciDb1Doc<DbKw> SrciDb1Doc<DbKw>::decode(const ustring& ustr) {
+SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::decode(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
     if (!std::regex_search(str, matches, re) || matches.size() != 3) {
-        std::cerr << "Error: bad string passed to `SrciDb1Doc.fromUstr()`, the world is going to end" << std::endl;
+        std::cerr << "Error: bad string passed to `SrcIDb1Doc.fromUstr()`, the world is going to end" << std::endl;
         exit(EXIT_FAILURE);
     }
-    KwRange kwRange = KwRange::fromStr(matches[1].str());
-    IdRange idRange = IdRange::fromStr(matches[2].str());
-    return SrciDb1Doc<DbKw> {kwRange, idRange};
+    Range<Kw> kwRange = Range<Kw>::fromStr(matches[1].str());
+    Range<Id> idRange = Range<Id>::fromStr(matches[2].str());
+    return SrcIDb1Doc<DbKw> {kwRange, idRange};
 }
 
 template <class DbKw>
-std::string SrciDb1Doc<DbKw>::toStr() const {
+std::string SrcIDb1Doc<DbKw>::toStr() const {
     std::stringstream ss;
     ss << "(" << this->val.first << "," << this->val.second << ")";
     return ss.str();
 }
 
-template class SrciDb1Doc<Kw>;
+template class SrcIDb1Doc<Kw>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // SSE Utils
@@ -415,6 +414,6 @@ template Kw findMaxDbKw(const Db<IdOp, Kw>& db);
 
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Id, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<IdOp, Kw>& db);
-template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrciDb1Doc<Kw>, Kw>& db);
+template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc<Kw>, Kw>& db);
 template std::unordered_set<Range<Id>> getUniqDbKwRanges(const Db<Id, Id>& db);
 template std::unordered_set<Range<Id>> getUniqDbKwRanges(const Db<IdOp, Id>& db);

@@ -13,12 +13,6 @@
 // Basic Declarations
 ////////////////////////////////////////////////////////////////////////////////
 
-static const int KEY_LEN    = 256 / 8;
-static const int IV_LEN     = 128 / 8;
-static const int BLOCK_SIZE = 128 / 8;
-// PRECONDITION: keywords are always positive
-static const int DB_KW_MIN  = 0;
-
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
 
@@ -32,7 +26,7 @@ template <class T> class IMainDbDoc;
 class Id;
 class Op;
 class IdOp;
-template <class DbKw = Kw> class SrciDb1Doc;
+template <class DbKw = Kw> class SrcIDb1Doc;
 
 // black magic (https://stackoverflow.com/a/71921982)
 // (java generics `extends`: look what they need to mimic a fraction of my power)
@@ -43,9 +37,6 @@ template <class T> concept IMainDbDoc_ = requires(T t) {
     []<class X>(IMainDbDoc<X>&){}(t);
 };
 
-using IdRange    = Range<Id>;
-// for generality, all keywords are ranges; single keywords are just size 1 ranges
-using KwRange    = Range<Kw>;
 //                `std::unordered_map<label, std::pair<data, iv>>`
 using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
 // allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
@@ -55,6 +46,13 @@ template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 using Db         = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class DbKw = Kw, class DbDoc = IdOp>
 using Ind        = std::unordered_map<Range<DbKw>, std::vector<DbDoc>>;
+
+static const int KEY_LEN    = 256 / 8;
+static const int IV_LEN     = 128 / 8;
+static const int BLOCK_SIZE = 128 / 8;
+// PRECONDITION: keywords are always positive
+static const int DB_KW_MIN  = 0;
+static const int DUMMY      = -1;
 
 ////////////////////////////////////////////////////////////////////////////////
 // `ustring`
@@ -66,7 +64,7 @@ ustring toUstr(unsigned char* p, int len);
 std::string fromUstr(const ustring& ustr);
 
 // provide hash function for `ustring`s to use faster hashmap-based structures, like `unordered_map` instead of `map`
-template<>
+template <>
 struct std::hash<ustring> {
     std::size_t operator ()(const ustring& ustr) const noexcept {
         return std::hash<std::string>{}(fromUstr(ustr));
@@ -79,6 +77,7 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 // `Range`
 ////////////////////////////////////////////////////////////////////////////////
 
+// PRECONDITION: range end is greater than or equal to range start
 template <class T>
 class Range : public std::pair<T, T> {
     public:
@@ -92,18 +91,23 @@ class Range : public std::pair<T, T> {
         std::string toStr() const;
         static Range<T> fromStr(const std::string& str);
         ustring toUstr() const;
-        template<class T2>
+        template <class T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 };
 
 // hash function
-template<>
-template<class T>
+template <>
+template <class T>
 struct std::hash<Range<T>> {
     std::size_t operator ()(const Range<T>& range) const noexcept {
         return std::hash<std::string>{}(range.toStr());
     }
 };
+
+template <class T>
+static Range<T> DUMMY_RANGE() {
+    return Range<T>(T(DUMMY), T(DUMMY));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // `IDbDoc`
@@ -169,7 +173,7 @@ class Id : public IMainDbDoc<int> {
 };
 
 // hash function
-template<>
+template <>
 struct std::hash<Id> {
     std::size_t operator ()(const Id& id) const noexcept {
         return std::hash<std::string>{}(id.toStr());
@@ -220,16 +224,16 @@ class IdOp : public IMainDbDoc<std::pair<Id, Op>> {
 std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps);
 
 ////////////////////////////////////////////////////////////////////////////////
-// `SrciDb1Doc`
+// `SrcIDb1Doc`
 ////////////////////////////////////////////////////////////////////////////////
 
 // PRECONDITION: since this just indexes a range of `Id`s, we need document ids to be consecutive
 template <class DbKw>
-class SrciDb1Doc : public IDbDoc<std::pair<Range<DbKw>, IdRange>> {
+class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<Id>>> {
     public:
-        SrciDb1Doc(const Range<DbKw>& dbKwRange, const IdRange& idRange);
+        SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange);
 
-        static SrciDb1Doc<DbKw> decode(const ustring& ustr);
+        static SrcIDb1Doc<DbKw> decode(const ustring& ustr);
         std::string toStr() const override;
 };
 

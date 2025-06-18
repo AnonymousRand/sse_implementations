@@ -1,19 +1,29 @@
 #include <openssl/rand.h>
 
-#include "log_srci.h"
+#include "log_src_i.h"
 #include "pi_bas.h"
 #include "util/openssl.h"
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-LogSrci<Underly, DbDoc, DbKw>::LogSrci() : LogSrci(Underly<SrciDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>()) {}
-
-template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-LogSrci<Underly, DbDoc, DbKw>::LogSrci(
-    const Underly<SrciDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2
+LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(
+    const Underly<SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2
 ) : underly1(underly1), underly2(underly2) {}
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+LogSrcI<Underly, DbDoc, DbKw>::LogSrcI() : LogSrcI(Underly<SrcIDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>()) {}
+
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+LogSrcI<Underly, DbDoc, DbKw>::~LogSrcI() {
+    if (this->tdag1 != nullptr) {
+        delete this->tdag1;
+    }
+    if (this->tdag2 != nullptr) {
+        delete this->tdag2;
+    }
+}
+
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->db = db;
     this->_isEmpty = this->db.empty();
 
@@ -21,7 +31,7 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 
     // build TDAG1 over keywords
     DbKw maxDbKw = findMaxDbKw(db);
-    this->tdag1 = TdagNode<DbKw>::buildTdag(maxDbKw);
+    this->tdag1 = new TdagNode<DbKw>(maxDbKw);
 
     // figure out which documents share the same keywords by building index and list of unique kws like in PiBas
     Ind<DbKw, Id> ind1;
@@ -40,7 +50,7 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 
     // replicate every document (in this case pairs) to all keyword ranges/nodes in TDAG1 that cover it
     // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, [ids]), kw range/node)
-    Db<SrciDb1Doc<DbKw>, DbKw> db1;
+    Db<SrcIDb1Doc<DbKw>, DbKw> db1;
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto itIdsWithSameKw = ind1.find(dbKwRange);
         std::vector<Id> idsWithSameKw = itIdsWithSameKw->second;
@@ -53,12 +63,12 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
                 minId = id;
             }
         }
-        IdRange idRange {minId, maxId}; // this is why we used `set`
-        SrciDb1Doc<DbKw> pair {dbKwRange, idRange};
+        Range<Id> idRange {minId, maxId}; // this is why we used `set`
+        SrcIDb1Doc<DbKw> pair {dbKwRange, idRange};
 
-        std::list<TdagNode<DbKw>*> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
-        for (TdagNode<DbKw>* ancestor : ancestors) {
-            std::pair<SrciDb1Doc<DbKw>, Range<DbKw>> finalEntry {pair, ancestor->getRange()};
+        std::list<Range<DbKw>> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
+        for (Range<DbKw> ancestor : ancestors) {
+            std::pair<SrcIDb1Doc<DbKw>, Range<DbKw>> finalEntry {pair, ancestor};
             db1.push_back(finalEntry);
         }
     }
@@ -75,7 +85,7 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
             maxId = id;
         }
     }
-    this->tdag2 = TdagNode<Id>::buildTdag(maxId);
+    this->tdag2 = new TdagNode<Id>(maxId);
 
     // replicate every document to all id ranges/nodes in TDAG2 that cover it
     // again need temporary `unordered_map` index to shuffle
@@ -83,13 +93,12 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();
-        std::list<TdagNode<Id>*> ancestors = this->tdag2->getLeafAncestors(Range<Id> {id, id});
-        for (TdagNode<Id>* ancestor : ancestors) {
-            Range<Id> ancestorIdRange = ancestor->getRange();
-            if (ind2.count(ancestorIdRange) == 0) {
-                ind2[ancestorIdRange] = std::vector {dbDoc};
+        std::list<Range<Id>> ancestors = this->tdag2->getLeafAncestors(Range<Id> {id, id});
+        for (Range<Id> ancestor : ancestors) {
+            if (ind2.count(ancestor) == 0) {
+                ind2[ancestor] = std::vector {dbDoc};
             } else {
-                ind2[ancestorIdRange].push_back(dbDoc);
+                ind2[ancestor].push_back(dbDoc);
             }
         }
     }
@@ -103,67 +112,68 @@ void LogSrci<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-TdagNode<Id>* LogSrci<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+Range<Id> LogSrcI<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     // query 1
 
-    TdagNode<DbKw>* src1 = this->tdag1->findSrc(query);
-    if (src1 == nullptr) { 
-        return nullptr;
+    Range<DbKw> src1 = this->tdag1->findSrc(query);
+    if (src1 == DUMMY_RANGE<DbKw>()) { 
+        return DUMMY_RANGE<Id>();
     }
-    std::vector<SrciDb1Doc<DbKw>> choices = this->underly1.search(src1->getRange());
+    std::vector<SrcIDb1Doc<DbKw>> choices = this->underly1.search(src1);
 
     // query 2
 
-    Id minId = Id(-1), maxId = Id(-1);
+    Id minId = DUMMY;
+    Id maxId = DUMMY;
     // filter out unnecessary choices and merge remaining ones into a single id range
-    for (SrciDb1Doc<DbKw> choice : choices) {
+    for (SrcIDb1Doc<DbKw> choice : choices) {
         Range<DbKw> choiceKwRange = choice.get().first;
         if (query.contains(choiceKwRange)) {
-            IdRange choiceIdRange = choice.get().second;
-            if (choiceIdRange.first < minId || minId == Id(-1)) {
+            Range<Id> choiceIdRange = choice.get().second;
+            if (choiceIdRange.first < minId || minId == DUMMY) {
                 minId = choiceIdRange.first;
             }
-            if (choiceIdRange.second > maxId) {
+            if (choiceIdRange.second > maxId || maxId == DUMMY) {
                 maxId = choiceIdRange.second;
             }
         }
     }
 
-    IdRange idRangeToQuery {minId, maxId};
-    TdagNode<Id>* src2 = this->tdag2->findSrc(idRangeToQuery);
+    Range<Id> idRangeToQuery {minId, maxId};
+    Range<Id> src2 = this->tdag2->findSrc(idRangeToQuery);
     return src2;
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-std::vector<DbDoc> LogSrci<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    TdagNode<Id>* src2 = this->searchBase(query);
-    if (src2 == nullptr) {
+std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    Range<Id> src2 = this->searchBase(query);
+    if (src2 == DUMMY_RANGE<Id>()) {
         return std::vector<DbDoc> {};
     }
-    return this->underly2.search(src2->getRange());
+    return this->underly2.search(src2);
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-std::vector<DbDoc> LogSrci<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
-    TdagNode<Id>* src2 = this->searchBase(query);
-    if (src2 == nullptr) {
+std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
+    Range<Id> src2 = this->searchBase(query);
+    if (src2 == DUMMY_RANGE<Id>()) {
         return std::vector<DbDoc> {};
     }
-    return this->underly2.searchWithoutHandlingDels(src2->getRange());
+    return this->underly2.searchWithoutHandlingDels(src2);
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-Db<DbDoc, DbKw> LogSrci<Underly, DbDoc, DbKw>::getDb() const {
+Db<DbDoc, DbKw> LogSrcI<Underly, DbDoc, DbKw>::getDb() const {
     return this->db;
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-bool LogSrci<Underly, DbDoc, DbKw>::isEmpty() const {
+bool LogSrcI<Underly, DbDoc, DbKw>::isEmpty() const {
     return this->_isEmpty;
 }
 
-template class LogSrci<PiBas, Id, Kw>;
-template class LogSrci<PiBas, IdOp, Kw>;
+template class LogSrcI<PiBas, Id, Kw>;
+template class LogSrcI<PiBas, IdOp, Kw>;
 
-template class LogSrci<PiBasResHiding, Id, Kw>;
-template class LogSrci<PiBasResHiding, IdOp, Kw>;
+template class LogSrcI<PiBasResHiding, Id, Kw>;
+template class LogSrcI<PiBasResHiding, IdOp, Kw>;

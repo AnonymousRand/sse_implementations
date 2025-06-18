@@ -1,5 +1,5 @@
 #include "log_src.h"
-#include "log_srci.h"
+#include "log_src_i.h"
 #include "sda.h"
 
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly, DbDoc, DbKw>
@@ -18,41 +18,40 @@ template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Un
 void SdaBase<Underly, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
-        Underly underly;
-        underly.setup(this->secParam, Db<DbDoc, DbKw> {newEntry});
+        Underly* underly = new Underly();
+        underly->setup(this->secParam, Db<DbDoc, DbKw> {newEntry});
         this->underlys.push_back(underly);
         this->firstEmptyInd = 1;
         return;
     }
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`; always merge/insert into first index if it's empty
-    // todo try list instead of vector dbs for faster merging???
     Db<DbDoc, DbKw> mergedDb;
     for (int i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
         // original paper fetches encrypted index and decrypts instead of `getDb()`
         // but that could get messy with Log-SRC-i as it has two indexes
         // instead we just store and get plaintext DB for convenience of implementation
-        Db<DbDoc, DbKw> underlyDb = this->underlys[i].getDb();
+        Db<DbDoc, DbKw> underlyDb = this->underlys[i]->getDb();
         mergedDb.insert(mergedDb.begin(), underlyDb.begin(), underlyDb.end());
     }
     mergedDb.push_back(newEntry);
     if (this->firstEmptyInd < this->underlys.size() - 1) {
-        this->underlys[this->firstEmptyInd].setup(this->secParam, mergedDb);
+        this->underlys[this->firstEmptyInd]->setup(this->secParam, mergedDb);
     } else {
-        Underly newUnderly;
-        newUnderly.setup(this->secParam, mergedDb);
+        Underly* newUnderly = new Underly();
+        newUnderly->setup(this->secParam, mergedDb);
         this->underlys.push_back(newUnderly);
     }
 
     // clear all EDB_<j by calling `setup()` with empty DB
     for (int i = 0; i < this->firstEmptyInd; i++) {
-        this->underlys[i].setup(this->secParam, Db<DbDoc, DbKw> {});
+        this->underlys[i]->setup(this->secParam, Db<DbDoc, DbKw> {});
     }
 
     // update the pointer to the first empty index
     int firstEmpty;
     for (firstEmpty = 0; firstEmpty < this->underlys.size(); firstEmpty++) {
-        if (this->underlys[firstEmpty].isEmpty()) {
+        if (this->underlys[firstEmpty]->isEmpty()) {
             break;
         }
     }
@@ -63,14 +62,14 @@ template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Un
 std::vector<DbDoc> SdaBase<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
     // search through all non-empty indexes
-    for (Underly underly : this->underlys) {
-        if (underly.isEmpty()) {
+    for (Underly* underly : this->underlys) {
+        if (underly->isEmpty()) {
             continue;
         }
-        // don't use `underly.search()` here that filters out deleted tuples possibly prematurely
+        // don't use `underly->search()` here that filters out deleted tuples possibly prematurely
         // the cancelation tuple for a document is not guaranteed to be in same index as the inserting tuple
         // so we can't rely on underlying instances to filter out all deleted documents
-        std::vector<DbDoc> results = underly.searchWithoutHandlingDels(query);
+        std::vector<DbDoc> results = underly->searchWithoutHandlingDels(query);
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
     return allResults;
@@ -93,5 +92,5 @@ template class Sda<PiBasResHiding<IdOp, Kw>, IdOp, Kw>;
 template class Sda<LogSrc<PiBasResHiding, Id, Kw>, Id, Kw>;
 template class Sda<LogSrc<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
 
-template class Sda<LogSrci<PiBasResHiding, Id, Kw>, Id, Kw>;
-template class Sda<LogSrci<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
+template class Sda<LogSrcI<PiBasResHiding, Id, Kw>, Id, Kw>;
+template class Sda<LogSrcI<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
