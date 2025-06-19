@@ -49,8 +49,8 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 
     // replicate every document (in this case pairs) to all keyword ranges/nodes in TDAG1 that cover it
     // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, [ids]), kw range/node)
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     Db<SrcIDb1Doc<DbKw>, DbKw> db1;
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto itIdsWithSameKw = ind1.find(dbKwRange);
         std::vector<Id> idsWithSameKw = itIdsWithSameKw->second;
