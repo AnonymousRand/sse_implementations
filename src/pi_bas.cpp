@@ -35,8 +35,10 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ind[dbKwRange].push_back(dbDoc);
         }
     }
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
+    // randomly permute documents associated with same keyword, required by some schemes on top of PiBas (e.g. Log-SRC)
+    shuffleInd(ind);
 
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         // K_1 || K_2 <- F(K, w)

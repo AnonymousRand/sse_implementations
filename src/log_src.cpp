@@ -22,29 +22,17 @@ void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db
     this->tdag = new TdagNode<DbKw>(maxDbKw);
 
     // replicate every document to all keyword ranges/nodes in TDAG that cover it
-    // temporarily use `unordered_map` (an inverted index) instead of `vector` to
-    // easily identify which docs share the same keyword range for shuffling later
-    Ind<DbKw, DbDoc> ind;
-    int temp = 0;
+    Db<DbDoc, DbKw> dbWithReplications;
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
         std::list<Range<DbKw>> ancestors = this->tdag->getLeafAncestors(dbKwRange);
         for (Range<DbKw> ancestor : ancestors) {
-            if (ind.count(ancestor) == 0) {
-                ind[ancestor] = std::vector {dbDoc};
-            } else {
-                ind[ancestor].push_back(dbDoc);
-            }
+            dbWithReplications.push_back(std::pair {dbDoc, ancestor});
         }
     }
 
-    // randomly permute documents associated with same keyword range/node and convert temporary `unordered_map` to `Db`
-    // (need temporary index to facilitate shuffling)
-    shuffleInd(ind);
-    Db<DbDoc, DbKw> processedDb = indToDb(ind);
-
-    this->underly.setup(secParam, processedDb);
+    this->underly.setup(secParam, dbWithReplications);
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>

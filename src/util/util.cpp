@@ -365,14 +365,6 @@ Db<DbDoc, DbKw> indToDb(const Ind<DbKw, DbDoc>& ind) {
     return db;
 }
 
-template <class DbKw, class DbDoc>
-void shuffleInd(Ind<DbKw, DbDoc>& ind) {
-    for (std::pair pair : ind) {
-        std::vector<DbDoc> dbDocs = pair.second;
-        std::shuffle(dbDocs.begin(), dbDocs.end(), RNG);
-    }
-}
-
 template <class DbDoc, class DbKw>
 DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db) {
     DbKw maxDbKw = DbKw(DB_KW_MIN);
@@ -399,15 +391,11 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
     return uniqDbKwRanges;
 }
 
-template Db<Id, Kw> indToDb(const Ind<Kw, Id>& ind);
-template Db<IdOp, Kw> indToDb(const Ind<Kw, IdOp>& ind);
-template Db<Id, Id> indToDb(const Ind<Id, Id>& ind);
-template Db<IdOp, Id> indToDb(const Ind<Id, IdOp>& ind);
-
 template void shuffleInd(Ind<Kw, Id>& ind);
 template void shuffleInd(Ind<Kw, IdOp>& ind);
 template void shuffleInd(Ind<Id, Id>& ind);
 template void shuffleInd(Ind<Id, IdOp>& ind);
+template void shuffleInd(Ind<Kw, SrcIDb1Doc<Kw>>& ind);
 
 template Kw findMaxDbKw(const Db<Id, Kw>& db);
 template Kw findMaxDbKw(const Db<IdOp, Kw>& db);

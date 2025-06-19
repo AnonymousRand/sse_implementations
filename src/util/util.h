@@ -242,9 +242,6 @@ class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<Id>>> {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class DbKw, class DbDoc>
-Db<DbDoc, DbKw> indToDb(const Ind<DbKw, DbDoc>& ind);
-
-template <class DbKw, class DbDoc>
 void shuffleInd(Ind<DbKw, DbDoc>& ind);
 
 template <class DbDoc, class DbKw>

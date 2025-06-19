@@ -88,24 +88,15 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     this->tdag2 = new TdagNode<Id>(maxId);
 
     // replicate every document to all id ranges/nodes in TDAG2 that cover it
-    // again need temporary `unordered_map` index to shuffle
-    Ind<Id, DbDoc> ind2;
+    Db<DbDoc, Id> db2;
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Id id = dbDoc.getId();
         std::list<Range<Id>> ancestors = this->tdag2->getLeafAncestors(Range<Id> {id, id});
         for (Range<Id> ancestor : ancestors) {
-            if (ind2.count(ancestor) == 0) {
-                ind2[ancestor] = std::vector {dbDoc};
-            } else {
-                ind2[ancestor].push_back(dbDoc);
-            }
+            db2.push_back(std::pair {dbDoc, ancestor});
         }
     }
-
-    // randomly permute documents associated with same id range/node and convert temporary `unordered_map` to `Db`
-    shuffleInd(ind2);
-    Db<DbDoc, Id> db2 = indToDb(ind2);
 
     this->underly1.setup(secParam, db1);
     this->underly2.setup(secParam, db2);
