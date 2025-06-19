@@ -353,16 +353,11 @@ template class SrcIDb1Doc<Kw>;
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class DbKw, class DbDoc>
-Db<DbDoc, DbKw> indToDb(const Ind<DbKw, DbDoc>& ind) {
-    Db<DbDoc, DbKw> db;
+void shuffleInd(Ind<DbKw, DbDoc>& ind) {
     for (std::pair pair : ind) {
-        Range<DbKw> dbKwRange = pair.first;
         std::vector<DbDoc> dbDocs = pair.second;
-        for (DbDoc dbDoc: dbDocs) {
-            db.push_back(std::pair {dbDoc, dbKwRange});
-        }
+        std::shuffle(dbDocs.begin(), dbDocs.end(), RNG);
     }
-    return db;
 }
 
 template <class DbDoc, class DbKw>
