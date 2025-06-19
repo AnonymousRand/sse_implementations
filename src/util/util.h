@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <iostream>
+#include <map>
 #include <random>
 #include <string>
 #include <unordered_map>
@@ -37,8 +38,8 @@ template <class T> concept IMainDbDoc_ = requires(T t) {
     []<class X>(IMainDbDoc<X>&){}(t);
 };
 
-//                `std::unordered_map<label, std::pair<data, iv>>`
-using EncInd     = std::unordered_map<ustring, std::pair<ustring, ustring>>;
+//                `std::map<label, std::pair<data, iv>>`
+using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
 // allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
 template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw> 
 using DbEntry    = std::pair<DbDoc, Range<DbKw>>;
