@@ -54,7 +54,7 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ustring label = prf(subkeys.first, toUstr(counter));
             ustring iv = genIv(IV_LEN);
             ustring data = encrypt(ENC_CIPHER, subkeys.second, dbDoc.encode(), iv);
-            // add (l, d) to list L (in lex order); we add straight to dictionary since we have ordered maps in C++
+            // add (l, d) to list L (in lex order); we don't need to sort ourselves since C++ has ordered maps
             // also store IV in plain along with encrypted value
             this->encInd[label] = std::pair {data, iv};
             counter++;
