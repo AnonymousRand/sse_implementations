@@ -181,6 +181,9 @@ struct std::hash<Id> {
     }
 };
 
+// id aliases are functionally identical to ids but it's still nice to have this layer of abstraction for clarity
+using IdAlias = Id;
+
 ////////////////////////////////////////////////////////////////////////////////
 // `Op`
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,9 +233,10 @@ std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps);
 
 // PRECONDITION: since this just indexes a range of `Id`s, we need document ids to be consecutive
 template <class DbKw>
-class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<Id>>> {
+class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>> {
     public:
-        SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange);
+        SrcIDb1Doc() = default;
+        SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>& idRange);
 
         static SrcIDb1Doc<DbKw> decode(const ustring& ustr);
         std::string toStr() const override;

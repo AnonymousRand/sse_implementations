@@ -91,11 +91,11 @@ std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
     return os << range.toStr();
 }
 
-template class Range<Id>;
 template class Range<Kw>;
+template class Range<IdAlias>;
 
-template std::ostream& operator <<(std::ostream& os, const Range<Id>& range);
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
+template std::ostream& operator <<(std::ostream& os, const Range<IdAlias>& range);
 
 ////////////////////////////////////////////////////////////////////////////////
 // `IDbDoc`
@@ -123,11 +123,11 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iEncryptable) {
 
 template class IDbDoc<int>;
 template class IDbDoc<std::pair<Id, Op>>;
-template class IDbDoc<std::pair<Range<Kw>, Range<Id>>>;
+template class IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>;
 
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<int>& iEncryptable);
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<Id>& iEncryptable);
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Id, Op>>& iEncryptable);
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Range<Kw>, Range<Id>>>& iEncryptable);
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>& iEncryptable);
 
 template class IMainDbDoc<int>;
 template class IMainDbDoc<std::pair<Id, Op>>;
@@ -322,8 +322,8 @@ std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps) {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class DbKw>
-SrcIDb1Doc<DbKw>::SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<Id>& idRange)
-        : IDbDoc<std::pair<Range<DbKw>, Range<Id>>>(std::pair {dbKwRange, idRange}) {}
+SrcIDb1Doc<DbKw>::SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>& idRange)
+        : IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>>(std::pair {dbKwRange, idRange}) {}
 
 template <class DbKw>
 SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::decode(const ustring& ustr) {
@@ -335,7 +335,7 @@ SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::decode(const ustring& ustr) {
         exit(EXIT_FAILURE);
     }
     Range<Kw> kwRange = Range<Kw>::fromStr(matches[1].str());
-    Range<Id> idRange = Range<Id>::fromStr(matches[2].str());
+    Range<IdAlias> idRange = Range<IdAlias>::fromStr(matches[2].str());
     return SrcIDb1Doc<DbKw> {kwRange, idRange};
 }
 
@@ -388,8 +388,8 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 
 template void shuffleInd(Ind<Kw, Id>& ind);
 template void shuffleInd(Ind<Kw, IdOp>& ind);
-template void shuffleInd(Ind<Id, Id>& ind);
-template void shuffleInd(Ind<Id, IdOp>& ind);
+template void shuffleInd(Ind<IdAlias, Id>& ind);
+template void shuffleInd(Ind<IdAlias, IdOp>& ind);
 template void shuffleInd(Ind<Kw, SrcIDb1Doc<Kw>>& ind);
 
 template Kw findMaxDbKw(const Db<Id, Kw>& db);
@@ -398,5 +398,5 @@ template Kw findMaxDbKw(const Db<IdOp, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Id, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<IdOp, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc<Kw>, Kw>& db);
-template std::unordered_set<Range<Id>> getUniqDbKwRanges(const Db<Id, Id>& db);
-template std::unordered_set<Range<Id>> getUniqDbKwRanges(const Db<IdOp, Id>& db);
+template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Id, IdAlias>& db);
+template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<IdOp, IdAlias>& db);

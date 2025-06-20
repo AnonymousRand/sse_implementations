@@ -136,8 +136,8 @@ template class PiBas<IdOp, Kw>;
 template class PiBas<SrcIDb1Doc<Kw>, Kw>;
 
 // Log-SRC-i index 2
-template class PiBas<Id, Id>;
-template class PiBas<IdOp, Id>;
+template class PiBas<Id, IdAlias>;
+template class PiBas<IdOp, IdAlias>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // PiBas (Result-Hiding)
@@ -255,5 +255,5 @@ template class PiBasResHiding<IdOp, Kw>;
 template class PiBasResHiding<SrcIDb1Doc<Kw>, Kw>;
 
 // Log-SRC-i index 2
-template class PiBasResHiding<Id, Id>;
-template class PiBasResHiding<IdOp, Id>;
+template class PiBasResHiding<Id, IdAlias>;
+template class PiBasResHiding<IdOp, IdAlias>;
