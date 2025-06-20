@@ -23,9 +23,9 @@ void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db
 
     // replicate every document to all keyword ranges/nodes in TDAG that cover it
     Db<DbDoc, DbKw> dbWithReplications;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
-        DbDoc dbDoc = entry.first;
-        Range<DbKw> dbKwRange = entry.second;
+    for (DbEntry<DbDoc, DbKw> dbEntry : db) {
+        DbDoc dbDoc = dbEntry.first;
+        Range<DbKw> dbKwRange = dbEntry.second;
         std::list<Range<DbKw>> ancestors = this->tdag->getLeafAncestors(dbKwRange);
         for (Range<DbKw> ancestor : ancestors) {
             dbWithReplications.push_back(std::pair {dbDoc, ancestor});

@@ -232,8 +232,8 @@ std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
     return os;
 }
 
-template class TdagNode<Id>;
 template class TdagNode<Kw>;
+template class TdagNode<IdAlias>;
 
-template std::ostream& operator <<(std::ostream& os, TdagNode<Id>* node);
 template std::ostream& operator <<(std::ostream& os, TdagNode<Kw>* node);
+template std::ostream& operator <<(std::ostream& os, TdagNode<IdAlias>* node);

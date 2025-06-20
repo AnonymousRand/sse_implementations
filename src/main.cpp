@@ -16,14 +16,14 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
         int kw2 = dbSize - 1;
 
         for (int i = 0; i < dbSize / 2; i++) {
-            db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw1, kw1}});
+            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {kw1, kw1}});
         }
         for (int i = dbSize / 2; i < dbSize; i++) {
-            db.push_back(std::pair {DbDoc(i), Range<DbKw> {kw2, kw2}});
+            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {kw2, kw2}});
         }
     } else {
         for (int i = 0; i < dbSize; i++) {
-            db.push_back(std::pair {DbDoc(i), Range<DbKw> {dbSize - i, dbSize - i}});
+            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {dbSize - i, dbSize - i}});
         }
     }
     return db;

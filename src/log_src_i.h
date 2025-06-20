@@ -9,9 +9,9 @@ template <template<class ...> class Underly = PiBas, IMainDbDoc_ DbDoc = IdOp, c
 class LogSrcI : public ISdaUnderly<DbDoc, DbKw> {
     private:
         Underly<SrcIDb1Doc<DbKw>, DbKw> underly1;
-        Underly<DbDoc, Id> underly2;
+        Underly<DbDoc, IdAlias> underly2;
         TdagNode<DbKw>* tdag1;
-        TdagNode<Id>* tdag2;
+        TdagNode<IdAlias>* tdag2;
         Db<DbDoc, DbKw> db; // store since neither underlying instance contains the original DB
         bool _isEmpty = false;
 
