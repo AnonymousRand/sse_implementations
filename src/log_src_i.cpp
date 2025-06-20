@@ -73,8 +73,8 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     for (int i = 0; i < stop; i++) {
         DbEntry<DbDoc, IdAlias> dbEntry = db2[i];
         DbDoc dbDoc = dbEntry.first;
-        IdAlias idAlias = dbEntry.second.first;
-        std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(Range<IdAlias> {idAlias, idAlias});
+        Range<IdAlias> idAliasRange = dbEntry.second;
+        std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
         for (Range<IdAlias> ancestor : ancestors) {
             db2.push_back(std::pair {dbDoc, ancestor});
         }
@@ -119,6 +119,21 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 
     // replicate every document (in this case pairs) to all keyword ranges/nodes in TDAG 1 that cover it
     // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, [ids]), kw range/node)
+    stop = db1.size();
+    for (int i = 0; i < stop; i++) {
+        DbEntry<ScrIDb1Doc<DbKw>, DbKw> dbEntry = db1[i];
+        SrcIDb1Doc<DbKw> dbDoc = dbEntry.first;
+        Range<DbKw> dbKwRange = dbEntry.second;
+        std::list<Range<DbKw>> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
+        for (Range<DbKw> ancestor : ancestors) {
+            db1.push_back(std::pair {dbDoc, ancestor});
+        }
+    }
+    std::cout << "db2 after replications:" << std::endl;
+    for (auto r : db2) {
+        std::cout << r.first << "," << r.second << std::endl;
+    }
+
     //std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     //for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
     //    auto itIdsWithSameKw = ind1.find(dbKwRange);
@@ -142,7 +157,7 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     //    }
     //}
 
-    //this->underly1.setup(secParam, db1);
+    this->underly1.setup(secParam, db1);
     this->underly2.setup(secParam, db2);
 }
 
