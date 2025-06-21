@@ -29,11 +29,6 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     this->db = db;
     this->_isEmpty = this->db.empty();
 
-    std::cout << "base db" << std::endl;
-    for (auto r : db) {
-        std::cout << r.first << "," << r.second << std::endl;
-    }
-
     // build index 2
 
     // sort documents by keyword to assign index 2 nodes/"identifier aliases"
@@ -52,10 +47,6 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
         Id id = dbEntry.first.getId();
         idAliasMapping[id] = IdAlias(i);
     }
-    std::cout << "db2 before replications:" << std::endl;
-    for (auto r : db2) {
-        std::cout << r.first << "," << r.second << std::endl;
-    }
 
     // build TDAG 2 over id aliases
     IdAlias maxIdAlias = IdAlias(0);
@@ -67,7 +58,7 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     }
     this->tdag2 = new TdagNode<IdAlias>(maxIdAlias);
 
-    // replicate every document to all id alias ranges/nodes in TDAG 2 that cover it
+    // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     // TODO: make sure no Range<Id> anymore or TdagNode<Id>
     int stop = db2.size();
     for (int i = 0; i < stop; i++) {
@@ -76,6 +67,10 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
         Range<IdAlias> idAliasRange = dbEntry.second;
         std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
         for (Range<IdAlias> ancestor : ancestors) {
+            // ancestors include the leaf itself, which is already in `db2`
+            if (ancestor == idAliasRange) {
+                continue;
+            }
             db2.push_back(std::pair {dbDoc, ancestor});
         }
     }
@@ -97,65 +92,21 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
         DbEntry<SrcIDb1Doc<DbKw>, DbKw> newDbEntry = std::pair {pair, dbKwRange}; // `std::pair` works, not `DbEntry`
         db1.push_back(newDbEntry);
     }
-    std::cout << "db1 before replications:" << std::endl;
-    for (auto r : db1) {
-        std::cout << r.first << "," << r.second << std::endl;
-    }
 
-    // TODO finish; also what is this part for??
-    // figure out which documents share the same keywords by building index and list of unique kws like in PiBas
-    //Ind<DbKw, Id> ind1;
-    //for (DbEntry<DbDoc, DbKw> dbEntry : db) {
-    //    DbDoc dbDoc = dbEntry.first;
-    //    Id id = dbDoc.getId();
-    //    Range<DbKw> dbKwRange = dbEntry.second;
-
-    //    if (ind1.count(dbKwRange) == 0) {
-    //        ind1[dbKwRange] = std::vector {id};
-    //    } else {
-    //        ind1[dbKwRange].push_back(id);
-    //    }
-    //}
-
-    // replicate every document (in this case pairs) to all keyword ranges/nodes in TDAG 1 that cover it
-    // thus `db1` contains the (inverted) pairs used to build index 1: ((kw, [ids]), kw range/node)
+    // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();
     for (int i = 0; i < stop; i++) {
-        DbEntry<ScrIDb1Doc<DbKw>, DbKw> dbEntry = db1[i];
+        DbEntry<SrcIDb1Doc<DbKw>, DbKw> dbEntry = db1[i];
         SrcIDb1Doc<DbKw> dbDoc = dbEntry.first;
         Range<DbKw> dbKwRange = dbEntry.second;
         std::list<Range<DbKw>> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
         for (Range<DbKw> ancestor : ancestors) {
+            if (ancestor == dbKwRange) {
+                continue;
+            }
             db1.push_back(std::pair {dbDoc, ancestor});
         }
     }
-    std::cout << "db2 after replications:" << std::endl;
-    for (auto r : db2) {
-        std::cout << r.first << "," << r.second << std::endl;
-    }
-
-    //std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
-    //for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
-    //    auto itIdsWithSameKw = ind1.find(dbKwRange);
-    //    std::vector<Id> idsWithSameKw = itIdsWithSameKw->second;
-    //    Id minId = Id(0), maxId = Id(0);
-    //    for (Id id : idsWithSameKw) {
-    //        if (id > maxId) {
-    //            maxId = id;
-    //        }
-    //        if (id < minId || minId == Id(0)) {
-    //            minId = id;
-    //        }
-    //    }
-    //    Range<Id> idRange {minId, maxId}; // this is why we used `set`
-    //    SrcIDb1Doc<DbKw> pair {dbKwRange, idRange};
-
-    //    std::list<Range<DbKw>> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
-    //    for (Range<DbKw> ancestor : ancestors) {
-    //        std::pair<SrcIDb1Doc<DbKw>, Range<DbKw>> finalEntry {pair, ancestor};
-    //        db1.push_back(finalEntry);
-    //    }
-    //}
 
     this->underly1.setup(secParam, db1);
     this->underly2.setup(secParam, db2);
@@ -173,31 +124,31 @@ Range<Id> LogSrcI<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
 
     // query 2
 
-    Id minId = DUMMY;
-    Id maxId = DUMMY;
+    IdAlias minIdAlias = DUMMY;
+    IdAlias maxIdAlias = DUMMY;
     // filter out unnecessary choices and merge remaining ones into a single id range
     for (SrcIDb1Doc<DbKw> choice : choices) {
         Range<DbKw> choiceKwRange = choice.get().first;
         if (query.contains(choiceKwRange)) {
-            Range<Id> choiceIdRange = choice.get().second;
-            if (choiceIdRange.first < minId || minId == DUMMY) {
-                minId = choiceIdRange.first;
+            Range<IdAlias> choiceIdAliasRange = choice.get().second;
+            if (choiceIdAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
+                minIdAlias = choiceIdAliasRange.first;
             }
-            if (choiceIdRange.second > maxId || maxId == DUMMY) {
-                maxId = choiceIdRange.second;
+            if (choiceIdAliasRange.second > maxIdAlias || maxIdAlias == DUMMY) {
+                maxIdAlias = choiceIdAliasRange.second;
             }
         }
     }
 
-    Range<Id> idRangeToQuery {minId, maxId};
-    Range<Id> src2 = this->tdag2->findSrc(idRangeToQuery);
+    Range<IdAlias> idAliasRangeToQuery {minIdAlias, maxIdAlias};
+    Range<IdAlias> src2 = this->tdag2->findSrc(idAliasRangeToQuery);
     return src2;
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    Range<Id> src2 = this->searchBase(query);
-    if (src2 == DUMMY_RANGE<Id>()) {
+    Range<IdAlias> src2 = this->searchBase(query);
+    if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<DbDoc> {};
     }
     return this->underly2.search(src2);
@@ -205,8 +156,8 @@ std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::search(const Range<DbKw>& quer
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
-    Range<Id> src2 = this->searchBase(query);
-    if (src2 == DUMMY_RANGE<Id>()) {
+    Range<IdAlias> src2 = this->searchBase(query);
+    if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<DbDoc> {};
     }
     return this->underly2.searchWithoutHandlingDels(src2);

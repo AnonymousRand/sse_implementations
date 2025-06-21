@@ -21,7 +21,7 @@ void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db
     DbKw maxDbKw = findMaxDbKw(db);
     this->tdag = new TdagNode<DbKw>(maxDbKw);
 
-    // replicate every document to all keyword ranges/nodes in TDAG that cover it
+    // replicate every document to all keyword ranges/TDAG nodes that cover it
     Db<DbDoc, DbKw> dbWithReplications;
     for (DbEntry<DbDoc, DbKw> dbEntry : db) {
         DbDoc dbDoc = dbEntry.first;
