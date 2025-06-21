@@ -56,10 +56,11 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ustring data = encrypt(ENC_CIPHER, subkeys.second, dbDoc.encode(), iv);
             // add (l, d) to list L (in lex order); we don't need to sort ourselves since C++ has ordered maps
             // also store IV in plain along with encrypted value
-            this->encInd[label] = std::pair {data, iv};
+            this->encInd.write(label, std::pair {data, iv});
             counter++;
         }
     }
+    this->encInd.flushWrite();
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
@@ -88,11 +89,11 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchWithoutHandlingDels(const Range
         while (true) {
             // d <- Get(D, F(K_1, c)); c++
             ustring label = prf(subkey1, toUstr(counter));
-            auto it = this->encInd.find(label);
-            if (it == this->encInd.end()) {
+            std::pair<ustring, ustring> encIndV;
+            int status = this->encInd.find(label, encIndV);
+            if (status == -1) {
                 break;
             }
-            std::pair<ustring, ustring> encIndV = it->second;
             ustring data = encIndV.first;
             // id <- Dec(K_2, d)
             ustring iv = encIndV.second;

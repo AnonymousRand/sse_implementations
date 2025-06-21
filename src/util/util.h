@@ -39,6 +39,7 @@ template <class T> concept IMainDbDoc_ = requires(T t) {
 };
 
 //                `std::map<label, std::pair<data, iv>>`
+// TODO when this becomes kvstore, move to kv_store.h
 using EncInd     = std::map<ustring, std::pair<ustring, ustring>>;
 // allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
 template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw> 

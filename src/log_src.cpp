@@ -1,10 +1,10 @@
 #include "log_src.h"
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-LogSrc<Underly, DbDoc, DbKw>::LogSrc(const Underly<DbDoc, DbKw>& underly) : underly(underly) {};
+LogSrc<Underly, DbDoc, DbKw>::LogSrc(const Underly<DbDoc, DbKw>& underly) : underly(underly) {}
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-LogSrc<Underly, DbDoc, DbKw>::LogSrc() : LogSrc(Underly<DbDoc, DbKw>()) {};
+LogSrc<Underly, DbDoc, DbKw>::LogSrc() : LogSrc(Underly<DbDoc, DbKw>()) {}
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 LogSrc<Underly, DbDoc, DbKw>::~LogSrc() {

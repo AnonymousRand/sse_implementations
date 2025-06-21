@@ -2,6 +2,7 @@
 
 #include "sse.h"
 #include "util/openssl.h"
+#include "util/kv_store.h"
 
 static const EVP_CIPHER* ENC_CIPHER = EVP_aes_256_cbc();
 static const EVP_MD* HASH_FUNC = EVP_sha512();
@@ -16,7 +17,8 @@ class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key;
-        EncInd encInd;
+        // TODO templatize this
+        RamKvStore<ustring, std::pair<ustring, ustring>> encInd;
         bool _isEmpty = false;
 
         std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
