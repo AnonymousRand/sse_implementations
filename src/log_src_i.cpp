@@ -59,7 +59,6 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     this->tdag2 = new TdagNode<IdAlias>(maxIdAlias);
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
-    // TODO: make sure no Range<Id> anymore or TdagNode<Id>
     int stop = db2.size();
     for (int i = 0; i < stop; i++) {
         DbEntry<DbDoc, IdAlias> dbEntry = db2[i];
@@ -113,7 +112,7 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 }
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-Range<Id> LogSrcI<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+Range<IdAlias> LogSrcI<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     // query 1
 
     Range<DbKw> src1 = this->tdag1->findSrc(query);

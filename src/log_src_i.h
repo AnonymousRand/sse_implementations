@@ -16,7 +16,7 @@ class LogSrcI : public ISdaUnderly<DbDoc, DbKw> {
         bool _isEmpty = false;
 
         LogSrcI(const Underly<SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2);
-        Range<Id> searchBase(const Range<DbKw>& query) const;
+        Range<IdAlias> searchBase(const Range<DbKw>& query) const;
 
     public:
         LogSrcI();
