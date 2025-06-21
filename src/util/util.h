@@ -236,7 +236,7 @@ template <class DbKw>
 class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>> {
     public:
         SrcIDb1Doc() = default;
-        SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>& idRange);
+        SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>& idAliasRange);
 
         static SrcIDb1Doc<DbKw> decode(const ustring& ustr);
         std::string toStr() const override;

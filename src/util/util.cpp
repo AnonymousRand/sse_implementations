@@ -322,8 +322,8 @@ std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps) {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class DbKw>
-SrcIDb1Doc<DbKw>::SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>& idRange)
-        : IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>>(std::pair {dbKwRange, idRange}) {}
+SrcIDb1Doc<DbKw>::SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>& idAliasRange)
+        : IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>>(std::pair {dbKwRange, idAliasRange}) {}
 
 template <class DbKw>
 SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::decode(const ustring& ustr) {
@@ -335,8 +335,8 @@ SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::decode(const ustring& ustr) {
         exit(EXIT_FAILURE);
     }
     Range<Kw> kwRange = Range<Kw>::fromStr(matches[1].str());
-    Range<IdAlias> idRange = Range<IdAlias>::fromStr(matches[2].str());
-    return SrcIDb1Doc<DbKw> {kwRange, idRange};
+    Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
+    return SrcIDb1Doc<DbKw> {kwRange, idAliasRange};
 }
 
 template <class DbKw>
