@@ -86,7 +86,6 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
         DbDoc dbDoc = dbEntry.first;
         Range<DbKw> dbKwRange = dbEntry.second;
         IdAlias idAlias = idAliasMapping[dbDoc.getId()];
-        // TODO can all Range inisitalizations drop the template arg?
         SrcIDb1Doc<DbKw> pair {dbKwRange, Range<IdAlias> {idAlias, idAlias}};
         DbEntry<SrcIDb1Doc<DbKw>, DbKw> newDbEntry = std::pair {pair, dbKwRange}; // `std::pair` works, not `DbEntry`
         db1.push_back(newDbEntry);
