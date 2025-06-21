@@ -33,7 +33,7 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 
     // sort documents by keyword to assign index 2 nodes/"identifier aliases"
     auto sortByKw = [](const DbEntry<DbDoc, DbKw>& dbEntry1, const DbEntry<DbDoc, DbKw>& dbEntry2) {
-        return dbEntry1.second <= dbEntry2.second;
+        return dbEntry1.second < dbEntry2.second;
     };
 
     Db<DbDoc, DbKw> dbSorted = db;
