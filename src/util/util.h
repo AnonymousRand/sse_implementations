@@ -181,7 +181,7 @@ struct std::hash<Id> {
     }
 };
 
-// id aliases are functionally identical to ids but it's still nice to have this layer of abstraction for clarity
+// id aliases are functionally identical to ids, but it's still nice to have this layer of abstraction for clarity
 using IdAlias = Id;
 
 ////////////////////////////////////////////////////////////////////////////////
