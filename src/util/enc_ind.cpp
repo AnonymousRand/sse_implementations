@@ -39,7 +39,8 @@ DiskEncInd::~DiskEncInd() {
 
 void DiskEncInd::init(unsigned long size) {
     this->size = size;
-    this->buf = new unsigned char[size * ENC_IND_KV_LEN](); // `()` fills buffer with '\0' bits
+    this->buf = new unsigned char[size * ENC_IND_KV_LEN];
+
     // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
     // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
     // the same file its first index was being stored in...
@@ -58,6 +59,10 @@ void DiskEncInd::init(unsigned long size) {
         std::cerr << "Error opening encrypted index file" << std::endl;
         std::exit(EXIT_FAILURE);
     }
+
+    for (unsigned long i = 0; i < size; i++) {
+        this->isPosFilled[i] = false;
+    }
 }
 
 /**
@@ -72,16 +77,17 @@ void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
     // (although they also use caching, presumably since it's slow if we need to keep finding next available locations)
     // this conversion mess is from USENIX'24's implementation
     unsigned long pos = (*((unsigned long*)key.c_str())) % this->size;
-    // if location is already filled (e.g. because of modulo), find next available location (which should contain '\0')
+    // if location is already filled (e.g. because of modulo), find next available location
     unsigned long numPositionsChecked = 1;
-    while (this->buf[pos * ENC_IND_KV_LEN] != '\0' && numPositionsChecked < this->size) {
+    while (this->isPosFilled[pos] && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
     }
-    if (this->buf[pos * ENC_IND_KV_LEN] != '\0') {
+    if (this->isPosFilled[pos]) {
         std::cerr << "Ran out of space writing to disk encrypted index!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
+    this->isPosFilled[pos] = true;
 
     // encode kv pair and write to buffer
     ustring kvPair = key + val.first + val.second;
@@ -92,6 +98,7 @@ void DiskEncInd::flushWrite() {
     std::fwrite(this->buf, ENC_IND_KV_LEN, size, this->file);
     delete[] this->buf;
     this->buf = nullptr;
+    this->isPosFilled.clear();
 }
 
 int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
@@ -136,4 +143,5 @@ void DiskEncInd::clear() {
         std::fclose(this->file);
         this->file = nullptr;
     }
+    this->isPosFilled.clear();
 }

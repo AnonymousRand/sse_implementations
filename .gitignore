@@ -3,3 +3,6 @@ src/out/
 
 # vim
 *.swp
+
+# other temp files
+src/tmp*

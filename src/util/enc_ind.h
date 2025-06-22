@@ -55,6 +55,7 @@ class DiskEncInd : public IEncInd {
         unsigned char* buf;
         FILE* file;
         unsigned long size;
+        std::unordered_map<unsigned long, bool> isPosFilled;
 
     public:
         DiskEncInd();
