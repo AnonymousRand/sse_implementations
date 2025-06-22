@@ -3,11 +3,10 @@
 #include "pi_bas.h"
 #include "sse.h"
 
-// don't use template template parameter for `Underly` because they may have other deeper templates (like for Log-SRC)
+// don't use template template parameter for `Underly` because they may have other deeper underlying schemes
 // and it can get very complicated so probably best to just explicitly specify everything here
-// TODO can we do template<class EncInd, class ...> Underly to get rid of need for second EncInd tempalte arg?
 template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-    requires ISdaUnderly_<Underly, EncInd, DbDoc, DbKw>
+        requires ISdaUnderly_<Underly, EncInd, DbDoc, DbKw>
 class SdaBase : public IDsse<EncInd, DbDoc, DbKw> {
     protected:
         std::vector<Underly*> underlys;

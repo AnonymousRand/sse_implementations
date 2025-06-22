@@ -4,7 +4,7 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <template<class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw>
+template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw>
         requires ISse_<Underly, EncInd, DbDoc, DbKw>
 class LogSrc : public ISdaUnderly<EncInd, DbDoc, DbKw> {
     private:

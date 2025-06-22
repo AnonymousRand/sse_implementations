@@ -19,7 +19,7 @@ class ISse {
 
 // (java generics `extends`: look what they need to mimic a fraction of my power)
 // TODO is it possible to drop encind, dbdoc, dbkw?
-template <template<class ...> class T, class EncInd, class DbDoc, class DbKw> concept ISse_ =
+template <template <class ...> class T, class EncInd, class DbDoc, class DbKw> concept ISse_ =
         requires(T<EncInd, DbDoc, DbKw> t) {
             []<class X, class Y, class Z>(ISse<X, Y, Z>&){}(t);
         };

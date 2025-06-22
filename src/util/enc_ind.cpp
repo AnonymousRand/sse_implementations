@@ -73,6 +73,7 @@ void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
     // encode kv pair and write to buffer
     ustring kvPair = key + val.first + val.second;
     std::memcpy(&this->buf[pos * ENC_IND_KV_LEN], &kvPair[0], ENC_IND_KV_LEN);
+//    std::cout << std::endl << "----------------------------------------" << std::endl << key << std::endl << "----------" << std::endl << val.first << std::endl << "----------" << std::endl << val.second << std::endl;
 }
 
 void DiskEncInd::flushWrite() {
@@ -100,6 +101,10 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
         }
         std::fread(curr, ENC_IND_KV_LEN, 1, this->file);
         currKey = ustring(curr, ENC_IND_KEY_LEN);
+//        std::cout << key << std::endl << std::endl << "----------------------------" << std::endl << currKey << std::endl << "match? " << (currKey == key) << std::endl;
+//        ret.first = ustring(&curr[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
+//        ret.second = ustring(&curr[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
+//        std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++" << std::endl << key << std::endl << "++++++++++" << std::endl << ret.first << std::endl << "++++++++++" << std::endl << ret.second << std::endl;
     }
     // this does make it a lot slower to verify if an element is nonexistent compared to primary memory storage,
     // since we have to iterate through whole index
@@ -110,6 +115,7 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     // decode kv pair and return it
     ret.first = ustring(&curr[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
     ret.second = ustring(&curr[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
+//    std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++" << std::endl << key << std::endl << "++++++++++" << std::endl << ret.first << std::endl << "++++++++++" << std::endl << ret.second << std::endl;
     delete[] curr;
     return 0;
 }

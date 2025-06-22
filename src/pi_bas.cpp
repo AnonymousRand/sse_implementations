@@ -61,6 +61,7 @@ void PiBasBase<EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& 
             // add (l, d) to list L (in lex order); we don't need to sort ourselves since C++ has ordered maps
             // also store IV in plain along with encrypted value
             this->encInd.write(label, std::pair {encryptedDoc, iv});
+            //std::cout << "wrote: " << label << std::endl;
             counter++;
         }
     }
@@ -84,6 +85,7 @@ std::vector<DbDoc> PiBasBase<EncInd, DbDoc, DbKw>::searchWithoutHandlingDels(con
 
     // naive range search: just individually query every point in range
     for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+        std::cout << "querying " << dbKw << std::endl;
         std::pair<ustring, ustring> queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
         ustring subkey1 = queryToken.first;
         ustring subkey2 = queryToken.second;
@@ -97,6 +99,7 @@ std::vector<DbDoc> PiBasBase<EncInd, DbDoc, DbKw>::searchWithoutHandlingDels(con
             std::pair<ustring, ustring> encIndV;
             int status = this->encInd.find(label, encIndV);
             if (status == -1) {
+                //std::cout << "search " << label << " not found" << std::endl;
                 break;
             }
             ustring encryptedDoc = encIndV.first;
@@ -104,6 +107,7 @@ std::vector<DbDoc> PiBasBase<EncInd, DbDoc, DbKw>::searchWithoutHandlingDels(con
             ustring iv = encIndV.second;
             ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, subkey2, encryptedDoc, iv);
             DbDoc result = DbDoc::decode(decryptedDoc);
+            //std::cout << "search " << label << " " << result << std::endl;
             results.push_back(result);
             counter++;
         }
@@ -120,7 +124,7 @@ std::pair<ustring, ustring> PiBasBase<EncInd, DbDoc, DbKw>::genQueryToken(const 
     int subkeyLen = K.length() / 2;
     ustring subkey1 = K.substr(0, subkeyLen);
     ustring subkey2 = K.substr(subkeyLen, subkeyLen);
-    return std::pair<ustring, ustring> {subkey1, subkey2};
+    return std::pair {subkey1, subkey2};
 }
 
 template <IEncInd_ EncInd, IDbDoc_ DbDoc, class DbKw>

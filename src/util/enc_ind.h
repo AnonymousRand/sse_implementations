@@ -8,12 +8,6 @@
 // indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries
 // each of which correspond to `std::pair<label/key, std::pair<encrypted doc, iv>>`
 
-// idk if this or templates is better design for this polymorphism, but templates seem less clean
-//enum class EncIndType {
-//    RAM,
-//    DISK
-//};
-
 ////////////////////////////////////////////////////////////////////////////////
 // `IEncInd`
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,6 +24,8 @@ class IEncInd {
         virtual void clear() = 0;
 };
 
+// idk if enum in constructor or templates is better design for this polymorphism
+// but templates seem more natural even if less clean esp through all the inheritance
 template <class T> concept IEncInd_ = std::derived_from<T, IEncInd>;
 
 ////////////////////////////////////////////////////////////////////////////////
