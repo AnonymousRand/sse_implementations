@@ -31,7 +31,7 @@ void LogSrcI<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, 
     this->db = db;
     this->_isEmpty = this->db.empty();
 
-    // build index 2
+    ////////////////////////////// build index 2 ///////////////////////////////
 
     // sort documents by keyword to assign index 2 nodes/"identifier aliases"
     auto sortByKw = [](const DbEntry<DbDoc, DbKw>& dbEntry1, const DbEntry<DbDoc, DbKw>& dbEntry2) {
@@ -76,7 +76,7 @@ void LogSrcI<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, 
         }
     }
 
-    // build index 1
+    ////////////////////////////// build index 1 ///////////////////////////////
 
     // build TDAG 1 over keywords
     DbKw maxDbKw = findMaxDbKw(db);

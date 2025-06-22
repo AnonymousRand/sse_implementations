@@ -8,9 +8,9 @@
 // indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries
 // each of which correspond to `std::pair<label/key, std::pair<encrypted doc, iv>>`
 
-////////////////////////////////////////////////////////////////////////////////
-// `IEncInd`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `IEncInd`                                                                  */
+/******************************************************************************/
 
 class IEncInd {
     public:
@@ -28,9 +28,9 @@ class IEncInd {
 // but templates seem more natural even if less clean esp through all the inheritance
 template <class T> concept IEncInd_ = std::derived_from<T, IEncInd>;
 
-////////////////////////////////////////////////////////////////////////////////
-// `RamEncInd`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `RamEncInd`                                                                */
+/******************************************************************************/
 
 // for storing in primary memory (essentially an `std::map`)
 class RamEncInd : public IEncInd {
@@ -45,9 +45,9 @@ class RamEncInd : public IEncInd {
         void clear() override;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// `DiskEncInd`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `DiskEncInd`                                                               */
+/******************************************************************************/
 
 // for storing in secondary memory
 class DiskEncInd : public IEncInd {

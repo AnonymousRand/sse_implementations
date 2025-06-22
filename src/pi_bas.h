@@ -3,9 +3,9 @@
 #include "sse.h"
 #include "util/enc_ind.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// PiBas
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* PiBas                                                                      */
+/******************************************************************************/
 
 template <IEncInd_ EncInd, IDbDoc_ DbDoc, class DbKw>
 class PiBasBase : public ISdaUnderly<EncInd, DbDoc, DbKw> {
@@ -38,9 +38,9 @@ class PiBas<EncInd, IdOp, DbKw> : public PiBasBase<EncInd, IdOp, DbKw> {
         std::vector<IdOp> search(const Range<DbKw>& query) const;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// PiBas (Result-Hiding)
-///////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* PiBas (Result-Hiding)                                                      */
+/******************************************************************************/
 
 template <IEncInd_ EncInd, IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 class PiBasResHidingBase : public ISdaUnderly<EncInd, DbDoc, DbKw> {

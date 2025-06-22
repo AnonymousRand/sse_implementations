@@ -12,9 +12,9 @@
 
 #include <openssl/evp.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// Constants/Configs
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* Constants/Configs                                                          */
+/******************************************************************************/
 
 // lengths are in bytes
 static const int KEY_LEN            = 256 / 8;
@@ -28,13 +28,15 @@ static const int ENC_IND_DOC_LEN    = 3 * BLOCK_SIZE; // so max keyword/id size 
 static const int ENC_IND_VAL_LEN    = ENC_IND_DOC_LEN + IV_LEN;
 static const int ENC_IND_KV_LEN     = ENC_IND_KEY_LEN + ENC_IND_VAL_LEN;
 
-// PRECONDITION: keywords are always positive
+/**
+ * PRECONDITION: keywords are always positive.
+ */
 static const int DB_KW_MIN = 0;
 static const int DUMMY     = -1;
 
-////////////////////////////////////////////////////////////////////////////////
-// Basic Declarations
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* Basic Declarations                                                         */
+/******************************************************************************/
 
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
@@ -68,9 +70,9 @@ using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class DbKw = Kw, class DbDoc = IdOp>
 using Ind     = std::unordered_map<Range<DbKw>, std::vector<DbDoc>>;
 
-////////////////////////////////////////////////////////////////////////////////
-// `ustring`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `ustring`                                                                  */
+/******************************************************************************/
 
 ustring toUstr(int n);
 ustring toUstr(const std::string& s);
@@ -87,11 +89,13 @@ struct std::hash<ustring> {
 
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
-////////////////////////////////////////////////////////////////////////////////
-// `Range`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `Range`                                                                    */
+/******************************************************************************/
 
-// PRECONDITION: range end is greater than or equal to range start
+/**
+ * PRECONDITION: range end is greater than or equal to range start.
+ */
 template <class T>
 class Range : public std::pair<T, T> {
     public:
@@ -109,7 +113,6 @@ class Range : public std::pair<T, T> {
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 };
 
-// hash function
 template <>
 template <class T>
 struct std::hash<Range<T>> {
@@ -123,9 +126,9 @@ static Range<T> DUMMY_RANGE() {
     return Range<T>(T(DUMMY), T(DUMMY));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// `IDbDoc`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `IDbDoc`                                                                   */
+/******************************************************************************/
 
 // interface for documents in dataset
 template <class T>
@@ -153,9 +156,9 @@ class IMainDbDoc : public IDbDoc<T> {
         virtual Id getId() const = 0;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// `Id`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `Id`                                                                       */
+/******************************************************************************/
 
 class Id : public IMainDbDoc<int> {
     public:
@@ -186,7 +189,6 @@ class Id : public IMainDbDoc<int> {
         friend bool operator >=(const Id& id1, const Id& id2);
 };
 
-// hash function
 template <>
 struct std::hash<Id> {
     std::size_t operator ()(const Id& id) const noexcept {
@@ -197,9 +199,9 @@ struct std::hash<Id> {
 // id aliases are functionally identical to ids, but it's still nice to have this layer of abstraction for clarity
 using IdAlias = Id;
 
-////////////////////////////////////////////////////////////////////////////////
-// `Op`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `Op`                                                                       */
+/******************************************************************************/
 
 class Op {
     private:
@@ -219,9 +221,9 @@ class Op {
 const Op INSERT("INSERT");
 const Op DELETE("DELETE");
 
-////////////////////////////////////////////////////////////////////////////////
-// `IdOp`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `IdOp`                                                                     */
+/******************************************************************************/
 
 class IdOp : public IMainDbDoc<std::pair<Id, Op>> {
     public:
@@ -240,11 +242,10 @@ class IdOp : public IMainDbDoc<std::pair<Id, Op>> {
 
 std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps);
 
-////////////////////////////////////////////////////////////////////////////////
-// `SrcIDb1Doc`
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* `SrcIDb1Doc`                                                               */
+/******************************************************************************/
 
-// PRECONDITION: since this just indexes a range of `Id`s, we need document ids to be consecutive
 template <class DbKw>
 class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>> {
     public:
@@ -255,9 +256,9 @@ class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>> {
         std::string toStr() const override;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// SSE Utils
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* SSE Utils                                                                  */
+/******************************************************************************/
 
 template <class DbKw, class DbDoc>
 void shuffleInd(Ind<DbKw, DbDoc>& ind);

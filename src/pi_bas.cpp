@@ -3,9 +3,9 @@
 #include "pi_bas.h"
 #include "util/cryptography.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// PiBas
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* PiBas                                                                      */
+/******************************************************************************/
 
 template <IEncInd_ EncInd, IDbDoc_ DbDoc, class DbKw>
 void PiBasBase<EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
@@ -149,9 +149,9 @@ template class PiBas<RamEncInd, IdOp, IdAlias>;
 template class PiBas<DiskEncInd, Id, IdAlias>;
 template class PiBas<DiskEncInd, IdOp, IdAlias>;
 
-////////////////////////////////////////////////////////////////////////////////
-// PiBas (Result-Hiding)
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/* PiBas (Result-Hiding)                                                      */
+/******************************************************************************/
 
 template <IEncInd_ EncInd, IDbDoc_ DbDoc, class DbKw>
 void PiBasResHidingBase<EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
