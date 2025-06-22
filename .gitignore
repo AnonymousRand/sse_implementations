@@ -3,3 +3,6 @@ src/a.out
 
 # vim
 *.swp
+
+# program files
+src/enc_ind.dat
