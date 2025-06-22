@@ -43,7 +43,7 @@ void DiskEncInd::init(unsigned long size) {
     // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
     // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
     // the same file its first index was being stored in...
-    std::uniform_int_distribution dist(1000000000, 9999999999);
+    std::uniform_int_distribution dist(100000000, 999999999);
     std::string filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
     FILE* fileTmp = std::fopen(filename.c_str(), "r");
     // while file exists (or any other error occurs on open), create new random filename
