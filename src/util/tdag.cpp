@@ -140,7 +140,7 @@ template <class T>
 Range<T> TdagNode<T>::findSrc(const Range<T>& targetRange) {
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
-    if (this->range.isDisjointWith(targetRange)) {
+    if (this->range.isDisjointFrom(targetRange)) {
         return DUMMY_RANGE<T>();
     }
 

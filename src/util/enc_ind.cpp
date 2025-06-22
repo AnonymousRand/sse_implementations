@@ -40,7 +40,12 @@ DiskEncInd::~DiskEncInd() {
 void DiskEncInd::init(unsigned long size) {
     this->size = size;
     this->buf = new unsigned char[size * ENC_IND_KV_LEN](); // `()` fills buffer with '\0' bits
-    this->file = std::fopen("enc_ind.dat", "wb+");
+    // TODO somehow still make this more reliable?
+    // try to avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
+    // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
+    // the same file its first index was being stored in...
+    std::string filename = "out/enc_ind_" + std::to_string(DOUBLE_DIST(RNG) * 10) + ".dat";
+    this->file = std::fopen(filename.c_str(), "wb+");
     if (this->file == nullptr) {
         std::cerr << "Error opening encrypted index file" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -61,11 +66,11 @@ void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
     unsigned long pos = (*((unsigned long*)key.c_str())) % this->size;
     // if location is already filled (e.g. because of modulo), find next available location (which should contain '\0')
     unsigned long numPositionsChecked = 1;
-    while (this->buf[pos * ENC_IND_KV_LEN] != '\0' && numPositionsChecked <= this->size) {
+    while (this->buf[pos * ENC_IND_KV_LEN] != '\0' && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
     }
-    if (numPositionsChecked > this->size) {
+    if (this->buf[pos * ENC_IND_KV_LEN] != '\0') {
         std::cerr << "Ran out of space writing to disk encrypted index!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -73,7 +78,6 @@ void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
     // encode kv pair and write to buffer
     ustring kvPair = key + val.first + val.second;
     std::memcpy(&this->buf[pos * ENC_IND_KV_LEN], &kvPair[0], ENC_IND_KV_LEN);
-//    std::cout << std::endl << "----------------------------------------" << std::endl << key << std::endl << "----------" << std::endl << val.first << std::endl << "----------" << std::endl << val.second << std::endl;
 }
 
 void DiskEncInd::flushWrite() {
@@ -91,7 +95,7 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     // if location based on `key` did not match the target (i.e. another kv pair overflowed to here first), scan
     // subsequent locations for where the target could've overflowed to
     unsigned long numPositionsChecked = 1;
-    while (currKey != key && numPositionsChecked <= this->size) {
+    while (currKey != key && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         // by assuming previous `fread()` read all `ENC_IND_KV_LEN` bytes and hence only needing to `fseek()` when we
@@ -101,21 +105,16 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
         }
         std::fread(curr, ENC_IND_KV_LEN, 1, this->file);
         currKey = ustring(curr, ENC_IND_KEY_LEN);
-//        std::cout << key << std::endl << std::endl << "----------------------------" << std::endl << currKey << std::endl << "match? " << (currKey == key) << std::endl;
-//        ret.first = ustring(&curr[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
-//        ret.second = ustring(&curr[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
-//        std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++" << std::endl << key << std::endl << "++++++++++" << std::endl << ret.first << std::endl << "++++++++++" << std::endl << ret.second << std::endl;
     }
     // this does make it a lot slower to verify if an element is nonexistent compared to primary memory storage,
     // since we have to iterate through whole index
-    if (numPositionsChecked > this->size) {
+    if (currKey != key) {
         return -1;
     }
 
     // decode kv pair and return it
     ret.first = ustring(&curr[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
     ret.second = ustring(&curr[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
-//    std::cout << std::endl << "++++++++++++++++++++++++++++++++++++++++" << std::endl << key << std::endl << "++++++++++" << std::endl << ret.first << std::endl << "++++++++++" << std::endl << ret.second << std::endl;
     delete[] curr;
     return 0;
 }

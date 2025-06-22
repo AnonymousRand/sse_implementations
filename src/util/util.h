@@ -38,6 +38,7 @@ static const int DUMMY     = -1;
 
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
+static std::uniform_real_distribution<double> DOUBLE_DIST(0.0, 1.0);
 
 // use `ustring` as much as possible instead of `unsigned char*` to avoid hell
 using ustring = std::basic_string<unsigned char>;
@@ -99,8 +100,8 @@ class Range : public std::pair<T, T> {
         Range(const T& start, const T& end);
 
         T size() const;
-        bool contains(const Range<T>& range) const;
-        bool isDisjointWith(const Range<T>& range) const;
+        bool contains(const Range<T>& target) const;
+        bool isDisjointFrom(const Range<T>& target) const;
 
         std::string toStr() const;
         static Range<T> fromStr(const std::string& str);

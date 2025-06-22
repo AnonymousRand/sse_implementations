@@ -1,11 +1,7 @@
 #include <algorithm>
 
-#include <openssl/rand.h>
-
 #include "log_src_i.h"
 #include "pi_bas.h"
-// TODO can remove this?
-#include "util/cryptography.h"
 
 template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
         requires ISse_<Underly, EncInd, DbDoc, DbKw>
@@ -111,10 +107,6 @@ void LogSrcI<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, 
             db1.push_back(std::pair {dbDoc, ancestor});
         }
     }
-    std::cout << "================= db1:" << std::endl;
-    for (auto r : db1) {
-        std::cout << r.first << "," << r.second << std::endl;
-    }
 
     this->underly1.setup(secParam, db1);
     this->underly2.setup(secParam, db2);
@@ -129,12 +121,7 @@ Range<IdAlias> LogSrcI<Underly, EncInd, DbDoc, DbKw>::searchBase(const Range<DbK
     if (src1 == DUMMY_RANGE<DbKw>()) { 
         return DUMMY_RANGE<Id>();
     }
-    std::cout << "src 1: " << src1 << std::endl;
     std::vector<SrcIDb1Doc<DbKw>> choices = this->underly1.search(src1);
-    std::cout << "choices: " << std::endl;
-    for (auto c : choices) {
-        std::cout << c << std::endl;
-    }
 
     // query 2
 

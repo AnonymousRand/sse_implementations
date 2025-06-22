@@ -50,13 +50,13 @@ T Range<T>::size() const {
 }
 
 template <class T>
-bool Range<T>::contains(const Range<T>& range) const {
-    return this->first <= range.first && this->second >= range.second;
+bool Range<T>::contains(const Range<T>& target) const {
+    return this->first <= target.first && this->second >= target.second;
 }
 
 template <class T>
-bool Range<T>::isDisjointWith(const Range<T>& range) const {
-    return this->second < range.first || this->first > range.second;
+bool Range<T>::isDisjointFrom(const Range<T>& target) const {
+    return this->second < target.first || this->first > target.second;
 }
 
 template <class T>

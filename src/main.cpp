@@ -134,7 +134,6 @@ int main() {
     std::cout << "----------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
-    /*
     std::cout << "---------- PiBas ----------" << std::endl;
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
@@ -149,14 +148,12 @@ int main() {
     std::cout << std::endl;
     exp1(logSrc, maxDbSize);
     logSrc.setup(KEY_LEN, Db {});
-    */
 
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
     exp1(logSrcI, maxDbSize);
     logSrcI.setup(KEY_LEN, Db {});
 
-    /*
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(sdaPiBas, maxDbSize / 32);
@@ -235,5 +232,4 @@ int main() {
     std::cout << std::endl;
     exp3(logSrcI, maxDbSize);
     logSrcI.setup(KEY_LEN, Db {});
-    */
 }

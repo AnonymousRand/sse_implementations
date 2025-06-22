@@ -1,8 +1,5 @@
-# compiled binary
-src/a.out
+# generated program files
+src/out/
 
 # vim
 *.swp
-
-# program files
-src/enc_ind.dat
