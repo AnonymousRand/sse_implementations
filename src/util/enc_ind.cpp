@@ -50,14 +50,15 @@ void DiskEncInd::init(unsigned long size) {
 /**
  * PRECONDITION:
  *     - `key` must be exactly `ENC_IND_KEY_LEN` long
- *     - `val` must be exactly `ENC_IND_VAL_LEN` long (e.g. via `padAndEncrypt()`)
+ *     - `val.first` must be exactly `ENC_IND_DOC_LEN` long (e.g. via `padAndEncrypt()`)
  *     - `val.second` (the IV) must be exactly `IV_LEN` long
  */
 void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
     // try to place encrypted items in the location specified by its encrypted key, i.e. PRF/hash output for PiBas 
-    // (modulo bufay size); this seems iffy because of modulo but this is what USENIX'24's implementation does
+    // (modulo buffer size); this seems iffy because of modulo but this is what USENIX'24's implementation does
     // (although they also use caching, presumably since it's slow if we need to keep finding next available locations)
-    unsigned long pos = std::stoul(fromUstr(key)) % this->size;
+    // this conversion mess is from USENIX'24's implementation
+    unsigned long pos = (*((unsigned long*)key.c_str())) % this->size;
     // if location is already filled (e.g. because of modulo), find next available location (which should contain '\0')
     unsigned long counter = 1;
     while (this->buf[pos * ENC_IND_KV_LEN] != '\0' && counter <= this->size) {
@@ -81,7 +82,7 @@ void DiskEncInd::flushWrite() {
 }
 
 int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
-    unsigned long pos = std::stoul(fromUstr(key)) % this->size;
+    unsigned long pos = (*((unsigned long*)key.c_str())) % this->size;
     unsigned char* curr = new unsigned char[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     std::fread(curr, ENC_IND_KV_LEN, 1, this->file);
@@ -92,18 +93,23 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     while (currKey != key && counter <= this->size) {
         counter++;
         pos = (pos + 1) % this->size;
-        std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
+        // by assuming previous `fread()` read all `ENC_IND_KV_LEN` bytes and hence only needing to `fseek()` when we
+        // wrap around to position 0, we make searches about twice as fast
+        if (pos == 0) {
+            std::fseek(this->file, 0, SEEK_SET);
+        }
         std::fread(curr, ENC_IND_KV_LEN, 1, this->file);
         currKey = ustring(curr, ENC_IND_KEY_LEN);
     }
-    // TODO this is so slow though to detect nonexistent elements (which is required by design)
+    // this does make it a lot slower to verify if an element is nonexistent compared to primary memory storage,
+    // since we have to iterate through whole index
     if (counter >= this->size) {
         return -1;
     }
 
     // decode kv pair and return it
-    ret.first = ustring(&curr[ENC_IND_KEY_LEN], ENC_IND_VAL_LEN - IV_LEN);
-    ret.second = ustring(&curr[ENC_IND_KV_LEN - IV_LEN], IV_LEN);
+    ret.first = ustring(&curr[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
+    ret.second = ustring(&curr[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
     delete[] curr;
     return 0;
 }
@@ -111,8 +117,10 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
 void DiskEncInd::clear() {
     if (this->buf != nullptr) {
         delete[] this->buf;
+        this->buf = nullptr; // important for idempotence!
     }
     if (this->file != nullptr) {
         std::fclose(this->file);
+        this->file = nullptr;
     }
 }

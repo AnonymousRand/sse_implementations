@@ -13,7 +13,7 @@ class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
         Db<DbDoc, DbKw> db;
         ustring key;
         // TODO templatize this
-        RamEncInd encInd;
+        DiskEncInd encInd;
         bool _isEmpty = false;
 
         std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;

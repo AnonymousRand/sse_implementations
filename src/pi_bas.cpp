@@ -39,6 +39,8 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // randomly permute documents associated with same keyword, required by some schemes on top of PiBas (e.g. Log-SRC)
     shuffleInd(ind);
 
+    this->encInd.clear();
+    this->encInd.init(db.size());
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
@@ -54,7 +56,8 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             // l <- F(K_1, c); d <- Enc(K_2, id); c++
             ustring label = prf(subkeys.first, toUstr(counter));
             ustring iv = genIv(IV_LEN);
-            ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, subkeys.second, dbDoc.encode(), iv, ENC_IND_DOC_LEN);
+            // for some reason padding to exactly n blocks generates n + 1 blocks, so we pad to one less byte
+            ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, subkeys.second, dbDoc.encode(), iv, ENC_IND_DOC_LEN - 1);
             // add (l, d) to list L (in lex order); we don't need to sort ourselves since C++ has ordered maps
             // also store IV in plain along with encrypted value
             this->encInd.write(label, std::pair {encryptedDoc, iv});

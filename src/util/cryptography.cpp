@@ -108,11 +108,10 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
 }
 
 ustring padAndEncrypt(
-    const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv, int targetSizeBytes
+    const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv, int targetLenBytes
 ) {
-    ustring padding(targetSizeBytes - ptext.length(), '\0');
-    ustring paddedPtext = ptext + padding;
-    return encrypt(cipher, key, paddedPtext, iv);
+    ustring padding(targetLenBytes - ptext.length(), '\0');
+    return encrypt(cipher, key, ptext + padding, iv);
 }
 
 ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv) {
