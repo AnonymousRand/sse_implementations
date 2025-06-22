@@ -38,13 +38,13 @@ DiskEncInd::~DiskEncInd() {
 }
 
 void DiskEncInd::init(unsigned long size) {
+    this->size = size;
     this->buf = new unsigned char[size * ENC_IND_KV_LEN](); // `()` fills buffer with '\0' bits
     this->file = std::fopen("enc_ind.dat", "wb+");
     if (this->file == nullptr) {
         std::cerr << "Error opening encrypted index file" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    this->size = size;
 }
 
 /**
@@ -60,12 +60,12 @@ void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
     // this conversion mess is from USENIX'24's implementation
     unsigned long pos = (*((unsigned long*)key.c_str())) % this->size;
     // if location is already filled (e.g. because of modulo), find next available location (which should contain '\0')
-    unsigned long counter = 1;
-    while (this->buf[pos * ENC_IND_KV_LEN] != '\0' && counter <= this->size) {
-        counter++;
+    unsigned long numPositionsChecked = 1;
+    while (this->buf[pos * ENC_IND_KV_LEN] != '\0' && numPositionsChecked <= this->size) {
+        numPositionsChecked++;
         pos = (pos + 1) % this->size;
     }
-    if (counter >= this->size) {
+    if (numPositionsChecked > this->size) {
         std::cerr << "Ran out of space writing to disk encrypted index!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -89,9 +89,9 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     ustring currKey(curr, ENC_IND_KEY_LEN);
     // if location based on `key` did not match the target (i.e. another kv pair overflowed to here first), scan
     // subsequent locations for where the target could've overflowed to
-    unsigned long counter = 1;
-    while (currKey != key && counter <= this->size) {
-        counter++;
+    unsigned long numPositionsChecked = 1;
+    while (currKey != key && numPositionsChecked <= this->size) {
+        numPositionsChecked++;
         pos = (pos + 1) % this->size;
         // by assuming previous `fread()` read all `ENC_IND_KV_LEN` bytes and hence only needing to `fseek()` when we
         // wrap around to position 0, we make searches about twice as fast
@@ -103,7 +103,7 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     }
     // this does make it a lot slower to verify if an element is nonexistent compared to primary memory storage,
     // since we have to iterate through whole index
-    if (counter >= this->size) {
+    if (numPositionsChecked > this->size) {
         return -1;
     }
 

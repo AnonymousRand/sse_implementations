@@ -4,18 +4,18 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <template<class ...> class Underly, IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw>
-        requires ISse_<Underly, DbDoc, DbKw>
-class LogSrc : public ISdaUnderly<DbDoc, DbKw> {
+template <template<class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw>
+        requires ISse_<Underly, EncInd, DbDoc, DbKw>
+class LogSrc : public ISdaUnderly<EncInd, DbDoc, DbKw> {
     private:
-        Underly<DbDoc, DbKw> underly;
+        Underly<EncInd, DbDoc, DbKw> underly;
         TdagNode<DbKw>* tdag;
         Db<DbDoc, DbKw> db; // store instead of using underlying instance's `db` since that one has replications
 
-        LogSrc(const Underly<DbDoc, DbKw>& underly, EncIndType encIndType);
+        LogSrc(const Underly<EncInd, DbDoc, DbKw>& underly);
 
     public:
-        LogSrc(EncIndType encIndType);
+        LogSrc();
         ~LogSrc();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;

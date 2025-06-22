@@ -14,10 +14,6 @@
 //    DISK
 //};
 
-template <class T> concept IEncInd_ = requires(T t) {
-    []<class X>(IDbDoc<X>&){}(t);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // `IEncInd`
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,6 +29,8 @@ class IEncInd {
         // should be idempotent and safe to call without `init()` first as well
         virtual void clear() = 0;
 };
+
+template <class T> concept IEncInd_ = std::derived_from<T, IEncInd>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // `RamEncInd`

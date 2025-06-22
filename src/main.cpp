@@ -29,8 +29,8 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
     return db;
 }
 
-template <class DbDoc, class DbKw>
-void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
+template <IEncInd_ EncInd, class DbDoc, class DbKw>
+void exp1(ISse<EncInd, DbDoc, DbKw>& sse, int dbSize) {
     Db<DbDoc, DbKw> db = createDb(dbSize, false);
 
     // setup
@@ -58,8 +58,8 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
     std::cout << std::endl;
 }
 
-template <class DbDoc, class DbKw>
-void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
+template <IEncInd_ EncInd, class DbDoc, class DbKw>
+void exp2(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
     Range<DbKw> query {0, 3};
     for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
@@ -84,8 +84,8 @@ void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
     std::cout << std::endl;
 }
 
-template <class DbDoc, class DbKw>
-void exp3(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
+template <IEncInd_ EncInd, class DbDoc, class DbKw>
+void exp3(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
     for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
         Db<DbDoc, DbKw> db = createDb(dbSize, true);
@@ -111,13 +111,13 @@ void exp3(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
 }
 
 int main() {
-    PiBas piBas(EncIndType::DISK);
-    PiBasResHiding piBasResHiding(EncIndType::DISK);
-    LogSrc<PiBas> logSrc(EncIndType::DISK);
-    LogSrcI<PiBas> logSrcI(EncIndType::DISK);
-    Sda<PiBasResHiding<>> sdaPiBas(EncIndType::DISK);
-    Sda<LogSrc<PiBasResHiding>> sdaLogSrc(EncIndType::DISK);
-    Sda<LogSrcI<PiBasResHiding>> sdaLogSrcI(EncIndType::DISK);
+    PiBas<DiskEncInd> piBas;
+    PiBasResHiding<DiskEncInd> piBasResHiding;
+    LogSrc<PiBas, DiskEncInd> logSrc;
+    LogSrcI<PiBas, DiskEncInd> logSrcI;
+    Sda<PiBasResHiding<DiskEncInd>, DiskEncInd> sdaPiBas;
+    Sda<LogSrc<PiBasResHiding, DiskEncInd>, DiskEncInd> sdaLogSrc;
+    Sda<LogSrcI<PiBasResHiding, DiskEncInd>, DiskEncInd> sdaLogSrcI;
 
     int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
