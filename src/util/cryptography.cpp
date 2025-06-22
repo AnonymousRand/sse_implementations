@@ -2,7 +2,7 @@
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 
-#include "openssl.h"
+#include "cryptography.h"
 
 // thanks to https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#C.2B.2B_Programs,
 // https://wiki.openssl.org/index.php/EVP_Message_Digests,
@@ -35,6 +35,7 @@ ustring genIv(int ivLen) {
     return ustrIv;
 }
 
+// TODO what happens if rename to just hash()?
 ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (!ctx) {
@@ -106,6 +107,14 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
     return ctext;
 }
 
+ustring padAndEncrypt(
+    const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv, int targetSizeBytes
+) {
+    ustring padding(targetSizeBytes - ptext.length(), '\0');
+    ustring paddedPtext = ptext + padding;
+    return encrypt(cipher, key, paddedPtext, iv);
+}
+
 ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
@@ -138,5 +147,17 @@ ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& cte
 
     EVP_CIPHER_CTX_free(ctx);
     ptext.resize(ptextLen1 + ptextLen2);
+    return ptext;
+}
+
+ustring decryptAndUnpad(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv) {
+    ustring ptext = decrypt(cipher, key, ctext, iv);
+    int paddingStartInd;
+    for (paddingStartInd = ptext.length() - 1; paddingStartInd >= 0; paddingStartInd--) {
+        if (ptext[paddingStartInd] != '\0') {
+            break;
+        }
+    }
+    ptext.resize(paddingStartInd + 1); // `+1` since strings still have to end with a null terminator
     return ptext;
 }

@@ -1,12 +1,7 @@
 #pragma once
 
 #include "sse.h"
-#include "util/openssl.h"
-#include "util/kv_store.h"
-
-static const EVP_CIPHER* ENC_CIPHER = EVP_aes_256_cbc();
-static const EVP_MD* HASH_FUNC = EVP_sha512();
-static const int HASH_OUTPUT_LEN = 512;
+#include "util/enc_ind.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // PiBas
@@ -18,7 +13,7 @@ class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
         Db<DbDoc, DbKw> db;
         ustring key;
         // TODO templatize this
-        RamKvStore<ustring, std::pair<ustring, ustring>> encInd;
+        RamEncInd encInd;
         bool _isEmpty = false;
 
         std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
