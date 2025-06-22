@@ -14,6 +14,8 @@ class SdaBase : public IDsse<DbDoc, DbKw> {
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const;
 
     public:
+        SdaBase(EncIndType encIndType);
+
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         void update(const DbEntry<DbDoc, DbKw>& newEntry) override;
 };

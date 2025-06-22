@@ -15,11 +15,13 @@ class LogSrcI : public ISdaUnderly<DbDoc, DbKw> {
         Db<DbDoc, DbKw> db; // store since neither underlying instance contains the original DB
         bool _isEmpty = false;
 
-        LogSrcI(const Underly<SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2);
+        LogSrcI(
+            const Underly<SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2, EncIndType encIndType
+        );
         Range<IdAlias> searchBase(const Range<DbKw>& query) const;
 
     public:
-        LogSrcI();
+        LogSrcI(EncIndType encIndType);
         ~LogSrcI();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;

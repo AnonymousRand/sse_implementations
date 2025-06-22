@@ -1,10 +1,24 @@
 #include "log_src.h"
 
-template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-LogSrc<Underly, DbDoc, DbKw>::LogSrc(const Underly<DbDoc, DbKw>& underly) : underly(underly) {}
+template <IDbDoc_ DbDoc, class DbKw>
+LogSrc<Underly, DbDoc, DbKw>::LogSrc(EncIndType encIndType) {
+    switch (encIndType) {
+        case EncIndType::RAM:
+            this->encInd = new RamEncInd();
+            break;
+        case EncIndType::DISK:
+            this->encInd = new DiskEncInd();
+            break;
+    }
+}
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-LogSrc<Underly, DbDoc, DbKw>::LogSrc() : LogSrc(Underly<DbDoc, DbKw>()) {}
+LogSrc<Underly, DbDoc, DbKw>::LogSrc(EncIndType encIndType) : LogSrc(Underly<DbDoc, DbKw>(), encIndType) {}
+
+template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
+LogSrc<Underly, DbDoc, DbKw>::LogSrc(const Underly<DbDoc, DbKw>& underly, EncIndType encIndType) : underly(underly) {
+    this->underly.setEncIndType(encIndType);
+}
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 LogSrc<Underly, DbDoc, DbKw>::~LogSrc() {

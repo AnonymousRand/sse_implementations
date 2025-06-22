@@ -111,13 +111,13 @@ void exp3(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
 }
 
 int main() {
-    PiBas piBas;
-    //PiBasResHiding piBasResHiding;
-    //LogSrc<PiBas> logSrc;
-    //LogSrcI<PiBas> logSrcI;
-    //Sda<PiBasResHiding<>> sdaPiBas;
-    //Sda<LogSrc<PiBasResHiding>> sdaLogSrc;
-    //Sda<LogSrcI<PiBasResHiding>> sdaLogSrcI;
+    PiBas piBas(EncIndType::DISK);
+    PiBasResHiding piBasResHiding(EncIndType::DISK);
+    LogSrc<PiBas> logSrc(EncIndType::DISK);
+    LogSrcI<PiBas> logSrcI(EncIndType::DISK);
+    Sda<PiBasResHiding<>> sdaPiBas(EncIndType::DISK);
+    Sda<LogSrc<PiBasResHiding>> sdaLogSrc(EncIndType::DISK);
+    Sda<LogSrcI<PiBasResHiding>> sdaLogSrcI(EncIndType::DISK);
 
     int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
@@ -139,7 +139,6 @@ int main() {
     exp1(piBas, maxDbSize);
     piBas.setup(KEY_LEN, Db {}); // hopefully clear memory asap
 
-    /*
     std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(piBasResHiding, maxDbSize);
@@ -233,5 +232,4 @@ int main() {
     std::cout << std::endl;
     exp3(logSrcI, maxDbSize);
     logSrcI.setup(KEY_LEN, Db {});
-    */
 }

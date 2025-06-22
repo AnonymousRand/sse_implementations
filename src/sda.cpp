@@ -3,6 +3,9 @@
 #include "sda.h"
 
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly, DbDoc, DbKw>
+void SdaBase<Underly, DbDoc, DbKw>::SdaBase(EncIndType encIndType) : encIndType(encIndType) {}
+
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly, DbDoc, DbKw>
 void SdaBase<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     if (db.empty()) {
@@ -18,7 +21,7 @@ template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Un
 void SdaBase<Underly, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
-        Underly* underly = new Underly();
+        Underly* underly = new Underly(this->encIndType);
         underly->setup(this->secParam, Db<DbDoc, DbKw> {newEntry});
         this->underlys.push_back(underly);
         this->firstEmptyInd = 1;
@@ -38,7 +41,7 @@ void SdaBase<Underly, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry)
     if (this->firstEmptyInd < this->underlys.size() - 1) {
         this->underlys[this->firstEmptyInd]->setup(this->secParam, mergedDb);
     } else {
-        Underly* newUnderly = new Underly();
+        Underly* newUnderly = new Underly(this->encIndType);
         newUnderly->setup(this->secParam, mergedDb);
         this->underlys.push_back(newUnderly);
     }

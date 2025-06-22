@@ -9,11 +9,15 @@
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(
-    const Underly<SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2
-) : underly1(underly1), underly2(underly2) {}
+    const Underly<SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2, EncIndType encIndType
+) : underly1(underly1), underly2(underly2) {
+    this->underly1.setEncIndType(encIndType);
+    this->underly2.setEncIndType(encIndType);
+}
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
-LogSrcI<Underly, DbDoc, DbKw>::LogSrcI() : LogSrcI(Underly<SrcIDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>()) {}
+LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(EncIndType encIndType)
+        : LogSrcI(Underly<SrcIDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>(), encIndTypes) {}
 
 template <template<class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly, DbDoc, DbKw>
 LogSrcI<Underly, DbDoc, DbKw>::~LogSrcI() {

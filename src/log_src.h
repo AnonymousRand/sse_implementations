@@ -12,10 +12,10 @@ class LogSrc : public ISdaUnderly<DbDoc, DbKw> {
         TdagNode<DbKw>* tdag;
         Db<DbDoc, DbKw> db; // store instead of using underlying instance's `db` since that one has replications
 
-        LogSrc(const Underly<DbDoc, DbKw>& underly);
+        LogSrc(const Underly<DbDoc, DbKw>& underly, EncIndType encIndType);
 
     public:
-        LogSrc();
+        LogSrc(EncIndType encIndType);
         ~LogSrc();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;

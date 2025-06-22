@@ -12,18 +12,22 @@ class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key;
-        // TODO templatize this
-        DiskEncInd encInd;
+        // >TODO templatize this/polymorphism in constructor
+        IEncInd* encInd;
         bool _isEmpty = false;
 
         std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
 
     public:
+        PiBasBase(EncIndType encIndType);
+        ~PiBasBase();
+
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
+        void setEncIndType(EncIndType encIndType) override;
 };
 
 // this is literally just so I can partially specialize `search()`'s template
@@ -49,17 +53,21 @@ class PiBasResHidingBase : public ISdaUnderly<DbDoc, DbKw> {
         Db<DbDoc, DbKw> db;
         ustring key1;
         ustring key2;
-        EncInd encInd;
+        IEncInd* encInd;
         bool _isEmpty = false;
 
         ustring genQueryToken(const Range<DbKw>& query) const;
 
     public:
+        PiBasResHidingBase(EncIndType encIndType);
+        ~PiBasResHidingBase();
+
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
+        void setEncIndType(EncIndType encIndType) override;
 };
 
 template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>

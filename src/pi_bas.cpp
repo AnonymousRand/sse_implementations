@@ -8,6 +8,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 template <IDbDoc_ DbDoc, class DbKw>
+PiBaseBase<DbDoc, DbKw>::PiBasBase(EncIndType encIndType) {
+    this->setEncIndType(encIndType);
+}
+
+template <IDbDoc_ DbDoc, class DbKw>
+PiBaseBase<DbDoc, DbKw>::~PiBasBase() {
+    delete this->encInd;
+}
+
+template <IDbDoc_ DbDoc, class DbKw>
 void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // generate key
 
@@ -68,13 +78,14 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
-Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
-    return this->db;
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    return this->searchWithoutHandlingDels(query);
 }
 
-template <IDbDoc_ DbDoc, class DbKw>
-bool PiBasBase<DbDoc, DbKw>::isEmpty() const {
-    return this->_isEmpty;
+template <class DbKw>
+std::vector<IdOp> PiBas<IdOp, DbKw>::search(const Range<DbKw>& query) const {
+    std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
+    return removeDeletedIdOps(results);
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
@@ -123,14 +134,25 @@ std::pair<ustring, ustring> PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<Db
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchWithoutHandlingDels(query);
+Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
+    return this->db;
 }
 
-template <class DbKw>
-std::vector<IdOp> PiBas<IdOp, DbKw>::search(const Range<DbKw>& query) const {
-    std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
-    return removeDeletedIdOps(results);
+template <IDbDoc_ DbDoc, class DbKw>
+bool PiBasBase<DbDoc, DbKw>::isEmpty() const {
+    return this->_isEmpty;
+}
+
+template <IDbDoc_ DbDoc, class DbKw>
+void PiBasBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
+    switch (encIndType) {
+        case EncIndType::RAM:
+            this->encInd = new RamEncInd();
+            break;
+        case EncIndType::DISK:
+            this->encInd = new DiskEncInd();
+            break;
+    }
 }
 
 // PiBas
@@ -147,6 +169,16 @@ template class PiBas<IdOp, IdAlias>;
 ////////////////////////////////////////////////////////////////////////////////
 // PiBas (Result-Hiding)
 ////////////////////////////////////////////////////////////////////////////////
+
+template <IDbDoc_ DbDoc, class DbKw>
+PiBasResHidingBase<DbDoc, DbKw>::PiBasResHidingBase(EncIndType encIndType) {
+    this->setEncIndType(encIndType);
+}
+
+template <IDbDoc_ DbDoc, class DbKw>
+PiBasResHidingBase<DbDoc, DbKw>::~PiBasResHidingBase() {
+    delete this->encInd;
+}
 
 template <IDbDoc_ DbDoc, class DbKw>
 void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
@@ -196,13 +228,14 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
-Db<DbDoc, DbKw> PiBasResHidingBase<DbDoc, DbKw>::getDb() const {
-    return this->db;
+std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    return this->searchWithoutHandlingDels(query);
 }
 
-template <IDbDoc_ DbDoc, class DbKw>
-bool PiBasResHidingBase<DbDoc, DbKw>::isEmpty() const {
-    return this->_isEmpty;
+template <class DbKw>
+std::vector<IdOp> PiBasResHiding<IdOp, DbKw>::search(const Range<DbKw>& query) const {
+    std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
+    return removeDeletedIdOps(results);
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
@@ -242,14 +275,25 @@ ustring PiBasResHidingBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query)
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchWithoutHandlingDels(query);
+Db<DbDoc, DbKw> PiBasResHidingBase<DbDoc, DbKw>::getDb() const {
+    return this->db;
 }
 
-template <class DbKw>
-std::vector<IdOp> PiBasResHiding<IdOp, DbKw>::search(const Range<DbKw>& query) const {
-    std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
-    return removeDeletedIdOps(results);
+template <IDbDoc_ DbDoc, class DbKw>
+bool PiBasResHidingBase<DbDoc, DbKw>::isEmpty() const {
+    return this->_isEmpty;
+}
+
+template <IDbDoc_ DbDoc, class DbKw>
+void PiBaseResHidingBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
+    switch (encIndType) {
+        case EncIndType::RAM:
+            this->encInd = new RamEncInd();
+            break;
+        case EncIndType::DISK:
+            this->encInd = new DiskEncInd();
+            break;
+    }
 }
 
 // PiBas

@@ -8,6 +8,16 @@
 // indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries
 // each of which correspond to `std::pair<label/key, std::pair<encrypted doc, iv>>`
 
+// idk if this or templates is better design for this polymorphism, but templates seem less clean
+//enum class EncIndType {
+//    RAM,
+//    DISK
+//};
+
+template <class T> concept IEncInd_ = requires(T t) {
+    []<class X>(IDbDoc<X>&){}(t);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // `IEncInd`
 ////////////////////////////////////////////////////////////////////////////////

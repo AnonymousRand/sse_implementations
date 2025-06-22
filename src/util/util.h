@@ -17,27 +17,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // lengths are in bytes
-static const int KEY_LEN            = 256 / 8;
-static const int IV_LEN             = 128 / 8;
-static const int BLOCK_SIZE         = 128 / 8;
-static const EVP_CIPHER* ENC_CIPHER = EVP_aes_256_cbc();
-static const EVP_MD* HASH_FUNC      = EVP_sha512();
-static const int HASH_OUTPUT_LEN    = 512 / 8; // TODO confirm that this should be in bytes or bits? (in hash function)
-static const int ENC_IND_KEY_LEN    = 512 / 8;        // PRF is HMAC-SHA512, which has 512 bit output
-static const int ENC_IND_DOC_LEN    = 3 * BLOCK_SIZE; // so max keyword/id size ~10^23 for encoding to fit
-static const int ENC_IND_VAL_LEN    = ENC_IND_DOC_LEN + IV_LEN;
-static const int ENC_IND_KV_LEN     = ENC_IND_KEY_LEN + ENC_IND_VAL_LEN;
+const int KEY_LEN            = 256 / 8;
+const int IV_LEN             = 128 / 8;
+const int BLOCK_SIZE         = 128 / 8;
+const EVP_CIPHER* ENC_CIPHER = EVP_aes_256_cbc();
+const EVP_MD* HASH_FUNC      = EVP_sha512();
+const int HASH_OUTPUT_LEN    = 512 / 8; // TODO confirm that this should be in bytes or bits? (in hash function)
+const int ENC_IND_KEY_LEN    = 512 / 8;        // PRF is HMAC-SHA512, which has 512 bit output
+const int ENC_IND_DOC_LEN    = 3 * BLOCK_SIZE; // so max keyword/id size ~10^23 for encoding to fit
+const int ENC_IND_VAL_LEN    = ENC_IND_DOC_LEN + IV_LEN;
+const int ENC_IND_KV_LEN     = ENC_IND_KEY_LEN + ENC_IND_VAL_LEN;
 
 // PRECONDITION: keywords are always positive
-static const int DB_KW_MIN = 0;
-static const int DUMMY     = -1;
+const int DB_KW_MIN = 0;
+const int DUMMY     = -1;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Basic Declarations
 ////////////////////////////////////////////////////////////////////////////////
 
-static std::random_device RAND_DEV;
-static std::mt19937 RNG(RAND_DEV());
+std::random_device RAND_DEV;
+std::mt19937 RNG(RAND_DEV());
 
 // use `ustring` as much as possible instead of `unsigned char*` to avoid hell
 using ustring = std::basic_string<unsigned char>;
@@ -51,8 +51,7 @@ class Op;
 class IdOp;
 template <class DbKw = Kw> class SrcIDb1Doc;
 
-// black magic (https://stackoverflow.com/a/71921982)
-// (java generics `extends`: look what they need to mimic a fraction of my power)
+// black magic to detect if template param `T` is a specialization of `IDbDoc` (https://stackoverflow.com/a/71921982)
 template <class T> concept IDbDoc_ = requires(T t) {
     []<class X>(IDbDoc<X>&){}(t);
 };
@@ -219,8 +218,8 @@ class Op {
         friend std::ostream& operator <<(std::ostream& os, const Op& Op);
 };
 
-static const Op INSERT("INSERT");
-static const Op DELETE("DELETE");
+const Op INSERT("INSERT");
+const Op DELETE("DELETE");
 
 ////////////////////////////////////////////////////////////////////////////////
 // `IdOp`

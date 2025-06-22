@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util/enc_ind.h"
 #include "util/util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -16,6 +17,7 @@ class ISse {
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
 };
 
+// TOOD can we jsut do ISse Underly in templates instead of requires?
 template <template<class ...> class T, class DbDoc, class DbKw> concept ISse_ = requires(T<DbDoc, DbKw> t) {
     []<class X, class Y>(ISse<X, Y>&){}(t);
 };
@@ -42,4 +44,5 @@ class ISdaUnderly : public ISse<DbDoc, DbKw> {
         virtual bool isEmpty() const = 0;
 };
 
+// (java generics `extends`: look what they need to mimic a fraction of my power)
 template <class T, class DbDoc, class DbKw> concept ISdaUnderly_ = std::derived_from<T, ISdaUnderly<DbDoc, DbKw>>;
