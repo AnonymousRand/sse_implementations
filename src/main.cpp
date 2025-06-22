@@ -23,7 +23,8 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
         }
     } else {
         for (int i = 0; i < dbSize; i++) {
-            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {i, i}});
+            // make keywords and ids inversely proportional to test sorting of Log-SRC-i's second index
+            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {dbSize - i + 1, dbSize - i + 1}});
         }
     }
     return db;

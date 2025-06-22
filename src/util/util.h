@@ -38,7 +38,6 @@ static const int DUMMY     = -1;
 
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
-static std::uniform_real_distribution<double> DOUBLE_DIST(0.0, 1.0);
 
 // use `ustring` as much as possible instead of `unsigned char*` to avoid hell
 using ustring = std::basic_string<unsigned char>;

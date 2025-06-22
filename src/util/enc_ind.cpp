@@ -40,11 +40,19 @@ DiskEncInd::~DiskEncInd() {
 void DiskEncInd::init(unsigned long size) {
     this->size = size;
     this->buf = new unsigned char[size * ENC_IND_KV_LEN](); // `()` fills buffer with '\0' bits
-    // TODO somehow still make this more reliable?
-    // try to avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
+    // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
     // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
     // the same file its first index was being stored in...
-    std::string filename = "out/enc_ind_" + std::to_string(DOUBLE_DIST(RNG) * 10) + ".dat";
+    std::uniform_int_distribution dist(1000000000, 9999999999);
+    std::string filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
+    FILE* fileTmp = std::fopen(filename.c_str(), "r");
+    // while file exists (or any other error occurs on open), create new random filename
+    while (fileTmp != nullptr) {
+        std::fclose(fileTmp);
+        filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
+        fileTmp = std::fopen(filename.c_str(), "r");
+    }
+
     this->file = std::fopen(filename.c_str(), "wb+");
     if (this->file == nullptr) {
         std::cerr << "Error opening encrypted index file" << std::endl;
