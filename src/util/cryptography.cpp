@@ -35,7 +35,6 @@ ustring genIv(int ivLen) {
     return ustrIv;
 }
 
-// TODO what happens if rename to just hash()?
 ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (!ctx) {
