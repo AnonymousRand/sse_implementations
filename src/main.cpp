@@ -144,19 +144,25 @@ void exp3(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
 }
 
 int main() {
-    PiBas<DiskEncInd> piBas;
-    PiBasResHiding<DiskEncInd> piBasResHiding;
-    LogSrc<PiBas, DiskEncInd> logSrc;
-    LogSrcI<PiBas, DiskEncInd> logSrcI;
-    Sda<PiBasResHiding<DiskEncInd>, DiskEncInd> sdaPiBas;
-    Sda<LogSrc<PiBasResHiding, DiskEncInd>, DiskEncInd> sdaLogSrc;
-    Sda<LogSrcI<PiBasResHiding, DiskEncInd>, DiskEncInd> sdaLogSrcI;
-
     int maxDbSizeExp;
+    // TODO: turn encIndType template polymorphism into enum and constructor instead with setEncIndType() and stuff? makes this easier
+    //std::string encIndType;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
     int maxDbSize = pow(2, maxDbSizeExp);
+    //do {
+    //    std::cout << "Encrypted indexes stored on RAM or disk? [r/d]: ";
+    //    std::cin >> encIndType;
+    //} while (encIndType != "r" && encIndType != "d");
     std::cout << std::endl;
+
+    PiBas<RamEncInd> piBas;
+    PiBasResHiding<RamEncInd> piBasResHiding;
+    LogSrc<PiBas, RamEncInd> logSrc;
+    LogSrcI<PiBas, RamEncInd> logSrcI;
+    Sda<PiBasResHiding<RamEncInd>, RamEncInd> sdaPiBas;
+    Sda<LogSrc<PiBasResHiding, RamEncInd>, RamEncInd> sdaLogSrc;
+    Sda<LogSrcI<PiBasResHiding, RamEncInd>, RamEncInd> sdaLogSrcI;
 
     /*
     /////////////////////////// Debugging Experiment ///////////////////////////
