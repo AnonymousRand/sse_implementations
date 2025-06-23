@@ -126,6 +126,7 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     // since we have to iterate through whole index
     if (currKey != key) {
         delete[] curr;
+        curr = nullptr;
         return -1;
     }
 
@@ -133,6 +134,7 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     ret.first = ustring(&curr[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
     ret.second = ustring(&curr[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
     delete[] curr;
+    curr = nullptr;
     return 0;
 }
 

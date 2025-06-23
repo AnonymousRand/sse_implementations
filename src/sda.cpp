@@ -28,7 +28,10 @@ void SdaBase<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
 SdaBase<Underly, DbDoc, DbKw>::~SdaBase() {
     for (Underly* underly : this->underlys) {
-        delete underly;
+        if (underly != nullptr) {
+            delete underly;
+            underly = nullptr;
+        }
     }
 }
 

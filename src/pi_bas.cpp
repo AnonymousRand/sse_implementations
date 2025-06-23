@@ -193,7 +193,10 @@ PiBasResHiding<IdOp, DbKw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidi
 
 template <IDbDoc_ DbDoc, class DbKw>
 PiBasResHidingBase<DbDoc, DbKw>::~PiBasResHidingBase() {
-    delete this->encInd;
+    if (this->encInd != nullptr) {
+        delete this->encInd;
+        this->encInd = nullptr;
+    }
 }
 
 template <IDbDoc_ DbDoc, class DbKw>

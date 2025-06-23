@@ -19,9 +19,11 @@ template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> req
 LogSrcI<Underly, DbDoc, DbKw>::~LogSrcI() {
     if (this->tdag1 != nullptr) {
         delete this->tdag1;
+        this->tdag1 = nullptr;
     }
     if (this->tdag2 != nullptr) {
         delete this->tdag2;
+        this->tdag2 = nullptr;
     }
 }
 
