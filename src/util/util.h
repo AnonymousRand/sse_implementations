@@ -53,12 +53,16 @@ class Op;
 class IdOp;
 template <class DbKw = Kw> class SrcIDb1Doc;
 
-// black magic to detect if template param `T` is a specialization of `IDbDoc`/is derived from one
-// (https://stackoverflow.com/a/71921982)
-template <class T> concept IDbDoc_ = requires(T t) {
+// black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
+// i.e. without needing to know what the template param `X` of `IDbDoc` is, unlike `std::derived_from` for example
+// from https://stackoverflow.com/a/71921982
+// (java generics `extends`: look what they need to mimic a fraction of my power)
+template <class T>
+concept IDbDoc_ = requires(T t) {
     []<class X>(IDbDoc<X>&){}(t);
 };
-template <class T> concept IMainDbDoc_ = requires(T t) {
+template <class T>
+concept IMainDbDoc_ = requires(T t) {
     []<class X>(IMainDbDoc<X>&){}(t);
 };
 
@@ -141,7 +145,7 @@ class IDbDoc {
         IDbDoc(const T& val);
 
         T get() const;
-        virtual ustring encode() const;
+        virtual ustring toUstr() const;
         virtual std::string toStr() const = 0;
 
         template <class T2>
@@ -165,7 +169,7 @@ class Id : public IMainDbDoc<int> {
         Id() = default;
         Id(int val);
 
-        static Id decode(const ustring& ustr);
+        static Id fromUstr(const ustring& ustr);
         std::string toStr() const override;
 
         Id getId() const override;
@@ -191,12 +195,12 @@ class Id : public IMainDbDoc<int> {
 
 template <>
 struct std::hash<Id> {
-    std::size_t operator ()(const Id& id) const noexcept {
-        return std::hash<std::string>{}(id.toStr());
+    std::size_t operator ()(const Id& dbDoc) const noexcept {
+        return std::hash<int>{}(dbDoc.get());
     }
 };
 
-// id aliases are functionally identical to ids, but it's still nice to have this layer of abstraction for clarity
+// Log-SRC-i id aliases are functionally identical to ids, but it's still nice to have this for clarity
 using IdAlias = Id;
 
 /******************************************************************************/
@@ -218,8 +222,8 @@ class Op {
         friend std::ostream& operator <<(std::ostream& os, const Op& Op);
 };
 
-const Op INSERT("INSERT");
-const Op DELETE("DELETE");
+static const Op INSERT("INSERT");
+static const Op DELETE("DELETE");
 
 /******************************************************************************/
 /* `IdOp`                                                                     */
@@ -231,7 +235,7 @@ class IdOp : public IMainDbDoc<std::pair<Id, Op>> {
         IdOp(const Id& id);
         IdOp(const Id& id, const Op& op);
 
-        static IdOp decode(const ustring& ustr);
+        static IdOp fromUstr(const ustring& ustr);
         std::string toStr() const override;
 
         Id getId() const override;
@@ -252,7 +256,7 @@ class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>> {
         SrcIDb1Doc() = default;
         SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>& idAliasRange);
 
-        static SrcIDb1Doc<DbKw> decode(const ustring& ustr);
+        static SrcIDb1Doc<DbKw> fromUstr(const ustring& ustr);
         std::string toStr() const override;
 };
 

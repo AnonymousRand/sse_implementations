@@ -3,7 +3,7 @@
 #include "sda.h"
 
 template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISdaUnderly_<Underly, EncInd, DbDoc, DbKw>
+        requires ISdaUnderly_<Underly>
 void SdaBase<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     if (db.empty()) {
@@ -16,7 +16,7 @@ void SdaBase<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, 
 }
 
 template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISdaUnderly_<Underly, EncInd, DbDoc, DbKw>
+        requires ISdaUnderly_<Underly>
 void SdaBase<Underly, EncInd, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
@@ -61,7 +61,7 @@ void SdaBase<Underly, EncInd, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& n
 }
 
 template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISdaUnderly_<Underly, EncInd, DbDoc, DbKw>
+        requires ISdaUnderly_<Underly>
 std::vector<DbDoc> SdaBase<Underly, EncInd, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
     // search through all non-empty indexes
@@ -79,12 +79,12 @@ std::vector<DbDoc> SdaBase<Underly, EncInd, DbDoc, DbKw>::searchWithoutHandlingD
 }
 
 template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISdaUnderly_<Underly, EncInd, DbDoc, DbKw>
+        requires ISdaUnderly_<Underly>
 std::vector<DbDoc> Sda<Underly, EncInd, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
     return this->searchWithoutHandlingDels(query);
 }
 
-template <class Underly, IEncInd_ EncInd, class DbKw> requires ISdaUnderly_<Underly, EncInd, IdOp, DbKw>
+template <class Underly, IEncInd_ EncInd, class DbKw> requires ISdaUnderly_<Underly>
 std::vector<IdOp> Sda<Underly, EncInd, IdOp, DbKw>::search(const Range<DbKw>& query) const {
     std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
     return removeDeletedIdOps(results);

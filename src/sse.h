@@ -17,12 +17,10 @@ class ISse {
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
 };
 
-// (java generics `extends`: look what they need to mimic a fraction of my power)
-// TODO is it possible to drop encind, dbdoc, dbkw?
-template <template <class ...> class T, class EncInd, class DbDoc, class DbKw> concept ISse_ =
-        requires(T<EncInd, DbDoc, DbKw> t) {
-            []<class X, class Y, class Z>(ISse<X, Y, Z>&){}(t);
-        };
+template <class T>
+concept ISse_ = requires(T t) {
+    []<class ... Args>(ISse<Args ...>&){}(t);
+};
 
 /******************************************************************************/
 /* `IDsse`                                                                    */
@@ -46,5 +44,7 @@ class ISdaUnderly : public ISse<EncInd, DbDoc, DbKw> {
         virtual bool isEmpty() const = 0;
 };
 
-template <class T, class EncInd, class DbDoc, class DbKw> concept ISdaUnderly_ =
-        std::derived_from<T, ISdaUnderly<EncInd, DbDoc, DbKw>>;
+template <class T>
+concept ISdaUnderly_ = requires(T t) {
+    []<class ... Args>(ISdaUnderly<Args ...>&){}(t);
+};

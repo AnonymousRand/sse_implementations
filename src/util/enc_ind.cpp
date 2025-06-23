@@ -23,7 +23,7 @@ int RamEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     return 0;
 }
 
-void RamEncInd::clear() {
+void RamEncInd::reset() {
     this->map.clear();
 }
 
@@ -31,10 +31,10 @@ void RamEncInd::clear() {
 /* `DiskEncInd`                                                               */
 /******************************************************************************/
 
-DiskEncInd::DiskEncInd() : buf(nullptr), file(nullptr) {}
+DiskEncInd::DiskEncInd() : file(nullptr), buf(nullptr), filename("") {}
 
 DiskEncInd::~DiskEncInd() {
-    this->clear();
+    this->reset();
 }
 
 void DiskEncInd::init(unsigned long size) {
@@ -45,16 +45,16 @@ void DiskEncInd::init(unsigned long size) {
     // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
     // the same file its first index was being stored in...
     std::uniform_int_distribution dist(100000000, 999999999);
-    std::string filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
-    FILE* fileTmp = std::fopen(filename.c_str(), "r");
+    this->filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
+    FILE* fileTmp = std::fopen(this->filename.c_str(), "r");
     // while file exists (or any other error occurs on open), create new random filename
     while (fileTmp != nullptr) {
         std::fclose(fileTmp);
-        filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
-        fileTmp = std::fopen(filename.c_str(), "r");
+        this->filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
+        fileTmp = std::fopen(this->filename.c_str(), "r");
     }
 
-    this->file = std::fopen(filename.c_str(), "wb+");
+    this->file = std::fopen(this->filename.c_str(), "wb+");
     if (this->file == nullptr) {
         std::cerr << "Error opening encrypted index file" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -96,6 +96,7 @@ void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
 
 void DiskEncInd::flushWrite() {
     std::fwrite(this->buf, ENC_IND_KV_LEN, size, this->file);
+    // free up memory that is no longer needed as well
     delete[] this->buf;
     this->buf = nullptr;
     this->isPosFilled.clear();
@@ -134,14 +135,18 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     return 0;
 }
 
-void DiskEncInd::clear() {
-    if (this->buf != nullptr) {
-        delete[] this->buf;
-        this->buf = nullptr; // important for idempotence!
-    }
+void DiskEncInd::reset() {
     if (this->file != nullptr) {
         std::fclose(this->file);
-        this->file = nullptr;
+        this->file = nullptr; // important for idempotence!
+    }
+    if (this->buf != nullptr) {
+        delete[] this->buf;
+        this->buf = nullptr;
+    }
+    // delete encrypted index files from disk on `reset()`
+    if (this->filename != "") {
+        std::remove(this->filename.c_str());
     }
     this->isPosFilled.clear();
 }

@@ -30,6 +30,33 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
     return db;
 }
 
+// experiment for debugging with fixed query and printed results
+template <IEncInd_ EncInd, class DbDoc, class DbKw>
+void expDebug(ISse<EncInd, DbDoc, DbKw>& sse, int dbSize, Range<DbKw> query) {
+    Db<DbDoc, DbKw> db = createDb(dbSize, false);
+
+    // setup
+    sse.setup(KEY_LEN, db);
+
+    // search
+    std::vector<DbDoc> results = sse.search(query);
+    std::cout << "Results:" << std::endl;
+    for (DbDoc result : results) {
+        Range<DbKw> dbKw;
+        for (DbEntry<DbDoc, DbKw> dbEntry : db) {
+            if (dbEntry.first == result) {
+                dbKw = dbEntry.second;
+                break;
+            }
+        }
+        std::cout << result << " with keyword " << dbKw << std::endl;
+    }
+    std::cout << std::endl;
+
+    // hopefully clear memory asap
+    sse.setup(KEY_LEN, Db {});
+}
+
 template <IEncInd_ EncInd, class DbDoc, class DbKw>
 void exp1(ISse<EncInd, DbDoc, DbKw>& sse, int dbSize) {
     Db<DbDoc, DbKw> db = createDb(dbSize, false);
@@ -44,19 +71,18 @@ void exp1(ISse<EncInd, DbDoc, DbKw>& sse, int dbSize) {
 
     // search
     for (int i = 0; i <= (int)log2(dbSize); i++) {
-        //Range<Kw> query {0, (int)pow(2, i) - 1};
-        Range<Kw> query {3, 5};
+        Range<Kw> query {0, (int)pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
-        auto res = sse.search(query);
+        sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
-        for (auto r : res) {
-            std::cout << r << std::endl;
-        }
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
         std::cout << "Search time (size 2^" << (int)log2(query.size()) << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
     }
     std::cout << std::endl;
+
+    // hopefully clear memory asap
+    sse.setup(KEY_LEN, Db {});
 }
 
 template <IEncInd_ EncInd, class DbDoc, class DbKw>
@@ -74,7 +100,7 @@ void exp2(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
         std::cout << "Setup time (size 2^" << (int)log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
                   << std::endl;
 
-        // query
+        // search
         auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
@@ -83,6 +109,9 @@ void exp2(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
                   << std::endl;
     }
     std::cout << std::endl;
+
+    // hopefully clear memory asap
+    sse.setup(KEY_LEN, Db {});
 }
 
 template <IEncInd_ EncInd, class DbDoc, class DbKw>
@@ -109,6 +138,9 @@ void exp3(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
                   << std::endl;
     }
     std::cout << std::endl;
+
+    // hopefully clear memory asap
+    sse.setup(KEY_LEN, Db {});
 }
 
 int main() {
@@ -126,111 +158,132 @@ int main() {
     int maxDbSize = pow(2, maxDbSizeExp);
     std::cout << std::endl;
 
-    // experiment 1
+    /*
+    /////////////////////////// Debugging Experiment ///////////////////////////
+
+    Range<Kw> query {3, 5};
 
     std::cout << "------------------------- Experiment 1 -------------------------" << std::endl;
-    std::cout << "DB size  : 2^"      << maxDbSizeExp << " (2^" << maxDbSizeExp - 5 << " for SDa)" << std::endl;
-    std::cout << "Query    : varied " << std::endl;
-    std::cout << "Data skew: no"      << std::endl;
+    std::cout << "DB size  : 2^" << maxDbSizeExp << std::endl;
+    std::cout << "Query    : "   << query << std::endl;
+    std::cout << "----------------------------------------------------------------" << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "---------- PiBas ----------" << std::endl;
+    std::cout << std::endl;
+    expDebug(piBas, maxDbSize, query);
+
+    std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
+    std::cout << std::endl;
+    expDebug(piBasResHiding, maxDbSize, query);
+
+    std::cout << "---------- Log-SRC ----------" << std::endl;
+    std::cout << std::endl;
+    expDebug(logSrc, maxDbSize, query);
+
+    std::cout << "---------- Log-SRC-i ----------" << std::endl;
+    std::cout << std::endl;
+    expDebug(logSrcI, maxDbSize, query);
+
+    std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
+    std::cout << std::endl;
+    expDebug(sdaPiBas, maxDbSize, query);
+
+    std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
+    std::cout << std::endl;
+    expDebug(sdaLogSrc, maxDbSize, query);
+
+    std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
+    std::cout << std::endl;
+    expDebug(sdaLogSrcI, maxDbSize, query);
+    */
+
+    /////////////////////////////// Experiment 1 ///////////////////////////////
+
+    std::cout << "------------------------- Experiment 1 -------------------------" << std::endl;
+    std::cout << "DB size  : 2^"     << maxDbSizeExp << " (2^" << maxDbSizeExp - 5 << " for SDa)" << std::endl;
+    std::cout << "Query    : varied" << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
     std::cout << "---------- PiBas ----------" << std::endl;
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
-    piBas.setup(KEY_LEN, Db {}); // hopefully clear memory asap
 
     std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(piBasResHiding, maxDbSize);
-    piBasResHiding.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Log-SRC ----------" << std::endl;
     std::cout << std::endl;
     exp1(logSrc, maxDbSize);
-    logSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
     exp1(logSrcI, maxDbSize);
-    logSrcI.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(sdaPiBas, maxDbSize / 32);
-    sdaPiBas.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrc, maxDbSize / 32);
-    sdaLogSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrcI, maxDbSize / 32);
-    sdaLogSrcI.setup(KEY_LEN, Db {});
 
-    // experiment 2
+    /////////////////////////////// Experiment 2 ///////////////////////////////
 
     std::cout << "------------------------- Experiment 2 -------------------------" << std::endl;
     std::cout << "DB size  : varied, up to 2^" << maxDbSizeExp - 1 << " (2^" << maxDbSizeExp - 1 - 5 << " for SDa)"
-            << std::endl;
+              << std::endl;
     std::cout << "Query    : 0-3"              << std::endl;
-    std::cout << "Data skew: no"               << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
     std::cout << "---------- PiBas ----------" << std::endl;
     std::cout << std::endl;
     exp2(piBas, maxDbSize / 2);
-    piBas.setup(KEY_LEN, Db {});
 
     std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp2(piBasResHiding, maxDbSize / 2);
-    piBasResHiding.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Log-SRC ----------" << std::endl;
     std::cout << std::endl;
     exp2(logSrc, maxDbSize / 2);
-    logSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
     exp2(logSrcI, maxDbSize / 2);
-    logSrcI.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp2(sdaPiBas, maxDbSize / 64);
-    sdaPiBas.setup(KEY_LEN, Db {});
 
     std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrc, maxDbSize / 64);
-    sdaLogSrc.setup(KEY_LEN, Db {});
     
     std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrcI, maxDbSize / 64);
-    sdaLogSrcI.setup(KEY_LEN, Db {});
     
-    // experiment 3
+    /////////////////////////////// Experiment 3 ///////////////////////////////
 
     std::cout << "------------------------- Experiment 3 -------------------------" << std::endl;
     std::cout << "DB size  : 2^"                         << maxDbSizeExp << std::endl;
     std::cout << "Query    : incurs 50% false positives" << std::endl;
-    std::cout << "Data skew: yes"                        << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
     std::cout << "---------- Log-SRC ----------" << std::endl;
     std::cout << std::endl;
     exp3(logSrc, maxDbSize);
-    logSrc.setup(KEY_LEN, Db {});
 
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
     exp3(logSrcI, maxDbSize);
-    logSrcI.setup(KEY_LEN, Db {});
 }

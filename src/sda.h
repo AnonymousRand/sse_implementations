@@ -6,7 +6,7 @@
 // don't use template template parameter for `Underly` because they may have other deeper underlying schemes
 // and it can get very complicated so probably best to just explicitly specify everything here
 template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISdaUnderly_<Underly, EncInd, DbDoc, DbKw>
+        requires ISdaUnderly_<Underly>
 class SdaBase : public IDsse<EncInd, DbDoc, DbKw> {
     protected:
         std::vector<Underly*> underlys;
@@ -20,13 +20,13 @@ class SdaBase : public IDsse<EncInd, DbDoc, DbKw> {
 };
 
 template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw>
-        requires ISdaUnderly_<Underly, EncInd, DbDoc, DbKw>
+        requires ISdaUnderly_<Underly>
 class Sda : public SdaBase<Underly, EncInd, DbDoc, DbKw> {
     public:
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };
 
-template <class Underly, IEncInd_ EncInd, class DbKw> requires ISdaUnderly_<Underly, EncInd, IdOp, DbKw>
+template <class Underly, IEncInd_ EncInd, class DbKw> requires ISdaUnderly_<Underly>
 class Sda<Underly, EncInd, IdOp, DbKw> : public SdaBase<Underly, EncInd, IdOp, DbKw> {
     public:
         std::vector<IdOp> search(const Range<DbKw>& query) const;

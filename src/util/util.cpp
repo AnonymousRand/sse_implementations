@@ -112,7 +112,7 @@ T IDbDoc<T>::get() const {
 }
 
 template <class T>
-ustring IDbDoc<T>::encode() const {
+ustring IDbDoc<T>::toUstr() const {
     return ::toUstr(this->toStr());
 }
 
@@ -142,7 +142,7 @@ std::string Id::toStr() const {
     return std::to_string(this->val);
 }
 
-Id Id::decode(const ustring& ustr) {
+Id Id::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     return Id::fromStr(str);
 }
@@ -262,7 +262,7 @@ IdOp::IdOp(const Id& id) : IMainDbDoc<std::pair<Id, Op>>(std::pair {id, INSERT})
 
 IdOp::IdOp(const Id& id, const Op& op) : IMainDbDoc<std::pair<Id, Op>>(std::pair {id, op}) {}
 
-IdOp IdOp::decode(const ustring& ustr) {
+IdOp IdOp::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
@@ -326,7 +326,7 @@ SrcIDb1Doc<DbKw>::SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>&
         : IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>>(std::pair {dbKwRange, idAliasRange}) {}
 
 template <class DbKw>
-SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::decode(const ustring& ustr) {
+SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;

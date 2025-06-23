@@ -9,18 +9,19 @@
 
 template <IEncInd_ EncInd, IDbDoc_ DbDoc, class DbKw>
 void PiBasBase<EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
-    // generate key
+
+    ////////////////////////////// Generate Keys ///////////////////////////////
 
     this->secParam = secParam;
     this->key = genKey(this->secParam);
 
-    // build index
+    /////////////////////////////// Build Index ////////////////////////////////
 
     this->db = db;
     this->_isEmpty = db.empty();
     if (db.empty()) {
         // clear memory
-        this->encInd.clear();
+        this->encInd.reset();
         return;
     }
 
@@ -39,7 +40,7 @@ void PiBasBase<EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& 
     // randomly permute documents associated with same keyword, required by some schemes on top of PiBas (e.g. Log-SRC)
     shuffleInd(ind);
 
-    this->encInd.clear();
+    this->encInd.reset();
     this->encInd.init(db.size());
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
@@ -57,7 +58,7 @@ void PiBasBase<EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& 
             ustring label = prf(subkeys.first, toUstr(counter));
             ustring iv = genIv(IV_LEN);
             // for some reason padding to exactly n blocks generates n + 1 blocks, so we pad to one less byte
-            ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, subkeys.second, dbDoc.encode(), iv, ENC_IND_DOC_LEN - 1);
+            ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, subkeys.second, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             // add (l, d) to list L (in lex order); we don't need to sort ourselves since C++ has ordered maps
             // also store IV in plain along with encrypted value
             this->encInd.write(label, std::pair {encryptedDoc, iv});
@@ -103,7 +104,7 @@ std::vector<DbDoc> PiBasBase<EncInd, DbDoc, DbKw>::searchWithoutHandlingDels(con
             // id <- Dec(K_2, d)
             ustring iv = encIndV.second;
             ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, subkey2, encryptedDoc, iv);
-            DbDoc result = DbDoc::decode(decryptedDoc);
+            DbDoc result = DbDoc::fromUstr(decryptedDoc);
             results.push_back(result);
             counter++;
         }
@@ -155,20 +156,20 @@ template class PiBas<DiskEncInd, IdOp, IdAlias>;
 
 template <IEncInd_ EncInd, IDbDoc_ DbDoc, class DbKw>
 void PiBasResHidingBase<EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
-    // generate keys
+
+    ////////////////////////////// Generate Keys ///////////////////////////////
 
     this->key1 = genKey(secParam);
     this->key2 = genKey(secParam);
 
-    // build index
+    /////////////////////////////// Build Index ////////////////////////////////
 
     this->db = db;
+    this->_isEmpty = db.empty();
     if (db.empty()) {
-        this->_isEmpty = true;
-        this->encInd = EncInd {};
+        this->encInd.reset();
         return;
     }
-    this->_isEmpty = false;
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     Ind<DbKw, DbDoc> ind;
@@ -183,7 +184,7 @@ void PiBasResHidingBase<EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc
         }
     }
 
-    this->encInd.clear();
+    this->encInd.reset();
     this->encInd.init(db.size());
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
@@ -195,7 +196,7 @@ void PiBasResHidingBase<EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc
         for (DbDoc dbDoc : itIdOpsWithSameKw->second) {
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, prfOutput + toUstr(counter));
             ustring iv = genIv(IV_LEN);
-            ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, this->key2, dbDoc.encode(), iv, ENC_IND_DOC_LEN - 1);
+            ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, this->key2, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             this->encInd.write(label, std::pair {encryptedDoc, iv});
             counter++;
         }
@@ -234,7 +235,7 @@ std::vector<DbDoc> PiBasResHidingBase<EncInd, DbDoc, DbKw>::searchWithoutHandlin
             // technically we decrypt in the client, but since there's no client-server distinction
             // in this implementation we'll just decrypt immediately to make the code cleaner
             ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, this->key2, encryptedDoc, iv);
-            DbDoc result = DbDoc::decode(decryptedDoc);
+            DbDoc result = DbDoc::fromUstr(decryptedDoc);
             results.push_back(result);
             counter++;
         }
