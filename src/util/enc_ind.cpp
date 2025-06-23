@@ -3,6 +3,12 @@
 #include "enc_ind.h"
 
 /******************************************************************************/
+/* `IEncInd`                                                                  */
+/******************************************************************************/
+
+IEncInd::~IEncInd() {}
+
+/******************************************************************************/
 /* `RamEncInd`                                                                */
 /******************************************************************************/
 
@@ -62,7 +68,6 @@ void DiskEncInd::init(unsigned long size) {
         this->isPosFilled[i] = false;
     }
 
-    std::cout << "init called, filename is " << this->filename << " file pointer is " << this->file << std::endl;
 }
 
 /**
@@ -139,9 +144,7 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
 }
 
 void DiskEncInd::reset() {
-    std::cout << "reset called for file " << this->filename << std::endl;
     if (this->file != nullptr) {
-        std::cout << "file exists, filename is " << this->filename << " file pointer is " << this->file << std::endl;
         std::fclose(this->file);
         this->file = nullptr; // important for idempotence!
     }
@@ -151,11 +154,9 @@ void DiskEncInd::reset() {
     }
     // delete encrypted index files from disk on `reset()`
     if (this->filename != "") {
-        std::cout << "file removed " << this->filename << std::endl;
         std::remove(this->filename.c_str());
         this->filename = "";
     } else {
-        std::cout << "no remove!!!" << std::endl;
     }
     this->isPosFilled.clear();
 }

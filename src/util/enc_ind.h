@@ -19,6 +19,10 @@ enum class EncIndType {
 
 class IEncInd {
     public:
+        // apparently when deleting derived class objects via pointers to base class (e.g. polymorphism)
+        // the base class needs to have a virtual destructor for the derived class' constructor to be called
+        virtual ~IEncInd();
+
         // every `init()` MUST be followed by a `reset()` for memory freeing!!
         virtual void init(unsigned long size) = 0;
         virtual void write(ustring key, std::pair<ustring, ustring> val) = 0;
