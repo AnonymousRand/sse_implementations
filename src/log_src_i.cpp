@@ -3,20 +3,20 @@
 #include "log_src_i.h"
 #include "pi_bas.h"
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-LogSrcI<Underly, EncInd, DbDoc, DbKw>::LogSrcI()
-        : LogSrcI(Underly<EncInd, SrcIDb1Doc<DbKw>, DbKw>(), Underly<EncInd, DbDoc, Id>()) {}
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(EncIndType encIndType)
+        : LogSrcI(Underly<SrcIDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>(), encIndType) {}
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-LogSrcI<Underly, EncInd, DbDoc, DbKw>::LogSrcI(
-    const Underly<EncInd, SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<EncInd, DbDoc, Id>& underly2
-) : underly1(underly1), underly2(underly2), tdag1(nullptr), tdag2(nullptr) {}
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(
+    const Underly<SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2,
+    EncIndType encIndType
+) : underly1(underly1), underly2(underly2) {
+    this->setEncIndType(encIndType);
+}
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-LogSrcI<Underly, EncInd, DbDoc, DbKw>::~LogSrcI() {
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+LogSrcI<Underly, DbDoc, DbKw>::~LogSrcI() {
     if (this->tdag1 != nullptr) {
         delete this->tdag1;
     }
@@ -25,13 +25,12 @@ LogSrcI<Underly, EncInd, DbDoc, DbKw>::~LogSrcI() {
     }
 }
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-void LogSrcI<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->db = db;
     this->_isEmpty = this->db.empty();
 
-    ////////////////////////////// Build Index 2 ///////////////////////////////
+    ////////////////////////////// build index 2 ///////////////////////////////
 
     // sort documents by keyword to assign index 2 nodes/"identifier aliases"
     auto sortByKw = [](const DbEntry<DbDoc, DbKw>& dbEntry1, const DbEntry<DbDoc, DbKw>& dbEntry2) {
@@ -76,7 +75,7 @@ void LogSrcI<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, 
         }
     }
 
-    ////////////////////////////// Build Index 1 ///////////////////////////////
+    ////////////////////////////// build index 1 ///////////////////////////////
 
     // build TDAG 1 over keywords
     DbKw maxDbKw = findMaxDbKw(db);
@@ -112,9 +111,8 @@ void LogSrcI<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, 
     this->underly2.setup(secParam, db2);
 }
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-Range<IdAlias> LogSrcI<Underly, EncInd, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+Range<IdAlias> LogSrcI<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     // query 1
 
     Range<DbKw> src1 = this->tdag1->findSrc(query);
@@ -146,9 +144,8 @@ Range<IdAlias> LogSrcI<Underly, EncInd, DbDoc, DbKw>::searchBase(const Range<DbK
     return src2;
 }
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-std::vector<DbDoc> LogSrcI<Underly, EncInd, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
     Range<IdAlias> src2 = this->searchBase(query);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<DbDoc> {};
@@ -156,9 +153,8 @@ std::vector<DbDoc> LogSrcI<Underly, EncInd, DbDoc, DbKw>::search(const Range<DbK
     return this->underly2.search(src2);
 }
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-std::vector<DbDoc> LogSrcI<Underly, EncInd, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     Range<IdAlias> src2 = this->searchBase(query);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<DbDoc> {};
@@ -166,24 +162,24 @@ std::vector<DbDoc> LogSrcI<Underly, EncInd, DbDoc, DbKw>::searchWithoutHandlingD
     return this->underly2.searchWithoutHandlingDels(src2);
 }
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-Db<DbDoc, DbKw> LogSrcI<Underly, EncInd, DbDoc, DbKw>::getDb() const {
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+Db<DbDoc, DbKw> LogSrcI<Underly, DbDoc, DbKw>::getDb() const {
     return this->db;
 }
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-bool LogSrcI<Underly, EncInd, DbDoc, DbKw>::isEmpty() const {
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+bool LogSrcI<Underly, DbDoc, DbKw>::isEmpty() const {
     return this->_isEmpty;
 }
 
-template class LogSrcI<PiBas, RamEncInd, Id, Kw>;
-template class LogSrcI<PiBas, RamEncInd, IdOp, Kw>;
-template class LogSrcI<PiBas, DiskEncInd, Id, Kw>;
-template class LogSrcI<PiBas, DiskEncInd, IdOp, Kw>;
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+void LogSrcI<Underly, DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
+    this->underly1.setEncIndType(encIndType);
+    this->underly2.setEncIndType(encIndType);
+}
 
-template class LogSrcI<PiBasResHiding, RamEncInd, Id, Kw>;
-template class LogSrcI<PiBasResHiding, RamEncInd, IdOp, Kw>;
-template class LogSrcI<PiBasResHiding, DiskEncInd, Id, Kw>;
-template class LogSrcI<PiBasResHiding, DiskEncInd, IdOp, Kw>;
+template class LogSrcI<PiBas, Id, Kw>;
+template class LogSrcI<PiBas, IdOp, Kw>;
+
+template class LogSrcI<PiBasResHiding, Id, Kw>;
+template class LogSrcI<PiBasResHiding, IdOp, Kw>;

@@ -8,6 +8,11 @@
 // indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries
 // each of which correspond to `std::pair<label/key, std::pair<encrypted doc, iv>>`
 
+enum class EncIndType {
+    RAM,
+    DISK
+};
+
 /******************************************************************************/
 /* `IEncInd`                                                                  */
 /******************************************************************************/
@@ -53,14 +58,13 @@ class RamEncInd : public IEncInd {
 // for storing in secondary memory
 class DiskEncInd : public IEncInd {
     private:
-        FILE* file;
-        unsigned char* buf;
+        FILE* file = nullptr;
+        unsigned char* buf = nullptr;
         unsigned long size;
-        std::string filename;
+        std::string filename = "";
         std::unordered_map<unsigned long, bool> isPosFilled;
 
     public:
-        DiskEncInd();
         ~DiskEncInd();
 
         void init(unsigned long size) override;

@@ -2,9 +2,19 @@
 #include "log_src_i.h"
 #include "sda.h"
 
-template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISdaUnderly_<Underly>
-void SdaBase<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
+SdaBase<Underly, DbDoc, DbKw>::SdaBase(EncIndType encIndType) {
+    this->setEncIndType(encIndType);
+}
+
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
+Sda<Underly, DbDoc, DbKw>::Sda(EncIndType encIndType) : SdaBase<Underly, DbDoc, DbKw>(encIndType) {}
+
+template <class Underly, class DbKw> requires ISdaUnderly_<Underly>
+Sda<Underly, IdOp, DbKw>::Sda(EncIndType encIndType) : SdaBase<Underly, IdOp, DbKw>(encIndType) {}
+
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
+void SdaBase<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     if (db.empty()) {
         this->underlys.clear();
@@ -15,14 +25,14 @@ void SdaBase<Underly, EncInd, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, 
     }
 }
 
-template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISdaUnderly_<Underly>
-void SdaBase<Underly, EncInd, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
+void SdaBase<Underly, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
-        Underly* underly = new Underly();
-        underly->setup(this->secParam, Db<DbDoc, DbKw> {newEntry});
-        this->underlys.push_back(underly);
+        Underly* newUnderly = new Underly();
+        newUnderly->setEncIndType(this->encIndType);
+        newUnderly->setup(this->secParam, Db<DbDoc, DbKw> {newEntry});
+        this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
         return;
     }
@@ -41,6 +51,7 @@ void SdaBase<Underly, EncInd, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& n
         this->underlys[this->firstEmptyInd]->setup(this->secParam, mergedDb);
     } else {
         Underly* newUnderly = new Underly();
+        newUnderly->setEncIndType(this->encIndType);
         newUnderly->setup(this->secParam, mergedDb);
         this->underlys.push_back(newUnderly);
     }
@@ -60,9 +71,19 @@ void SdaBase<Underly, EncInd, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& n
     this->firstEmptyInd = firstEmpty;
 }
 
-template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISdaUnderly_<Underly>
-std::vector<DbDoc> SdaBase<Underly, EncInd, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
+std::vector<DbDoc> Sda<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    return this->searchWithoutHandlingDels(query);
+}
+
+template <class Underly, class DbKw> requires ISdaUnderly_<Underly>
+std::vector<IdOp> Sda<Underly, IdOp, DbKw>::search(const Range<DbKw>& query) const {
+    std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
+    return removeDeletedIdOps(results);
+}
+
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
+std::vector<DbDoc> SdaBase<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
     // search through all non-empty indexes
     for (Underly* underly : this->underlys) {
@@ -78,29 +99,16 @@ std::vector<DbDoc> SdaBase<Underly, EncInd, DbDoc, DbKw>::searchWithoutHandlingD
     return allResults;
 }
 
-template <class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc, class DbKw>
-        requires ISdaUnderly_<Underly>
-std::vector<DbDoc> Sda<Underly, EncInd, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchWithoutHandlingDels(query);
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
+void SdaBase<Underly, DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
+    this->encIndType = encIndType;
 }
 
-template <class Underly, IEncInd_ EncInd, class DbKw> requires ISdaUnderly_<Underly>
-std::vector<IdOp> Sda<Underly, EncInd, IdOp, DbKw>::search(const Range<DbKw>& query) const {
-    std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
-    return removeDeletedIdOps(results);
-}
+template class Sda<PiBasResHiding<Id, Kw>, Id, Kw>;
+template class Sda<PiBasResHiding<IdOp, Kw>, IdOp, Kw>;
 
-template class Sda<PiBasResHiding<RamEncInd, Id, Kw>, RamEncInd, Id, Kw>;
-template class Sda<PiBasResHiding<RamEncInd, IdOp, Kw>, RamEncInd, IdOp, Kw>;
-template class Sda<PiBasResHiding<DiskEncInd, Id, Kw>, DiskEncInd, Id, Kw>;
-template class Sda<PiBasResHiding<DiskEncInd, IdOp, Kw>, DiskEncInd, IdOp, Kw>;
+template class Sda<LogSrc<PiBasResHiding, Id, Kw>, Id, Kw>;
+template class Sda<LogSrc<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
 
-template class Sda<LogSrc<PiBasResHiding, RamEncInd, Id, Kw>, RamEncInd, Id, Kw>;
-template class Sda<LogSrc<PiBasResHiding, RamEncInd, IdOp, Kw>, RamEncInd, IdOp, Kw>;
-template class Sda<LogSrc<PiBasResHiding, DiskEncInd, Id, Kw>, DiskEncInd, Id, Kw>;
-template class Sda<LogSrc<PiBasResHiding, DiskEncInd, IdOp, Kw>, DiskEncInd, IdOp, Kw>;
-
-template class Sda<LogSrcI<PiBasResHiding, RamEncInd, Id, Kw>, RamEncInd, Id, Kw>;
-template class Sda<LogSrcI<PiBasResHiding, RamEncInd, IdOp, Kw>, RamEncInd, IdOp, Kw>;
-template class Sda<LogSrcI<PiBasResHiding, DiskEncInd, Id, Kw>, DiskEncInd, Id, Kw>;
-template class Sda<LogSrcI<PiBasResHiding, DiskEncInd, IdOp, Kw>, DiskEncInd, IdOp, Kw>;
+template class Sda<LogSrcI<PiBasResHiding, Id, Kw>, Id, Kw>;
+template class Sda<LogSrcI<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;

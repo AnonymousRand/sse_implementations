@@ -31,8 +31,6 @@ void RamEncInd::reset() {
 /* `DiskEncInd`                                                               */
 /******************************************************************************/
 
-DiskEncInd::DiskEncInd() : file(nullptr), buf(nullptr), filename("") {}
-
 DiskEncInd::~DiskEncInd() {
     this->reset();
 }

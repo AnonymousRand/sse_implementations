@@ -7,7 +7,7 @@
 /* `ISse`                                                                     */
 /******************************************************************************/
 
-template <IEncInd_ EncInd, IDbDoc_ DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 class ISse {
     protected:
         int secParam;
@@ -15,6 +15,8 @@ class ISse {
     public:
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
+
+        virtual void setEncIndType(EncIndType encIndType) = 0;
 };
 
 template <class T>
@@ -26,8 +28,8 @@ concept ISse_ = requires(T t) {
 /* `IDsse`                                                                    */
 /******************************************************************************/
 
-template <IEncInd_ EncInd, IDbDoc_ DbDoc, class DbKw>
-class IDsse : public ISse<EncInd, DbDoc, DbKw> {
+template <IDbDoc_ DbDoc, class DbKw>
+class IDsse : public ISse<DbDoc, DbKw> {
     public:
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
 };
@@ -36,8 +38,8 @@ class IDsse : public ISse<EncInd, DbDoc, DbKw> {
 /* `ISdaUnderly`                                                              */
 /******************************************************************************/
 
-template <IEncInd_ EncInd, IDbDoc_ DbDoc, class DbKw>
-class ISdaUnderly : public ISse<EncInd, DbDoc, DbKw> {
+template <IDbDoc_ DbDoc, class DbKw>
+class ISdaUnderly : public ISse<DbDoc, DbKw> {
     public:
         virtual std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const = 0;
         virtual Db<DbDoc, DbKw> getDb() const = 0;

@@ -4,18 +4,19 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <template <class ...> class Underly, IEncInd_ EncInd, IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw>
-        requires ISse_<Underly<EncInd, DbDoc, DbKw>>
-class LogSrc : public ISdaUnderly<EncInd, DbDoc, DbKw> {
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw>
+        requires ISse_<Underly<DbDoc, DbKw>>
+class LogSrc : public ISdaUnderly<DbDoc, DbKw> {
     private:
-        Underly<EncInd, DbDoc, DbKw> underly;
-        TdagNode<DbKw>* tdag;
+        Underly<DbDoc, DbKw> underly;
+        TdagNode<DbKw>* tdag = nullptr;
         Db<DbDoc, DbKw> db; // store instead of using underlying instance's `db` since that one has replications
 
-        LogSrc(const Underly<EncInd, DbDoc, DbKw>& underly);
+        LogSrc(const Underly<DbDoc, DbKw>& underly, EncIndType encIndType);
 
     public:
-        LogSrc();
+        LogSrc() = default;
+        LogSrc(EncIndType encIndType);
         ~LogSrc();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
@@ -24,4 +25,5 @@ class LogSrc : public ISdaUnderly<EncInd, DbDoc, DbKw> {
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
+        void setEncIndType(EncIndType encIndType) override;
 };

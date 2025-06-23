@@ -10,17 +10,15 @@ template <class DbDoc = IdOp, class DbKw = Kw>
 Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
     Db<DbDoc, DbKw> db;
     if (isDataSkewed) {
-        // two unique keywords, each making up half the dataset, with one being 0 and the other being the max
-        // this means half of them will be returned as false positives on a [1, n - 1] query if the root node is the SRC
+        // two unique keywords, with all but one being 0 and the other being the max
+        // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
         int kw1 = 0;
         int kw2 = dbSize - 1;
 
-        for (int i = 0; i < dbSize / 2; i++) {
+        for (int i = 0; i < dbSize - 1; i++) {
             db.push_back(DbEntry {DbDoc(i), Range<DbKw> {kw1, kw1}});
         }
-        for (int i = dbSize / 2; i < dbSize; i++) {
-            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {kw2, kw2}});
-        }
+        db.push_back(DbEntry {dbSize - 1, Range<DbKw> {kw2, kw2}});
     } else {
         for (int i = 0; i < dbSize; i++) {
             // make keywords and ids inversely proportional to test sorting of Log-SRC-i's second index
@@ -31,8 +29,8 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
 }
 
 // experiment for debugging with fixed query and printed results
-template <IEncInd_ EncInd, class DbDoc, class DbKw>
-void expDebug(ISse<EncInd, DbDoc, DbKw>& sse, int dbSize, Range<DbKw> query) {
+template <class DbDoc, class DbKw>
+void expDebug(ISse<DbDoc, DbKw>& sse, int dbSize, Range<DbKw> query) {
     Db<DbDoc, DbKw> db = createDb(dbSize, false);
 
     // setup
@@ -57,8 +55,8 @@ void expDebug(ISse<EncInd, DbDoc, DbKw>& sse, int dbSize, Range<DbKw> query) {
     sse.setup(KEY_LEN, Db {});
 }
 
-template <IEncInd_ EncInd, class DbDoc, class DbKw>
-void exp1(ISse<EncInd, DbDoc, DbKw>& sse, int dbSize) {
+template <class DbDoc, class DbKw>
+void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
     Db<DbDoc, DbKw> db = createDb(dbSize, false);
 
     // setup
@@ -85,8 +83,8 @@ void exp1(ISse<EncInd, DbDoc, DbKw>& sse, int dbSize) {
     sse.setup(KEY_LEN, Db {});
 }
 
-template <IEncInd_ EncInd, class DbDoc, class DbKw>
-void exp2(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
+template <class DbDoc, class DbKw>
+void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
     Range<DbKw> query {0, 3};
     for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
@@ -114,8 +112,8 @@ void exp2(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
     sse.setup(KEY_LEN, Db {});
 }
 
-template <IEncInd_ EncInd, class DbDoc, class DbKw>
-void exp3(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
+template <class DbDoc, class DbKw>
+void exp3(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
     for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
         Db<DbDoc, DbKw> db = createDb(dbSize, true);
@@ -145,27 +143,33 @@ void exp3(ISse<EncInd, DbDoc, DbKw>& sse, int maxDbSize) {
 
 int main() {
     int maxDbSizeExp;
-    // TODO: turn encIndType template polymorphism into enum and constructor instead with setEncIndType() and stuff? makes this easier
-    //std::string encIndType;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
     int maxDbSize = pow(2, maxDbSizeExp);
-    //do {
-    //    std::cout << "Encrypted indexes stored on RAM or disk? [r/d]: ";
-    //    std::cin >> encIndType;
-    //} while (encIndType != "r" && encIndType != "d");
-    std::cout << std::endl;
 
-    PiBas<RamEncInd> piBas;
-    PiBasResHiding<RamEncInd> piBasResHiding;
-    LogSrc<PiBas, RamEncInd> logSrc;
-    LogSrcI<PiBas, RamEncInd> logSrcI;
-    Sda<PiBasResHiding<RamEncInd>, RamEncInd> sdaPiBas;
-    Sda<LogSrc<PiBasResHiding, RamEncInd>, RamEncInd> sdaLogSrc;
-    Sda<LogSrcI<PiBasResHiding, RamEncInd>, RamEncInd> sdaLogSrcI;
+    std::string encIndTypeStr;
+    EncIndType encIndType;
+    do {
+        std::cout << "Encrypted indexes stored on RAM or disk? [r/d]: ";
+        std::cin >> encIndTypeStr;
+    } while (encIndTypeStr != "r" && encIndTypeStr != "d");
+    std::cout << std::endl;
+    if (encIndTypeStr == "r") {
+        encIndType = EncIndType::RAM;
+    } else {
+        encIndType = EncIndType::DISK;
+    }
+
+    PiBas<> piBas(encIndType);
+    PiBasResHiding<> piBasResHiding(encIndType);
+    LogSrc<PiBas> logSrc(encIndType);
+    LogSrcI<PiBas> logSrcI(encIndType);
+    Sda<PiBasResHiding<>> sdaPiBas(encIndType);
+    Sda<LogSrc<PiBasResHiding>> sdaLogSrc(encIndType);
+    Sda<LogSrcI<PiBasResHiding>> sdaLogSrcI(encIndType);
 
     /*
-    /////////////////////////// Debugging Experiment ///////////////////////////
+    /////////////////////////// debugging experiment ///////////////////////////
 
     Range<Kw> query {3, 5};
 
@@ -204,7 +208,7 @@ int main() {
     expDebug(sdaLogSrcI, maxDbSize, query);
     */
 
-    /////////////////////////////// Experiment 1 ///////////////////////////////
+    /////////////////////////////// experiment 1 ///////////////////////////////
 
     std::cout << "------------------------- Experiment 1 -------------------------" << std::endl;
     std::cout << "DB size  : 2^"     << maxDbSizeExp << " (2^" << maxDbSizeExp - 5 << " for SDa)" << std::endl;
@@ -240,7 +244,7 @@ int main() {
     std::cout << std::endl;
     exp1(sdaLogSrcI, maxDbSize / 32);
 
-    /////////////////////////////// Experiment 2 ///////////////////////////////
+    /////////////////////////////// experiment 2 ///////////////////////////////
 
     std::cout << "------------------------- Experiment 2 -------------------------" << std::endl;
     std::cout << "DB size  : varied, up to 2^" << maxDbSizeExp - 1 << " (2^" << maxDbSizeExp - 1 - 5 << " for SDa)"
@@ -277,7 +281,7 @@ int main() {
     std::cout << std::endl;
     exp2(sdaLogSrcI, maxDbSize / 64);
     
-    /////////////////////////////// Experiment 3 ///////////////////////////////
+    /////////////////////////////// experiment 3 ///////////////////////////////
 
     std::cout << "------------------------- Experiment 3 -------------------------" << std::endl;
     std::cout << "DB size  : 2^"                         << maxDbSizeExp << std::endl;
