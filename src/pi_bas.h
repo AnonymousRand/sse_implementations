@@ -12,7 +12,7 @@ class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key;
-        IEncInd* encInd;
+        IEncInd* encInd = nullptr;
         bool _isEmpty = false;
 
         std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
@@ -59,7 +59,7 @@ class PiBasResHidingBase : public ISdaUnderly<DbDoc, DbKw> {
         Db<DbDoc, DbKw> db;
         ustring key1;
         ustring key2;
-        IEncInd* encInd;
+        IEncInd* encInd = nullptr;
         bool _isEmpty = false;
 
         ustring genQueryToken(const Range<DbKw>& query) const;

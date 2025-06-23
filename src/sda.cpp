@@ -26,6 +26,13 @@ void SdaBase<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
 }
 
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
+SdaBase<Underly, DbDoc, DbKw>::~SdaBase() {
+    for (Underly* underly : this->underlys) {
+        delete underly;
+    }
+}
+
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
 void SdaBase<Underly, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
@@ -56,9 +63,9 @@ void SdaBase<Underly, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry)
         this->underlys.push_back(newUnderly);
     }
 
-    // clear all EDB_<j by calling `setup()` with empty DB
+    // clear all EDB_<j
     for (int i = 0; i < this->firstEmptyInd; i++) {
-        this->underlys[i]->setup(this->secParam, Db<DbDoc, DbKw> {});
+        this->underlys[i]->clear();
     }
 
     // update the pointer to the first empty index

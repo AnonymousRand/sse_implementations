@@ -16,6 +16,7 @@ class SdaBase : public IDsse<DbDoc, DbKw> {
 
     public:
         SdaBase(EncIndType encIndType);
+        virtual ~SdaBase();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         void update(const DbEntry<DbDoc, DbKw>& newEntry) override;

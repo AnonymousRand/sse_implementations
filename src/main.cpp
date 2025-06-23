@@ -52,7 +52,7 @@ void expDebug(ISse<DbDoc, DbKw>& sse, int dbSize, Range<DbKw> query) {
     std::cout << std::endl;
 
     // hopefully clear memory asap
-    sse.setup(KEY_LEN, Db {});
+    sse.clear();
 }
 
 template <class DbDoc, class DbKw>
@@ -80,7 +80,7 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
     std::cout << std::endl;
 
     // hopefully clear memory asap
-    sse.setup(KEY_LEN, Db {});
+    sse.clear();
 }
 
 template <class DbDoc, class DbKw>
@@ -109,7 +109,7 @@ void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
     std::cout << std::endl;
 
     // hopefully clear memory asap
-    sse.setup(KEY_LEN, Db {});
+    sse.clear();
 }
 
 template <class DbDoc, class DbKw>
@@ -138,7 +138,7 @@ void exp3(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
     std::cout << std::endl;
 
     // hopefully clear memory asap
-    sse.setup(KEY_LEN, Db {});
+    sse.clear();
 }
 
 int main() {
@@ -220,6 +220,7 @@ int main() {
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
 
+    /*
     std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(piBasResHiding, maxDbSize);
@@ -296,4 +297,5 @@ int main() {
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
     exp3(logSrcI, maxDbSize);
+    */
 }

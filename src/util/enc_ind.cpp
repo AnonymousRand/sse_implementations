@@ -61,6 +61,8 @@ void DiskEncInd::init(unsigned long size) {
     for (unsigned long i = 0; i < size; i++) {
         this->isPosFilled[i] = false;
     }
+
+    std::cout << "init called, filename is " << this->filename << " file pointer is " << this->file << std::endl;
 }
 
 /**
@@ -123,6 +125,7 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     // this does make it a lot slower to verify if an element is nonexistent compared to primary memory storage,
     // since we have to iterate through whole index
     if (currKey != key) {
+        delete[] curr;
         return -1;
     }
 
@@ -134,7 +137,9 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
 }
 
 void DiskEncInd::reset() {
+    std::cout << "reset called for file " << this->filename << std::endl;
     if (this->file != nullptr) {
+        std::cout << "file exists, filename is " << this->filename << " file pointer is " << this->file << std::endl;
         std::fclose(this->file);
         this->file = nullptr; // important for idempotence!
     }
@@ -144,7 +149,11 @@ void DiskEncInd::reset() {
     }
     // delete encrypted index files from disk on `reset()`
     if (this->filename != "") {
+        std::cout << "file removed " << this->filename << std::endl;
         std::remove(this->filename.c_str());
+        this->filename = "";
+    } else {
+        std::cout << "no remove!!!" << std::endl;
     }
     this->isPosFilled.clear();
 }

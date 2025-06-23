@@ -20,7 +20,10 @@ PiBas<IdOp, DbKw>::PiBas(EncIndType encIndType) : PiBasBase<IdOp, DbKw>(encIndTy
 
 template <IDbDoc_ DbDoc, class DbKw>
 PiBasBase<DbDoc, DbKw>::~PiBasBase() {
-    delete this->encInd;
+    if (this->encInd != nullptr) {
+        delete this->encInd;
+        this->encInd = nullptr;
+    }
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
@@ -183,12 +186,10 @@ PiBasResHidingBase<DbDoc, DbKw>::PiBasResHidingBase(EncIndType encIndType) {
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
-PiBasResHiding<DbDoc, DbKw>::PiBasResHiding(EncIndType encIndType)
-        : PiBasResHidingBase<DbDoc, DbKw>(encIndType) {}
+PiBasResHiding<DbDoc, DbKw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidingBase<DbDoc, DbKw>(encIndType) {}
 
 template <class DbKw>
-PiBasResHiding<IdOp, DbKw>::PiBasResHiding(EncIndType encIndType)
-        : PiBasResHidingBase<IdOp, DbKw>(encIndType) {}
+PiBasResHiding<IdOp, DbKw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidingBase<IdOp, DbKw>(encIndType) {}
 
 template <IDbDoc_ DbDoc, class DbKw>
 PiBasResHidingBase<DbDoc, DbKw>::~PiBasResHidingBase() {

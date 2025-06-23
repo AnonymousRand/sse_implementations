@@ -16,6 +16,7 @@ class ISse {
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
 
+        virtual void clear();
         virtual void setEncIndType(EncIndType encIndType) = 0;
 };
 
