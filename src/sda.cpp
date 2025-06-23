@@ -14,6 +14,16 @@ template <class Underly, class DbKw> requires ISdaUnderly_<Underly>
 Sda<Underly, IdOp, DbKw>::Sda(EncIndType encIndType) : SdaBase<Underly, IdOp, DbKw>(encIndType) {}
 
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
+SdaBase<Underly, DbDoc, DbKw>::~SdaBase() {
+    for (Underly* underly : this->underlys) {
+        if (underly != nullptr) {
+            delete underly;
+            underly = nullptr;
+        }
+    }
+}
+
+template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
 void SdaBase<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     if (db.empty()) {
@@ -22,16 +32,6 @@ void SdaBase<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     }
     for (DbEntry<DbDoc, DbKw> entry : db) {
         this->update(entry);
-    }
-}
-
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-SdaBase<Underly, DbDoc, DbKw>::~SdaBase() {
-    for (Underly* underly : this->underlys) {
-        if (underly != nullptr) {
-            delete underly;
-            underly = nullptr;
-        }
     }
 }
 
