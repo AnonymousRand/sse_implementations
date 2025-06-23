@@ -216,11 +216,11 @@ int main() {
     std::cout << "----------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
+    /*
     std::cout << "---------- PiBas ----------" << std::endl;
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
 
-    /*
     std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(piBasResHiding, maxDbSize);
@@ -232,11 +232,13 @@ int main() {
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
     exp1(logSrcI, maxDbSize);
+    */
 
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(sdaPiBas, maxDbSize / 32);
 
+    /*
     std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrc, maxDbSize / 32);
