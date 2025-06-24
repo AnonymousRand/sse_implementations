@@ -5,6 +5,7 @@
 #include <map>
 #include <random>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -42,15 +43,18 @@ static const int DUMMY     = -1;
  * PRECONDITION: keywords and ids must both be integral values.
  */
 using Kw      = int;
-using ustring = std::basic_string<unsigned char>; // use `ustring` instead of `unsigned char*` to avoid hell
+using Id      = int;
+using IdAlias = Id; // Log-SRC-i id aliases are functionally identical to ids, but it's nice to have this for clarity
+
 
 template <class T> class Range;
 template <class T> class IDbDoc;
-template <class T> class IMainDbDoc;
-class Id;
-class Op;
-class IdOp;
-template <class DbKw = Kw> class SrcIDb1Doc;
+class Doc;
+class SrcIDb1Doc;
+enum class Op {
+    INS,
+    DEL
+}
 
 // black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
 // i.e. without needing to know what the template param `X` of `IDbDoc` is, unlike `std::derived_from` for example
@@ -60,18 +64,18 @@ template <class T>
 concept IDbDoc_ = requires(T t) {
     []<class X>(IDbDoc<X>&){}(t);
 };
-template <class T>
-concept IMainDbDoc_ = requires(T t) {
-    []<class X>(IMainDbDoc<X>&){}(t);
-};
+//template <class T>
+//concept IMainDbDoc_ = requires(T t) {
+//    []<class X>(IMainDbDoc<X>&){}(t);
+//};
 
 // allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
-template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw> 
+template <IDbDoc_ DbDoc, class DbKw> 
 using DbEntry = std::pair<DbDoc, Range<DbKw>>;
-template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
+template <IDbDoc_ DbDoc, class DbKw>
 using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
-template <class DbKw = Kw, class DbDoc = IdOp>
-using Ind     = std::unordered_map<Range<DbKw>, std::vector<DbDoc>>;
+template <class IndK, class DbDoc>
+using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
 
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
@@ -79,6 +83,9 @@ static std::mt19937 RNG(RAND_DEV());
 /******************************************************************************/
 /* `ustring`                                                                  */
 /******************************************************************************/
+
+// use `ustring` instead of `unsigned char*` to avoid hell
+using ustring = std::basic_string<unsigned char>;
 
 ustring toUstr(int n);
 ustring toUstr(const std::string& s);
@@ -154,123 +161,49 @@ class IDbDoc {
         friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2>& iEncryptable);
 };
 
-template <class T>
-class IMainDbDoc : public IDbDoc<T> {
+/******************************************************************************/
+/* `Doc`                                                                       */
+/******************************************************************************/
+
+class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
     public:
-        using IDbDoc<T>::IDbDoc;
+        Doc() = default;
+        Doc(const std::tuple<Id, Kw, Op>& val);
 
-        virtual Id getId() const = 0;
+        std::string toStr() const overrdoce;
+        static Doc fromUstr(const ustring& ustr);
+        static Doc fromStr(const std::string& str);
+
+        Id getId() const;
+        Op getOp() const;
+
+        friend bool operator ==(const Doc& doc1, const Doc& doc2);
 };
 
-/******************************************************************************/
-/* `Id`                                                                       */
-/******************************************************************************/
-
-class Id : public IMainDbDoc<int> {
-    public:
-        Id() = default;
-        Id(int val);
-
-        static Id fromUstr(const ustring& ustr);
-        std::string toStr() const override;
-
-        Id getId() const override;
-
-        static Id fromStr(const std::string& str);
-        Id& operator ++();
-        Id operator ++(int); // unused `int` param marks `++` as postfix
-        Id& operator +=(const Id& id);
-        Id& operator -=(const Id& id);
-        Id& operator +=(int n);
-        Id& operator -=(int n);
-        friend Id operator +(Id id1, const Id& id2);
-        friend Id operator +(Id id, int n);
-        friend Id operator -(Id id1, const Id& id2);
-        friend Id operator -(Id id, int n);
-        friend bool operator ==(const Id& id1, const Id& id2);
-        friend bool operator ==(const Id& id1, int n);
-        friend bool operator <(const Id& id1, const Id& id2);
-        friend bool operator >(const Id& id1, const Id& id2);
-        friend bool operator <=(const Id& id1, const Id& id2);
-        friend bool operator >=(const Id& id1, const Id& id2);
-};
-
-template <>
-struct std::hash<Id> {
-    std::size_t operator ()(const Id& dbDoc) const noexcept {
-        return std::hash<int>{}(dbDoc.get());
-    }
-};
-
-// Log-SRC-i id aliases are functionally identical to ids, but it's still nice to have this for clarity
-using IdAlias = Id;
-
-/******************************************************************************/
-/* `Op`                                                                       */
-/******************************************************************************/
-
-class Op {
-    private:
-        std::string val;
-
-    public:
-        Op() = default;
-        Op(const std::string& val);
-
-        std::string toStr() const;
-
-        static Op fromStr(const std::string& val);
-        friend bool operator ==(const Op& op1, const Op& op2);
-        friend std::ostream& operator <<(std::ostream& os, const Op& Op);
-};
-
-static const Op INSERT("INSERT");
-static const Op DELETE("DELETE");
-
-/******************************************************************************/
-/* `IdOp`                                                                     */
-/******************************************************************************/
-
-class IdOp : public IMainDbDoc<std::pair<Id, Op>> {
-    public:
-        IdOp() = default;
-        IdOp(const Id& id);
-        IdOp(const Id& id, const Op& op);
-
-        static IdOp fromUstr(const ustring& ustr);
-        std::string toStr() const override;
-
-        Id getId() const override;
-
-        friend bool operator <(const IdOp& doc1, const IdOp& doc2);
-        friend bool operator ==(const IdOp& doc1, const IdOp& doc2);
-};
-
-std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps);
+std::vector<Doc> removeDeletedDocs(const std::vector<Doc>& docs);
 
 /******************************************************************************/
 /* `SrcIDb1Doc`                                                               */
 /******************************************************************************/
 
-template <class DbKw>
-class SrcIDb1Doc : public IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>> {
+class SrcIDb1Doc : public IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>> {
     public:
         SrcIDb1Doc() = default;
-        SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>& idAliasRange);
+        SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange);
 
-        static SrcIDb1Doc<DbKw> fromUstr(const ustring& ustr);
         std::string toStr() const override;
+        static SrcIDb1Doc<DbKw> fromUstr(const ustring& ustr);
 };
 
 /******************************************************************************/
 /* SSE Utils                                                                  */
 /******************************************************************************/
 
-template <class DbKw, class DbDoc>
-void shuffleInd(Ind<DbKw, DbDoc>& ind);
+template <class IndK, IDbDoc_ DbDoc>
+void shuffleInd(Ind<IndK, DbDoc>& ind);
 
-template <class DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db);
 
-template <class DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);
