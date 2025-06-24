@@ -1,21 +1,16 @@
 #include "log_src.h"
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-LogSrc<Underly, DbDoc, DbKw>::LogSrc(EncIndType encIndType)
-        : LogSrc(Underly<DbDoc, DbKw>(), encIndType) {}
+LogSrc<Underly, DbDoc, DbKw>::LogSrc(EncIndType encIndType) : LogSrc(Underly<DbDoc, DbKw>(), encIndType) {}
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-LogSrc<Underly, DbDoc, DbKw>::LogSrc(const Underly<DbDoc, DbKw>& underly, EncIndType encIndType)
-        : underly(underly) {
+LogSrc<Underly, DbDoc, DbKw>::LogSrc(const Underly<DbDoc, DbKw>& underly, EncIndType encIndType) : underly(underly) {
     this->setEncIndType(encIndType);
 }
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
 LogSrc<Underly, DbDoc, DbKw>::~LogSrc() {
-    if (this->tdag != nullptr) {
-        delete this->tdag;
-        this->tdag = nullptr;
-    }
+    this->clear();
 }
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
@@ -24,20 +19,30 @@ void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db
 
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     DbKw maxDbKw = findMaxDbKw(db);
-    this->tdag = new TdagNode<DbKw>(maxDbKw);
-
-    // replicate every document to all keyword ranges/TDAG nodes that cover it
-    Db<DbDoc, DbKw> dbWithReplications;
-    for (DbEntry<DbDoc, DbKw> dbEntry : db) {
-        DbDoc dbDoc = dbEntry.first;
-        Range<DbKw> dbKwRange = dbEntry.second;
-        std::list<Range<DbKw>> ancestors = this->tdag->getLeafAncestors(dbKwRange);
-        for (Range<DbKw> ancestor : ancestors) {
-            dbWithReplications.push_back(std::pair {dbDoc, ancestor});
-        }
+    // so we don't leak the memory from the previous TDAG after we call `new` again
+    // TODO apply to log-src-i as well; also can change destructor to clear??
+    if (this->tdag != nullptr) {
+        std::cout << "call again" << std::endl;
+        delete this->tdag;
+        this->tdag = nullptr;
     }
 
-    this->underly.setup(secParam, dbWithReplications);
+    if (!db.empty()) {
+        this->tdag = new TdagNode<DbKw>(maxDbKw);
+        // replicate every document to all keyword ranges/TDAG nodes that cover it
+        Db<DbDoc, DbKw> dbWithReplications;
+        for (DbEntry<DbDoc, DbKw> dbEntry : db) {
+            DbDoc dbDoc = dbEntry.first;
+            Range<DbKw> dbKwRange = dbEntry.second;
+            std::list<Range<DbKw>> ancestors = this->tdag->getLeafAncestors(dbKwRange);
+            for (Range<DbKw> ancestor : ancestors) {
+                dbWithReplications.push_back(std::pair {dbDoc, ancestor});
+            }
+        }
+        this->underly.setup(secParam, dbWithReplications);
+    } else {
+        this->underly.setup(secParam, Db<DbDoc, DbKw> {});
+    }
 }
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>

@@ -12,6 +12,7 @@ class TdagNode {
         TdagNode<T>* left;
         TdagNode<T>* right;
         TdagNode<T>* extraParent;
+        bool isExtraParent = false;
 
         /**
          * Construct a `TdagNode` with the given `Range`, leaving its children `nullptr`.
@@ -52,6 +53,7 @@ class TdagNode {
         std::list<Range<T>> getLeafAncestors(const Range<T>& target);
 
         Range<T> getRange() const;
+        void setIsExtraParent(bool isExtraParent);
 
         template <class T2>
         friend std::ostream& operator <<(std::ostream& os, TdagNode<T2>* node);

@@ -210,6 +210,7 @@ int main() {
 
     /////////////////////////////// experiment 1 ///////////////////////////////
 
+    /*
     std::cout << "------------------------- Experiment 1 -------------------------" << std::endl;
     std::cout << "DB size  : 2^"     << maxDbSizeExp << " (2^" << maxDbSizeExp - 5 << " for SDa)" << std::endl;
     std::cout << "Query    : varied" << std::endl;
@@ -223,11 +224,13 @@ int main() {
     std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     exp1(piBasResHiding, maxDbSize);
+    */
 
     std::cout << "---------- Log-SRC ----------" << std::endl;
     std::cout << std::endl;
     exp1(logSrc, maxDbSize);
 
+    /*
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
     exp1(logSrcI, maxDbSize);
@@ -296,4 +299,5 @@ int main() {
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
     exp3(logSrcI, maxDbSize);
+    */
 }

@@ -4,8 +4,8 @@
 #include "pi_bas.h"
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(EncIndType encIndType)
-        : LogSrcI(Underly<SrcIDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>(), encIndType) {}
+LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(EncIndType encIndType) :
+        LogSrcI(Underly<SrcIDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>(), encIndType) {}
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
 LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(
