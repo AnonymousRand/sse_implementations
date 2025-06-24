@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <random>
+#include <regex>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -169,6 +170,8 @@ class IDbDoc {
 
 class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
     public:
+        static const std::regex fromStrRegex;
+
         Doc() = default;
         Doc(Id id, Kw kw, Op op);
 
@@ -191,6 +194,8 @@ std::vector<Doc> removeDeletedDocs(const std::vector<Doc>& docs);
 
 class SrcIDb1Doc : public IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>> {
     public:
+        static const std::regex fromStrRegex;
+
         SrcIDb1Doc() = default;
         SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange);
 

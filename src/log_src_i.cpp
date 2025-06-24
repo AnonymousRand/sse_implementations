@@ -3,7 +3,6 @@
 #include "log_src_i.h"
 #include "pi_bas.h"
 
-// TODO check if can template <template <class ...> ISse_ Underly>
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::LogSrcI(EncIndType encIndType) : LogSrcI(Underly<SrcIDb1Doc, Kw>(), Underly<Doc, Id>(), encIndType) {}
 
