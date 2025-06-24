@@ -38,12 +38,11 @@ static const int DUMMY     = -1;
 /* Basic Declarations                                                         */
 /******************************************************************************/
 
-static std::random_device RAND_DEV;
-static std::mt19937 RNG(RAND_DEV());
-
-// use `ustring` as much as possible instead of `unsigned char*` to avoid hell
-using ustring = std::basic_string<unsigned char>;
+/**
+ * PRECONDITION: keywords and ids must both be integral values.
+ */
 using Kw      = int;
+using ustring = std::basic_string<unsigned char>; // use `ustring` instead of `unsigned char*` to avoid hell
 
 template <class T> class Range;
 template <class T> class IDbDoc;
@@ -73,6 +72,9 @@ template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
 using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class DbKw = Kw, class DbDoc = IdOp>
 using Ind     = std::unordered_map<Range<DbKw>, std::vector<DbDoc>>;
+
+static std::random_device RAND_DEV;
+static std::mt19937 RNG(RAND_DEV());
 
 /******************************************************************************/
 /* `ustring`                                                                  */

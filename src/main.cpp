@@ -170,7 +170,6 @@ int main() {
 
     /////////////////////////// debugging experiment ///////////////////////////
 
-    /*
     Range<Kw> query {3, 5};
 
     std::cout << "------------------------- Debugging Experiment -------------------------" << std::endl;
@@ -206,7 +205,6 @@ int main() {
     std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
     expDebug(sdaLogSrcI, maxDbSize, query);
-    */
 
     /////////////////////////////// experiment 1 ///////////////////////////////
 

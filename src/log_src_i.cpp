@@ -178,6 +178,7 @@ void LogSrcI<Underly, DbDoc, DbKw>::clear() {
     }
     this->underly1.clear();
     this->underly2.clear();
+    this->db.clear();
     this->_isEmpty = true;
 }
 

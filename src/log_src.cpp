@@ -59,6 +59,7 @@ void LogSrc<Underly, DbDoc, DbKw>::clear() {
         delete this->tdag;
         this->tdag = nullptr;
     }
+    this->db.clear();
     this->underly.clear();
 }
 

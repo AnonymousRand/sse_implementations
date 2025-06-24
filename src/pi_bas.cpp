@@ -146,6 +146,7 @@ void PiBasBase<DbDoc, DbKw>::clear() {
     if (this->encInd != nullptr) {
         this->encInd->reset();
     }
+    this->db.clear();
     this->_isEmpty = true;
 }
 
@@ -307,6 +308,7 @@ void PiBasResHidingBase<DbDoc, DbKw>::clear() {
     if (this->encInd != nullptr) {
         this->encInd->reset();
     }
+    this->db.clear();
     this->_isEmpty = true;
 }
 
