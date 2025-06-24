@@ -91,7 +91,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         Range<Kw> kwRange = dbEntry.second;
         IdAlias idAlias = idAliasMapping[doc.getId()];
         SrcIDb1Doc newDoc {kwRange, Range<IdAlias> {idAlias, idAlias}};
-        DbEntry<SrcIDb1Doc, Kw> newDbEntry = std::pair {newDoc, kwRange}; // `std::pair` works, but not `DbEntry` TODO
+        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
         db1.push_back(newDbEntry);
     }
 
