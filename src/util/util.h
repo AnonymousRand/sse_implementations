@@ -47,8 +47,10 @@ using Id      = int;
 using IdAlias = Id; // Log-SRC-i id aliases are functionally identical to ids, but it's nice to have this for clarity
 
 
-template <class T> class Range;
-template <class T> class IDbDoc;
+template <class T>
+class Range;
+template <class T>
+class IDbDoc;
 class Doc;
 class SrcIDb1Doc;
 enum class Op {
@@ -70,9 +72,9 @@ concept IDbDoc_ = requires(T t) {
 //};
 
 // allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
-template <IDbDoc_ DbDoc, class DbKw> 
+template <IDbDoc_ DbDoc = Kw, class DbKw = Kw> 
 using DbEntry = std::pair<DbDoc, Range<DbKw>>;
-template <IDbDoc_ DbDoc, class DbKw>
+template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class IndK, class DbDoc>
 using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
@@ -168,7 +170,7 @@ class IDbDoc {
 class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
     public:
         Doc() = default;
-        Doc(const std::tuple<Id, Kw, Op>& val);
+        Doc(Id id, Kw kw, Op op);
 
         std::string toStr() const override;
         static Doc fromUstr(const ustring& ustr);

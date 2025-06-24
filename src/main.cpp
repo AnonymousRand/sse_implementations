@@ -6,9 +6,8 @@
 #include "pi_bas.h"
 #include "sda.h"
 
-template <class DbDoc = IdOp, class DbKw = Kw>
-Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
-    Db<DbDoc, DbKw> db;
+Db createDb(int dbSize, bool isDataSkewed) {
+    Db db;
     if (isDataSkewed) {
         // two unique keywords, with all but one being 0 and the other being the max
         // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
@@ -16,38 +15,38 @@ Db<DbDoc, DbKw> createDb(int dbSize, bool isDataSkewed) {
         int kw2 = dbSize - 1;
 
         for (int i = 0; i < dbSize - 1; i++) {
-            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {kw1, kw1}});
+            db.push_back(DbEntry {Doc(i, kw1, Op::INS), Range<Kw> {kw1, kw1}});
         }
-        db.push_back(DbEntry {dbSize - 1, Range<DbKw> {kw2, kw2}});
+        db.push_back(DbEntry {Doc(dbSize - 1, kw2, Op::INS), Range<Kw> {kw2, kw2}});
     } else {
         for (int i = 0; i < dbSize; i++) {
             // make keywords and ids inversely proportional to test sorting of Log-SRC-i's second index
-            db.push_back(DbEntry {DbDoc(i), Range<DbKw> {dbSize - i + 1, dbSize - i + 1}});
+            Kw kw = dbSize - i + 1;
+            db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
         }
     }
     return db;
 }
 
 // experiment for debugging with fixed query and printed results
-template <class DbDoc, class DbKw>
-void expDebug(ISse<DbDoc, DbKw>& sse, int dbSize, Range<DbKw> query) {
-    Db<DbDoc, DbKw> db = createDb(dbSize, false);
+void expDebug(ISse& sse, int dbSize, Range<Kw> query) {
+    Db db = createDb(dbSize, false);
 
     // setup
     sse.setup(KEY_LEN, db);
 
     // search
-    std::vector<DbDoc> results = sse.search(query);
+    std::vector<Doc> results = sse.search(query);
     std::cout << "Results:" << std::endl;
-    for (DbDoc result : results) {
-        Range<DbKw> dbKw;
-        for (DbEntry<DbDoc, DbKw> dbEntry : db) {
+    for (Doc result : results) {
+        Range<Kw> kw;
+        for (DbEntry<Doc, Kw> dbEntry : db) {
             if (dbEntry.first == result) {
-                dbKw = dbEntry.second;
+                kw = dbEntry.second;
                 break;
             }
         }
-        std::cout << result << " with keyword " << dbKw << std::endl;
+        std::cout << result << " with keyword " << kw << std::endl;
     }
     std::cout << std::endl;
 
@@ -55,9 +54,9 @@ void expDebug(ISse<DbDoc, DbKw>& sse, int dbSize, Range<DbKw> query) {
     sse.clear();
 }
 
-template <class DbDoc, class DbKw>
-void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
-    Db<DbDoc, DbKw> db = createDb(dbSize, false);
+template <class Doc, class Kw>
+void exp1(ISse& sse, int dbSize) {
+    Db db = createDb(dbSize, false);
 
     // setup
     auto setupStart = std::chrono::high_resolution_clock::now();
@@ -83,12 +82,11 @@ void exp1(ISse<DbDoc, DbKw>& sse, int dbSize) {
     sse.clear();
 }
 
-template <class DbDoc, class DbKw>
-void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
-    Range<DbKw> query {0, 3};
+void exp2(ISse& sse, int maxDbSize) {
+    Range<Kw> query {0, 3};
     for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
-        Db<DbDoc, DbKw> db = createDb(dbSize, false);
+        Db db = createDb(dbSize, false);
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();
@@ -112,11 +110,10 @@ void exp2(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
     sse.clear();
 }
 
-template <class DbDoc, class DbKw>
-void exp3(ISse<DbDoc, DbKw>& sse, int maxDbSize) {
+void exp3(ISse& sse, int maxDbSize) {
     for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
-        Db<DbDoc, DbKw> db = createDb(dbSize, true);
+        Db db = createDb(dbSize, true);
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();
@@ -164,7 +161,7 @@ int main() {
     PiBasResHiding<> piBasResHiding(encIndType);
     LogSrc<PiBas> logSrc(encIndType);
     LogSrcI<PiBas> logSrcI(encIndType);
-    Sda<PiBasResHiding<>> sdaPiBas(encIndType);
+    Sda<PiBasResHiding> sdaPiBas(encIndType);
     Sda<LogSrc<PiBasResHiding>> sdaLogSrc(encIndType);
     Sda<LogSrcI<PiBasResHiding>> sdaLogSrcI(encIndType);
 

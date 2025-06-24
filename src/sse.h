@@ -7,7 +7,7 @@
 /* `ISse`                                                                     */
 /******************************************************************************/
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class ISse {
     protected:
         int secParam;
@@ -30,7 +30,7 @@ concept ISse_ = requires(T t) {
 /* `IDsse`                                                                    */
 /******************************************************************************/
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IDbDoc_ DbDoc = Kw, class DbKw = Kw>
 class IDsse : public ISse<DbDoc, DbKw> {
     public:
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;

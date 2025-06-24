@@ -41,6 +41,7 @@ class PiBas : public PiBasBase<DbDoc, DbKw> {
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };
 
+template <>
 class PiBas<Doc, Kw> : public PiBasBase<Doc, Kw> {
     public:
         PiBas() = default;
@@ -87,6 +88,7 @@ class PiBasResHiding : public PiBasResHidingBase<DbDoc, DbKw> {
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };
 
+template <>
 class PiBasResHiding<Doc, Kw> : public PiBasResHidingBase<Doc, Kw> {
     public:
         PiBasResHiding() = default;

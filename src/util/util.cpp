@@ -125,7 +125,7 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
 /* `Doc`                                                                       */
 /******************************************************************************/
 
-Doc::Doc(const std::tuple<Id, Kw, Op>& val) : IMainDbDoc<std::tuple<Id, Kw, Op>>(val) {}
+Doc::Doc(Id id, Kw kw, Op op) : IMainDbDoc<std::tuple {Id, Kw, Op}>(val) {}
 
 std::string Doc::toStr() const {
     // TODO
