@@ -76,7 +76,7 @@ TdagNode<T>::TdagNode(T maxLeafVal) {
         TdagNode<T>* extraParent = new TdagNode<T>(node->left->right, node->right->left);
         node->left->right->extraParent = extraParent;
         node->right->left->extraParent = extraParent;
-        extraParent->setIsExtraParent(true);
+        extraParent->isExtraParent = true;
         // using my method of finding places to add extra nodes, extra nodes themselves must also be checked
         nodes.push_back(extraParent);
     }
@@ -86,26 +86,20 @@ TdagNode<T>::TdagNode(T maxLeafVal) {
 
 template <class T>
 TdagNode<T>::~TdagNode() {
-    std::cout << "deleting tdag with range " << this->range << std::endl;
     // prevent infinite `delete` recursion where extra parents go back to their children
     // which go back to their extra parents and so on
     if (this->isExtraParent) {
         return;
     }
     if (this->left != nullptr) {
-        std::cout << "deleting left" << std::endl;
         delete this->left;
-        std::cout << "deleted left" << std::endl;
         this->left = nullptr;
     }
     if (this->right != nullptr) {
-        std::cout << "deleting right" << std::endl;
         delete this->right;
-        std::cout << "deleted right" << std::endl;
         this->right = nullptr;
     }
     if (this->extraParent != nullptr) {
-        std::cout << "deleting parent" << std::endl;
         // prevent double frees (since two nodes have the same `extraParent`) by setting the other such node's
         // `extraParent` to nullptr, indicating it has been (or is about to be, I guess) freed
         if (this == this->extraParent->left) {
@@ -114,7 +108,6 @@ TdagNode<T>::~TdagNode() {
             this->extraParent->left->extraParent = nullptr;
         }
         delete this->extraParent;
-        std::cout << "deleted parent" << std::endl;
         this->extraParent = nullptr;
     }
 }
@@ -236,11 +229,6 @@ std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) {
 template <class T>
 Range<T> TdagNode<T>::getRange() const {
     return this->range;
-}
-
-template <class T>
-void TdagNode<T>::setIsExtraParent(bool isExtraParent) {
-    this->isExtraParent = isExtraParent;
 }
 
 template <class T>

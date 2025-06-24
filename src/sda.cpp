@@ -102,14 +102,10 @@ std::vector<DbDoc> SdaBase<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(cons
 
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
 void SdaBase<Underly, DbDoc, DbKw>::clear() {
-    std::cout << "num of indexes " << this->underlys.size() << std::endl;
     // apparently vector `clear()` automatically calls the destructor for each element *unless* it is a pointer
     for (Underly* underly : this->underlys) {
-        std::cout << "freeing" << std::endl;
         if (underly != nullptr) {
-            std::cout << "freeing 2" << std::endl;
             delete underly;
-            std::cout << "freeing 3" << std::endl;
             underly = nullptr;
         }
     }

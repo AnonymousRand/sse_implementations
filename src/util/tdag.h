@@ -53,7 +53,6 @@ class TdagNode {
         std::list<Range<T>> getLeafAncestors(const Range<T>& target);
 
         Range<T> getRange() const;
-        void setIsExtraParent(bool isExtraParent);
 
         template <class T2>
         friend std::ostream& operator <<(std::ostream& os, TdagNode<T2>* node);

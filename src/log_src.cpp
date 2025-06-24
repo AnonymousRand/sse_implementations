@@ -18,7 +18,6 @@ void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db
     this->db = db;
     // so we don't leak the memory from the previous TDAG after we call `new` again
     if (this->tdag != nullptr) {
-        std::cout << "call again" << std::endl;
         delete this->tdag;
         this->tdag = nullptr;
     }
@@ -57,7 +56,6 @@ std::vector<DbDoc> LogSrc<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
 void LogSrc<Underly, DbDoc, DbKw>::clear() {
     if (this->tdag != nullptr) {
-        std::cout << "clear" << std::endl;
         delete this->tdag;
         this->tdag = nullptr;
     }
