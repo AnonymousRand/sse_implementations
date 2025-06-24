@@ -115,7 +115,7 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 template <class T>
 class Range : public std::pair<T, T> {
     public:
-        Range();
+        Range() = default;
         Range(const T& start, const T& end);
 
         T size() const;

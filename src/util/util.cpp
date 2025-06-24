@@ -38,9 +38,6 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
 /******************************************************************************/
 
 template <class T>
-Range<T>::Range() : std::pair<T, T> {T(DUMMY), T(DUMMY)} {}
-
-template <class T>
 Range<T>::Range(const T& start, const T& end) : std::pair<T, T> {start, end} {}
 
 template <class T>
