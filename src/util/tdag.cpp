@@ -227,15 +227,10 @@ std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) {
 }
 
 template <class T>
-Range<T> TdagNode<T>::getRange() const {
-    return this->range;
-}
-
-template <class T>
 std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
     std::list<TdagNode<T>*> nodes = node->traverse();
     for (TdagNode<T>* node : nodes) {
-        os << node->getRange() << std::endl;
+        os << node->range << std::endl;
     }
     return os;
 }
