@@ -54,7 +54,7 @@ class SrcIDb1Doc;
 enum class Op {
     INS,
     DEL
-}
+};
 
 // black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
 // i.e. without needing to know what the template param `X` of `IDbDoc` is, unlike `std::derived_from` for example
