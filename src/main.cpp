@@ -54,7 +54,6 @@ void expDebug(ISse<>& sse, int dbSize, Range<Kw> query) {
     sse.clear();
 }
 
-template <class Doc, class Kw>
 void exp1(ISse<>& sse, int dbSize) {
     Db<> db = createDb(dbSize, false);
 
@@ -161,7 +160,7 @@ int main() {
     PiBasResHiding<> piBasResHiding(encIndType);
     LogSrc<PiBas> logSrc(encIndType);
     LogSrcI<PiBas> logSrcI(encIndType);
-    Sda<PiBasResHiding> sdaPiBas(encIndType);
+    Sda<PiBasResHiding<>> sdaPiBas(encIndType);
     Sda<LogSrc<PiBasResHiding>> sdaLogSrc(encIndType);
     Sda<LogSrcI<PiBasResHiding>> sdaLogSrcI(encIndType);
 

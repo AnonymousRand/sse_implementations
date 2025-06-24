@@ -92,10 +92,11 @@ std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
 }
 
 template class Range<Kw>;
-template class Range<IdAlias>;
+// commented out since currently `IdAlias` is the same type as `Kw`
+//template class Range<IdAlias>;
 
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
-template std::ostream& operator <<(std::ostream& os, const Range<IdAlias>& range);
+//template std::ostream& operator <<(std::ostream& os, const Range<IdAlias>& range);
 
 /******************************************************************************/
 /* `IDbDoc`                                                                   */
@@ -125,7 +126,7 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
 /* `Doc`                                                                       */
 /******************************************************************************/
 
-Doc::Doc(Id id, Kw kw, Op op) : IDbDoc<std::tuple {Id, Kw, Op}>(val) {}
+Doc::Doc(Id id, Kw kw, Op op) : IDbDoc<std::tuple<Id, Kw, Op>>(std::tuple {id, kw, op}) {}
 
 std::string Doc::toStr() const {
     std::stringstream ss;
@@ -147,9 +148,9 @@ Doc Doc::fromStr(const std::string& str) {
         std::cerr << "Error: bad string passed to `Doc.fromUstr()`, the world is going to end now" << std::endl;
         exit(EXIT_FAILURE);
     }
-    Id id = Id::fromStr(matches[1].str());
-    Kw kw = std::to_string(matches[2].str());
-    Op op = static_cast<Op>(matches[3].str());
+    Id id = std::stoi(matches[1].str());
+    Kw kw = std::stoi(matches[2].str());
+    Op op = static_cast<Op>(matches[3].str()[0]);
     return Doc {id, kw, op};
 }
 
@@ -273,7 +274,6 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 }
 
 template void shuffleInd(Ind<Kw, Doc>& ind);
-// commented out since currently `IdAlias` is the same type as `Kw`
 //template void shuffleInd(Ind<IdAlias, Doc>& ind);
 template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
 
