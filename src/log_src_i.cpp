@@ -17,6 +17,14 @@ LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
 LogSrcI<Underly, DbDoc, DbKw>::~LogSrcI() {
+    this->clear();
+}
+
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+    this->db = db;
+    this->_isEmpty = this->db.empty();
+    // so we don't leak the memory from the previous TDAGs after we call `new` again
     if (this->tdag1 != nullptr) {
         delete this->tdag1;
         this->tdag1 = nullptr;
@@ -25,12 +33,6 @@ LogSrcI<Underly, DbDoc, DbKw>::~LogSrcI() {
         delete this->tdag2;
         this->tdag2 = nullptr;
     }
-}
-
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
-    this->db = db;
-    this->_isEmpty = this->db.empty();
 
     ////////////////////////////// build index 2 ///////////////////////////////
 
@@ -162,6 +164,21 @@ std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(cons
         return std::vector<DbDoc> {};
     }
     return this->underly2.searchWithoutHandlingDels(src2);
+}
+
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+void LogSrcI<Underly, DbDoc, DbKw>::clear() {
+    if (this->tdag1 != nullptr) {
+        delete this->tdag1;
+        this->tdag1 = nullptr;
+    }
+    if (this->tdag2 != nullptr) {
+        delete this->tdag2;
+        this->tdag2 = nullptr;
+    }
+    this->underly1.clear();
+    this->underly2.clear();
+    this->_isEmpty = true;
 }
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>

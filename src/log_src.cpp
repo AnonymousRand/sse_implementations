@@ -16,33 +16,28 @@ LogSrc<Underly, DbDoc, DbKw>::~LogSrc() {
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
 void LogSrc<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->db = db;
-
-    // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
-    DbKw maxDbKw = findMaxDbKw(db);
     // so we don't leak the memory from the previous TDAG after we call `new` again
-    // TODO apply to log-src-i as well; also can change destructor to clear??
     if (this->tdag != nullptr) {
         std::cout << "call again" << std::endl;
         delete this->tdag;
         this->tdag = nullptr;
     }
 
-    if (!db.empty()) {
-        this->tdag = new TdagNode<DbKw>(maxDbKw);
-        // replicate every document to all keyword ranges/TDAG nodes that cover it
-        Db<DbDoc, DbKw> dbWithReplications;
-        for (DbEntry<DbDoc, DbKw> dbEntry : db) {
-            DbDoc dbDoc = dbEntry.first;
-            Range<DbKw> dbKwRange = dbEntry.second;
-            std::list<Range<DbKw>> ancestors = this->tdag->getLeafAncestors(dbKwRange);
-            for (Range<DbKw> ancestor : ancestors) {
-                dbWithReplications.push_back(std::pair {dbDoc, ancestor});
-            }
+    // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
+    DbKw maxDbKw = findMaxDbKw(db);
+    this->tdag = new TdagNode<DbKw>(maxDbKw);
+    // replicate every document to all keyword ranges/TDAG nodes that cover it
+    Db<DbDoc, DbKw> dbWithReplications;
+    for (DbEntry<DbDoc, DbKw> dbEntry : db) {
+        DbDoc dbDoc = dbEntry.first;
+        Range<DbKw> dbKwRange = dbEntry.second;
+        std::list<Range<DbKw>> ancestors = this->tdag->getLeafAncestors(dbKwRange);
+        for (Range<DbKw> ancestor : ancestors) {
+            dbWithReplications.push_back(std::pair {dbDoc, ancestor});
         }
-        this->underly.setup(secParam, dbWithReplications);
-    } else {
-        this->underly.setup(secParam, Db<DbDoc, DbKw> {});
     }
+
+    this->underly.setup(secParam, dbWithReplications);
 }
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
@@ -57,6 +52,16 @@ std::vector<DbDoc> LogSrc<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
 std::vector<DbDoc> LogSrc<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
     return this->underly.searchWithoutHandlingDels(query);
+}
+
+template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
+void LogSrc<Underly, DbDoc, DbKw>::clear() {
+    if (this->tdag != nullptr) {
+        std::cout << "clear" << std::endl;
+        delete this->tdag;
+        this->tdag = nullptr;
+    }
+    this->underly.clear();
 }
 
 template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>

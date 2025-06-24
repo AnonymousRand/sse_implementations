@@ -39,8 +39,6 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->db = db;
     this->_isEmpty = db.empty();
     if (db.empty()) {
-        // clear memory
-        this->encInd->reset();
         return;
     }
 
@@ -141,6 +139,14 @@ std::pair<ustring, ustring> PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<Db
     ustring subkey1 = K.substr(0, subkeyLen);
     ustring subkey2 = K.substr(subkeyLen, subkeyLen);
     return std::pair {subkey1, subkey2};
+}
+
+template <IDbDoc_ DbDoc, class DbKw>
+void PiBasBase<DbDoc, DbKw>::clear() {
+    if (this->encInd != nullptr) {
+        this->encInd->reset();
+    }
+    this->_isEmpty = true;
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
@@ -294,6 +300,14 @@ std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutHandlingDels(co
 template <IDbDoc_ DbDoc, class DbKw>
 ustring PiBasResHidingBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     return prf(this->key1, query.toUstr());
+}
+
+template <IDbDoc_ DbDoc, class DbKw>
+void PiBasResHidingBase<DbDoc, DbKw>::clear() {
+    if (this->encInd != nullptr) {
+        this->encInd->reset();
+    }
+    this->_isEmpty = true;
 }
 
 template <IDbDoc_ DbDoc, class DbKw>

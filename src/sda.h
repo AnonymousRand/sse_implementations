@@ -20,6 +20,8 @@ class SdaBase : public IDsse<DbDoc, DbKw> {
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         void update(const DbEntry<DbDoc, DbKw>& newEntry) override;
+
+        void clear() override;
         void setEncIndType(EncIndType encIndType) override;
 };
 

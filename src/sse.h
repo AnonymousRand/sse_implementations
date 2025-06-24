@@ -16,7 +16,8 @@ class ISse {
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
 
-        virtual void clear();
+        // `clear()` should free memory of all unneeded instance variables
+        virtual void clear() = 0;
         virtual void setEncIndType(EncIndType encIndType) = 0;
 };
 

@@ -30,6 +30,7 @@ class LogSrcI : public ISdaUnderly<DbDoc, DbKw> {
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 
         std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const override;
+        void clear() override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
         void setEncIndType(EncIndType encIndType) override;
