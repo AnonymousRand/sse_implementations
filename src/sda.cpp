@@ -15,18 +15,26 @@ Sda<Underly, IdOp, DbKw>::Sda(EncIndType encIndType) : SdaBase<Underly, IdOp, Db
 
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
 SdaBase<Underly, DbDoc, DbKw>::~SdaBase() {
+    // apparently list `clear()` automatically calls the destructor for each element unless said element is a pointer
     for (Underly* underly : this->underlys) {
         if (underly != nullptr) {
             delete underly;
             underly = nullptr;
         }
     }
+    this->underlys.clear();
 }
 
 template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
 void SdaBase<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     if (db.empty()) {
+        for (Underly* underly : this->underlys) {
+            if (underly != nullptr) {
+                delete underly;
+                underly = nullptr;
+            }
+        }
         this->underlys.clear();
         return;
     }
