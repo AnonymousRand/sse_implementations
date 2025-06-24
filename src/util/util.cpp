@@ -125,10 +125,13 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
 /* `Doc`                                                                       */
 /******************************************************************************/
 
-Doc::Doc(Id id, Kw kw, Op op) : IMainDbDoc<std::tuple {Id, Kw, Op}>(val) {}
+Doc::Doc(Id id, Kw kw, Op op) : IDbDoc<std::tuple {Id, Kw, Op}>(val) {}
 
 std::string Doc::toStr() const {
-    // TODO
+    std::stringstream ss;
+    ss << "(" << std::get<0>(this->val) << "," << std::get<1>(this->val) << ","
+       << static_cast<char>(std::get<2>(this->val)) << ")";
+    return ss.str();
 }
 
 Doc Doc::fromUstr(const ustring& ustr) {
@@ -137,7 +140,17 @@ Doc Doc::fromUstr(const ustring& ustr) {
 }
 
 Doc Doc::fromStr(const std::string& str) {
-    // TODO
+    // TODO compile regexes
+    std::regex re("\\((-?[0-9]+),([0-9]+),([I|D])\\)");
+    std::smatch matches;
+    if (!std::regex_search(str, matches, re) || matches.size() != 4) {
+        std::cerr << "Error: bad string passed to `Doc.fromUstr()`, the world is going to end now" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    Id id = Id::fromStr(matches[1].str());
+    Kw kw = std::to_string(matches[2].str());
+    Op op = static_cast<Op>(matches[3].str());
+    return Doc {id, kw, op};
 }
 
 Id Doc::getId() const {
@@ -153,10 +166,14 @@ Op Doc::getOp() const {
 }
 
 bool operator ==(const Doc& doc1, const Doc& doc2) {
-    for (int i = 0; i < 3; i++) {
-        if (std::get<i>(doc1.val) != std::get<i>(doc2.val)) {
+    if (std::get<0>(doc1.val) != std::get<0>(doc2.val)) {
             return false;
-        }
+    }
+    if (std::get<1>(doc1.val) != std::get<1>(doc2.val)) {
+            return false;
+    }
+    if (std::get<2>(doc1.val) != std::get<2>(doc2.val)) {
+            return false;
     }
     return true;
 }
@@ -186,7 +203,7 @@ std::vector<Doc> removeDeletedDocs(const std::vector<Doc>& docs) {
 }
 
 template class IDbDoc<std::tuple<Id, Kw, Op>>;
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Id, Kw, Op>>& iDbDoc);
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>>& iDbDoc);
 
 /******************************************************************************/
 /* `SrcIDb1Doc`                                                               */
@@ -197,10 +214,10 @@ SrcIDb1Doc::SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRa
 
 SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
-    std::regex re("\\((.*?),(.*?)\\)");
+    std::regex re("\\(([0-9]+-[0-9]+),([0-9]+-[0-9]+)\\)");
     std::smatch matches;
     if (!std::regex_search(str, matches, re) || matches.size() != 3) {
-        std::cerr << "Error: bad string passed to `SrcIDb1Doc.fromUstr()`, the world is going to end" << std::endl;
+        std::cerr << "Error: bad string passed to `SrcIDb1Doc.fromUstr()`, the world is going to end now" << std::endl;
         exit(EXIT_FAILURE);
     }
     Range<Kw> kwRange = Range<Kw>::fromStr(matches[1].str());
@@ -256,11 +273,12 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 }
 
 template void shuffleInd(Ind<Kw, Doc>& ind);
-template void shuffleInd(Ind<IdAlias, Doc>& ind);
+// commented out since currently `IdAlias` is the same type as `Kw`
+//template void shuffleInd(Ind<IdAlias, Doc>& ind);
 template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
 
 template Kw findMaxDbKw(const Db<Doc, Kw>& db);
 
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);
-template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc, IdAlias>& db);
+//template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc, IdAlias>& db);

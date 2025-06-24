@@ -53,9 +53,9 @@ template <class T>
 class IDbDoc;
 class Doc;
 class SrcIDb1Doc;
-enum class Op {
-    INS,
-    DEL
+enum class Op : char {
+    INS = 'I',
+    DEL = 'D'
 };
 
 // black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param

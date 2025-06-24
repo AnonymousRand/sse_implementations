@@ -325,4 +325,4 @@ void PiBasResHidingBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
 
 template class PiBasResHiding<Doc, Kw>;        // PiBas
 template class PiBasResHiding<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
-template class PiBasResHiding<Doc, IdAlias>;   // Log-SRC-i index 2
+//template class PiBasResHiding<Doc, IdAlias>;   // Log-SRC-i index 2

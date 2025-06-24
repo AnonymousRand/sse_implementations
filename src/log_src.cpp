@@ -23,7 +23,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     }
 
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
-    Kw maxKw = findMaxKw(db);
+    Kw maxKw = findMaxDbKw(db);
     this->tdag = new TdagNode<Kw>(maxKw);
     // replicate every document to all keyword ranges/TDAG nodes that cover it
     Db<Doc, Kw> dbWithReplications;

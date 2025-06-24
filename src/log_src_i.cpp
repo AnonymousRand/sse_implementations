@@ -82,7 +82,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     ////////////////////////////// build index 1 ///////////////////////////////
 
     // build TDAG 1 over keywords
-    Kw maxKw = findMaxKw(db);
+    Kw maxKw = findMaxDbKw(db);
     this->tdag1 = new TdagNode<Kw>(maxKw);
 
     // assign id aliases/TDAG 2 nodes to documents based on index 2
