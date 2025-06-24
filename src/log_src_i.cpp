@@ -3,25 +3,24 @@
 #include "log_src_i.h"
 #include "pi_bas.h"
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(EncIndType encIndType) :
-        LogSrcI(Underly<SrcIDb1Doc<DbKw>, DbKw>(), Underly<DbDoc, Id>(), encIndType) {}
+// TODO check if can template <template <class ...> ISse_ Underly>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+LogSrcI<Underly>::LogSrcI(EncIndType encIndType) : LogSrcI(Underly<SrcIDb1Doc, Kw>(), Underly<Doc, Id>(), encIndType) {}
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-LogSrcI<Underly, DbDoc, DbKw>::LogSrcI(
-    const Underly<SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2,
-    EncIndType encIndType
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+LogSrcI<Underly>::LogSrcI(
+    const Underly<SrcIDb1Doc, Kw>& underly1, const Underly<Doc, Id>& underly2, EncIndType encIndType
 ) : underly1(underly1), underly2(underly2) {
     this->setEncIndType(encIndType);
 }
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-LogSrcI<Underly, DbDoc, DbKw>::~LogSrcI() {
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+LogSrcI<Underly>::~LogSrcI() {
     this->clear();
 }
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->db = db;
     this->_isEmpty = this->db.empty();
     // so we don't leak the memory from the previous TDAGs after we call `new` again
@@ -37,25 +36,26 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     ////////////////////////////// build index 2 ///////////////////////////////
 
     // sort documents by keyword to assign index 2 nodes/"identifier aliases"
-    auto sortByKw = [](const DbEntry<DbDoc, DbKw>& dbEntry1, const DbEntry<DbDoc, DbKw>& dbEntry2) {
-        return dbEntry1.second < dbEntry2.second;
+    auto sortByKw = [](const DbEntry<Doc, Kw>& dbEntry1, const DbEntry<Doc, Kw>& dbEntry2) {
+        return dbEntry1.first.getKw() < dbEntry2.first.getKw();
     };
 
-    Db<DbDoc, DbKw> dbSorted = db;
+    Db<Doc, Kw> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
-    Db<DbDoc, IdAlias> db2;
+    Db<Doc, IdAlias> db2;
     std::unordered_map<Id, IdAlias> idAliasMapping; // for quick reference when buiding index 1
     for (int i = 0; i < dbSorted.size(); i++) {
-        DbEntry<DbDoc, DbKw> dbEntry = dbSorted[i];
-        DbEntry<DbDoc, IdAlias> newDbEntry = DbEntry {dbEntry.first, Range<IdAlias> {i, i}};
+        DbEntry<Doc, Kw> dbEntry = dbSorted[i];
+        Doc doc = dbEntry.first;
+        DbEntry<Doc, IdAlias> newDbEntry = DbEntry {doc, Range<IdAlias> {i, i}};
         db2.push_back(newDbEntry);
-        Id id = dbEntry.first.getId();
+        Id id = doc.getId();
         idAliasMapping[id] = IdAlias(i);
     }
 
     // build TDAG 2 over id aliases
     IdAlias maxIdAlias = IdAlias(0);
-    for (DbEntry<DbDoc, IdAlias> dbEntry : db2) {
+    for (DbEntry<Doc, IdAlias> dbEntry : db2) {
         IdAlias idAlias = dbEntry.second.first;
         if (idAlias > maxIdAlias) {
             maxIdAlias = idAlias;
@@ -66,8 +66,8 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     int stop = db2.size();
     for (int i = 0; i < stop; i++) {
-        DbEntry<DbDoc, IdAlias> dbEntry = db2[i];
-        DbDoc dbDoc = dbEntry.first;
+        DbEntry<Doc, IdAlias> dbEntry = db2[i];
+        Doc doc = dbEntry.first;
         Range<IdAlias> idAliasRange = dbEntry.second;
         std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
         for (Range<IdAlias> ancestor : ancestors) {
@@ -75,39 +75,39 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
             if (ancestor == idAliasRange) {
                 continue;
             }
-            db2.push_back(std::pair {dbDoc, ancestor});
+            db2.push_back(std::pair {doc, ancestor});
         }
     }
 
     ////////////////////////////// build index 1 ///////////////////////////////
 
     // build TDAG 1 over keywords
-    DbKw maxDbKw = findMaxDbKw(db);
-    this->tdag1 = new TdagNode<DbKw>(maxDbKw);
+    Kw maxKw = findMaxKw(db);
+    this->tdag1 = new TdagNode<Kw>(maxKw);
 
     // assign id aliases/TDAG 2 nodes to documents based on index 2
-    Db<SrcIDb1Doc<DbKw>, DbKw> db1;
-    for (DbEntry<DbDoc, DbKw> dbEntry : db) {
-        DbDoc dbDoc = dbEntry.first;
-        Range<DbKw> dbKwRange = dbEntry.second;
-        IdAlias idAlias = idAliasMapping[dbDoc.getId()];
-        SrcIDb1Doc<DbKw> pair {dbKwRange, Range<IdAlias> {idAlias, idAlias}};
-        DbEntry<SrcIDb1Doc<DbKw>, DbKw> newDbEntry = std::pair {pair, dbKwRange}; // `std::pair` works, not `DbEntry`
+    Db<SrcIDb1Doc, Kw> db1;
+    for (DbEntry<Doc, Kw> dbEntry : db) {
+        Doc doc = dbEntry.first;
+        Range<Kw> kwRange = dbEntry.second;
+        IdAlias idAlias = idAliasMapping[doc.getId()];
+        SrcIDb1Doc newDoc {kwRange, Range<IdAlias> {idAlias, idAlias}};
+        DbEntry<SrcIDb1Doc, Kw> newDbEntry = std::pair {newDoc, kwRange}; // `std::pair` works, but not `DbEntry` TODO
         db1.push_back(newDbEntry);
     }
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();
     for (int i = 0; i < stop; i++) {
-        DbEntry<SrcIDb1Doc<DbKw>, DbKw> dbEntry = db1[i];
-        SrcIDb1Doc<DbKw> dbDoc = dbEntry.first;
-        Range<DbKw> dbKwRange = dbEntry.second;
-        std::list<Range<DbKw>> ancestors = this->tdag1->getLeafAncestors(dbKwRange);
-        for (Range<DbKw> ancestor : ancestors) {
-            if (ancestor == dbKwRange) {
+        DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
+        SrcIDb1Doc doc = dbEntry.first;
+        Range<Kw> kwRange = dbEntry.second;
+        std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
+        for (Range<Kw> ancestor : ancestors) {
+            if (ancestor == kwRange) {
                 continue;
             }
-            db1.push_back(std::pair {dbDoc, ancestor});
+            db1.push_back(std::pair {doc, ancestor});
         }
     }
 
@@ -115,23 +115,23 @@ void LogSrcI<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& d
     this->underly2.setup(secParam, db2);
 }
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-Range<IdAlias> LogSrcI<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
     // query 1
 
-    Range<DbKw> src1 = this->tdag1->findSrc(query);
-    if (src1 == DUMMY_RANGE<DbKw>()) { 
+    Range<Kw> src1 = this->tdag1->findSrc(query);
+    if (src1 == DUMMY_RANGE<Kw>()) { 
         return DUMMY_RANGE<Id>();
     }
-    std::vector<SrcIDb1Doc<DbKw>> choices = this->underly1.search(src1);
+    std::vector<SrcIDb1Doc> choices = this->underly1.search(src1);
 
     // query 2
 
     IdAlias minIdAlias = DUMMY;
     IdAlias maxIdAlias = DUMMY;
     // filter out unnecessary choices and merge remaining ones into a single id range
-    for (SrcIDb1Doc<DbKw> choice : choices) {
-        Range<DbKw> choiceKwRange = choice.get().first;
+    for (SrcIDb1Doc choice : choices) {
+        Range<Kw> choiceKwRange = choice.get().first;
         if (query.contains(choiceKwRange)) {
             Range<IdAlias> choiceIdAliasRange = choice.get().second;
             if (choiceIdAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
@@ -148,26 +148,26 @@ Range<IdAlias> LogSrcI<Underly, DbDoc, DbKw>::searchBase(const Range<DbKw>& quer
     return src2;
 }
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    Range<IdAlias> src2 = this->searchBase(query);
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query) const {
+    Range<IdAlias> src2 = this->search1(query);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
-        return std::vector<DbDoc> {};
+        return std::vector<Doc> {};
     }
     return this->underly2.search(src2);
 }
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-std::vector<DbDoc> LogSrcI<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
-    Range<IdAlias> src2 = this->searchBase(query);
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+std::vector<Doc> LogSrcI<Underly>::searchWithoutRemovingDels(const Range<Kw>& query) const {
+    Range<IdAlias> src2 = this->search1(query);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
-        return std::vector<DbDoc> {};
+        return std::vector<Doc> {};
     }
-    return this->underly2.searchWithoutHandlingDels(src2);
+    return this->underly2.searchWithoutRemovingDels(src2);
 }
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-void LogSrcI<Underly, DbDoc, DbKw>::clear() {
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+void LogSrcI<Underly>::clear() {
     if (this->tdag1 != nullptr) {
         delete this->tdag1;
         this->tdag1 = nullptr;
@@ -182,24 +182,21 @@ void LogSrcI<Underly, DbDoc, DbKw>::clear() {
     this->_isEmpty = true;
 }
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-Db<DbDoc, DbKw> LogSrcI<Underly, DbDoc, DbKw>::getDb() const {
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+Db<Doc, Kw> LogSrcI<Underly>::getDb() const {
     return this->db;
 }
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-bool LogSrcI<Underly, DbDoc, DbKw>::isEmpty() const {
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+bool LogSrcI<Underly>::isEmpty() const {
     return this->_isEmpty;
 }
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISse_<Underly<DbDoc, DbKw>>
-void LogSrcI<Underly, DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+void LogSrcI<Underly>::setEncIndType(EncIndType encIndType) {
     this->underly1.setEncIndType(encIndType);
     this->underly2.setEncIndType(encIndType);
 }
 
-template class LogSrcI<PiBas, Id, Kw>;
-template class LogSrcI<PiBas, IdOp, Kw>;
-
-template class LogSrcI<PiBasResHiding, Id, Kw>;
-template class LogSrcI<PiBasResHiding, IdOp, Kw>;
+template class LogSrcI<PiBas>;
+template class LogSrcI<PiBasResHiding>;

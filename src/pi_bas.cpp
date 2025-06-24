@@ -15,8 +15,7 @@ PiBasBase<DbDoc, DbKw>::PiBasBase(EncIndType encIndType) {
 template <IDbDoc_ DbDoc, class DbKw>
 PiBas<DbDoc, DbKw>::PiBas(EncIndType encIndType) : PiBasBase<DbDoc, DbKw>(encIndType) {}
 
-template <class DbKw>
-PiBas<IdOp, DbKw>::PiBas(EncIndType encIndType) : PiBasBase<IdOp, DbKw>(encIndType) {}
+PiBas<Doc, Kw>::PiBas(EncIndType encIndType) : PiBasBase<Doc, Kw>(encIndType) {}
 
 template <IDbDoc_ DbDoc, class DbKw>
 PiBasBase<DbDoc, DbKw>::~PiBasBase() {
@@ -69,8 +68,8 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         
         unsigned int counter = 0;
         // for each id in DB(w)
-        auto itIdOpsWithSameKw = ind.find(dbKwRange);
-        for (DbDoc dbDoc : itIdOpsWithSameKw->second) {
+        auto itDocsWithSameKw = ind.find(dbKwRange);
+        for (DbDoc dbDoc : itDocsWithSameKw->second) {
             // l <- F(K_1, c); d <- Enc(K_2, id); c++
             ustring label = prf(subkeys.first, toUstr(counter));
             ustring iv = genIv(IV_LEN);
@@ -87,17 +86,16 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchWithoutHandlingDels(query);
+    return this->searchWithoutRemovingDels(query);
 }
 
-template <class DbKw>
-std::vector<IdOp> PiBas<IdOp, DbKw>::search(const Range<DbKw>& query) const {
-    std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
-    return removeDeletedIdOps(results);
+std::vector<Doc> PiBas<Doc, Kw>::search(const Range<Kw>& query) const {
+    std::vector<Doc> results = this->searchWithoutRemovingDels(query);
+    return removeDeletedDocs(results);
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
+std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchWithoutRemovingDels(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
 
     // naive range search: just individually query every point in range
@@ -172,16 +170,9 @@ void PiBasBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
     }
 }
 
-// PiBas
-template class PiBas<Id, Kw>;
-template class PiBas<IdOp, Kw>;
-
-// Log-SRC-i index 1
-template class PiBas<SrcIDb1Doc<Kw>, Kw>;
-
-// Log-SRC-i index 2
-template class PiBas<Id, IdAlias>;
-template class PiBas<IdOp, IdAlias>;
+template class PiBas<Doc, Kw>;        // PiBas
+template class PiBas<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
+template class PiBas<Doc, IdAlias>;   // Log-SRC-i index 2
 
 /******************************************************************************/
 /* PiBas (Result-Hiding)                                                      */
@@ -195,8 +186,7 @@ PiBasResHidingBase<DbDoc, DbKw>::PiBasResHidingBase(EncIndType encIndType) {
 template <IDbDoc_ DbDoc, class DbKw>
 PiBasResHiding<DbDoc, DbKw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidingBase<DbDoc, DbKw>(encIndType) {}
 
-template <class DbKw>
-PiBasResHiding<IdOp, DbKw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidingBase<IdOp, DbKw>(encIndType) {}
+PiBasResHiding<Doc, Kw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidingBase<Doc, Kw>(encIndType) {}
 
 template <IDbDoc_ DbDoc, class DbKw>
 PiBasResHidingBase<DbDoc, DbKw>::~PiBasResHidingBase() {
@@ -244,8 +234,8 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
         ustring prfOutput = this->genQueryToken(dbKwRange);
         
         unsigned int counter = 0;
-        auto itIdOpsWithSameKw = ind.find(dbKwRange);
-        for (DbDoc dbDoc : itIdOpsWithSameKw->second) {
+        auto itDocsWithSameKw = ind.find(dbKwRange);
+        for (DbDoc dbDoc : itDocsWithSameKw->second) {
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, prfOutput + toUstr(counter));
             ustring iv = genIv(IV_LEN);
             ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, this->key2, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
@@ -258,17 +248,16 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
 
 template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchWithoutHandlingDels(query);
+    return this->searchWithoutRemovingDels(query);
 }
 
-template <class DbKw>
-std::vector<IdOp> PiBasResHiding<IdOp, DbKw>::search(const Range<DbKw>& query) const {
-    std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
-    return removeDeletedIdOps(results);
+std::vector<Doc> PiBasResHiding<Doc, Kw>::search(const Range<Kw>& query) const {
+    std::vector<Doc> results = this->searchWithoutRemovingDels(query);
+    return removeDeletedDocs(results);
 }
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
+std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutRemovingDels(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
     for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
         ustring queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
@@ -334,13 +323,6 @@ void PiBasResHidingBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
     }
 }
 
-// PiBas
-template class PiBasResHiding<Id, Kw>;
-template class PiBasResHiding<IdOp, Kw>;
-
-// Log-SRC-i index 1
-template class PiBasResHiding<SrcIDb1Doc<Kw>, Kw>;
-
-// Log-SRC-i index 2
-template class PiBasResHiding<Id, IdAlias>;
-template class PiBasResHiding<IdOp, IdAlias>;
+template class PiBasResHiding<Doc, Kw>;        // PiBas
+template class PiBasResHiding<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
+template class PiBasResHiding<Doc, IdAlias>;   // Log-SRC-i index 2

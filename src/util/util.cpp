@@ -117,29 +117,18 @@ ustring IDbDoc<T>::toUstr() const {
 }
 
 template <class T>
-std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iEncryptable) {
-    return os << iEncryptable.toStr();
+std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
+    return os << iDbDoc.toStr();
 }
-
-template class IDbDoc<int>;
-template class IDbDoc<std::pair<Id, Op>>;
-template class IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>;
-
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<Id>& iEncryptable);
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Id, Op>>& iEncryptable);
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>& iEncryptable);
-
-template class IMainDbDoc<int>;
-template class IMainDbDoc<std::pair<Id, Op>>;
 
 /******************************************************************************/
 /* `Doc`                                                                       */
 /******************************************************************************/
 
-Doc::Doc(int val) : IMainDbDoc<int>(val) {}
+Doc::Doc(const std::tuple<Id, Kw, Op>& val) : IMainDbDoc<std::tuple<Id, Kw, Op>>(val) {}
 
 std::string Doc::toStr() const {
-    return std::to_string(this->val);
+    // TODO
 }
 
 Doc Doc::fromUstr(const ustring& ustr) {
@@ -148,27 +137,65 @@ Doc Doc::fromUstr(const ustring& ustr) {
 }
 
 Doc Doc::fromStr(const std::string& str) {
-    return Doc(std::stoi(str));
+    // TODO
 }
 
-Doc Doc::getDoc() const {
-    return this->val;
+Id Doc::getId() const {
+    return std::get<0>(this->val);
+}
+
+Kw Doc::getKw() const {
+    return std::get<1>(this->val);
+}
+
+Op Doc::getOp() const {
+    return std::get<2>(this->val);
 }
 
 bool operator ==(const Doc& doc1, const Doc& doc2) {
-    return doc1.val == doc2.val;
+    for (int i = 0; i < 3; i++) {
+        if (std::get<i>(doc1.val) != std::get<i>(doc2.val)) {
+            return false;
+        }
+    }
+    return true;
 }
+
+std::vector<Doc> removeDeletedDocs(const std::vector<Doc>& docs) {
+    std::vector<Doc> newDocs;
+    std::unordered_set<Id> deleted;
+
+    // find all deletion tuples
+    for (Doc doc : docs) {
+        Id id = doc.getId();
+        Op op = doc.getOp();
+        if (op == Op::DEL) {
+            deleted.insert(id);
+        }
+    }
+    // copy over vector without deleted docs
+    for (Doc doc : docs) {
+        Id id = doc.getId();
+        Op op = doc.getOp();
+        if (op == Op::INS && deleted.count(id) == 0) {
+            newDocs.push_back(doc);
+        }
+    }
+
+    return newDocs;
+}
+
+template class IDbDoc<std::tuple<Id, Kw, Op>>;
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Id, Kw, Op>>& iDbDoc);
 
 /******************************************************************************/
 /* `SrcIDb1Doc`                                                               */
 /******************************************************************************/
 
-template <class DbKw>
-SrcIDb1Doc<DbKw>::SrcIDb1Doc(const Range<DbKw>& dbKwRange, const Range<IdAlias>& idAliasRange)
-        : IDbDoc<std::pair<Range<DbKw>, Range<IdAlias>>>(std::pair {dbKwRange, idAliasRange}) {}
+SrcIDb1Doc::SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange) :
+        IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>(std::pair {kwRange, idAliasRange}) {}
 
-template <class DbKw>
-SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::fromUstr(const ustring& ustr) {
+SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::regex re("\\((.*?),(.*?)\\)");
     std::smatch matches;
@@ -178,31 +205,31 @@ SrcIDb1Doc<DbKw> SrcIDb1Doc<DbKw>::fromUstr(const ustring& ustr) {
     }
     Range<Kw> kwRange = Range<Kw>::fromStr(matches[1].str());
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
-    return SrcIDb1Doc<DbKw> {kwRange, idAliasRange};
+    return SrcIDb1Doc {kwRange, idAliasRange};
 }
 
-template <class DbKw>
-std::string SrcIDb1Doc<DbKw>::toStr() const {
+std::string SrcIDb1Doc::toStr() const {
     std::stringstream ss;
     ss << "(" << this->val.first << "," << this->val.second << ")";
     return ss.str();
 }
 
-template class SrcIDb1Doc<Kw>;
+template class IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>;
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>& iDbDoc);
 
 /******************************************************************************/
 /* SSE Utils                                                                  */
 /******************************************************************************/
 
-template <class DbKw, class DbDoc>
-void shuffleInd(Ind<DbKw, DbDoc>& ind) {
+template <class IndK, IDbDoc_ DbDoc>
+void shuffleInd(Ind<IndK, DbDoc>& ind) {
     for (std::pair pair : ind) {
         std::vector<DbDoc> dbDocs = pair.second;
         std::shuffle(dbDocs.begin(), dbDocs.end(), RNG);
     }
 }
 
-template <class DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db) {
     DbKw maxDbKw = DbKw(DB_KW_MIN);
     if (!db.empty()) {
@@ -218,7 +245,7 @@ DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db) {
     return maxDbKw;
 }
 
-template <class DbDoc, class DbKw>
+template <IDbDoc_ DbDoc, class DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
     std::unordered_set<Range<DbKw>> uniqDbKwRanges;
     for (DbEntry<DbDoc, DbKw> entry : db) {
@@ -228,17 +255,12 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
     return uniqDbKwRanges;
 }
 
-template void shuffleInd(Ind<Kw, Id>& ind);
-template void shuffleInd(Ind<Kw, IdOp>& ind);
-template void shuffleInd(Ind<IdAlias, Id>& ind);
-template void shuffleInd(Ind<IdAlias, IdOp>& ind);
-template void shuffleInd(Ind<Kw, SrcIDb1Doc<Kw>>& ind);
+template void shuffleInd(Ind<Kw, Doc>& ind);
+template void shuffleInd(Ind<IdAlias, Doc>& ind);
+template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
 
-template Kw findMaxDbKw(const Db<Id, Kw>& db);
-template Kw findMaxDbKw(const Db<IdOp, Kw>& db);
+template Kw findMaxDbKw(const Db<Doc, Kw>& db);
 
-template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Id, Kw>& db);
-template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<IdOp, Kw>& db);
-template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc<Kw>, Kw>& db);
-template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Id, IdAlias>& db);
-template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<IdOp, IdAlias>& db);
+template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc, Kw>& db);
+template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);
+template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc, IdAlias>& db);

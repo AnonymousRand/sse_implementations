@@ -24,15 +24,15 @@ class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
-        std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const override;
+        std::vector<DbDoc> searchWithoutRemovingDels(const Range<DbKw>& query) const override;
         void clear() override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
         void setEncIndType(EncIndType encIndType) override;
 };
 
-// this is literally just so I can partially specialize `search()`'s template for when `DbDoc` is `IdOp`
-template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
+// this is literally just so I can partially specialize `search()`'s template for when `DbDoc` is `Doc`
+template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBas : public PiBasBase<DbDoc, DbKw> {
     public:
         PiBas() = default;
@@ -41,20 +41,19 @@ class PiBas : public PiBasBase<DbDoc, DbKw> {
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };
 
-template <class DbKw>
-class PiBas<IdOp, DbKw> : public PiBasBase<IdOp, DbKw> {
+class PiBas<Doc, Kw> : public PiBasBase<Doc, Kw> {
     public:
         PiBas() = default;
         PiBas(EncIndType encIndType);
 
-        std::vector<IdOp> search(const Range<DbKw>& query) const;
+        std::vector<Doc> search(const Range<Kw>& query) const;
 };
 
 /******************************************************************************/
 /* PiBas (Result-Hiding)                                                      */
 /******************************************************************************/
 
-template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
+template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBasResHidingBase : public ISdaUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
@@ -72,14 +71,14 @@ class PiBasResHidingBase : public ISdaUnderly<DbDoc, DbKw> {
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
-        std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const override;
+        std::vector<DbDoc> searchWithoutRemovingDels(const Range<DbKw>& query) const override;
         void clear() override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
         void setEncIndType(EncIndType encIndType) override;
 };
 
-template <IDbDoc_ DbDoc = IdOp, class DbKw = Kw>
+template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBasResHiding : public PiBasResHidingBase<DbDoc, DbKw> {
     public:
         PiBasResHiding() = default;
@@ -88,11 +87,10 @@ class PiBasResHiding : public PiBasResHidingBase<DbDoc, DbKw> {
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };
 
-template <class DbKw>
-class PiBasResHiding<IdOp, DbKw> : public PiBasResHidingBase<IdOp, DbKw> {
+class PiBasResHiding<Doc, Kw> : public PiBasResHidingBase<Doc, Kw> {
     public:
         PiBasResHiding() = default;
         PiBasResHiding(EncIndType encIndType);
 
-        std::vector<IdOp> search(const Range<DbKw>& query) const override;
+        std::vector<Doc> search(const Range<Kw>& query) const override;
 };

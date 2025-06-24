@@ -4,34 +4,30 @@
 #include "sse.h"
 #include "util/tdag.h"
 
-template <template <class ...> class Underly, IMainDbDoc_ DbDoc = IdOp, class DbKw = Kw>
-        requires ISse_<Underly<DbDoc, DbKw>>
-class LogSrcI : public ISdaUnderly<DbDoc, DbKw> {
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+class LogSrcI : public ISdaUnderly<Doc, Kw> {
     private:
-        Underly<SrcIDb1Doc<DbKw>, DbKw> underly1;
-        Underly<DbDoc, IdAlias> underly2;
-        TdagNode<DbKw>* tdag1 = nullptr;
+        Underly<SrcIDb1Doc, Kw> underly1;
+        Underly<Doc, IdAlias> underly2;
+        TdagNode<Kw>* tdag1 = nullptr;
         TdagNode<IdAlias>* tdag2 = nullptr;
-        Db<DbDoc, DbKw> db; // store since neither underlying instance contains the original DB
+        Db<Doc, Kw> db; // store since neither underlying instance contains the original DB
         bool _isEmpty = false;
 
-        LogSrcI(
-            const Underly<SrcIDb1Doc<DbKw>, DbKw>& underly1, const Underly<DbDoc, Id>& underly2,
-            EncIndType encIndType
-        );
-        Range<IdAlias> searchBase(const Range<DbKw>& query) const;
+        LogSrcI(const Underly<SrcIDb1Doc, Kw>& underly1, const Underly<Doc, Id>& underly2, EncIndType encIndType);
+        Range<IdAlias> search1(const Range<Kw>& query) const;
 
     public:
         LogSrcI() = default;
         LogSrcI(EncIndType encIndType);
         ~LogSrcI();
 
-        void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
-        std::vector<DbDoc> search(const Range<DbKw>& query) const override;
+        void setup(int secParam, const Db<Doc, Kw>& db) override;
+        std::vector<Doc> search(const Range<Kw>& query) const override;
 
-        std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const override;
+        std::vector<Doc> searchWithoutRemovingDels(const Range<Kw>& query) const override;
         void clear() override;
-        Db<DbDoc, DbKw> getDb() const override;
+        Db<Doc, Kw> getDb() const override;
         bool isEmpty() const override;
         void setEncIndType(EncIndType encIndType) override;
 };

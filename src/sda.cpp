@@ -2,49 +2,43 @@
 #include "log_src_i.h"
 #include "sda.h"
 
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-SdaBase<Underly, DbDoc, DbKw>::SdaBase(EncIndType encIndType) {
+template <ISseUnderly_ Underly>
+Sda<Underly>::Sda(EncIndType encIndType) {
     this->setEncIndType(encIndType);
 }
 
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-Sda<Underly, DbDoc, DbKw>::Sda(EncIndType encIndType) : SdaBase<Underly, DbDoc, DbKw>(encIndType) {}
-
-template <class Underly, class DbKw> requires ISdaUnderly_<Underly>
-Sda<Underly, IdOp, DbKw>::Sda(EncIndType encIndType) : SdaBase<Underly, IdOp, DbKw>(encIndType) {}
-
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-SdaBase<Underly, DbDoc, DbKw>::~SdaBase() {
+template <ISseUnderly_ Underly>
+Sda<Underly>::~Sda() {
     this->clear();
 }
 
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-void SdaBase<Underly, DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+template <ISseUnderly_ Underly>
+void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->secParam = secParam;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
+    for (DbEntry<Doc, Kw> entry : db) {
         this->update(entry);
     }
 }
 
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-void SdaBase<Underly, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry) {
+template <ISseUnderly_ Underly>
+void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
         Underly* newUnderly = new Underly();
         newUnderly->setEncIndType(this->encIndType);
-        newUnderly->setup(this->secParam, Db<DbDoc, DbKw> {newEntry});
+        newUnderly->setup(this->secParam, Db<Doc, Kw> {newEntry});
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
         return;
     }
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`; always merge/insert into first index if it's empty
-    Db<DbDoc, DbKw> mergedDb;
+    Db<Doc, Kw> mergedDb;
     for (int i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
         // original paper fetches encrypted index and decrypts instead of `getDb()`
         // but that could get messy with Log-SRC-i as it has two indexes
         // instead we just store and get plaintext DB for convenience of implementation
-        Db<DbDoc, DbKw> underlyDb = this->underlys[i]->getDb();
+        Db<Doc, Kw> underlyDb = this->underlys[i]->getDb();
         mergedDb.insert(mergedDb.begin(), underlyDb.begin(), underlyDb.end());
     }
     mergedDb.push_back(newEntry);
@@ -72,20 +66,15 @@ void SdaBase<Underly, DbDoc, DbKw>::update(const DbEntry<DbDoc, DbKw>& newEntry)
     this->firstEmptyInd = firstEmpty;
 }
 
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-std::vector<DbDoc> Sda<Underly, DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchWithoutHandlingDels(query);
+template <ISseUnderly_ Underly>
+std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query) const {
+    std::vector<Doc> results = this->searchWithoutRemovingDels(query);
+    return removeDeletedDocs(results);
 }
 
-template <class Underly, class DbKw> requires ISdaUnderly_<Underly>
-std::vector<IdOp> Sda<Underly, IdOp, DbKw>::search(const Range<DbKw>& query) const {
-    std::vector<IdOp> results = this->searchWithoutHandlingDels(query);
-    return removeDeletedIdOps(results);
-}
-
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-std::vector<DbDoc> SdaBase<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(const Range<DbKw>& query) const {
-    std::vector<DbDoc> allResults;
+template <ISseUnderly_ Underly>
+std::vector<Doc> Sda<Underly>::searchWithoutRemovingDels(const Range<Kw>& query) const {
+    std::vector<Doc> allResults;
     // search through all non-empty indexes
     for (Underly* underly : this->underlys) {
         if (underly->isEmpty()) {
@@ -94,14 +83,14 @@ std::vector<DbDoc> SdaBase<Underly, DbDoc, DbKw>::searchWithoutHandlingDels(cons
         // don't use `underly->search()` here that filters out deleted tuples possibly prematurely
         // since the cancelation tuple for a document is not guaranteed to be in same index as the inserting tuple,
         // we can't rely on the individual underlying instances to filter out all deleted documents
-        std::vector<DbDoc> results = underly->searchWithoutHandlingDels(query);
+        std::vector<Doc> results = underly->searchWithoutRemovingDels(query);
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
     return allResults;
 }
 
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-void SdaBase<Underly, DbDoc, DbKw>::clear() {
+template <ISseUnderly_ Underly>
+void Sda<Underly>::clear() {
     // apparently vector `clear()` automatically calls the destructor for each element *unless* it is a pointer
     for (Underly* underly : this->underlys) {
         if (underly != nullptr) {
@@ -112,16 +101,11 @@ void SdaBase<Underly, DbDoc, DbKw>::clear() {
     this->underlys.clear();
 }
 
-template <class Underly, IMainDbDoc_ DbDoc, class DbKw> requires ISdaUnderly_<Underly>
-void SdaBase<Underly, DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
+template <ISseUnderly_ Underly>
+void Sda<Underly>::setEncIndType(EncIndType encIndType) {
     this->encIndType = encIndType;
 }
 
-template class Sda<PiBasResHiding<Id, Kw>, Id, Kw>;
-template class Sda<PiBasResHiding<IdOp, Kw>, IdOp, Kw>;
-
-template class Sda<LogSrc<PiBasResHiding, Id, Kw>, Id, Kw>;
-template class Sda<LogSrc<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
-
-template class Sda<LogSrcI<PiBasResHiding, Id, Kw>, Id, Kw>;
-template class Sda<LogSrcI<PiBasResHiding, IdOp, Kw>, IdOp, Kw>;
+template class Sda<PiBasResHiding>;
+template class Sda<LogSrc<PiBasResHiding>>;
+template class Sda<LogSrcI<PiBasResHiding>>;

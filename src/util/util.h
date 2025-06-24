@@ -158,11 +158,11 @@ class IDbDoc {
         virtual std::string toStr() const = 0;
 
         template <class T2>
-        friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2>& iEncryptable);
+        friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2>& iDbDoc);
 };
 
 /******************************************************************************/
-/* `Doc`                                                                       */
+/* `Doc`                                                                      */
 /******************************************************************************/
 
 class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
@@ -170,11 +170,12 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
         Doc() = default;
         Doc(const std::tuple<Id, Kw, Op>& val);
 
-        std::string toStr() const overrdoce;
+        std::string toStr() const override;
         static Doc fromUstr(const ustring& ustr);
         static Doc fromStr(const std::string& str);
 
         Id getId() const;
+        Kw getKw() const;
         Op getOp() const;
 
         friend bool operator ==(const Doc& doc1, const Doc& doc2);
@@ -192,7 +193,7 @@ class SrcIDb1Doc : public IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>> {
         SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange);
 
         std::string toStr() const override;
-        static SrcIDb1Doc<DbKw> fromUstr(const ustring& ustr);
+        static SrcIDb1Doc fromUstr(const ustring& ustr);
 };
 
 /******************************************************************************/

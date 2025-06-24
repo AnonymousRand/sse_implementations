@@ -43,7 +43,7 @@ class IDsse : public ISse<DbDoc, DbKw> {
 template <IDbDoc_ DbDoc, class DbKw>
 class ISdaUnderly : public ISse<DbDoc, DbKw> {
     public:
-        virtual std::vector<DbDoc> searchWithoutHandlingDels(const Range<DbKw>& query) const = 0;
+        virtual std::vector<DbDoc> searchWithoutRemovingDels(const Range<DbKw>& query) const = 0;
         virtual Db<DbDoc, DbKw> getDb() const = 0;
         virtual bool isEmpty() const = 0;
 };
