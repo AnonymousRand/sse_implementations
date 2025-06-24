@@ -6,8 +6,8 @@
 #include "pi_bas.h"
 #include "sda.h"
 
-Db createDb(int dbSize, bool isDataSkewed) {
-    Db db;
+Db<> createDb(int dbSize, bool isDataSkewed) {
+    Db<> db;
     if (isDataSkewed) {
         // two unique keywords, with all but one being 0 and the other being the max
         // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
@@ -29,8 +29,8 @@ Db createDb(int dbSize, bool isDataSkewed) {
 }
 
 // experiment for debugging with fixed query and printed results
-void expDebug(ISse& sse, int dbSize, Range<Kw> query) {
-    Db db = createDb(dbSize, false);
+void expDebug(ISse<>& sse, int dbSize, Range<Kw> query) {
+    Db<> db = createDb(dbSize, false);
 
     // setup
     sse.setup(KEY_LEN, db);
@@ -55,8 +55,8 @@ void expDebug(ISse& sse, int dbSize, Range<Kw> query) {
 }
 
 template <class Doc, class Kw>
-void exp1(ISse& sse, int dbSize) {
-    Db db = createDb(dbSize, false);
+void exp1(ISse<>& sse, int dbSize) {
+    Db<> db = createDb(dbSize, false);
 
     // setup
     auto setupStart = std::chrono::high_resolution_clock::now();
@@ -82,11 +82,11 @@ void exp1(ISse& sse, int dbSize) {
     sse.clear();
 }
 
-void exp2(ISse& sse, int maxDbSize) {
+void exp2(ISse<>& sse, int maxDbSize) {
     Range<Kw> query {0, 3};
     for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
-        Db db = createDb(dbSize, false);
+        Db<> db = createDb(dbSize, false);
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();
@@ -110,10 +110,10 @@ void exp2(ISse& sse, int maxDbSize) {
     sse.clear();
 }
 
-void exp3(ISse& sse, int maxDbSize) {
+void exp3(ISse<>& sse, int maxDbSize) {
     for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
-        Db db = createDb(dbSize, true);
+        Db<> db = createDb(dbSize, true);
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();
