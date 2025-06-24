@@ -1,19 +1,19 @@
 #include "log_src.h"
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrc<Underly>::LogSrc(EncIndType encIndType) : LogSrc(Underly<Doc, Kw>(), encIndType) {}
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrc<Underly>::LogSrc(const Underly<Doc, Kw>& underly, EncIndType encIndType) : underly(underly) {
     this->setEncIndType(encIndType);
 }
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrc<Underly>::~LogSrc() {
     this->clear();
 }
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->db = db;
     // so we don't leak the memory from the previous TDAG after we call `new` again
@@ -39,7 +39,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->underly.setup(secParam, dbWithReplications);
 }
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 std::vector<Doc> LogSrc<Underly>::search(const Range<Kw>& query) const {
     Range<Kw> src = this->tdag->findSrc(query);
     if (src == DUMMY_RANGE<Kw>()) {
@@ -48,12 +48,12 @@ std::vector<Doc> LogSrc<Underly>::search(const Range<Kw>& query) const {
     return this->underly.search(src);
 }
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 std::vector<Doc> LogSrc<Underly>::searchWithoutRemovingDels(const Range<Kw>& query) const {
     return this->underly.searchWithoutRemovingDels(query);
 }
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrc<Underly>::clear() {
     if (this->tdag != nullptr) {
         delete this->tdag;
@@ -63,17 +63,17 @@ void LogSrc<Underly>::clear() {
     this->underly.clear();
 }
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 Db<Doc, Kw> LogSrc<Underly>::getDb() const {
     return this->db;
 }
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 bool LogSrc<Underly>::isEmpty() const {
     return this->underly.isEmpty();
 }
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrc<Underly>::setEncIndType(EncIndType encIndType) {
     this->underly.setEncIndType(encIndType);
 }
