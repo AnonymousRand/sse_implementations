@@ -133,188 +133,30 @@ template class IMainDbDoc<int>;
 template class IMainDbDoc<std::pair<Id, Op>>;
 
 /******************************************************************************/
-/* `Id`                                                                       */
+/* `Doc`                                                                       */
 /******************************************************************************/
 
-Id::Id(int val) : IMainDbDoc<int>(val) {}
+Doc::Doc(int val) : IMainDbDoc<int>(val) {}
 
-std::string Id::toStr() const {
+std::string Doc::toStr() const {
     return std::to_string(this->val);
 }
 
-Id Id::fromUstr(const ustring& ustr) {
+Doc Doc::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
-    return Id::fromStr(str);
+    return Doc::fromStr(str);
 }
 
-Id Id::fromStr(const std::string& str) {
-    return Id(std::stoi(str));
+Doc Doc::fromStr(const std::string& str) {
+    return Doc(std::stoi(str));
 }
 
-Id Id::getId() const {
+Doc Doc::getDoc() const {
     return this->val;
 }
 
-Id& Id::operator ++() {
-    this->val = ++(this->val);
-    return *this;
-}
-
-Id Id::operator ++(int) {
-    Id old = *this;
-    ++(*this);
-    return old;
-}
-
-Id& Id::operator +=(const Id& id) {
-    this->val += id.val;
-    return *this;
-}
-
-Id& Id::operator -=(const Id& id) {
-    this->val -= id.val;
-    return *this;
-}
-
-Id& Id::operator +=(int n) {
-    this->val += n;
-    return *this;
-}
-
-Id& Id::operator -=(int n) {
-    this->val -= n;
-    return *this;
-}
-
-Id operator +(Id id1, const Id& id2) {
-    id1 += id2;
-    return id1;
-}
-
-Id operator +(Id id, int n) {
-    id += n;
-    return id;
-}
-
-Id operator -(Id id1, const Id& id2) {
-    id1 -= id2;
-    return id1;
-}
-
-Id operator -(Id id, int n) {
-    id -= n;
-    return id;
-}
-
-bool operator ==(const Id& id1, const Id& id2) {
-    return id1.val == id2.val;
-}
-
-bool operator ==(const Id& id1, int n) {
-    return id1.val == n;
-}
-
-bool operator <(const Id& id1, const Id& id2) {
-    return id1.val < id2.val;
-}
-
-bool operator >(const Id& id1, const Id& id2) {
-    return id1.val > id2.val;
-}
-
-bool operator <=(const Id& id1, const Id& id2) {
-    return id1.val <= id2.val;
-}
-
-bool operator >=(const Id& id1, const Id& id2) {
-    return id1.val >= id2.val;
-}
-
-/******************************************************************************/
-/* `Op`                                                                       */
-/******************************************************************************/
-
-Op::Op(const std::string& val) {
-    this->val = val;
-}
-
-std::string Op::toStr() const {
-    return this->val;
-}
-
-Op Op::fromStr(const std::string& val) {
-    return Op(val);
-}
-
-bool operator ==(const Op& op1, const Op& op2) {
-    return op1.toStr() == op2.toStr();
-}
-
-std::ostream& operator <<(std::ostream& os, const Op& op) {
-    return os << op.toStr();
-}
-
-/******************************************************************************/
-/* `IdOp`                                                                     */
-/******************************************************************************/
-
-IdOp::IdOp(const Id& id) : IMainDbDoc<std::pair<Id, Op>>(std::pair {id, INSERT}) {}
-
-IdOp::IdOp(const Id& id, const Op& op) : IMainDbDoc<std::pair<Id, Op>>(std::pair {id, op}) {}
-
-IdOp IdOp::fromUstr(const ustring& ustr) {
-    std::string str = ::fromUstr(ustr);
-    std::regex re("\\((.*?),(.*?)\\)");
-    std::smatch matches;
-    if (!std::regex_search(str, matches, re) || matches.size() != 3) {
-        std::cerr << "Error: bad string passed to `IdOp.fromUstr()`, please panic (calmly)." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    Id id = Id::fromStr(matches[1].str());
-    Op op = Op::fromStr(matches[2].str());
-    return IdOp {id, op};
-}
-
-std::string IdOp::toStr() const {
-    std::stringstream ss;
-    ss << "(" << this->val.first << "," << this->val.second << ")";
-    return ss.str();
-}
-
-Id IdOp::getId() const {
-    return this->val.first;
-}
-
-bool operator <(const IdOp& doc1, const IdOp& doc2) {
-    return doc1.val.first < doc2.val.first;
-}
-
-bool operator ==(const IdOp& doc1, const IdOp& doc2) {
-    return doc1.val.first == doc2.val.first;
-}
-
-std::vector<IdOp> removeDeletedIdOps(const std::vector<IdOp>& idOps) {
-    std::vector<IdOp> newIdOps;
-    std::unordered_set<Id> deleted;
-
-    // find all deletion tuples
-    for (IdOp idOp : idOps) {
-        Id id = idOp.get().first;
-        Op op = idOp.get().second;
-        if (op == DELETE) {
-            deleted.insert(id);
-        }
-    }
-    // copy over vector without deleted docs
-    for (IdOp idOp : idOps) {
-        Id id = idOp.get().first;
-        Op op = idOp.get().second;
-        if (op == INSERT && deleted.count(id) == 0) {
-            newIdOps.push_back(idOp);
-        }
-    }
-
-    return newIdOps;
+bool operator ==(const Doc& doc1, const Doc& doc2) {
+    return doc1.val == doc2.val;
 }
 
 /******************************************************************************/
