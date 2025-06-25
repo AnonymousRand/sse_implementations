@@ -71,10 +71,6 @@ template <class T>
 concept IDbDoc_ = requires(T t) {
     []<class X>(IDbDoc<X>&){}(t);
 };
-//template <class T>
-//concept IMainDbDoc_ = requires(T t) {
-//    []<class X>(IMainDbDoc<X>&){}(t);
-//};
 
 // allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
 template <IDbDoc_ DbDoc = Kw, class DbKw = Kw> 
