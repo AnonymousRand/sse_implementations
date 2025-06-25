@@ -162,7 +162,6 @@ void DiskEncInd::reset() {
     if (this->filename != "") {
         std::remove(this->filename.c_str());
         this->filename = "";
-    } else {
     }
     this->isPosFilled.clear();
 }
