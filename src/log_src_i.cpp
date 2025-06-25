@@ -5,13 +5,13 @@
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI(EncIndType encIndType) : LogSrcI(Underly<SrcIDb1Doc, Kw>(), Underly<Doc, Id>(), encIndType) {}
+LogSrcI<Underly>::LogSrcI(EncIndType encIndType)
+        : LogSrcI(new Underly<SrcIDb1Doc, Kw>(), new Underly<Doc, Id>(), encIndType) {}
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI(
-    const Underly<SrcIDb1Doc, Kw>& underly1, const Underly<Doc, Id>& underly2, EncIndType encIndType
-) : underly1(underly1), underly2(underly2) {
+LogSrcI<Underly>::LogSrcI(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, Id>* underly2, EncIndType encIndType)
+        : underly1(underly1), underly2(underly2) {
     this->setEncIndType(encIndType);
 }
 
@@ -19,6 +19,14 @@ LogSrcI<Underly>::LogSrcI(
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::~LogSrcI() {
     this->clear();
+    if (this->underly1 != nullptr) {
+        delete this->underly1;
+        this->underly1 = nullptr;
+    }
+    if (this->underly2 != nullptr) {
+        delete this->underly2;
+        this->underly2 = nullptr;
+    }
 }
 
 
@@ -114,8 +122,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         }
     }
 
-    this->underly1.setup(secParam, db1);
-    this->underly2.setup(secParam, db2);
+    this->underly1->setup(secParam, db1);
+    this->underly2->setup(secParam, db2);
 }
 
 
@@ -127,7 +135,7 @@ Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
     if (src1 == DUMMY_RANGE<Kw>()) { 
         return DUMMY_RANGE<Id>();
     }
-    std::vector<SrcIDb1Doc> choices = this->underly1.search(src1);
+    std::vector<SrcIDb1Doc> choices = this->underly1->search(src1);
 
     // query 2
 
@@ -159,7 +167,7 @@ std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query) const {
     if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<Doc> {};
     }
-    return this->underly2.search(src2);
+    return this->underly2->search(src2);
 }
 
 
@@ -169,7 +177,7 @@ std::vector<Doc> LogSrcI<Underly>::searchWithoutRemovingDels(const Range<Kw>& qu
     if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<Doc> {};
     }
-    return this->underly2.searchWithoutRemovingDels(src2);
+    return this->underly2->searchWithoutRemovingDels(src2);
 }
 
 
@@ -183,8 +191,8 @@ void LogSrcI<Underly>::clear() {
         delete this->tdag2;
         this->tdag2 = nullptr;
     }
-    this->underly1.clear();
-    this->underly2.clear();
+    this->underly1->clear();
+    this->underly2->clear();
     this->db.clear();
     this->_isEmpty = true;
 }
@@ -204,8 +212,8 @@ bool LogSrcI<Underly>::isEmpty() const {
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrcI<Underly>::setEncIndType(EncIndType encIndType) {
-    this->underly1.setEncIndType(encIndType);
-    this->underly2.setEncIndType(encIndType);
+    this->underly1->setEncIndType(encIndType);
+    this->underly2->setEncIndType(encIndType);
 }
 
 

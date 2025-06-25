@@ -8,14 +8,14 @@
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 class LogSrcI : public ISdaUnderly<Doc, Kw> {
     private:
-        Underly<SrcIDb1Doc, Kw> underly1;
-        Underly<Doc, IdAlias> underly2;
+        Underly<SrcIDb1Doc, Kw>* underly1 = nullptr;
+        Underly<Doc, IdAlias>* underly2 = nullptr;
         TdagNode<Kw>* tdag1 = nullptr;
         TdagNode<IdAlias>* tdag2 = nullptr;
         Db<Doc, Kw> db; // store since neither underlying instance contains the original DB
         bool _isEmpty = false;
 
-        LogSrcI(const Underly<SrcIDb1Doc, Kw>& underly1, const Underly<Doc, Id>& underly2, EncIndType encIndType);
+        LogSrcI(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, Id>* underly2, EncIndType encIndType);
         Range<IdAlias> search1(const Range<Kw>& query) const;
 
     public:

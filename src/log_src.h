@@ -8,11 +8,11 @@
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 class LogSrc : public ISdaUnderly<Doc, Kw> {
     private:
-        Underly<Doc, Kw> underly;
+        Underly<Doc, Kw>* underly = nullptr;
         TdagNode<Kw>* tdag = nullptr;
         Db<Doc, Kw> db; // store instead of using underlying instance's `db` since that one has replications
 
-        LogSrc(const Underly<Doc, Kw>& underly, EncIndType encIndType);
+        LogSrc(Underly<Doc, Kw>* underly, EncIndType encIndType);
 
     public:
         LogSrc() = default;

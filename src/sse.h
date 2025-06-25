@@ -18,7 +18,8 @@ class ISse {
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
 
-        // `clear()` should free memory of all unneeded instance variables
+        // `clear()` should free memory of all unneeded instance variables, but not fully delete this object
+        // (as the destructor does) so we can still call `setup()` again with the same object, perhaps witha different db
         virtual void clear() = 0;
         virtual void setEncIndType(EncIndType encIndType) = 0;
 };

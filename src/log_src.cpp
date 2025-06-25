@@ -2,11 +2,11 @@
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrc<Underly>::LogSrc(EncIndType encIndType) : LogSrc(Underly<Doc, Kw>(), encIndType) {}
+LogSrc<Underly>::LogSrc(EncIndType encIndType) : LogSrc(new Underly<Doc, Kw>(), encIndType) {}
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrc<Underly>::LogSrc(const Underly<Doc, Kw>& underly, EncIndType encIndType) : underly(underly) {
+LogSrc<Underly>::LogSrc(Underly<Doc, Kw>* underly, EncIndType encIndType) : underly(underly) {
     this->setEncIndType(encIndType);
 }
 
@@ -14,6 +14,10 @@ LogSrc<Underly>::LogSrc(const Underly<Doc, Kw>& underly, EncIndType encIndType) 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrc<Underly>::~LogSrc() {
     this->clear();
+    if (this->underly != nullptr) {
+        delete this->underly;
+        this->underly = nullptr;
+    }
 }
 
 
@@ -40,7 +44,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         }
     }
 
-    this->underly.setup(secParam, dbWithReplications);
+    this->underly->setup(secParam, dbWithReplications);
 }
 
 
@@ -50,24 +54,25 @@ std::vector<Doc> LogSrc<Underly>::search(const Range<Kw>& query) const {
     if (src == DUMMY_RANGE<Kw>()) {
         return std::vector<Doc> {};
     }
-    return this->underly.search(src);
+    return this->underly->search(src);
 }
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 std::vector<Doc> LogSrc<Underly>::searchWithoutRemovingDels(const Range<Kw>& query) const {
-    return this->underly.searchWithoutRemovingDels(query);
+    return this->underly->searchWithoutRemovingDels(query);
 }
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrc<Underly>::clear() {
+    // delete TDAG fully since it is reallocated with `new` in `setup()`
     if (this->tdag != nullptr) {
         delete this->tdag;
         this->tdag = nullptr;
     }
     this->db.clear();
-    this->underly.clear();
+    this->underly->clear();
 }
 
 
@@ -79,13 +84,13 @@ Db<Doc, Kw> LogSrc<Underly>::getDb() const {
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 bool LogSrc<Underly>::isEmpty() const {
-    return this->underly.isEmpty();
+    return this->underly->isEmpty();
 }
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrc<Underly>::setEncIndType(EncIndType encIndType) {
-    this->underly.setEncIndType(encIndType);
+    this->underly->setEncIndType(encIndType);
 }
 
 
