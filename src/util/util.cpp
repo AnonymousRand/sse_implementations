@@ -119,7 +119,7 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
 }
 
 /******************************************************************************/
-/* `Doc`                                                                       */
+/* `Doc`                                                                      */
 /******************************************************************************/
 
 const std::regex Doc::fromStrRegex = std::regex("\\((-?[0-9]+),([0-9]+),([I|D])\\)");
@@ -211,6 +211,12 @@ const std::regex SrcIDb1Doc::fromStrRegex = std::regex("\\(([0-9]+-[0-9]+),([0-9
 SrcIDb1Doc::SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange) :
         IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>(std::pair {kwRange, idAliasRange}) {}
 
+std::string SrcIDb1Doc::toStr() const {
+    std::stringstream ss;
+    ss << "(" << this->val.first << "," << this->val.second << ")";
+    return ss.str();
+}
+
 SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::smatch matches;
@@ -221,12 +227,6 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     Range<Kw> kwRange = Range<Kw>::fromStr(matches[1].str());
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
     return SrcIDb1Doc {kwRange, idAliasRange};
-}
-
-std::string SrcIDb1Doc::toStr() const {
-    std::stringstream ss;
-    ss << "(" << this->val.first << "," << this->val.second << ")";
-    return ss.str();
 }
 
 template class IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>;
