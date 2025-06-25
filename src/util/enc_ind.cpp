@@ -70,7 +70,6 @@ void DiskEncInd::init(unsigned long size) {
     for (unsigned long i = 0; i < size; i++) {
         this->isPosFilled[i] = false;
     }
-
 }
 
 
