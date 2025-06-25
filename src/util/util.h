@@ -72,10 +72,12 @@ concept IDbDoc_ = requires(T t) {
     []<class X>(IDbDoc<X>&){}(t);
 };
 
-// allow polymorphic types for DB (Log-SRC-i)
+// allow polymorphic types for DB (since Log-SRC-i exists)
 template <IDbDoc_ DbDoc = Kw, class DbKw = Kw> 
 using DbEntry = std::pair<DbDoc, Range<DbKw>>;
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
+// technically dbs only need to contain the `DbDoc` part since `Doc` is the full (id,kw,op) tuple
+// but we will also explicitly store keyword ranges (`DbKw`) for convenience in our implementation
 using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class IndK, class DbDoc>
 using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
@@ -177,6 +179,7 @@ class IDbDoc {
 /******************************************************************************/
 
 
+// these are the "database tuples"; accommodate dynamic SSE by also storing the operation
 class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
     public:
         static const std::regex fromStrRegex;
