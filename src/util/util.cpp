@@ -4,22 +4,27 @@
 
 #include "util.h"
 
+
 /******************************************************************************/
 /* `ustring`                                                                  */
 /******************************************************************************/
+
 
 ustring toUstr(int n) {
     std::string str = std::to_string(n);
     return ustring(str.begin(), str.end());
 }
 
+
 ustring toUstr(const std::string& s) {
     return reinterpret_cast<const unsigned char*>(s.c_str());
 }
 
+
 ustring toUstr(unsigned char* p, int len) {
     return ustring(p, len);
 }
+
 
 std::string fromUstr(const ustring& ustr) {
     std::string str;
@@ -29,31 +34,38 @@ std::string fromUstr(const ustring& ustr) {
     return str;
 }
 
+
 std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
     return os << fromUstr(ustr);
 }
+
 
 /******************************************************************************/
 /* `Range`                                                                    */
 /******************************************************************************/
 
+
 template <class T>
 Range<T>::Range(const T& start, const T& end) : std::pair<T, T> {start, end} {}
+
 
 template <class T>
 T Range<T>::size() const {
     return this->second - this->first + 1;
 }
 
+
 template <class T>
 bool Range<T>::contains(const Range<T>& target) const {
     return this->first <= target.first && this->second >= target.second;
 }
 
+
 template <class T>
 bool Range<T>::isDisjointFrom(const Range<T>& target) const {
     return this->second < target.first || this->first > target.second;
 }
+
 
 template <class T>
 std::string Range<T>::toStr() const {
@@ -61,6 +73,7 @@ std::string Range<T>::toStr() const {
     ss << this->first << "-" << this->second;
     return ss.str();
 }
+
 
 template <class T>
 Range<T> Range<T>::fromStr(const std::string& str) {
@@ -77,15 +90,18 @@ Range<T> Range<T>::fromStr(const std::string& str) {
     return range;
 }
 
+
 template <class T>
 ustring Range<T>::toUstr() const {
     return ::toUstr(this->toStr());
 }
 
+
 template <class T>
 std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
     return os << range.toStr();
 }
+
 
 template class Range<Kw>;
 // commented out since currently `IdAlias` is the same type as `Kw`
@@ -94,37 +110,46 @@ template class Range<Kw>;
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
 //template std::ostream& operator <<(std::ostream& os, const Range<IdAlias>& range);
 
+
 /******************************************************************************/
 /* `IDbDoc`                                                                   */
 /******************************************************************************/
+
 
 template <class T>
 IDbDoc<T>::IDbDoc(const T& val) {
     this->val = val;
 }
 
+
 template <class T>
 T IDbDoc<T>::get() const {
     return this->val;
 }
+
 
 template <class T>
 ustring IDbDoc<T>::toUstr() const {
     return ::toUstr(this->toStr());
 }
 
+
 template <class T>
 std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
     return os << iDbDoc.toStr();
 }
 
+
 /******************************************************************************/
 /* `Doc`                                                                      */
 /******************************************************************************/
 
+
 const std::regex Doc::fromStrRegex = std::regex("\\((-?[0-9]+),([0-9]+),([I|D])\\)");
 
+
 Doc::Doc(Id id, Kw kw, Op op) : IDbDoc<std::tuple<Id, Kw, Op>>(std::tuple {id, kw, op}) {}
+
 
 std::string Doc::toStr() const {
     std::stringstream ss;
@@ -133,10 +158,12 @@ std::string Doc::toStr() const {
     return ss.str();
 }
 
+
 Doc Doc::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     return Doc::fromStr(str);
 }
+
 
 Doc Doc::fromStr(const std::string& str) {
     std::smatch matches;
@@ -150,17 +177,21 @@ Doc Doc::fromStr(const std::string& str) {
     return Doc {id, kw, op};
 }
 
+
 Id Doc::getId() const {
     return std::get<0>(this->val);
 }
+
 
 Kw Doc::getKw() const {
     return std::get<1>(this->val);
 }
 
+
 Op Doc::getOp() const {
     return std::get<2>(this->val);
 }
+
 
 bool operator ==(const Doc& doc1, const Doc& doc2) {
     if (std::get<0>(doc1.val) != std::get<0>(doc2.val)) {
@@ -174,6 +205,7 @@ bool operator ==(const Doc& doc1, const Doc& doc2) {
     }
     return true;
 }
+
 
 std::vector<Doc> removeDeletedDocs(const std::vector<Doc>& docs) {
     std::vector<Doc> newDocs;
@@ -199,23 +231,29 @@ std::vector<Doc> removeDeletedDocs(const std::vector<Doc>& docs) {
     return newDocs;
 }
 
+
 template class IDbDoc<std::tuple<Id, Kw, Op>>;
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>>& iDbDoc);
+
 
 /******************************************************************************/
 /* `SrcIDb1Doc`                                                               */
 /******************************************************************************/
 
+
 const std::regex SrcIDb1Doc::fromStrRegex = std::regex("\\(([0-9]+-[0-9]+),([0-9]+-[0-9]+)\\)");
+
 
 SrcIDb1Doc::SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange) :
         IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>(std::pair {kwRange, idAliasRange}) {}
+
 
 std::string SrcIDb1Doc::toStr() const {
     std::stringstream ss;
     ss << "(" << this->val.first << "," << this->val.second << ")";
     return ss.str();
 }
+
 
 SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
@@ -229,12 +267,15 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     return SrcIDb1Doc {kwRange, idAliasRange};
 }
 
+
 template class IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>;
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>& iDbDoc);
+
 
 /******************************************************************************/
 /* SSE Utils                                                                  */
 /******************************************************************************/
+
 
 template <class IndK, IDbDoc_ DbDoc>
 void shuffleInd(Ind<IndK, DbDoc>& ind) {
@@ -243,6 +284,7 @@ void shuffleInd(Ind<IndK, DbDoc>& ind) {
         std::shuffle(dbDocs.begin(), dbDocs.end(), RNG);
     }
 }
+
 
 template <IDbDoc_ DbDoc, class DbKw>
 DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db) {
@@ -260,6 +302,7 @@ DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db) {
     return maxDbKw;
 }
 
+
 template <IDbDoc_ DbDoc, class DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
     std::unordered_set<Range<DbKw>> uniqDbKwRanges;
@@ -269,6 +312,7 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
     }
     return uniqDbKwRanges;
 }
+
 
 template void shuffleInd(Ind<Kw, Doc>& ind);
 //template void shuffleInd(Ind<IdAlias, Doc>& ind);

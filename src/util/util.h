@@ -14,9 +14,11 @@
 
 #include <openssl/evp.h>
 
+
 /******************************************************************************/
 /* Constants/Configs                                                          */
 /******************************************************************************/
+
 
 // lengths are in bytes
 static const int KEY_LEN            = 256 / 8;
@@ -36,9 +38,11 @@ static const int ENC_IND_KV_LEN     = ENC_IND_KEY_LEN + ENC_IND_VAL_LEN;
 static const int DB_KW_MIN = 0;
 static const int DUMMY     = -1;
 
+
 /******************************************************************************/
 /* Basic Declarations                                                         */
 /******************************************************************************/
+
 
 /**
  * PRECONDITION: keywords and ids must both be integral values.
@@ -83,9 +87,11 @@ using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
 
+
 /******************************************************************************/
 /* `ustring`                                                                  */
 /******************************************************************************/
+
 
 // use `ustring` instead of `unsigned char*` to avoid hell
 using ustring = std::basic_string<unsigned char>;
@@ -104,6 +110,7 @@ struct std::hash<ustring> {
 };
 
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
+
 
 /******************************************************************************/
 /* `Range`                                                                    */
@@ -129,6 +136,7 @@ class Range : public std::pair<T, T> {
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 };
 
+
 template <>
 template <class T>
 struct std::hash<Range<T>> {
@@ -142,9 +150,11 @@ static Range<T> DUMMY_RANGE() {
     return Range<T>(T(DUMMY), T(DUMMY));
 }
 
+
 /******************************************************************************/
 /* `IDbDoc`                                                                   */
 /******************************************************************************/
+
 
 // interface for documents in dataset
 template <class T>
@@ -164,9 +174,11 @@ class IDbDoc {
         friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2>& iDbDoc);
 };
 
+
 /******************************************************************************/
 /* `Doc`                                                                      */
 /******************************************************************************/
+
 
 class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
     public:
@@ -186,11 +198,14 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
         friend bool operator ==(const Doc& doc1, const Doc& doc2);
 };
 
+
 std::vector<Doc> removeDeletedDocs(const std::vector<Doc>& docs);
+
 
 /******************************************************************************/
 /* `SrcIDb1Doc`                                                               */
 /******************************************************************************/
+
 
 class SrcIDb1Doc : public IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>> {
     public:
@@ -203,9 +218,11 @@ class SrcIDb1Doc : public IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>> {
         static SrcIDb1Doc fromUstr(const ustring& ustr);
 };
 
+
 /******************************************************************************/
 /* SSE Utils                                                                  */
 /******************************************************************************/
+
 
 template <class IndK, IDbDoc_ DbDoc>
 void shuffleInd(Ind<IndK, DbDoc>& ind);

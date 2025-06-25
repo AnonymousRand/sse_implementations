@@ -3,8 +3,10 @@
 #include "log_src_i.h"
 #include "pi_bas.h"
 
+
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::LogSrcI(EncIndType encIndType) : LogSrcI(Underly<SrcIDb1Doc, Kw>(), Underly<Doc, Id>(), encIndType) {}
+
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::LogSrcI(
@@ -13,10 +15,12 @@ LogSrcI<Underly>::LogSrcI(
     this->setEncIndType(encIndType);
 }
 
+
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::~LogSrcI() {
     this->clear();
 }
+
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
@@ -114,6 +118,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->underly2.setup(secParam, db2);
 }
 
+
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
     // query 1
@@ -147,6 +152,7 @@ Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
     return src2;
 }
 
+
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query) const {
     Range<IdAlias> src2 = this->search1(query);
@@ -156,6 +162,7 @@ std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query) const {
     return this->underly2.search(src2);
 }
 
+
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 std::vector<Doc> LogSrcI<Underly>::searchWithoutRemovingDels(const Range<Kw>& query) const {
     Range<IdAlias> src2 = this->search1(query);
@@ -164,6 +171,7 @@ std::vector<Doc> LogSrcI<Underly>::searchWithoutRemovingDels(const Range<Kw>& qu
     }
     return this->underly2.searchWithoutRemovingDels(src2);
 }
+
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrcI<Underly>::clear() {
@@ -181,21 +189,25 @@ void LogSrcI<Underly>::clear() {
     this->_isEmpty = true;
 }
 
+
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 Db<Doc, Kw> LogSrcI<Underly>::getDb() const {
     return this->db;
 }
+
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 bool LogSrcI<Underly>::isEmpty() const {
     return this->_isEmpty;
 }
 
+
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrcI<Underly>::setEncIndType(EncIndType encIndType) {
     this->underly1.setEncIndType(encIndType);
     this->underly2.setEncIndType(encIndType);
 }
+
 
 template class LogSrcI<PiBas>;
 template class LogSrcI<PiBasResHiding>;

@@ -2,15 +2,18 @@
 #include "log_src_i.h"
 #include "sda.h"
 
+
 template <ISdaUnderly_ Underly>
 Sda<Underly>::Sda(EncIndType encIndType) {
     this->setEncIndType(encIndType);
 }
 
+
 template <ISdaUnderly_ Underly>
 Sda<Underly>::~Sda() {
     this->clear();
 }
+
 
 template <ISdaUnderly_ Underly>
 void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
@@ -19,6 +22,7 @@ void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         this->update(entry);
     }
 }
+
 
 template <ISdaUnderly_ Underly>
 void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
@@ -66,11 +70,13 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
     this->firstEmptyInd = firstEmpty;
 }
 
+
 template <ISdaUnderly_ Underly>
 std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query) const {
     std::vector<Doc> results = this->searchWithoutRemovingDels(query);
     return removeDeletedDocs(results);
 }
+
 
 template <ISdaUnderly_ Underly>
 std::vector<Doc> Sda<Underly>::searchWithoutRemovingDels(const Range<Kw>& query) const {
@@ -89,6 +95,7 @@ std::vector<Doc> Sda<Underly>::searchWithoutRemovingDels(const Range<Kw>& query)
     return allResults;
 }
 
+
 template <ISdaUnderly_ Underly>
 void Sda<Underly>::clear() {
     // apparently vector `clear()` automatically calls the destructor for each element *unless* it is a pointer
@@ -101,10 +108,12 @@ void Sda<Underly>::clear() {
     this->underlys.clear();
 }
 
+
 template <ISdaUnderly_ Underly>
 void Sda<Underly>::setEncIndType(EncIndType encIndType) {
     this->encIndType = encIndType;
 }
+
 
 template class Sda<PiBasResHiding<>>;
 template class Sda<LogSrc<PiBasResHiding>>;

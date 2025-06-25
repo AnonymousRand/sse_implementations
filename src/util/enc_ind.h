@@ -5,23 +5,27 @@
 
 #include "util.h"
 
+
 // indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries
 // each of which correspond to `std::pair<label/key, std::pair<encrypted doc, iv>>`
+
 
 enum class EncIndType {
     RAM,
     DISK
 };
 
+
 /******************************************************************************/
 /* `IEncInd`                                                                  */
 /******************************************************************************/
+
 
 class IEncInd {
     public:
         // apparently when deleting derived class objects via pointers to base class (e.g. polymorphism)
         // the base class needs to have a virtual destructor for the derived class' constructor to be called
-        virtual ~IEncInd();
+        virtual ~IEncInd() = default;
 
         // every `init()` MUST be followed by a `reset()` for memory freeing!!
         virtual void init(unsigned long size) = 0;
@@ -33,14 +37,17 @@ class IEncInd {
         virtual void reset() = 0;
 };
 
+
 // idk if enum in constructor or templates is better design for this polymorphism
 // but templates seem more natural even if less clean esp through all the inheritance
 template <class T>
 concept IEncInd_ = std::derived_from<T, IEncInd>;
 
+
 /******************************************************************************/
 /* `RamEncInd`                                                                */
 /******************************************************************************/
+
 
 // for storing in primary memory (essentially an `std::map`)
 class RamEncInd : public IEncInd {
@@ -55,9 +62,11 @@ class RamEncInd : public IEncInd {
         void reset() override;
 };
 
+
 /******************************************************************************/
 /* `DiskEncInd`                                                               */
 /******************************************************************************/
+
 
 // for storing in secondary memory
 class DiskEncInd : public IEncInd {

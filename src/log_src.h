@@ -4,6 +4,7 @@
 #include "sse.h"
 #include "util/tdag.h"
 
+
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 class LogSrc : public ISdaUnderly<Doc, Kw> {
     private:

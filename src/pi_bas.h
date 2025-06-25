@@ -3,9 +3,11 @@
 #include "sse.h"
 #include "util/enc_ind.h"
 
+
 /******************************************************************************/
 /* PiBas                                                                      */
 /******************************************************************************/
+
 
 template <IDbDoc_ DbDoc, class DbKw>
 class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
@@ -31,6 +33,7 @@ class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
         void setEncIndType(EncIndType encIndType) override;
 };
 
+
 // this is literally just so I can partially specialize `search()`'s template for when `DbDoc` is `Doc`
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBas : public PiBasBase<DbDoc, DbKw> {
@@ -41,6 +44,7 @@ class PiBas : public PiBasBase<DbDoc, DbKw> {
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };
 
+
 template <>
 class PiBas<Doc, Kw> : public PiBasBase<Doc, Kw> {
     public:
@@ -50,9 +54,11 @@ class PiBas<Doc, Kw> : public PiBasBase<Doc, Kw> {
         std::vector<Doc> search(const Range<Kw>& query) const;
 };
 
+
 /******************************************************************************/
 /* PiBas (Result-Hiding)                                                      */
 /******************************************************************************/
+
 
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBasResHidingBase : public ISdaUnderly<DbDoc, DbKw> {
@@ -79,6 +85,7 @@ class PiBasResHidingBase : public ISdaUnderly<DbDoc, DbKw> {
         void setEncIndType(EncIndType encIndType) override;
 };
 
+
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBasResHiding : public PiBasResHidingBase<DbDoc, DbKw> {
     public:
@@ -87,6 +94,7 @@ class PiBasResHiding : public PiBasResHidingBase<DbDoc, DbKw> {
 
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 };
+
 
 template <>
 class PiBasResHiding<Doc, Kw> : public PiBasResHidingBase<Doc, Kw> {

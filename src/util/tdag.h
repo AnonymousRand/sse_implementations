@@ -5,6 +5,7 @@
 
 #include "util.h"
 
+
 template <class T>
 class TdagNode {
     private:

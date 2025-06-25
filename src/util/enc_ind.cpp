@@ -2,23 +2,22 @@
 
 #include "enc_ind.h"
 
-/******************************************************************************/
-/* `IEncInd`                                                                  */
-/******************************************************************************/
-
-IEncInd::~IEncInd() {}
 
 /******************************************************************************/
 /* `RamEncInd`                                                                */
 /******************************************************************************/
 
+
 void RamEncInd::init(unsigned long size) {}
+
 
 void RamEncInd::write(ustring key, std::pair<ustring, ustring> val) {
     this->map[key] = val;
 }
 
+
 void RamEncInd::flushWrite() {}
+
 
 int RamEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     auto iter = this->map.find(key);
@@ -29,17 +28,21 @@ int RamEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     return 0;
 }
 
+
 void RamEncInd::reset() {
     this->map.clear();
 }
+
 
 /******************************************************************************/
 /* `DiskEncInd`                                                               */
 /******************************************************************************/
 
+
 DiskEncInd::~DiskEncInd() {
     this->reset();
 }
+
 
 void DiskEncInd::init(unsigned long size) {
     this->size = size;
@@ -70,6 +73,7 @@ void DiskEncInd::init(unsigned long size) {
 
 }
 
+
 /**
  * PRECONDITION:
  *     - `key` must be exactly `ENC_IND_KEY_LEN` long
@@ -99,6 +103,7 @@ void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
     std::memcpy(&this->buf[pos * ENC_IND_KV_LEN], &kvPair[0], ENC_IND_KV_LEN);
 }
 
+
 void DiskEncInd::flushWrite() {
     std::fwrite(this->buf, ENC_IND_KV_LEN, size, this->file);
     // free up memory that is no longer needed as well
@@ -106,6 +111,7 @@ void DiskEncInd::flushWrite() {
     this->buf = nullptr;
     this->isPosFilled.clear();
 }
+
 
 int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     unsigned long pos = (*((unsigned long*)key.c_str())) % this->size;
@@ -142,6 +148,7 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
     curr = nullptr;
     return 0;
 }
+
 
 void DiskEncInd::reset() {
     if (this->file != nullptr) {

@@ -4,14 +4,17 @@
 
 #include "cryptography.h"
 
+
 // thanks to https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#C.2B.2B_Programs,
 // https://wiki.openssl.org/index.php/EVP_Message_Digests,
 // and https://stackoverflow.com/a/34624592 for good reference code
+
 
 void handleErrors() {
     ERR_print_errors_fp(stderr);
     exit(EXIT_FAILURE);
 }
+
 
 ustring genKey(int keyLen) {
     unsigned char* key = new unsigned char[keyLen];
@@ -24,6 +27,7 @@ ustring genKey(int keyLen) {
     return ustrKey;
 }
 
+
 ustring genIv(int ivLen) {
     unsigned char* iv = new unsigned char[ivLen];
     int res = RAND_bytes(iv, ivLen);
@@ -34,6 +38,7 @@ ustring genIv(int ivLen) {
     delete[] iv;
     return ustrIv;
 }
+
 
 ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
@@ -64,12 +69,14 @@ ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input
     return hash;
 }
 
+
 // PRF implemented with HMAC-SHA512, as done in Private Practical Range Search Revisited
 ustring prf(const ustring& key, const ustring& input) {
     unsigned int outputLen;
     unsigned char* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen);
     return toUstr(output, outputLen);
 }
+
 
 ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
@@ -106,12 +113,14 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
     return ctext;
 }
 
+
 ustring padAndEncrypt(
     const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv, int targetLenBytes
 ) {
     ustring padding(targetLenBytes - ptext.length(), '\0');
     return encrypt(cipher, key, ptext + padding, iv);
 }
+
 
 ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
@@ -147,6 +156,7 @@ ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& cte
     ptext.resize(ptextLen1 + ptextLen2);
     return ptext;
 }
+
 
 ustring decryptAndUnpad(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv) {
     ustring ptext = decrypt(cipher, key, ctext, iv);

@@ -3,12 +3,15 @@
 
 #include "tdag.h"
 
+
 template <class T>
 TdagNode<T>::TdagNode(const Range<T>& range) : range(range), left(nullptr), right(nullptr), extraParent(nullptr) {}
+
 
 template <class T>
 TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
         range(Range<T> {left->range.first, right->range.second}), left(left), right(right), extraParent(nullptr) {}
+
 
 template <class T>
 TdagNode<T>::TdagNode(T maxLeafVal) {
@@ -84,6 +87,7 @@ TdagNode<T>::TdagNode(T maxLeafVal) {
     *this = *tdag;
 }
 
+
 template <class T>
 TdagNode<T>::~TdagNode() {
     // prevent infinite `delete` recursion where extra parents go back to their children
@@ -112,6 +116,7 @@ TdagNode<T>::~TdagNode() {
     }
 }
 
+
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
 // track `extraParent` nodes in an `unordered_set` to prevent duplicates
 template <class T>
@@ -119,6 +124,7 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse() {
     std::unordered_set<TdagNode<T>*> extraParents;
     return this->traverseHelper(extraParents);
 }
+
 
 template <class T>
 std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents) {
@@ -142,6 +148,7 @@ std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<
 
     return nodes;
 }
+
 
 // basically traverses tree with DFS and early exits to find best SRC
 template <class T>
@@ -209,6 +216,7 @@ Range<T> TdagNode<T>::findSrc(const Range<T>& targetRange) {
     return candidates.begin()->second; // take advantage of `std::map`s being sorted by key
 }
 
+
 template <class T>
 std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) {
     std::list<Range<T>> ancestors {this->range};
@@ -226,6 +234,7 @@ std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) {
     return ancestors;
 }
 
+
 template <class T>
 std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
     std::list<TdagNode<T>*> nodes = node->traverse();
@@ -234,6 +243,7 @@ std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
     }
     return os;
 }
+
 
 template class TdagNode<Kw>;
 //template class TdagNode<IdAlias>;

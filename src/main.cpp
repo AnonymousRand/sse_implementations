@@ -6,6 +6,7 @@
 #include "pi_bas.h"
 #include "sda.h"
 
+
 Db<> createDb(int dbSize, bool isDataSkewed) {
     Db<> db;
     if (isDataSkewed) {
@@ -27,6 +28,7 @@ Db<> createDb(int dbSize, bool isDataSkewed) {
     }
     return db;
 }
+
 
 // experiment for debugging with fixed query and printed results
 void expDebug(ISse<>& sse, int dbSize, Range<Kw> query) {
@@ -54,6 +56,7 @@ void expDebug(ISse<>& sse, int dbSize, Range<Kw> query) {
     sse.clear();
 }
 
+
 void exp1(ISse<>& sse, int dbSize) {
     Db<> db = createDb(dbSize, false);
 
@@ -80,6 +83,7 @@ void exp1(ISse<>& sse, int dbSize) {
     // hopefully clear memory asap
     sse.clear();
 }
+
 
 void exp2(ISse<>& sse, int maxDbSize) {
     Range<Kw> query {0, 3};
@@ -109,6 +113,7 @@ void exp2(ISse<>& sse, int maxDbSize) {
     sse.clear();
 }
 
+
 void exp3(ISse<>& sse, int maxDbSize) {
     for (int i = 2; i <= (int)log2(maxDbSize); i++) {
         int dbSize = (int)pow(2, i);
@@ -136,6 +141,7 @@ void exp3(ISse<>& sse, int maxDbSize) {
     // hopefully clear memory asap
     sse.clear();
 }
+
 
 int main() {
     int maxDbSizeExp;
