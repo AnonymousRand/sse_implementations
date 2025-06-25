@@ -72,7 +72,7 @@ concept IDbDoc_ = requires(T t) {
     []<class X>(IDbDoc<X>&){}(t);
 };
 
-// allow polymorphic types for DB (id vs. (id, op) documents, Log-SRC-i etc.)
+// allow polymorphic types for DB (Log-SRC-i)
 template <IDbDoc_ DbDoc = Kw, class DbKw = Kw> 
 using DbEntry = std::pair<DbDoc, Range<DbKw>>;
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
