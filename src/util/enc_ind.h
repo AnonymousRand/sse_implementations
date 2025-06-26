@@ -38,12 +38,6 @@ class IEncInd {
 };
 
 
-// idk if enum in constructor or templates is better design for this polymorphism
-// but templates seem more natural even if less clean esp through all the inheritance
-template <class T>
-concept IEncInd_ = std::derived_from<T, IEncInd>;
-
-
 /******************************************************************************/
 /* `RamEncInd`                                                                */
 /******************************************************************************/
