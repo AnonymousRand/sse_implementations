@@ -1,5 +1,3 @@
-#include <algorithm>
-
 #include "log_src_i.h"
 #include "pi_bas.h"
 

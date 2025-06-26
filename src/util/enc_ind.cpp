@@ -1,5 +1,3 @@
-#include <cstring>
-
 #include "enc_ind.h"
 
 
