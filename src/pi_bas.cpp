@@ -1,5 +1,3 @@
-#include <openssl/rand.h>
-
 #include "pi_bas.h"
 #include "util/cryptography.h"
 
