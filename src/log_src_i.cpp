@@ -5,6 +5,10 @@
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+LogSrcI<Underly>::LogSrcI() : underly1(new Underly<SrcIDb1Doc, Kw>()), underly2(new Underly<Doc, Id>()) {}
+
+
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::LogSrcI(EncIndType encIndType)
         : LogSrcI(new Underly<SrcIDb1Doc, Kw>(), new Underly<Doc, Id>(), encIndType) {}
 

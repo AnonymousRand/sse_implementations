@@ -15,7 +15,7 @@ class LogSrc : public ISdaUnderly<Doc, Kw> {
         LogSrc(Underly<Doc, Kw>* underly, EncIndType encIndType);
 
     public:
-        LogSrc() = default;
+        LogSrc();
         LogSrc(EncIndType encIndType);
         ~LogSrc();
 

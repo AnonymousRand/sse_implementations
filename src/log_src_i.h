@@ -19,7 +19,7 @@ class LogSrcI : public ISdaUnderly<Doc, Kw> {
         Range<IdAlias> search1(const Range<Kw>& query) const;
 
     public:
-        LogSrcI() = default;
+        LogSrcI();
         LogSrcI(EncIndType encIndType);
         ~LogSrcI();
 
