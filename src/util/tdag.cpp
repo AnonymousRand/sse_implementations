@@ -1,5 +1,4 @@
 #include <deque>
-#include <set>
 
 #include "tdag.h"
 
@@ -15,9 +14,9 @@ TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
 
 template <class T>
 TdagNode<T>::TdagNode(T maxLeafVal) {
-    std::set<Range<T>> leafVals; // `set` automatically sorts leaf values in ascending order
+    std::vector<Range<T>> leafVals;
     for (T i = T(DB_KW_MIN); i <= maxLeafVal; i++) {
-        leafVals.insert(Range<T> {i, i});
+        leafVals.push_back(Range<T> {i, i});
     }
 
     // array to hold nodes while building; initialize with leaves
