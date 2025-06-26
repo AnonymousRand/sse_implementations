@@ -58,7 +58,7 @@ TdagNode<T>::TdagNode(T maxLeafVal) {
             continue;
         } 
         if (!joinNodes(node1, l.end() - 1)) {
-            std::cout << "im sorry what" << std::endl;
+            std::cerr << "im sorry what" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
