@@ -9,16 +9,16 @@
 void RamEncInd::init(unsigned long size) {}
 
 
-void RamEncInd::write(ustring key, std::pair<ustring, ustring> val) {
-    this->map[key] = val;
+void RamEncInd::write(ustring label, std::pair<ustring, ustring> val) {
+    this->map[label] = val;
 }
 
 
 void RamEncInd::flushWrite() {}
 
 
-int RamEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
-    auto iter = this->map.find(key);
+int RamEncInd::find(ustring label, std::pair<ustring, ustring>& ret) const {
+    auto iter = this->map.find(label);
     if (iter == this->map.end()) {
         return -1;
     }
@@ -77,12 +77,12 @@ void DiskEncInd::init(unsigned long size) {
  *     - `val.first` must be exactly `ENC_IND_DOC_LEN` long (e.g. via `padAndEncrypt()`)
  *     - `val.second` (the IV) must be exactly `IV_LEN` long
  */
-void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
-    // try to place encrypted items in the location specified by its encrypted key, i.e. PRF/hash output for PiBas 
+void DiskEncInd::write(ustring label, std::pair<ustring, ustring> val) {
+    // try to place encrypted items in the location specified by its encrypted label, i.e. PRF/hash output for PiBas 
     // (modulo buffer size); this seems iffy because of modulo but this is what USENIX'24's implementation does
     // (although they also use caching, presumably since it's slow if we need to keep finding next available locations)
     // this conversion mess is from USENIX'24's implementation
-    unsigned long pos = (*((unsigned long*)key.c_str())) % this->size;
+    unsigned long pos = (*((unsigned long*)label.c_str())) % this->size;
     // if location is already filled (e.g. because of modulo), find next available location
     unsigned long numPositionsChecked = 1;
     while (this->isPosFilled[pos] && numPositionsChecked < this->size) {
@@ -96,7 +96,7 @@ void DiskEncInd::write(ustring key, std::pair<ustring, ustring> val) {
     this->isPosFilled[pos] = true;
 
     // encode kv pair and write to buffer
-    ustring kvPair = key + val.first + val.second;
+    ustring kvPair = label + val.first + val.second;
     std::memcpy(&this->buf[pos * ENC_IND_KV_LEN], &kvPair[0], ENC_IND_KV_LEN);
 }
 
@@ -110,16 +110,16 @@ void DiskEncInd::flushWrite() {
 }
 
 
-int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
-    unsigned long pos = (*((unsigned long*)key.c_str())) % this->size;
+int DiskEncInd::find(ustring label, std::pair<ustring, ustring>& ret) const {
+    unsigned long pos = (*((unsigned long*)label.c_str())) % this->size;
     unsigned char* curr = new unsigned char[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     std::fread(curr, ENC_IND_KV_LEN, 1, this->file);
-    ustring currKey(curr, ENC_IND_KEY_LEN);
-    // if location based on `key` did not match the target (i.e. another kv pair overflowed to here first), scan
+    ustring currLabel(curr, ENC_IND_KEY_LEN);
+    // if location based on `label` did not match the target (i.e. another kv pair overflowed to here first), scan
     // subsequent locations for where the target could've overflowed to
     unsigned long numPositionsChecked = 1;
-    while (currKey != key && numPositionsChecked < this->size) {
+    while (currLabel != label && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         // by assuming previous `fread()` read all `ENC_IND_KV_LEN` bytes and hence only needing to `fseek()` when we
@@ -128,11 +128,11 @@ int DiskEncInd::find(ustring key, std::pair<ustring, ustring>& ret) const {
             std::fseek(this->file, 0, SEEK_SET);
         }
         std::fread(curr, ENC_IND_KV_LEN, 1, this->file);
-        currKey = ustring(curr, ENC_IND_KEY_LEN);
+        currLabel = ustring(curr, ENC_IND_KEY_LEN);
     }
     // this does make it a lot slower to verify if an element is nonexistent compared to primary memory storage,
     // since we have to iterate through whole index
-    if (currKey != key) {
+    if (currLabel != label) {
         delete[] curr;
         curr = nullptr;
         return -1;

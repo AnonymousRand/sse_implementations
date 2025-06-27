@@ -6,7 +6,7 @@
 
 
 // indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries
-// each of which correspond to `std::pair<label/key, std::pair<encrypted doc, iv>>`
+// each of which correspond to `std::pair<label, std::pair<encrypted doc, IV>>`
 
 
 enum class EncIndType {
@@ -28,9 +28,9 @@ class IEncInd {
 
         // every `init()` MUST be followed by a `reset()` for memory freeing!!
         virtual void init(unsigned long size) = 0;
-        virtual void write(ustring key, std::pair<ustring, ustring> val) = 0;
+        virtual void write(ustring label, std::pair<ustring, ustring> val) = 0;
         virtual void flushWrite() = 0;
-        virtual int find(ustring key, std::pair<ustring, ustring>& ret) const = 0; // returns error code if not found
+        virtual int find(ustring label, std::pair<ustring, ustring>& ret) const = 0; // returns error code if not found
         // clear up memory without completely destroying object (i.e. `init()` can be called again)
         // should be idempotent and safe to call without `init()` first as well
         virtual void reset() = 0;
@@ -49,9 +49,9 @@ class RamEncInd : public IEncInd {
 
     public:
         void init(unsigned long size) override;
-        void write(ustring key, std::pair<ustring, ustring> val) override;
+        void write(ustring label, std::pair<ustring, ustring> val) override;
         void flushWrite() override;
-        int find(ustring key, std::pair<ustring, ustring>& ret) const override;
+        int find(ustring label, std::pair<ustring, ustring>& ret) const override;
         void reset() override;
 };
 
@@ -74,9 +74,9 @@ class DiskEncInd : public IEncInd {
         ~DiskEncInd();
 
         void init(unsigned long size) override;
-        void write(ustring key, std::pair<ustring, ustring> val) override;
+        void write(ustring label, std::pair<ustring, ustring> val) override;
         // flush temporary buffer to disk and then free buffer
         void flushWrite() override;
-        int find(ustring key, std::pair<ustring, ustring>& ret) const override;
+        int find(ustring label, std::pair<ustring, ustring>& ret) const override;
         void reset() override;
 };
