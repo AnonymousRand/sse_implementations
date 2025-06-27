@@ -50,13 +50,12 @@ using Kw      = int;
 using Id      = int;
 using IdAlias = Id; // Log-SRC-i id aliases are functionally identical to ids, but it's nice to have this for clarity
 
-
+// forward declarations
 template <class T>
 class Range;
 template <class T>
 class IDbDoc;
 class Doc;
-class SrcIDb1Doc;
 enum class Op : char {
     INS = 'I',
     DEL = 'D'
