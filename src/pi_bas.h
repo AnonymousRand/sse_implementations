@@ -51,7 +51,7 @@ class PiBas<Doc, Kw> : public PiBasBase<Doc, Kw> {
         PiBas() = default;
         PiBas(EncIndType encIndType);
 
-        std::vector<Doc> search(const Range<Kw>& query) const;
+        std::vector<Doc> search(const Range<Kw>& query) const override;
 };
 
 
