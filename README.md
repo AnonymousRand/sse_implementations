@@ -23,6 +23,8 @@ g++ main.cpp pi_bas.cpp sda.cpp log_src.cpp log_srci.cpp util/*.cpp -lcrypto -o 
 
 Using GCC instead of G++ to compile will probably produce a wall of errors (different linking mechanics?).
 
+~~too lazy to create a Makefile right now~~
+
 # Notes
 
 - Ids and keywords must be integral values, and keywords must be positive. Otherwise, Bad Things may happen.
