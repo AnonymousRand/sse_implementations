@@ -314,8 +314,8 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 
 
 template void shuffleInd(Ind<Kw, Doc>& ind);
-//template void shuffleInd(Ind<IdAlias, Doc>& ind);
 template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
+//template void shuffleInd(Ind<IdAlias, Doc>& ind);
 
 template Kw findMaxDbKw(const Db<Doc, Kw>& db);
 
