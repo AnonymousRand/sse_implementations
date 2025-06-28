@@ -108,24 +108,24 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchWithoutRemovingDels(const Range
     // naive range search: just individually query every point in range
     for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
         std::pair<ustring, ustring> queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
-        ustring subkey1 = queryToken.first;
-        ustring subkey2 = queryToken.second;
+        ustring subkeyPrf = queryToken.first;
+        ustring subkeyEnc = queryToken.second;
         std::vector<DbDoc> results;
         int counter = 0;
         
         // for c = 0 until `Get` returns error
         while (true) {
             // d <- Get(D, F(K_1, c)); c++
-            ustring label = prf(subkey1, toUstr(counter));
-            std::pair<ustring, ustring> encIndV;
-            int status = this->encInd->find(label, encIndV);
+            ustring label = prf(subkeyPrf, toUstr(counter));
+            std::pair<ustring, ustring> encIndVal;
+            int status = this->encInd->find(label, encIndVal);
             if (status == -1) {
                 break;
             }
-            ustring encryptedDoc = encIndV.first;
+            ustring encryptedDoc = encIndVal.first;
             // id <- Dec(K_2, d)
-            ustring iv = encIndV.second;
-            ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, subkey2, encryptedDoc, iv);
+            ustring iv = encIndVal.second;
+            ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, subkeyEnc, encryptedDoc, iv);
             DbDoc result = DbDoc::fromUstr(decryptedDoc);
             results.push_back(result);
             counter++;
@@ -142,9 +142,9 @@ template <IDbDoc_ DbDoc, class DbKw>
 std::pair<ustring, ustring> PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     ustring K = prf(this->key, query.toUstr());
     int subkeyLen = K.length() / 2;
-    ustring subkey1 = K.substr(0, subkeyLen);
-    ustring subkey2 = K.substr(subkeyLen, subkeyLen);
-    return std::pair {subkey1, subkey2};
+    ustring subkeyPrf = K.substr(0, subkeyLen);
+    ustring subkeyEnc = K.substr(subkeyLen, subkeyLen);
+    return std::pair {subkeyPrf, subkeyEnc};
 }
 
 
@@ -220,8 +220,8 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
 
     ////////////////////////////// generate keys ///////////////////////////////
 
-    this->key1 = genKey(secParam);
-    this->key2 = genKey(secParam);
+    this->keyPrf = genKey(secParam);
+    this->keyEnc = genKey(secParam);
 
     /////////////////////////////// build index ////////////////////////////////
 
@@ -257,7 +257,7 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
         for (DbDoc dbDoc : itDocsWithSameKw->second) {
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, prfOutput + toUstr(counter));
             ustring iv = genIv(IV_LEN);
-            ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, this->key2, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
+            ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, this->keyEnc, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             this->encInd->write(label, std::pair {encryptedDoc, iv});
             counter++;
         }
@@ -288,16 +288,16 @@ std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutRemovingDels(co
         
         while (true) {
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
-            std::pair<ustring, ustring> encIndV;
-            int status = this->encInd->find(label, encIndV);
+            std::pair<ustring, ustring> encIndVal;
+            int status = this->encInd->find(label, encIndVal);
             if (status == -1) {
                 break;
             }
-            ustring encryptedDoc = encIndV.first;
-            ustring iv = encIndV.second;
+            ustring encryptedDoc = encIndVal.first;
+            ustring iv = encIndVal.second;
             // technically we decrypt in the client, but since there's no client-server distinction
             // in this implementation we'll just decrypt immediately to make the code cleaner
-            ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, this->key2, encryptedDoc, iv);
+            ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDoc, iv);
             DbDoc result = DbDoc::fromUstr(decryptedDoc);
             results.push_back(result);
             counter++;
@@ -312,7 +312,7 @@ std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutRemovingDels(co
 
 template <IDbDoc_ DbDoc, class DbKw>
 ustring PiBasResHidingBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
-    return prf(this->key1, query.toUstr());
+    return prf(this->keyPrf, query.toUstr());
 }
 
 

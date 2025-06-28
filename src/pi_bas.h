@@ -66,8 +66,8 @@ template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBasResHidingBase : public ISdaUnderlySse<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
-        ustring key1;
-        ustring key2;
+        ustring keyPrf;
+        ustring keyEnc;
         IEncInd* encInd = nullptr;
         bool _isEmpty = false;
 
