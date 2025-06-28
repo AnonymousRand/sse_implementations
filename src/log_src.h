@@ -6,7 +6,7 @@
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-class LogSrc : public ISdaUnderly<Doc, Kw> {
+class LogSrc : public ISdaUnderlySse<Doc, Kw> {
     private:
         Underly<Doc, Kw>* underly = nullptr;
         TdagNode<Kw>* tdag = nullptr;

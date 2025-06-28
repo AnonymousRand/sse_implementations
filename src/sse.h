@@ -44,12 +44,12 @@ class IDsse : public ISse<DbDoc, DbKw> {
 
 
 /******************************************************************************/
-/* `ISdaUnderly`                                                              */
+/* `ISdaUnderlySse`                                                           */
 /******************************************************************************/
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-class ISdaUnderly : public ISse<DbDoc, DbKw> {
+class ISdaUnderlySse : public ISse<DbDoc, DbKw> {
     public:
         virtual std::vector<DbDoc> searchWithoutRemovingDels(const Range<DbKw>& query) const = 0;
         virtual Db<DbDoc, DbKw> getDb() const = 0;
@@ -58,6 +58,6 @@ class ISdaUnderly : public ISse<DbDoc, DbKw> {
 
 
 template <class T>
-concept ISdaUnderly_ = requires(T t) {
-    []<class ... Args>(ISdaUnderly<Args ...>&){}(t);
+concept ISdaUnderlySse_ = requires(T t) {
+    []<class ... Args>(ISdaUnderlySse<Args ...>&){}(t);
 };

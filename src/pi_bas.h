@@ -13,7 +13,7 @@
 // class `PiBas` since that's the only way to do partial template specialization for the case where `DbDoc` is `Doc`
 // (`Doc`s store an update operation, so in this case we need to additionally remove deleted docs in `search()`)
 template <IDbDoc_ DbDoc, class DbKw>
-class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
+class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key;
@@ -63,7 +63,7 @@ class PiBas<Doc, Kw> : public PiBasBase<Doc, Kw> {
 
 
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
-class PiBasResHidingBase : public ISdaUnderly<DbDoc, DbKw> {
+class PiBasResHidingBase : public ISdaUnderlySse<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key1;
