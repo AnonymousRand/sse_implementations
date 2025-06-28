@@ -3,16 +3,16 @@
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI() : underly1(new Underly<SrcIDb1Doc, Kw>()), underly2(new Underly<Doc, Id>()) {}
+LogSrcI<Underly>::LogSrcI() : underly1(new Underly<SrcIDb1Doc, Kw>()), underly2(new Underly<Doc, IdAlias>()) {}
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::LogSrcI(EncIndType encIndType)
-        : LogSrcI(new Underly<SrcIDb1Doc, Kw>(), new Underly<Doc, Id>(), encIndType) {}
+        : LogSrcI(new Underly<SrcIDb1Doc, Kw>(), new Underly<Doc, IdAlias>(), encIndType) {}
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, Id>* underly2, EncIndType encIndType)
+LogSrcI<Underly>::LogSrcI(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType)
         : underly1(underly1), underly2(underly2) {
     this->setEncIndType(encIndType);
 }
@@ -57,7 +57,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
     Db<Doc, IdAlias> db2;
     std::unordered_map<Id, IdAlias> idAliasMapping; // for quick reference when buiding index 1
-    for (int i = 0; i < dbSorted.size(); i++) {
+    for (unsigned long i = 0; i < dbSorted.size(); i++) {
         DbEntry<Doc, Kw> dbEntry = dbSorted[i];
         Doc doc = dbEntry.first;
         DbEntry<Doc, IdAlias> newDbEntry = DbEntry {doc, Range<IdAlias> {i, i}};
@@ -77,8 +77,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->tdag2 = new TdagNode<IdAlias>(maxIdAlias);
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
-    int stop = db2.size();
-    for (int i = 0; i < stop; i++) {
+    unsigned long stop = db2.size();
+    for (unsigned long i = 0; i < stop; i++) {
         DbEntry<Doc, IdAlias> dbEntry = db2[i];
         Doc doc = dbEntry.first;
         Range<IdAlias> idAliasRange = dbEntry.second;
@@ -111,7 +111,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();
-    for (int i = 0; i < stop; i++) {
+    for (unsigned long i = 0; i < stop; i++) {
         DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
         SrcIDb1Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
@@ -135,7 +135,7 @@ Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
 
     Range<Kw> src1 = this->tdag1->findSrc(query);
     if (src1 == DUMMY_RANGE<Kw>()) { 
-        return DUMMY_RANGE<Id>();
+        return DUMMY_RANGE<IdAlias>();
     }
     std::vector<SrcIDb1Doc> choices = this->underly1->search(src1);
 

@@ -34,8 +34,8 @@ static const int ENC_IND_KV_LEN     = ENC_IND_KEY_LEN + ENC_IND_VAL_LEN;
 /**
  * PRECONDITION: keywords are always positive.
  */
-static const int DB_KW_MIN = 0;
-static const int DUMMY     = -1;
+static const long DB_KW_MIN = 0;
+static const long DUMMY     = -1;
 
 
 /******************************************************************************/
@@ -46,9 +46,9 @@ static const int DUMMY     = -1;
 /**
  * PRECONDITION: keywords and ids must both be integral values.
  */
-using Kw      = int;
-using Id      = int;
-using IdAlias = Id; // Log-SRC-i id aliases are functionally identical to ids, but it's nice to have this for clarity
+using Kw      = long;
+using Id      = long;
+using IdAlias = unsigned long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 
 // forward declarations
 template <class T>
@@ -92,7 +92,7 @@ static std::mt19937 RNG(RAND_DEV());
 // use `ustring` instead of `unsigned char*` to avoid hell
 using ustring = std::basic_string<unsigned char>;
 
-ustring toUstr(int n);
+ustring toUstr(long n);
 ustring toUstr(const std::string& s);
 ustring toUstr(unsigned char* p, int len);
 std::string fromUstr(const ustring& ustr);

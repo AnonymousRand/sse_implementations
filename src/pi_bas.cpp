@@ -70,7 +70,7 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         // (`Trpdr`), but I'm fairly sure they mean the same thing, otherwise it doesn't work
         std::pair<ustring, ustring> subkeys = this->genQueryToken(dbKwRange);
         
-        unsigned int counter = 0;
+        unsigned long counter = 0;
         // for each id in DB(w)
         auto itDocsWithSameKw = ind.find(dbKwRange);
         for (DbDoc dbDoc : itDocsWithSameKw->second) {
@@ -111,7 +111,7 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchWithoutRemovingDels(const Range
         ustring subkeyPrf = queryToken.first;
         ustring subkeyEnc = queryToken.second;
         std::vector<DbDoc> results;
-        int counter = 0;
+        unsigned long counter = 0;
         
         // for c = 0 until `Get` returns error
         while (true) {
@@ -252,7 +252,7 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         ustring prfOutput = this->genQueryToken(dbKwRange);
         
-        unsigned int counter = 0;
+        unsigned long counter = 0;
         auto itDocsWithSameKw = ind.find(dbKwRange);
         for (DbDoc dbDoc : itDocsWithSameKw->second) {
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, prfOutput + toUstr(counter));
@@ -284,7 +284,7 @@ std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutRemovingDels(co
     for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
         ustring queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
         std::vector<DbDoc> results;
-        int counter = 0;
+        unsigned long counter = 0;
         
         while (true) {
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
@@ -353,4 +353,4 @@ void PiBasResHidingBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
 
 template class PiBasResHiding<Doc, Kw>;        // PiBas
 template class PiBasResHiding<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
-//template class PiBasResHiding<Doc, IdAlias>;   // Log-SRC-i index 2
+template class PiBasResHiding<Doc, IdAlias>;   // Log-SRC-i index 2
