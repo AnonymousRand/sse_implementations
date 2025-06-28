@@ -27,7 +27,7 @@ int EncIndRam::find(ustring label, std::pair<ustring, ustring>& ret) const {
 }
 
 
-void EncIndRam::reset() {
+void EncIndRam::clear() {
     this->map.clear();
 }
 
@@ -38,7 +38,7 @@ void EncIndRam::reset() {
 
 
 EncIndDisk::~EncIndDisk() {
-    this->reset();
+    this->clear();
 }
 
 
@@ -147,7 +147,7 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
 }
 
 
-void EncIndDisk::reset() {
+void EncIndDisk::clear() {
     if (this->file != nullptr) {
         std::fclose(this->file);
         this->file = nullptr; // important for idempotence!
@@ -156,7 +156,7 @@ void EncIndDisk::reset() {
         delete[] this->buf;
         this->buf = nullptr;
     }
-    // delete encrypted index files from disk on `reset()`
+    // delete encrypted index files from disk on `clear()`
     if (this->filename != "") {
         std::remove(this->filename.c_str());
         this->filename = "";

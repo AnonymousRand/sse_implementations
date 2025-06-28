@@ -24,14 +24,14 @@ class IEncInd {
         // the base class needs to have a virtual destructor for the derived class' constructor to be called
         virtual ~IEncInd() = default;
 
-        // every `init()` MUST be followed by a `reset()` for memory freeing!!
+        // every `init()` MUST be followed by a `clear()` for memory freeing!!
         virtual void init(unsigned long size) = 0;
         virtual void write(ustring label, std::pair<ustring, ustring> val) = 0;
         virtual void flushWrite() = 0;
         virtual int find(ustring label, std::pair<ustring, ustring>& ret) const = 0; // returns error code if not found
         // clear up memory without completely destroying object (i.e. `init()` can be called again)
         // should be idempotent and safe to call without `init()` first as well
-        virtual void reset() = 0;
+        virtual void clear() = 0;
 };
 
 
@@ -50,7 +50,7 @@ class EncIndRam : public IEncInd {
         void write(ustring label, std::pair<ustring, ustring> val) override;
         void flushWrite() override;
         int find(ustring label, std::pair<ustring, ustring>& ret) const override;
-        void reset() override;
+        void clear() override;
 };
 
 
@@ -76,5 +76,5 @@ class EncIndDisk : public IEncInd {
         // flush temporary buffer to disk and then free buffer
         void flushWrite() override;
         int find(ustring label, std::pair<ustring, ustring>& ret) const override;
-        void reset() override;
+        void clear() override;
 };

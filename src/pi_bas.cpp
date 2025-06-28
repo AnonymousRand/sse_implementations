@@ -60,7 +60,7 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // randomly permute documents associated with same keyword, required by some schemes on top of PiBas (e.g. Log-SRC)
     shuffleInd(ind);
 
-    this->encInd->reset();
+    this->encInd->clear();
     this->encInd->init(db.size());
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
@@ -151,7 +151,7 @@ std::pair<ustring, ustring> PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<Db
 template <IDbDoc_ DbDoc, class DbKw>
 void PiBasBase<DbDoc, DbKw>::clear() {
     if (this->encInd != nullptr) {
-        this->encInd->reset();
+        this->encInd->clear();
     }
     this->db.clear();
     this->_isEmpty = true;
@@ -228,7 +228,7 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
     this->db = db;
     this->_isEmpty = db.empty();
     if (db.empty()) {
-        this->encInd->reset();
+        this->encInd->clear();
         return;
     }
 
@@ -245,7 +245,7 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
         }
     }
 
-    this->encInd->reset();
+    this->encInd->clear();
     this->encInd->init(db.size());
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
@@ -319,7 +319,7 @@ ustring PiBasResHidingBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query)
 template <IDbDoc_ DbDoc, class DbKw>
 void PiBasResHidingBase<DbDoc, DbKw>::clear() {
     if (this->encInd != nullptr) {
-        this->encInd->reset();
+        this->encInd->clear();
     }
     this->db.clear();
     this->_isEmpty = true;
