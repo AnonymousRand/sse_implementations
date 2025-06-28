@@ -48,7 +48,7 @@ static const long DUMMY     = -1;
  */
 using Kw      = long;
 using Id      = long;
-using IdAlias = unsigned long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
+using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 
 // forward declarations
 template <class T>

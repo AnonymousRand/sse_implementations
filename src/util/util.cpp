@@ -103,10 +103,11 @@ std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
 
 
 template class Range<Kw>;
-template class Range<IdAlias>;
+// commented out since currently `IdAlias` and `Kw` are the same type (`long`)
+//template class Range<IdAlias>;
 
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
-template std::ostream& operator <<(std::ostream& os, const Range<IdAlias>& range);
+//template std::ostream& operator <<(std::ostream& os, const Range<IdAlias>& range);
 
 
 /******************************************************************************/
@@ -314,10 +315,10 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 
 template void shuffleInd(Ind<Kw, Doc>& ind);
 template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
-template void shuffleInd(Ind<IdAlias, Doc>& ind);
+//template void shuffleInd(Ind<IdAlias, Doc>& ind);
 
 template Kw findMaxDbKw(const Db<Doc, Kw>& db);
 
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);
-template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc, IdAlias>& db);
+//template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc, IdAlias>& db);

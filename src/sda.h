@@ -11,7 +11,7 @@ class Sda : public IDsse<Doc, Kw> {
     protected:
         std::vector<Underly*> underlys;
         EncIndType encIndType;
-        unsigned long firstEmptyInd = 0;
+        long firstEmptyInd = 0;
 
         std::vector<Doc> searchWithoutRemovingDels(const Range<Kw>& query) const;
 
