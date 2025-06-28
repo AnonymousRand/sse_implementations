@@ -5,10 +5,6 @@
 #include "util.h"
 
 
-// indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries
-// each of which correspond to `std::pair<label, std::pair<encrypted doc, IV>>`
-
-
 enum class EncIndType {
     RAM,
     DISK
@@ -20,6 +16,10 @@ enum class EncIndType {
 /******************************************************************************/
 
 
+/**
+ * Indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries,
+ * each of which correspond to `std::pair<label, std::pair<encrypted doc, IV>>`.
+ */
 class IEncInd {
     public:
         // apparently when deleting derived class objects via pointers to base class (e.g. polymorphism)
