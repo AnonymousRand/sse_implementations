@@ -37,7 +37,6 @@ class PiBasBase : public ISdaUnderly<DbDoc, DbKw> {
 };
 
 
-// this is literally just so I can partially specialize `search()`'s template for when `DbDoc` is `Doc`
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBas : public PiBasBase<DbDoc, DbKw> {
     public:
