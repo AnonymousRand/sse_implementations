@@ -2,22 +2,22 @@
 
 
 /******************************************************************************/
-/* `RamEncInd`                                                                */
+/* `EncIndRam`                                                                */
 /******************************************************************************/
 
 
-void RamEncInd::init(unsigned long size) {}
+void EncIndRam::init(unsigned long size) {}
 
 
-void RamEncInd::write(ustring label, std::pair<ustring, ustring> val) {
+void EncIndRam::write(ustring label, std::pair<ustring, ustring> val) {
     this->map[label] = val;
 }
 
 
-void RamEncInd::flushWrite() {}
+void EncIndRam::flushWrite() {}
 
 
-int RamEncInd::find(ustring label, std::pair<ustring, ustring>& ret) const {
+int EncIndRam::find(ustring label, std::pair<ustring, ustring>& ret) const {
     auto iter = this->map.find(label);
     if (iter == this->map.end()) {
         return -1;
@@ -27,22 +27,22 @@ int RamEncInd::find(ustring label, std::pair<ustring, ustring>& ret) const {
 }
 
 
-void RamEncInd::reset() {
+void EncIndRam::reset() {
     this->map.clear();
 }
 
 
 /******************************************************************************/
-/* `DiskEncInd`                                                               */
+/* `EncIndDisk`                                                               */
 /******************************************************************************/
 
 
-DiskEncInd::~DiskEncInd() {
+EncIndDisk::~EncIndDisk() {
     this->reset();
 }
 
 
-void DiskEncInd::init(unsigned long size) {
+void EncIndDisk::init(unsigned long size) {
     this->size = size;
     this->buf = new unsigned char[size * ENC_IND_KV_LEN];
 
@@ -77,7 +77,7 @@ void DiskEncInd::init(unsigned long size) {
  *     - `val.first` must be exactly `ENC_IND_DOC_LEN` long (e.g. via `padAndEncrypt()`)
  *     - `val.second` (the IV) must be exactly `IV_LEN` long
  */
-void DiskEncInd::write(ustring label, std::pair<ustring, ustring> val) {
+void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     // try to place encrypted items in the location specified by its encrypted label, i.e. PRF/hash output for PiBas 
     // (modulo buffer size); this seems iffy because of modulo but this is what USENIX'24's implementation does
     // (although they also use caching, presumably since it's slow if we need to keep finding next available locations)
@@ -101,7 +101,7 @@ void DiskEncInd::write(ustring label, std::pair<ustring, ustring> val) {
 }
 
 
-void DiskEncInd::flushWrite() {
+void EncIndDisk::flushWrite() {
     std::fwrite(this->buf, ENC_IND_KV_LEN, size, this->file);
     // free up memory that is no longer needed as well
     delete[] this->buf;
@@ -110,7 +110,7 @@ void DiskEncInd::flushWrite() {
 }
 
 
-int DiskEncInd::find(ustring label, std::pair<ustring, ustring>& ret) const {
+int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
     unsigned long pos = (*((unsigned long*)label.c_str())) % this->size;
     unsigned char* curr = new unsigned char[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
@@ -147,7 +147,7 @@ int DiskEncInd::find(ustring label, std::pair<ustring, ustring>& ret) const {
 }
 
 
-void DiskEncInd::reset() {
+void EncIndDisk::reset() {
     if (this->file != nullptr) {
         std::fclose(this->file);
         this->file = nullptr; // important for idempotence!

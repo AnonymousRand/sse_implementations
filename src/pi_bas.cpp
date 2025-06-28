@@ -174,10 +174,10 @@ template <IDbDoc_ DbDoc, class DbKw>
 void PiBasBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
     switch (encIndType) {
         case EncIndType::RAM:
-            this->encInd = new RamEncInd();
+            this->encInd = new EncIndRam();
             break;
         case EncIndType::DISK:
-            this->encInd = new DiskEncInd();
+            this->encInd = new EncIndDisk();
             break;
     }
 }
@@ -342,10 +342,10 @@ template <IDbDoc_ DbDoc, class DbKw>
 void PiBasResHidingBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
     switch (encIndType) {
         case EncIndType::RAM:
-            this->encInd = new RamEncInd();
+            this->encInd = new EncIndRam();
             break;
         case EncIndType::DISK:
-            this->encInd = new DiskEncInd();
+            this->encInd = new EncIndDisk();
             break;
     }
 }

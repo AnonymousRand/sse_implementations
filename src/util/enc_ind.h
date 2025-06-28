@@ -38,12 +38,12 @@ class IEncInd {
 
 
 /******************************************************************************/
-/* `RamEncInd`                                                                */
+/* `EncIndRam`                                                                */
 /******************************************************************************/
 
 
 // for storing in primary memory (essentially an `std::map`)
-class RamEncInd : public IEncInd {
+class EncIndRam : public IEncInd {
     private:
         std::map<ustring, std::pair<ustring, ustring>> map;
 
@@ -57,12 +57,12 @@ class RamEncInd : public IEncInd {
 
 
 /******************************************************************************/
-/* `DiskEncInd`                                                               */
+/* `EncIndDisk`                                                               */
 /******************************************************************************/
 
 
 // for storing in secondary memory
-class DiskEncInd : public IEncInd {
+class EncIndDisk : public IEncInd {
     private:
         FILE* file = nullptr;
         unsigned char* buf = nullptr;
@@ -71,7 +71,7 @@ class DiskEncInd : public IEncInd {
         std::unordered_map<unsigned long, bool> isPosFilled;
 
     public:
-        ~DiskEncInd();
+        ~EncIndDisk();
 
         void init(unsigned long size) override;
         void write(ustring label, std::pair<ustring, ustring> val) override;
