@@ -42,7 +42,7 @@ void expDebug(ISse<>& sse, int dbSize, Range<Kw> query) {
     std::cout << "Results:" << std::endl;
     for (Doc result : results) {
         Range<Kw> kw;
-        for (DbEntry<Doc, Kw> dbEntry : db) {
+        for (DbEntry<> dbEntry : db) {
             if (dbEntry.first == result) {
                 kw = dbEntry.second;
                 break;
