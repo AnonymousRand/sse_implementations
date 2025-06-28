@@ -1,6 +1,6 @@
 # SSE Implementations
 
-Implementations of the following searchable symmetric encryption (SSE) schemes:
+Implementations of the following [searchable symmetric encryption](https://en.wikipedia.org/wiki/Searchable_symmetric_encryption) (SSE) schemes:
 
 - PiBas ([Cash et al. 2014](https://eprint.iacr.org/2014/853.pdf))
 - Logarithmic-SRC ([Demertzis et al. 2016](https://idemertzis.com/Papers/sigmod16.pdf))
