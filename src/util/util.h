@@ -32,7 +32,9 @@ static const int ENC_IND_VAL_LEN    = ENC_IND_DOC_LEN + IV_LEN;
 static const int ENC_IND_KV_LEN     = ENC_IND_KEY_LEN + ENC_IND_VAL_LEN;
 
 /**
- * PRECONDITION: keywords are always positive.
+ * PRECONDITION:
+ *     - Keywords and ids are both integral values (storable by `long`).
+ *     - Keywords are always positive.
  */
 static const long DB_KW_MIN = 0;
 static const long DUMMY     = -1;
@@ -43,9 +45,6 @@ static const long DUMMY     = -1;
 /******************************************************************************/
 
 
-/**
- * PRECONDITION: keywords and ids must both be integral values.
- */
 using Kw      = long;
 using Id      = long;
 using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
