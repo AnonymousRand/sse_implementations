@@ -130,9 +130,9 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     }
 
     // encode kv pair and write to file
-    ustring kvPair = label + val.first + val.second;
+    ustring kv = label + val.first + val.second;
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
-    std::fwrite(kvPair.c_str(), ENC_IND_KV_LEN, 1, this->file);
+    std::fwrite(kv.c_str(), ENC_IND_KV_LEN, 1, this->file);
     std::fflush(this->file); // flush to guarantee that we immediately mark the spot we just wrote into as filled
     delete[] currKv;
     currKv = nullptr;
