@@ -15,24 +15,21 @@
 // partial template specialization for the case where `DbDoc` is `Doc`
 // (`Doc`s store an update operation, so in this case we need to additionally remove deleted docs when searching)
 template <IDbDoc_ DbDoc, class DbKw>
-class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw>, public IRangeUnderlySse<DbDoc, DbKw> {
+class PiBasBase : public ISse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
-        ustring key;
         IEncInd* encInd = nullptr;
         bool _isEmpty = false;
 
-        std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
+        virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
 
     public:
         PiBasBase() = default;
         PiBasBase(EncIndType encIndType);
-        virtual ~PiBasBase(); // must be `virtual` for compiler to not scream about undefined ref to child destructor
+        virtual ~PiBasBase();
 
-        void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
+        std::vector<DbDoc> search(const Range<DbKw>& query, bool shouldProcessResults, bool isNaive) const override;
 
-        std::vector<DbDoc> searchGeneric(const Range<DbKw>& query) const override;
-        std::vector<DbDoc> searchAsRangeUnderlyGeneric(const Range<DbKw>& query) const;
         void clear() override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
@@ -40,35 +37,39 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw>, public IRangeUnderlySse<Db
 };
 
 
-/******************************************************************************/
-/* `PiBas`                                                                    */
-/******************************************************************************/
-
-
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBas : public PiBasBase<DbDoc, DbKw> {
+    private:
+        ustring key;
+
+        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
+        std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
+
     public:
         PiBas() = default;
         PiBas(EncIndType encIndType);
 
-        std::vector<DbDoc> search(const Range<DbKw>& query) const override;
-
-        std::vector<DbDoc> searchAsRangeUnderly(const Range<DbKw>& query) const override;
+        void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 };
 
 
 /******************************************************************************/
-/* `PiBas` Template Specialization                                            */
+/* `PiBasResHiding`                                                           */
 /******************************************************************************/
 
 
-template <>
-class PiBas<Doc, Kw> : public PiBasBase<Doc, Kw> {
+template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
+class PiBasResHiding : public PiBasBase<DbDoc, DbKw> {
+    private:
+        ustring keyPrf;
+        ustring keyEnc;
+
+        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
+        ustring genQueryToken(const Range<DbKw>& query) const;
+
     public:
-        PiBas() = default;
-        PiBas(EncIndType encIndType);
+        PiBasResHiding() = default;
+        PiBasResHiding(EncIndType encIndType);
 
-        std::vector<Doc> search(const Range<Kw>& query) const override;
-
-        std::vector<Doc> searchAsRangeUnderly(const Range<Kw>& query) const override;
+        void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 };

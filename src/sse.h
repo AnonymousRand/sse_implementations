@@ -2,7 +2,6 @@
 
 
 #include "util/enc_ind.h"
-#include "util/util.h"
 
 
 /******************************************************************************/
@@ -17,11 +16,23 @@ class ISse {
 
     public:
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
-        virtual std::vector<DbDoc> search(const Range<DbKw>& query) const = 0;
+        
+        /**
+         * Params:
+         *     - `shouldProcessResults`: whether to filter out deleted docs or not
+         *     - `isNaive`: whether to search each point in `query` individually, or the entire range in one go
+         *       (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC.
+         */
+        virtual std::vector<DbDoc> search(
+            const Range<DbKw>& query, bool shouldProcessResults = true, bool isNaive = true
+        ) const = 0;
 
-        // `clear()` should free memory of all unneeded instance variables, but not fully delete this object
-        // (as the destructor does) so we can still call `setup()` again with the same object, perhaps witha different db
+        /**
+         * Free memory and clear the db/index, without fully destroying this object as the destructor does
+         * (so we can still call `setup()` again with the same object, perhaps with a different db)
+         */
         virtual void clear() = 0;
+
         virtual void setEncIndType(EncIndType encIndType) = 0;
 };
 
@@ -37,47 +48,27 @@ concept ISse_ = requires(T t) {
 /******************************************************************************/
 
 
-template <IDbDoc_ DbDoc = Kw, class DbKw = Kw>
-class IDsse : public virtual ISse<DbDoc, DbKw> {
+template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
+class IDsse : public ISse<DbDoc, DbKw> {
     public:
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
 };
 
 
 /******************************************************************************/
-/* `ISdaUnderlySse`                                                           */
+/* `ISdaUnderly`                                                              */
 /******************************************************************************/
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
+class ISdaUnderly {
     public:
-        virtual std::vector<DbDoc> searchGeneric(const Range<DbKw>& query) const = 0;
         virtual Db<DbDoc, DbKw> getDb() const = 0;
         virtual bool isEmpty() const = 0;
 };
 
 
 template <class T>
-concept ISdaUnderlySse_ = requires(T t) {
-    []<class ... Args>(ISdaUnderlySse<Args ...>&){}(t);
-};
-
-
-/******************************************************************************/
-/* `IRangeUnderlySse`                                                         */
-/******************************************************************************/
-
-
-template <IDbDoc_ DbDoc, class DbKw>
-class IRangeUnderlySse : public virtual ISse<DbDoc, DbKw> {
-    public:
-        // this searches for the range `query` itself instead of individually querying each point as `search()` may do
-        virtual std::vector<DbDoc> searchAsRangeUnderly(const Range<DbKw>& query) const = 0;
-};
-
-
-template <class T>
-concept IRangeUnderlySse_ = requires(T t) {
-    []<class ... Args>(IRangeUnderlySse<Args ...>&){}(t);
+concept ISdaUnderly_ = requires(T t) {
+    []<class ... Args>(ISdaUnderly<Args ...>&){}(t);
 };

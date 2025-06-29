@@ -2,13 +2,12 @@
 
 
 #include "pi_bas.h"
-#include "pi_bas_res_hiding.h"
 #include "sse.h"
 #include "util/tdag.h"
 
 
-template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
-class LogSrc : public ISdaUnderlySse<Doc, Kw> {
+template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+class LogSrc : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
     private:
         Underly<Doc, Kw>* underly = nullptr;
         TdagNode<Kw>* tdag = nullptr;
@@ -22,9 +21,10 @@ class LogSrc : public ISdaUnderlySse<Doc, Kw> {
         ~LogSrc();
 
         void setup(int secParam, const Db<Doc, Kw>& db) override;
-        std::vector<Doc> search(const Range<Kw>& query) const override;
+        std::vector<Doc> search(
+            const Range<Kw>& query, bool shouldProcessResults = true, bool isNaive = true
+        ) const override;
 
-        std::vector<Doc> searchGeneric(const Range<Kw>& query) const override;
         void clear() override;
         Db<Doc, Kw> getDb() const override;
         bool isEmpty() const override;

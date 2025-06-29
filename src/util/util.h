@@ -36,7 +36,7 @@ static const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
 static const EVP_MD* HASH_FUNC       = EVP_sha512();
 
 /**
- * PRECONDITION: keywords and ids are both nonnegative integral values (storable by `ulong`).
+ * Precondition: keywords and ids are both nonnegative integral values (storable by `ulong`).
  */
 static constexpr ulong MIN_DB_KW = 0;
 static constexpr ulong DUMMY     = -1;
@@ -116,7 +116,7 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 
 /**
- * PRECONDITION: range end is greater than or equal to range start.
+ * Precondition: range end is greater than or equal to range start.
  */
 template <class T>
 class Range : public std::pair<T, T> {
@@ -199,9 +199,6 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
 };
 
 
-std::vector<Doc> removeDeletedDocs(const std::vector<Doc>& docs);
-
-
 /******************************************************************************/
 /* `SrcIDb1Doc`                                                               */
 /******************************************************************************/
@@ -232,3 +229,6 @@ DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db);
 
 template <IDbDoc_ DbDoc, class DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);
+
+template <IDbDoc_ DbDoc>
+void processResults(std::vector<DbDoc>& docs);

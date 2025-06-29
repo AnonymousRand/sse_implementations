@@ -4,7 +4,6 @@
 #include "log_src.h"
 #include "log_src_i.h"
 #include "pi_bas.h"
-#include "pi_bas_res_hiding.h"
 #include "sda.h"
 
 

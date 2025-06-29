@@ -91,7 +91,7 @@ void EncIndDisk::init(ulong size) {
 
 
 /**
- * PRECONDITION:
+ * Precondition:
  *     - `key` must be exactly `ENC_IND_KEY_LEN` long
  *     - `val.first` must be exactly `ENC_IND_DOC_LEN` long (e.g. via `padAndEncrypt()`)
  *     - `val.second` (the IV) must be exactly `IV_LEN` long

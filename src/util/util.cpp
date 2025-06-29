@@ -206,31 +206,6 @@ bool operator ==(const Doc& doc1, const Doc& doc2) {
 }
 
 
-std::vector<Doc> removeDeletedDocs(const std::vector<Doc>& docs) {
-    std::vector<Doc> newDocs;
-    std::unordered_set<Id> deleted;
-
-    // find all deletion tuples
-    for (Doc doc : docs) {
-        Id id = doc.getId();
-        Op op = doc.getOp();
-        if (op == Op::DEL) {
-            deleted.insert(id);
-        }
-    }
-    // copy over vector without deleted docs
-    for (Doc doc : docs) {
-        Id id = doc.getId();
-        Op op = doc.getOp();
-        if (op == Op::INS && deleted.count(id) == 0) {
-            newDocs.push_back(doc);
-        }
-    }
-
-    return newDocs;
-}
-
-
 template class IDbDoc<std::tuple<Id, Kw, Op>>;
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>>& iDbDoc);
 
@@ -313,6 +288,37 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 }
 
 
+template <IDbDoc_ DbDoc>
+void processResults(std::vector<DbDoc>& docs) {}
+
+
+// template specialize just this method for `Doc` instead of all SSE classes that use it
+template <>
+void processResults(std::vector<Doc>& docs) {
+    std::vector<Doc> newDocs;
+    std::unordered_set<Id> deleted;
+
+    // find all deletion tuples
+    for (Doc doc : docs) {
+        Id id = doc.getId();
+        Op op = doc.getOp();
+        if (op == Op::DEL) {
+            deleted.insert(id);
+        }
+    }
+    // copy over vector without deleted docs
+    for (Doc doc : docs) {
+        Id id = doc.getId();
+        Op op = doc.getOp();
+        if (op == Op::INS && deleted.count(id) == 0) {
+            newDocs.push_back(doc);
+        }
+    }
+
+    docs = newDocs;
+}
+
+
 template void shuffleInd(Ind<Kw, Doc>& ind);
 template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
 //template void shuffleInd(Ind<IdAlias, Doc>& ind);
@@ -322,3 +328,6 @@ template Kw findMaxDbKw(const Db<Doc, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);
 //template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc, IdAlias>& db);
+
+template void processResults(std::vector<Doc>& docs);
+template void processResults(std::vector<SrcIDb1Doc>& docs);

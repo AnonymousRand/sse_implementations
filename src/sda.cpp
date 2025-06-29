@@ -1,23 +1,22 @@
 #include "log_src.h"
 #include "log_src_i.h"
 #include "pi_bas.h"
-#include "pi_bas_res_hiding.h"
 #include "sda.h"
 
 
-template <ISdaUnderlySse_ Underly>
+template <ISdaUnderly_ Underly>
 Sda<Underly>::Sda(EncIndType encIndType) {
     this->setEncIndType(encIndType);
 }
 
 
-template <ISdaUnderlySse_ Underly>
+template <ISdaUnderly_ Underly>
 Sda<Underly>::~Sda() {
     this->clear();
 }
 
 
-template <ISdaUnderlySse_ Underly>
+template <ISdaUnderly_ Underly>
 void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->secParam = secParam;
     for (DbEntry<Doc, Kw> entry : db) {
@@ -26,7 +25,7 @@ void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 }
 
 
-template <ISdaUnderlySse_ Underly>
+template <ISdaUnderly_ Underly>
 void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
@@ -73,32 +72,30 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
 }
 
 
-template <ISdaUnderlySse_ Underly>
-std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query) const {
-    std::vector<Doc> results = this->searchGeneric(query);
-    return removeDeletedDocs(results);
-}
-
-
-template <ISdaUnderlySse_ Underly>
-std::vector<Doc> Sda<Underly>::searchGeneric(const Range<Kw>& query) const {
+template <ISdaUnderly_ Underly>
+std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldProcessResults, bool isNaive) const {
     std::vector<Doc> allResults;
+
     // search through all non-empty indexes
     for (Underly* underly : this->underlys) {
         if (underly->isEmpty()) {
             continue;
         }
-        // don't use `underly->search()` here that filters out deleted tuples possibly prematurely
-        // since the cancelation tuple for a document is not guaranteed to be in same index as the inserting tuple,
-        // we can't rely on the individual underlying instances to filter out all deleted documents
-        std::vector<Doc> results = underly->searchGeneric(query);
+        // don't filter out deleted tuples in underlying schemes
+        // the cancellation tuple for a document is not guaranteed to be in same index as the inserting tuple
+        // so we can't rely on the individual underlying instances to filter out all deleted documents
+        std::vector<Doc> results = underly->search(query, false, isNaive);
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
+    if (shouldProcessResults) {
+        processResults(allResults);
+    }
+
     return allResults;
 }
 
 
-template <ISdaUnderlySse_ Underly>
+template <ISdaUnderly_ Underly>
 void Sda<Underly>::clear() {
     // apparently vector `clear()` automatically calls the destructor for each element *unless* it is a pointer
     for (Underly* underly : this->underlys) {
@@ -111,7 +108,7 @@ void Sda<Underly>::clear() {
 }
 
 
-template <ISdaUnderlySse_ Underly>
+template <ISdaUnderly_ Underly>
 void Sda<Underly>::setEncIndType(EncIndType encIndType) {
     this->encIndType = encIndType;
 }
