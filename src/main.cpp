@@ -7,28 +7,29 @@
 #include "sda.h"
 
 
-Db<> createDb(ulong dbSize, bool isDataSkewed) {
+Db<> createDb(ulong dbSize, bool hasDeletions) {
     Db<> db;
     if (dbSize == 0) {
         return db;
     }
-    if (isDataSkewed) {
-        // two unique keywords, with all but one being 0 and the other being the max
-        // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
-        ulong kw1 = 0;
-        ulong kw2 = dbSize - 1;
 
+    if (hasDeletions) {
         for (ulong i = 0; i < dbSize - 1; i++) {
-            db.push_back(DbEntry {Doc(i, kw1, Op::INS), Range<Kw> {kw1, kw1}});
+            // make keywords and ids inversely proportional to test sorting of Log-SRC-i's second index
+            Kw kw = dbSize - i + 1;
+            db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
+            // delete the document with keyword 4
+            if (kw == 4) {
+                db.push_back(DbEntry {Doc(i, kw, Op::DEL), Range<Kw> {kw, kw}});
+            }
         }
-        db.push_back(DbEntry {Doc(dbSize - 1, kw2, Op::INS), Range<Kw> {kw2, kw2}});
     } else {
         for (ulong i = 0; i < dbSize; i++) {
-            // make keywords and ids inversely proportional to test sorting of Log-SRC-i's second index
             Kw kw = dbSize - i + 1;
             db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
         }
     }
+
     return db;
 }
 
@@ -38,7 +39,7 @@ void expDebug(ISse<>& sse, ulong dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createDb(dbSize, false);
+    Db<> db = createDb(dbSize, true);
 
     // setup
     sse.setup(KEY_LEN, db);
@@ -133,7 +134,15 @@ void exp3(ISse<>& sse, ulong maxDbSize) {
     }
     for (ulong i = 2; i <= log2(maxDbSize); i++) {
         ulong dbSize = pow(2, i);
-        Db<> db = createDb(dbSize, true);
+        // two unique keywords, with all but one being 0 and the other being the max
+        // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
+        Db<> db;
+        ulong kw1 = 0;
+        ulong kw2 = dbSize - 1;
+        for (ulong i = 0; i < dbSize - 1; i++) {
+            db.push_back(DbEntry {Doc(i, kw1, Op::INS), Range<Kw> {kw1, kw1}});
+        }
+        db.push_back(DbEntry {Doc(dbSize - 1, kw2, Op::INS), Range<Kw> {kw2, kw2}});
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();
