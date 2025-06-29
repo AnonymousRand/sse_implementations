@@ -78,13 +78,13 @@ void exp1(ISse<>& sse, ulong dbSize) {
     std::cout << std::endl;
 
     // search
-    for (ulong i = 0; i <= (ulong)log2(dbSize); i++) {
+    for (ulong i = 0; i <= log2(dbSize); i++) {
         Range<Kw> query {0, (ulong)pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << (ulong)log2(query.size()) << "): " << searchElapsed.count() * 1000
+        std::cout << "Search time (size 2^" << log2(query.size()) << "): " << searchElapsed.count() * 1000
                   << " ms" << std::endl;
     }
     std::cout << std::endl;
@@ -100,8 +100,8 @@ void exp2(ISse<>& sse, ulong maxDbSize) {
     }
     Range<Kw> query {0, 3};
 
-    for (ulong i = 2; i <= (ulong)log2(maxDbSize); i++) {
-        ulong dbSize = (ulong)pow(2, i);
+    for (ulong i = 2; i <= log2(maxDbSize); i++) {
+        ulong dbSize = pow(2, i);
         Db<> db = createDb(dbSize, false);
 
         // setup
@@ -109,7 +109,7 @@ void exp2(ISse<>& sse, ulong maxDbSize) {
         sse.setup(KEY_LEN, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size 2^" << (ulong)log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
+        std::cout << "Setup time (size 2^" << log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
                   << std::endl;
 
         // search
@@ -117,7 +117,7 @@ void exp2(ISse<>& sse, ulong maxDbSize) {
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << (ulong)log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
+        std::cout << "Search time (size 2^" << log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
     }
     std::cout << std::endl;
@@ -131,8 +131,8 @@ void exp3(ISse<>& sse, ulong maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
-    for (ulong i = 2; i <= (ulong)log2(maxDbSize); i++) {
-        ulong dbSize = (ulong)pow(2, i);
+    for (ulong i = 2; i <= log2(maxDbSize); i++) {
+        ulong dbSize = pow(2, i);
         Db<> db = createDb(dbSize, true);
 
         // setup
@@ -140,7 +140,7 @@ void exp3(ISse<>& sse, ulong maxDbSize) {
         sse.setup(KEY_LEN, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size 2^" << (ulong)log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
+        std::cout << "Setup time (size 2^" << log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
                   << std::endl;
 
         // search
@@ -149,7 +149,7 @@ void exp3(ISse<>& sse, ulong maxDbSize) {
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << (ulong)log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
+        std::cout << "Search time (size 2^" << log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
     }
     std::cout << std::endl;
