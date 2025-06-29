@@ -68,7 +68,8 @@ using IdAlias = ulong; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 // black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
 // i.e. without needing to know what the template param `X` of `IDbDoc` is, unlike `std::derived_from` for example
 // from https://stackoverflow.com/a/71921982
-// (java generics `extends`: look what they need to mimic a fraction of my power)
+// (Java generics `extends`: look what they need to mimic a fraction of my power)
+// (and this doesn't even enforce existence of instance methods as clearly as Java, so just pretend that it does)
 template <class T>
 concept IDbDoc_ = requires(T t) {
     []<class X>(IDbDoc<X>&){}(t);
