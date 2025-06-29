@@ -110,7 +110,7 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
         std::exit(EXIT_FAILURE);
     }
 
-    // if location is already filled (e.g. because of modulo), find next available location
+    // if location is already filled (because of modulo), find next available location
     unsigned long numPositionsChecked = 1;
     while (std::strcmp((char*)currKv, (char*)EncIndDisk::nullKv) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
