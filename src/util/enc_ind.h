@@ -25,7 +25,6 @@ class IEncInd {
         // the base class needs to have a virtual destructor for the derived class' constructor to be called
         virtual ~IEncInd() = default;
 
-        // every `init()` MUST be followed by a `clear()` for memory freeing!!
         virtual void init(ulong size) = 0;
         virtual void write(ustring label, std::pair<ustring, ustring> val) = 0;
         virtual int find(ustring label, std::pair<ustring, ustring>& ret) const = 0; // returns error code if not found
@@ -33,6 +32,9 @@ class IEncInd {
         /**
          * Free memory without fully destroying this object (so we can call `init()` again with the same object).
          * Should be idempotent and safe to call without `init()` first as well.
+         *
+         * Notes:
+         *     - Every `init()` must be followed by a `clear()` for memory freeing!!
          */
         virtual void clear() = 0;
 };
