@@ -17,7 +17,7 @@ Implementations of the following [searchable symmetric encryption](https://en.wi
 
 ```
 cd src/
-g++ main.cpp pi_bas.cpp sda.cpp log_src.cpp log_srci.cpp util/*.cpp -lcrypto -o out/a.out -std=c++20
+g++ *.cpp util/*.cpp -lcrypto -o out/a.out -std=c++20
 ./out/a.out
 ```
 

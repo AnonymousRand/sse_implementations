@@ -2,6 +2,7 @@
 
 
 #include "pi_bas.h"
+#include "pi_bas_res_hiding.h"
 #include "sse.h"
 #include "util/tdag.h"
 

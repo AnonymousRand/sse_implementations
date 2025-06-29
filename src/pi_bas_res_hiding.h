@@ -6,28 +6,25 @@
 
 
 /******************************************************************************/
-/* `PiBasBase`                                                                */
+/* `PiBasResHidingBase`                                                       */
 /******************************************************************************/
 
 
-// this class provides a common implementation for everything but `search()` and `searchAsRangeUnderly()`,
-// which are only implemented in the derived class `PiBas` since that's the only way to do
-// partial template specialization for the case where `DbDoc` is `Doc`
-// (`Doc`s store an update operation, so in this case we need to additionally remove deleted docs when searching)
-template <IDbDoc_ DbDoc, class DbKw>
-class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw>, public IRangeUnderlySse<DbDoc, DbKw> {
+template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
+class PiBasResHidingBase : public ISdaUnderlySse<DbDoc, DbKw>, public IRangeUnderlySse<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
-        ustring key;
+        ustring keyPrf;
+        ustring keyEnc;
         IEncInd* encInd = nullptr;
         bool _isEmpty = false;
 
-        std::pair<ustring, ustring> genQueryToken(const Range<DbKw>& query) const;
+        ustring genQueryToken(const Range<DbKw>& query) const;
 
     public:
-        PiBasBase() = default;
-        PiBasBase(EncIndType encIndType);
-        virtual ~PiBasBase(); // must be `virtual` for compiler to not scream about undefined ref to child destructor
+        PiBasResHidingBase() = default;
+        PiBasResHidingBase(EncIndType encIndType);
+        virtual ~PiBasResHidingBase();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
@@ -41,15 +38,15 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw>, public IRangeUnderlySse<Db
 
 
 /******************************************************************************/
-/* `PiBas`                                                                    */
+/* `PiBasResHiding`                                                           */
 /******************************************************************************/
 
 
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
-class PiBas : public PiBasBase<DbDoc, DbKw> {
+class PiBasResHiding : public PiBasResHidingBase<DbDoc, DbKw> {
     public:
-        PiBas() = default;
-        PiBas(EncIndType encIndType);
+        PiBasResHiding() = default;
+        PiBasResHiding(EncIndType encIndType);
 
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
 
@@ -58,15 +55,15 @@ class PiBas : public PiBasBase<DbDoc, DbKw> {
 
 
 /******************************************************************************/
-/* `PiBas` Template Specialization                                            */
+/* `PiBasResHiding` Template Specialization                                   */
 /******************************************************************************/
 
 
 template <>
-class PiBas<Doc, Kw> : public PiBasBase<Doc, Kw> {
+class PiBasResHiding<Doc, Kw> : public PiBasResHidingBase<Doc, Kw> {
     public:
-        PiBas() = default;
-        PiBas(EncIndType encIndType);
+        PiBasResHiding() = default;
+        PiBasResHiding(EncIndType encIndType);
 
         std::vector<Doc> search(const Range<Kw>& query) const override;
 
