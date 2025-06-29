@@ -7,7 +7,7 @@
 #include "sda.h"
 
 
-Db<> createDb(ulong dbSize, bool hasDeletions) {
+Db<> createUniformDb(ulong dbSize, bool hasDeletions) {
     Db<> db;
     if (dbSize == 0) {
         return db;
@@ -39,7 +39,7 @@ void expDebug(ISse<>& sse, ulong dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createDb(dbSize, true);
+    Db<> db = createUniformDb(dbSize, true);
 
     // setup
     sse.setup(KEY_LEN, db);
@@ -59,7 +59,6 @@ void expDebug(ISse<>& sse, ulong dbSize, Range<Kw> query) {
     }
     std::cout << std::endl;
 
-    // hopefully clear memory asap
     sse.clear();
 }
 
@@ -68,7 +67,7 @@ void exp1(ISse<>& sse, ulong dbSize) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createDb(dbSize, false);
+    Db<> db = createUniformDb(dbSize, false);
 
     // setup
     auto setupStart = std::chrono::high_resolution_clock::now();
@@ -90,7 +89,6 @@ void exp1(ISse<>& sse, ulong dbSize) {
     }
     std::cout << std::endl;
 
-    // hopefully clear memory asap
     sse.clear();
 }
 
@@ -103,7 +101,7 @@ void exp2(ISse<>& sse, ulong maxDbSize) {
 
     for (ulong i = 2; i <= log2(maxDbSize); i++) {
         ulong dbSize = pow(2, i);
-        Db<> db = createDb(dbSize, false);
+        Db<> db = createUniformDb(dbSize, false);
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();
@@ -123,7 +121,6 @@ void exp2(ISse<>& sse, ulong maxDbSize) {
     }
     std::cout << std::endl;
 
-    // hopefully clear memory asap
     sse.clear();
 }
 
@@ -163,7 +160,6 @@ void exp3(ISse<>& sse, ulong maxDbSize) {
     }
     std::cout << std::endl;
 
-    // hopefully clear memory asap
     sse.clear();
 }
 
