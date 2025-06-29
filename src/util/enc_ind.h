@@ -27,7 +27,6 @@ class IEncInd {
         // every `init()` MUST be followed by a `clear()` for memory freeing!!
         virtual void init(unsigned long size) = 0;
         virtual void write(ustring label, std::pair<ustring, ustring> val) = 0;
-        virtual void flushWrite() = 0;
         virtual int find(ustring label, std::pair<ustring, ustring>& ret) const = 0; // returns error code if not found
         // clear up memory without completely destroying object (i.e. `init()` can be called again)
         // should be idempotent and safe to call without `init()` first as well
@@ -48,7 +47,6 @@ class EncIndRam : public IEncInd {
     public:
         void init(unsigned long size) override;
         void write(ustring label, std::pair<ustring, ustring> val) override;
-        void flushWrite() override;
         int find(ustring label, std::pair<ustring, ustring>& ret) const override;
         void clear() override;
 };
@@ -63,18 +61,16 @@ class EncIndRam : public IEncInd {
 class EncIndDisk : public IEncInd {
     private:
         FILE* file = nullptr;
-        unsigned char* buf = nullptr;
         unsigned long size;
         std::string filename = "";
-        std::unordered_map<unsigned long, bool> isPosFilled;
+        unsigned char nullKv[ENC_IND_KV_LEN]; // I know this can be `static` but no static constructors in C++ :/
 
     public:
+        EncIndDisk();
         ~EncIndDisk();
 
         void init(unsigned long size) override;
         void write(ustring label, std::pair<ustring, ustring> val) override;
-        // flush temporary buffer to disk and then free buffer
-        void flushWrite() override;
         int find(ustring label, std::pair<ustring, ustring>& ret) const override;
         void clear() override;
 };

@@ -20,24 +20,24 @@
 
 
 // lengths are in bytes
-static const int KEY_LEN            = 256 / 8;
-static const int IV_LEN             = 128 / 8;
-static const int BLOCK_SIZE         = 128 / 8;
-static const EVP_CIPHER* ENC_CIPHER = EVP_aes_256_cbc();
-static const EVP_MD* HASH_FUNC      = EVP_sha512();
-static const int HASH_OUTPUT_LEN    = 512 / 8;
-static const int ENC_IND_KEY_LEN    = 512 / 8;        // both PRF (default) and hash (res-hiding) have 512 bit output
-static const int ENC_IND_DOC_LEN    = 3 * BLOCK_SIZE; // so max keyword/id size ~10^23 for encoding to fit
-static const int ENC_IND_VAL_LEN    = ENC_IND_DOC_LEN + IV_LEN;
-static const int ENC_IND_KV_LEN     = ENC_IND_KEY_LEN + ENC_IND_VAL_LEN;
+static constexpr int KEY_LEN         = 256 / 8;
+static constexpr int IV_LEN          = 128 / 8;
+static constexpr int BLOCK_SIZE      = 128 / 8;
+static constexpr int HASH_OUTPUT_LEN = 512 / 8;
+static constexpr int ENC_IND_KEY_LEN = 512 / 8;        // both PRF (default) and hash (res-hiding) have 512 bit output
+static constexpr int ENC_IND_DOC_LEN = 3 * BLOCK_SIZE; // so max keyword/id size ~10^19 for encoding to fit (starting 0)
+static constexpr int ENC_IND_VAL_LEN = ENC_IND_DOC_LEN + IV_LEN;
+static constexpr int ENC_IND_KV_LEN  = ENC_IND_KEY_LEN + ENC_IND_VAL_LEN;
+static const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
+static const EVP_MD* HASH_FUNC       = EVP_sha512();
 
 /**
  * PRECONDITION:
  *     - Keywords and ids are both integral values (storable by `long`).
  *     - Keywords are always positive.
  */
-static const long DB_KW_MIN = 0;
-static const long DUMMY     = -1;
+static constexpr long DB_KW_MIN = 0;
+static constexpr long DUMMY     = -1;
 
 
 /******************************************************************************/

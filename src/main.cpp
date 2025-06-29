@@ -39,7 +39,7 @@ void expDebug(ISse<>& sse, int dbSize, Range<Kw> query) {
 
     // search
     std::vector<Doc> results = sse.search(query);
-    std::cout << "Results:" << std::endl;
+    std::cout << "Results (id,kw,op):" << std::endl;
     for (Doc result : results) {
         Range<Kw> kw;
         for (DbEntry<> dbEntry : db) {
@@ -161,6 +161,7 @@ int main() {
     } else {
         encIndType = EncIndType::DISK;
     }
+    std::cout << std::endl;
 
     PiBas<> piBas(encIndType);
     PiBasResHiding<> piBasResHiding(encIndType);

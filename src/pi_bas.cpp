@@ -85,7 +85,6 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             counter++;
         }
     }
-    this->encInd->flushWrite();
 }
 
 
@@ -262,7 +261,6 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
             counter++;
         }
     }
-    this->encInd->flushWrite();
 }
 
 

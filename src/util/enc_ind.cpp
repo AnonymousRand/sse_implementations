@@ -1,3 +1,6 @@
+#include <cstring>
+#include <iomanip> // TODO
+
 #include "enc_ind.h"
 
 
@@ -12,9 +15,6 @@ void EncIndRam::init(unsigned long size) {}
 void EncIndRam::write(ustring label, std::pair<ustring, ustring> val) {
     this->map[label] = val;
 }
-
-
-void EncIndRam::flushWrite() {}
 
 
 int EncIndRam::find(ustring label, std::pair<ustring, ustring>& ret) const {
@@ -37,6 +37,16 @@ void EncIndRam::clear() {
 /******************************************************************************/
 
 
+EncIndDisk::EncIndDisk() {
+    // technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
+    // a null kv-pair, but currently `ENC_IND_KV_LEN` is 1024 bits so there's a 2^1024 chance of this happening
+    // USENIX'24's implementation also seems to just do this
+    for (int i = 0; i < ENC_IND_KV_LEN; i++) {
+        this->nullKv[i] = 0;
+    }
+}
+
+
 EncIndDisk::~EncIndDisk() {
     this->clear();
 }
@@ -44,7 +54,6 @@ EncIndDisk::~EncIndDisk() {
 
 void EncIndDisk::init(unsigned long size) {
     this->size = size;
-    this->buf = new unsigned char[size * ENC_IND_KV_LEN];
 
     // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
     // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
@@ -64,9 +73,13 @@ void EncIndDisk::init(unsigned long size) {
         std::cerr << "Error opening encrypted index file" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-
+    // fill file with zero bits
     for (unsigned long i = 0; i < size; i++) {
-        this->isPosFilled[i] = false;
+        int itemsWritten = std::fwrite(this->nullKv, ENC_IND_KV_LEN, 1, this->file);
+        if (itemsWritten != 1) {
+            std::cerr << "Error initializing encrypted index file: wrote no bytes" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
     }
 }
 
@@ -83,66 +96,76 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     // (although they also use caching, presumably since it's slow if we need to keep finding next available locations)
     // this conversion mess is from USENIX'24's implementation
     unsigned long pos = (*((unsigned long*)label.c_str())) % this->size;
+    unsigned char* currKv = new unsigned char[ENC_IND_KV_LEN];
+    std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
+    int itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+
     // if location is already filled (e.g. because of modulo), find next available location
     unsigned long numPositionsChecked = 1;
-    while (this->isPosFilled[pos] && numPositionsChecked < this->size) {
+    while (std::strcmp((char*)currKv, (char*)this->nullKv) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
+        if (itemsRead != 1) {
+            std::cerr << "Error reading encrypted index file on `write()`: read no bytes" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        if (pos == 0) {
+            std::fseek(this->file, 0, SEEK_SET);
+        }
+        itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file); 
     }
-    if (this->isPosFilled[pos]) {
+    if (std::strcmp((char*)currKv, (char*)this->nullKv) != 0) {
         std::cerr << "Ran out of space writing to disk encrypted index!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    this->isPosFilled[pos] = true;
 
-    // encode kv pair and write to buffer
+    // encode kv pair and write to file
     ustring kvPair = label + val.first + val.second;
-    std::memcpy(&this->buf[pos * ENC_IND_KV_LEN], &kvPair[0], ENC_IND_KV_LEN);
-}
-
-
-void EncIndDisk::flushWrite() {
-    std::fwrite(this->buf, ENC_IND_KV_LEN, size, this->file);
-    // free up memory that is no longer needed as well
-    delete[] this->buf;
-    this->buf = nullptr;
-    this->isPosFilled.clear();
+    std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
+    std::fwrite(kvPair.c_str(), ENC_IND_KV_LEN, 1, this->file);
+    std::fflush(this->file); // flush to guarantee that we immediately mark our currKvent spot as filled
+    delete[] currKv;
+    currKv = nullptr;
 }
 
 
 int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
     unsigned long pos = (*((unsigned long*)label.c_str())) % this->size;
-    unsigned char* curr = new unsigned char[ENC_IND_KV_LEN];
+    unsigned char* currKv = new unsigned char[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
-    std::fread(curr, ENC_IND_KV_LEN, 1, this->file);
-    ustring currLabel(curr, ENC_IND_KEY_LEN);
+    int itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+    ustring currLabel(currKv, ENC_IND_KEY_LEN);
+
     // if location based on `label` did not match the target (i.e. another kv pair overflowed to here first), scan
     // subsequent locations for where the target could've overflowed to
     unsigned long numPositionsChecked = 1;
     while (currLabel != label && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
-        // by assuming previous `fread()` read all `ENC_IND_KV_LEN` bytes and hence only needing to `fseek()` when we
-        // wrap around to position 0, we make searches about twice as fast
+        if (itemsRead != 1) {
+            std::cerr << "Error reading encrypted index file on `find()`: read no bytes" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        std::fread(curr, ENC_IND_KV_LEN, 1, this->file);
-        currLabel = ustring(curr, ENC_IND_KEY_LEN);
+        itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+        currLabel = ustring(currKv, ENC_IND_KEY_LEN);
     }
     // this does make it a lot slower to verify if an element is nonexistent compared to primary memory storage,
     // since we have to iterate through whole index
+    // but this only makes reducing false positives all the more important
     if (currLabel != label) {
-        delete[] curr;
-        curr = nullptr;
+        delete[] currKv;
+        currKv = nullptr;
         return -1;
     }
 
     // decode kv pair and return it
-    ret.first = ustring(&curr[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
-    ret.second = ustring(&curr[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
-    delete[] curr;
-    curr = nullptr;
+    ret.first = ustring(&currKv[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
+    ret.second = ustring(&currKv[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
+    delete[] currKv;
+    currKv = nullptr;
     return 0;
 }
 
@@ -152,14 +175,9 @@ void EncIndDisk::clear() {
         std::fclose(this->file);
         this->file = nullptr; // important for idempotence!
     }
-    if (this->buf != nullptr) {
-        delete[] this->buf;
-        this->buf = nullptr;
-    }
     // delete encrypted index files from disk on `clear()`
     if (this->filename != "") {
         std::remove(this->filename.c_str());
         this->filename = "";
     }
-    this->isPosFilled.clear();
 }
