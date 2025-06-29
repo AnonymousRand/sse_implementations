@@ -38,7 +38,7 @@ static const EVP_MD* HASH_FUNC       = EVP_sha512();
 /**
  * PRECONDITION: keywords and ids are both nonnegative integral values (storable by `ulong`).
  */
-static constexpr ulong DB_KW_MIN = 0;
+static constexpr ulong MIN_DB_KW = 0;
 static constexpr ulong DUMMY     = -1;
 
 static std::random_device RAND_DEV;

@@ -287,7 +287,7 @@ void shuffleInd(Ind<IndK, DbDoc>& ind) {
 
 template <IDbDoc_ DbDoc, class DbKw>
 DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db) {
-    DbKw maxDbKw = DbKw(DB_KW_MIN);
+    DbKw maxDbKw = DbKw(MIN_DB_KW);
     if (!db.empty()) {
         Range<DbKw> firstDbKwRange = db[0].second;
         maxDbKw = firstDbKwRange.second;
