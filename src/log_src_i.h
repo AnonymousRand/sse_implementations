@@ -16,6 +16,10 @@ class LogSrcI : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         bool _isEmpty = false;
 
         LogSrcI(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType);
+
+        /**
+         * Perform query 1 and return the range to query for query 2.
+         */
         Range<IdAlias> search1(const Range<Kw>& query) const;
 
     public:

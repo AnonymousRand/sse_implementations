@@ -154,8 +154,7 @@ Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
             }
         }
     }
-    Range<IdAlias> query2 {minIdAlias, maxIdAlias};
-    return query2;
+    return Range {minIdAlias, maxIdAlias};
 }
 
 
