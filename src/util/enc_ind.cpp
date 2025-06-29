@@ -5,7 +5,7 @@
 
 
 // for debugging
-void printStrAsHex(const unsigned char* str, int len) {
+void printStrAsHex(const uchar* str, int len) {
     for (int i = 0; i < len; i++) {
         std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(str[i]) << " ";
     }
@@ -18,7 +18,7 @@ void printStrAsHex(const unsigned char* str, int len) {
 /******************************************************************************/
 
 
-void EncIndRam::init(unsigned long size) {}
+void EncIndRam::init(ulong size) {}
 
 
 void EncIndRam::write(ustring label, std::pair<ustring, ustring> val) {
@@ -50,7 +50,7 @@ void EncIndRam::clear() {
 // technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
 // a null kv-pair, but currently `ENC_IND_KV_LEN` is 1024 bits so there's a 2^1024 chance of this happening
 // USENIX'24's implementation also seems to just do this
-const unsigned char EncIndDisk::nullKv[] = {};
+const uchar EncIndDisk::nullKv[] = {};
 
 
 EncIndDisk::~EncIndDisk() {
@@ -58,7 +58,7 @@ EncIndDisk::~EncIndDisk() {
 }
 
 
-void EncIndDisk::init(unsigned long size) {
+void EncIndDisk::init(ulong size) {
     this->size = size;
 
     // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
@@ -80,7 +80,7 @@ void EncIndDisk::init(unsigned long size) {
         std::exit(EXIT_FAILURE);
     }
     // fill file with zero bits
-    for (unsigned long i = 0; i < size; i++) {
+    for (ulong i = 0; i < size; i++) {
         int objectsWritten = std::fwrite(EncIndDisk::nullKv, ENC_IND_KV_LEN, 1, this->file);
         if (objectsWritten != 1) {
             std::cerr << "Error initializing encrypted index file: nothing written" << std::endl;
@@ -101,8 +101,8 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     // (modulo buffer size); this seems iffy because of modulo but this is what USENIX'24's implementation does
     // (although they also use caching, presumably since it's slow if we need to keep finding next available locations)
     // this conversion mess is from USENIX'24's implementation
-    unsigned long pos = (*((unsigned long*)label.c_str())) % this->size;
-    unsigned char* currKv = new unsigned char[ENC_IND_KV_LEN];
+    ulong pos = (*((ulong*)label.c_str())) % this->size;
+    uchar* currKv = new uchar[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int objectsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
     if (objectsReadOrWritten != 1) {
@@ -111,7 +111,7 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     }
 
     // if location is already filled (because of modulo), find next available location
-    unsigned long numPositionsChecked = 1;
+    ulong numPositionsChecked = 1;
     while (std::strcmp((char*)currKv, (char*)EncIndDisk::nullKv) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
@@ -144,8 +144,8 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
 
 
 int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
-    unsigned long pos = (*((unsigned long*)label.c_str())) % this->size;
-    unsigned char* currKv = new unsigned char[ENC_IND_KV_LEN];
+    ulong pos = (*((ulong*)label.c_str())) % this->size;
+    uchar* currKv = new uchar[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int objectsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
     if (objectsRead != 1) {
@@ -156,7 +156,7 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
 
     // if location based on `label` did not match the target (i.e. another kv pair overflowed to here first), scan
     // subsequent locations for where the target could've overflowed to
-    unsigned long numPositionsChecked = 1;
+    ulong numPositionsChecked = 1;
     while (currLabel != label && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;

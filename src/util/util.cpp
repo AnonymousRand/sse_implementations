@@ -16,18 +16,18 @@ ustring toUstr(long n) {
 
 
 ustring toUstr(const std::string& s) {
-    return reinterpret_cast<const unsigned char*>(s.c_str());
+    return reinterpret_cast<const uchar*>(s.c_str());
 }
 
 
-ustring toUstr(unsigned char* p, int len) {
+ustring toUstr(uchar* p, int len) {
     return ustring(p, len);
 }
 
 
 std::string fromUstr(const ustring& ustr) {
     std::string str;
-    for (unsigned char c : ustr) {
+    for (uchar c : ustr) {
         str += static_cast<char>(c);
     }
     return str;

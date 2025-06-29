@@ -39,15 +39,14 @@ static const EVP_MD* HASH_FUNC       = EVP_sha512();
 static constexpr long DB_KW_MIN = 0;
 static constexpr long DUMMY     = -1;
 
+static std::random_device RAND_DEV;
+static std::mt19937 RNG(RAND_DEV());
+
 
 /******************************************************************************/
 /* Basic Declarations                                                         */
 /******************************************************************************/
 
-
-using Kw      = long;
-using Id      = long;
-using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 
 // forward declarations
 template <class T>
@@ -59,6 +58,12 @@ enum class Op : char {
     INS = 'I',
     DEL = 'D'
 };
+
+using uchar   = unsigned char;
+using ulong   = unsigned long;
+using Kw      = long;
+using Id      = long;
+using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 
 // black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
 // i.e. without needing to know what the template param `X` of `IDbDoc` is, unlike `std::derived_from` for example
@@ -79,21 +84,18 @@ using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class IndK, class DbDoc>
 using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
 
-static std::random_device RAND_DEV;
-static std::mt19937 RNG(RAND_DEV());
-
 
 /******************************************************************************/
 /* `ustring`                                                                  */
 /******************************************************************************/
 
 
-// use `ustring` instead of `unsigned char*` to avoid hell
-using ustring = std::basic_string<unsigned char>;
+// use `ustring` instead of `uchar*` to avoid hell
+using ustring = std::basic_string<uchar>;
 
 ustring toUstr(long n);
 ustring toUstr(const std::string& s);
-ustring toUstr(unsigned char* p, int len);
+ustring toUstr(uchar* p, int len);
 std::string fromUstr(const ustring& ustr);
 
 // provide hash function for `ustring`s to use faster hashmap-based structures, like `unordered_map` instead of `map`

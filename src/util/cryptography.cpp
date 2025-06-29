@@ -17,7 +17,7 @@ void handleErrors() {
 
 
 ustring genKey(int keyLen) {
-    unsigned char* key = new unsigned char[keyLen];
+    uchar* key = new uchar[keyLen];
     int res = RAND_priv_bytes(key, keyLen);
     if (res != 1) {
         handleErrors();
@@ -29,7 +29,7 @@ ustring genKey(int keyLen) {
 
 
 ustring genIv(int ivLen) {
-    unsigned char* iv = new unsigned char[ivLen];
+    uchar* iv = new uchar[ivLen];
     int res = RAND_bytes(iv, ivLen);
     if (res != 1) {
         handleErrors();
@@ -73,7 +73,7 @@ ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input
 // PRF implemented with HMAC-SHA512, as done in Private Practical Range Search Revisited
 ustring prf(const ustring& key, const ustring& input) {
     unsigned int outputLen;
-    unsigned char* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen);
+    uchar* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen);
     return toUstr(output, outputLen);
 }
 
@@ -85,7 +85,7 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
     }
 
     // initialize encryption
-    const unsigned char* ucharIv;
+    const uchar* ucharIv;
     if (iv == ustring()) {
         ucharIv = nullptr;
     } else {
@@ -129,7 +129,7 @@ ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& cte
     }
 
     // initialize decryption
-    const unsigned char* ucharIv;
+    const uchar* ucharIv;
     if (iv == ustring()) {
         ucharIv = nullptr;
     } else {

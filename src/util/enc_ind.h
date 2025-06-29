@@ -25,7 +25,7 @@ class IEncInd {
         virtual ~IEncInd() = default;
 
         // every `init()` MUST be followed by a `clear()` for memory freeing!!
-        virtual void init(unsigned long size) = 0;
+        virtual void init(ulong size) = 0;
         virtual void write(ustring label, std::pair<ustring, ustring> val) = 0;
         virtual int find(ustring label, std::pair<ustring, ustring>& ret) const = 0; // returns error code if not found
         // clear up memory without completely destroying object (i.e. `init()` can be called again)
@@ -45,7 +45,7 @@ class EncIndRam : public IEncInd {
         std::map<ustring, std::pair<ustring, ustring>> map;
 
     public:
-        void init(unsigned long size) override;
+        void init(ulong size) override;
         void write(ustring label, std::pair<ustring, ustring> val) override;
         int find(ustring label, std::pair<ustring, ustring>& ret) const override;
         void clear() override;
@@ -60,16 +60,16 @@ class EncIndRam : public IEncInd {
 // for storing in secondary memory
 class EncIndDisk : public IEncInd {
     private:
-        static const unsigned char nullKv[ENC_IND_KV_LEN];
+        static const uchar nullKv[ENC_IND_KV_LEN];
 
         FILE* file = nullptr;
-        unsigned long size;
+        ulong size;
         std::string filename = "";
 
     public:
         ~EncIndDisk();
 
-        void init(unsigned long size) override;
+        void init(ulong size) override;
         void write(ustring label, std::pair<ustring, ustring> val) override;
         int find(ustring label, std::pair<ustring, ustring>& ret) const override;
         void clear() override;
