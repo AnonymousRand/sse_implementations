@@ -130,11 +130,13 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
-    // do query 1
+std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldProcessResults, bool isNaive) const {
+
+    ///////////////////////////////// query 1 //////////////////////////////////
+
     Range<Kw> src1 = this->tdag1->findSrc(query);
     if (src1 == DUMMY_RANGE<Kw>()) { 
-        return DUMMY_RANGE<IdAlias>();
+        return std::vector<Doc> {};
     }
     std::vector<SrcIDb1Doc> choices = this->underly1->search(src1, false, false);
 
@@ -154,13 +156,10 @@ Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
             }
         }
     }
-    return Range {minIdAlias, maxIdAlias};
-}
 
+    ///////////////////////////////// query 2 //////////////////////////////////
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldProcessResults, bool isNaive) const {
-    Range<IdAlias> query2 = this->search1(query);
+    Range<IdAlias> query2 {minIdAlias, maxIdAlias};
     Range<IdAlias> src2 = this->tdag2->findSrc(query2);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<Doc> {};
