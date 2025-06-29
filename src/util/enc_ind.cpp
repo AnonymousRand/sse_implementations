@@ -11,7 +11,6 @@ std::string strAsHex(const uchar* str, int len) {
     for (int i = 0; i < len; i++) {
         ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(str[i]) << " ";
     }
-    ss << std::endl;
     return ss.str();
 }
 
