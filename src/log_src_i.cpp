@@ -2,23 +2,23 @@
 #include "pi_bas.h"
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::LogSrcI() : underly1(new Underly<SrcIDb1Doc, Kw>()), underly2(new Underly<Doc, IdAlias>()) {}
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::LogSrcI(EncIndType encIndType)
         : LogSrcI(new Underly<SrcIDb1Doc, Kw>(), new Underly<Doc, IdAlias>(), encIndType) {}
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::LogSrcI(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType)
         : underly1(underly1), underly2(underly2) {
     this->setEncIndType(encIndType);
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 LogSrcI<Underly>::~LogSrcI() {
     this->clear();
     if (this->underly1 != nullptr) {
@@ -32,7 +32,7 @@ LogSrcI<Underly>::~LogSrcI() {
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->db = db;
     this->_isEmpty = this->db.empty();
@@ -129,7 +129,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
     // query 1
 
@@ -137,7 +137,7 @@ Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
     if (src1 == DUMMY_RANGE<Kw>()) { 
         return DUMMY_RANGE<IdAlias>();
     }
-    std::vector<SrcIDb1Doc> choices = this->underly1->search(src1);
+    std::vector<SrcIDb1Doc> choices = this->underly1->searchAsRangeUnderly(src1);
 
     // query 2
 
@@ -157,33 +157,34 @@ Range<IdAlias> LogSrcI<Underly>::search1(const Range<Kw>& query) const {
         }
     }
 
-    Range<IdAlias> idAliasRangeToQuery {minIdAlias, maxIdAlias};
-    Range<IdAlias> src2 = this->tdag2->findSrc(idAliasRangeToQuery);
-    return src2;
+    Range<IdAlias> query2 {minIdAlias, maxIdAlias};
+    return query2;
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query) const {
-    Range<IdAlias> src2 = this->search1(query);
+    Range<IdAlias> query2 = this->search1(query);
+    Range<IdAlias> src2 = this->tdag2->findSrc(query2);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<Doc> {};
     }
-    return this->underly2->search(src2);
+    return this->underly2->searchAsRangeUnderly(src2);
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 std::vector<Doc> LogSrcI<Underly>::searchGeneric(const Range<Kw>& query) const {
-    Range<IdAlias> src2 = this->search1(query);
+    Range<IdAlias> query2 = this->search1(query);
+    Range<IdAlias> src2 = this->tdag2->findSrc(query2);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<Doc> {};
     }
-    return this->underly2->searchGeneric(src2);
+    return this->underly2->searchAsRangeUnderlyGeneric(src2);
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 void LogSrcI<Underly>::clear() {
     if (this->tdag1 != nullptr) {
         delete this->tdag1;
@@ -200,19 +201,19 @@ void LogSrcI<Underly>::clear() {
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 Db<Doc, Kw> LogSrcI<Underly>::getDb() const {
     return this->db;
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 bool LogSrcI<Underly>::isEmpty() const {
     return this->_isEmpty;
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IRangeUnderlySse_<Underly<Doc, Kw>>
 void LogSrcI<Underly>::setEncIndType(EncIndType encIndType) {
     this->underly1->setEncIndType(encIndType);
     this->underly2->setEncIndType(encIndType);

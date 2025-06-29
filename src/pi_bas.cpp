@@ -3,7 +3,7 @@
 
 
 /******************************************************************************/
-/* `PiBas`                                                                    */
+/* `PiBasBase`                                                                */
 /******************************************************************************/
 
 
@@ -11,13 +11,6 @@ template <IDbDoc_ DbDoc, class DbKw>
 PiBasBase<DbDoc, DbKw>::PiBasBase(EncIndType encIndType) {
     this->setEncIndType(encIndType);
 }
-
-
-template <IDbDoc_ DbDoc, class DbKw>
-PiBas<DbDoc, DbKw>::PiBas(EncIndType encIndType) : PiBasBase<DbDoc, DbKw>(encIndType) {}
-
-
-PiBas<Doc, Kw>::PiBas(EncIndType encIndType) : PiBasBase<Doc, Kw>(encIndType) {}
 
 
 template <IDbDoc_ DbDoc, class DbKw>
@@ -88,51 +81,44 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchGeneric(query);
-}
-
-
-std::vector<Doc> PiBas<Doc, Kw>::search(const Range<Kw>& query) const {
-    std::vector<Doc> results = this->searchGeneric(query);
-    return removeDeletedDocs(results);
+std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchGeneric(const Range<DbKw>& query) const {
+    std::vector<DbDoc> allResults;
+    // naive range search: just individually query every point in range
+    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+        std::vector<DbDoc> results = this->searchAsRangeUnderlyGeneric(Range {dbKw, dbKw});
+        allResults.insert(allResults.end(), results.begin(), results.end());
+    }
+    return allResults;
 }
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchGeneric(const Range<DbKw>& query) const {
-    std::vector<DbDoc> allResults;
-
-    // naive range search: just individually query every point in range
-    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-        std::pair<ustring, ustring> queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
-        ustring subkeyPrf = queryToken.first;
-        ustring subkeyEnc = queryToken.second;
-        std::vector<DbDoc> results;
-        
-        // for c = 0 until `Get` returns error
-        ulong counter = 0;
-        while (true) {
-            // d <- Get(D, F(K_1, c)); c++
-            ustring label = prf(subkeyPrf, toUstr(counter));
-            std::pair<ustring, ustring> encIndVal;
-            int status = this->encInd->find(label, encIndVal);
-            if (status == -1) {
-                break;
-            }
-            ustring encryptedDoc = encIndVal.first;
-            // id <- Dec(K_2, d)
-            ustring iv = encIndVal.second;
-            ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, subkeyEnc, encryptedDoc, iv);
-            DbDoc result = DbDoc::fromUstr(decryptedDoc);
-            results.push_back(result);
-            counter++;
+std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchAsRangeUnderlyGeneric(const Range<DbKw>& query) const {
+    std::vector<DbDoc> results;
+    std::pair<ustring, ustring> queryToken = this->genQueryToken(query);
+    ustring subkeyPrf = queryToken.first;
+    ustring subkeyEnc = queryToken.second;
+    
+    // for c = 0 until `Get` returns error
+    ulong counter = 0;
+    while (true) {
+        // d <- Get(D, F(K_1, c)); c++
+        ustring label = prf(subkeyPrf, toUstr(counter));
+        std::pair<ustring, ustring> encIndVal;
+        int status = this->encInd->find(label, encIndVal);
+        if (status == -1) {
+            break;
         }
-
-        allResults.insert(allResults.end(), results.begin(), results.end());
+        ustring encryptedDoc = encIndVal.first;
+        // id <- Dec(K_2, d)
+        ustring iv = encIndVal.second;
+        ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, subkeyEnc, encryptedDoc, iv);
+        DbDoc result = DbDoc::fromUstr(decryptedDoc);
+        results.push_back(result);
+        counter++;
     }
 
-    return allResults;
+    return results;
 }
 
 
@@ -181,13 +167,49 @@ void PiBasBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
 }
 
 
+/******************************************************************************/
+/* `PiBas`                                                                    */
+/******************************************************************************/
+
+
+template <IDbDoc_ DbDoc, class DbKw>
+PiBas<DbDoc, DbKw>::PiBas(EncIndType encIndType) : PiBasBase<DbDoc, DbKw>(encIndType) {}
+
+
+PiBas<Doc, Kw>::PiBas(EncIndType encIndType) : PiBasBase<Doc, Kw>(encIndType) {}
+
+
+template <IDbDoc_ DbDoc, class DbKw>
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    return this->searchGeneric(query);
+}
+
+
+std::vector<Doc> PiBas<Doc, Kw>::search(const Range<Kw>& query) const {
+    std::vector<Doc> results = this->searchGeneric(query);
+    return removeDeletedDocs(results);
+}
+
+
+template <IDbDoc_ DbDoc, class DbKw>
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchAsRangeUnderly(const Range<DbKw>& query) const {
+    return this->searchAsRangeUnderlyGeneric(query);
+}
+
+
+std::vector<Doc> PiBas<Doc, Kw>::searchAsRangeUnderly(const Range<Kw>& query) const {
+    std::vector<Doc> results = this->searchAsRangeUnderlyGeneric(query);
+    return removeDeletedDocs(results);
+}
+
+
 template class PiBas<Doc, Kw>;        // PiBas
 template class PiBas<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
 template class PiBas<Doc, IdAlias>;   // Log-SRC-i index 2
 
 
 /******************************************************************************/
-/* `PiBas` (Result-Hiding)                                                    */
+/* `PiBasResHidingBase`                                                       */
 /******************************************************************************/
 
 
@@ -195,13 +217,6 @@ template <IDbDoc_ DbDoc, class DbKw>
 PiBasResHidingBase<DbDoc, DbKw>::PiBasResHidingBase(EncIndType encIndType) {
     this->setEncIndType(encIndType);
 }
-
-
-template <IDbDoc_ DbDoc, class DbKw>
-PiBasResHiding<DbDoc, DbKw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidingBase<DbDoc, DbKw>(encIndType) {}
-
-
-PiBasResHiding<Doc, Kw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidingBase<Doc, Kw>(encIndType) {}
 
 
 template <IDbDoc_ DbDoc, class DbKw>
@@ -263,46 +278,40 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchGeneric(query);
-}
-
-
-std::vector<Doc> PiBasResHiding<Doc, Kw>::search(const Range<Kw>& query) const {
-    std::vector<Doc> results = this->searchGeneric(query);
-    return removeDeletedDocs(results);
+std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchGeneric(const Range<DbKw>& query) const {
+    std::vector<DbDoc> allResults;
+    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+        std::vector<DbDoc> results = this->searchAsRangeUnderlyGeneric(Range {dbKw, dbKw});
+        allResults.insert(allResults.end(), results.begin(), results.end());
+    }
+    return allResults;
 }
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchGeneric(const Range<DbKw>& query) const {
-    std::vector<DbDoc> allResults;
-    for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-        ustring queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
-        std::vector<DbDoc> results;
+std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchAsRangeUnderlyGeneric(const Range<DbKw>& query) const {
+    std::vector<DbDoc> results;
+    ustring queryToken = this->genQueryToken(query);
         
-        ulong counter = 0;
-        while (true) {
-            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
-            std::pair<ustring, ustring> encIndVal;
-            int status = this->encInd->find(label, encIndVal);
-            if (status == -1) {
-                break;
-            }
-            ustring encryptedDoc = encIndVal.first;
-            ustring iv = encIndVal.second;
-            // technically we decrypt in the client, but since there's no client-server distinction
-            // in this implementation we'll just decrypt immediately to make the code cleaner
-            ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDoc, iv);
-            DbDoc result = DbDoc::fromUstr(decryptedDoc);
-            results.push_back(result);
-            counter++;
+    ulong counter = 0;
+    while (true) {
+        ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
+        std::pair<ustring, ustring> encIndVal;
+        int status = this->encInd->find(label, encIndVal);
+        if (status == -1) {
+            break;
         }
-
-        allResults.insert(allResults.end(), results.begin(), results.end());
+        ustring encryptedDoc = encIndVal.first;
+        ustring iv = encIndVal.second;
+        // technically we decrypt in the client, but since there's no client-server distinction in this implementation
+        // we'll just decrypt immediately to make the code cleaner
+        ustring decryptedDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDoc, iv);
+        DbDoc result = DbDoc::fromUstr(decryptedDoc);
+        results.push_back(result);
+        counter++;
     }
 
-    return allResults;
+    return results;
 }
 
 
@@ -347,6 +356,42 @@ void PiBasResHidingBase<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
 }
 
 
-template class PiBasResHiding<Doc, Kw>;        // PiBas
-template class PiBasResHiding<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
-//template class PiBasResHiding<Doc, IdAlias>; // Log-SRC-i index 2
+/******************************************************************************/
+/* `PiBasResHiding`                                                           */
+/******************************************************************************/
+
+
+template <IDbDoc_ DbDoc, class DbKw>
+PiBasResHiding<DbDoc, DbKw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidingBase<DbDoc, DbKw>(encIndType) {}
+
+
+PiBasResHiding<Doc, Kw>::PiBasResHiding(EncIndType encIndType) : PiBasResHidingBase<Doc, Kw>(encIndType) {}
+
+
+template <IDbDoc_ DbDoc, class DbKw>
+std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
+    return this->searchGeneric(query);
+}
+
+
+std::vector<Doc> PiBasResHiding<Doc, Kw>::search(const Range<Kw>& query) const {
+    std::vector<Doc> results = this->searchGeneric(query);
+    return removeDeletedDocs(results);
+}
+
+
+template <IDbDoc_ DbDoc, class DbKw>
+std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::searchAsRangeUnderly(const Range<DbKw>& query) const {
+    return this->searchAsRangeUnderlyGeneric(query);
+}
+
+
+std::vector<Doc> PiBasResHiding<Doc, Kw>::searchAsRangeUnderly(const Range<Kw>& query) const {
+    std::vector<Doc> results = this->searchAsRangeUnderlyGeneric(query);
+    return removeDeletedDocs(results);
+}
+
+
+template class PiBasResHiding<Doc, Kw>;       
+template class PiBasResHiding<SrcIDb1Doc, Kw>;
+//template class PiBasResHiding<Doc, IdAlias>;

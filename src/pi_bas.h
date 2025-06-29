@@ -6,7 +6,7 @@
 
 
 /******************************************************************************/
-/* `PiBas`                                                                    */
+/* PiBas                                                                      */
 /******************************************************************************/
 
 
@@ -14,7 +14,7 @@
 // class `PiBas` since that's the only way to do partial template specialization for the case where `DbDoc` is `Doc`
 // (`Doc`s store an update operation, so in this case we need to additionally remove deleted docs in `search()`)
 template <IDbDoc_ DbDoc, class DbKw>
-class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
+class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw>, public IRangeUnderlySse<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring key;
@@ -31,6 +31,7 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         std::vector<DbDoc> searchGeneric(const Range<DbKw>& query) const override;
+        std::vector<DbDoc> searchAsRangeUnderlyGeneric(const Range<DbKw>& query) const;
         void clear() override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
@@ -45,6 +46,8 @@ class PiBas : public PiBasBase<DbDoc, DbKw> {
         PiBas(EncIndType encIndType);
 
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
+
+        std::vector<DbDoc> searchAsRangeUnderly(const Range<DbKw>& query) const override;
 };
 
 
@@ -55,16 +58,18 @@ class PiBas<Doc, Kw> : public PiBasBase<Doc, Kw> {
         PiBas(EncIndType encIndType);
 
         std::vector<Doc> search(const Range<Kw>& query) const override;
+
+        std::vector<Doc> searchAsRangeUnderly(const Range<Kw>& query) const override;
 };
 
 
 /******************************************************************************/
-/* `PiBas` (Result-Hiding)                                                    */
+/* PiBas (Result-Hiding)                                                      */
 /******************************************************************************/
 
 
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
-class PiBasResHidingBase : public ISdaUnderlySse<DbDoc, DbKw> {
+class PiBasResHidingBase : public ISdaUnderlySse<DbDoc, DbKw>, public IRangeUnderlySse<DbDoc, DbKw> {
     protected:
         Db<DbDoc, DbKw> db;
         ustring keyPrf;
@@ -82,6 +87,7 @@ class PiBasResHidingBase : public ISdaUnderlySse<DbDoc, DbKw> {
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         std::vector<DbDoc> searchGeneric(const Range<DbKw>& query) const override;
+        std::vector<DbDoc> searchAsRangeUnderlyGeneric(const Range<DbKw>& query) const;
         void clear() override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
@@ -96,6 +102,8 @@ class PiBasResHiding : public PiBasResHidingBase<DbDoc, DbKw> {
         PiBasResHiding(EncIndType encIndType);
 
         std::vector<DbDoc> search(const Range<DbKw>& query) const override;
+
+        std::vector<DbDoc> searchAsRangeUnderly(const Range<DbKw>& query) const override;
 };
 
 
@@ -106,4 +114,6 @@ class PiBasResHiding<Doc, Kw> : public PiBasResHidingBase<Doc, Kw> {
         PiBasResHiding(EncIndType encIndType);
 
         std::vector<Doc> search(const Range<Kw>& query) const override;
+
+        std::vector<Doc> searchAsRangeUnderly(const Range<Kw>& query) const override;
 };

@@ -38,7 +38,7 @@ concept ISse_ = requires(T t) {
 
 
 template <IDbDoc_ DbDoc = Kw, class DbKw = Kw>
-class IDsse : public ISse<DbDoc, DbKw> {
+class IDsse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
 };
@@ -50,7 +50,7 @@ class IDsse : public ISse<DbDoc, DbKw> {
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-class ISdaUnderlySse : public ISse<DbDoc, DbKw> {
+class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual std::vector<DbDoc> searchGeneric(const Range<DbKw>& query) const = 0;
         virtual Db<DbDoc, DbKw> getDb() const = 0;
@@ -61,4 +61,23 @@ class ISdaUnderlySse : public ISse<DbDoc, DbKw> {
 template <class T>
 concept ISdaUnderlySse_ = requires(T t) {
     []<class ... Args>(ISdaUnderlySse<Args ...>&){}(t);
+};
+
+
+/******************************************************************************/
+/* `IRangeUnderlySse`                                                         */
+/******************************************************************************/
+
+
+template <IDbDoc_ DbDoc, class DbKw>
+class IRangeUnderlySse : public virtual ISse<DbDoc, DbKw> {
+    public:
+        // this searches for the range `query` itself instead of individually querying each point as `search()` may do
+        virtual std::vector<DbDoc> searchAsRangeUnderly(const Range<DbKw>& query) const = 0;
+};
+
+
+template <class T>
+concept IRangeUnderlySse_ = requires(T t) {
+    []<class ... Args>(IRangeUnderlySse<Args ...>&){}(t);
 };
