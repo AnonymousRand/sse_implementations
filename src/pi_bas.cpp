@@ -70,10 +70,10 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         // (`Trpdr`), but I'm fairly sure they mean the same thing, otherwise it doesn't work
         std::pair<ustring, ustring> subkeys = this->genQueryToken(dbKwRange);
         
-        ulong counter = 0;
         // for each id in DB(w)
-        auto itDocsWithSameKw = ind.find(dbKwRange);
-        for (DbDoc dbDoc : itDocsWithSameKw->second) {
+        std::vector<DbDoc> dbDocsWithSameKw = ind.find(dbKwRange)->second;
+        for (ulong counter = 0; counter < dbDocsWithSameKw.size(); counter++) {
+            DbDoc dbDoc = dbDocsWithSameKw[counter];
             // l <- F(K_1, c); d <- Enc(K_2, id); c++
             ustring label = prf(subkeys.first, toUstr(counter));
             ustring iv = genIv(IV_LEN);
@@ -82,7 +82,6 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             // add (l, d) to list L (in lex order); we don't need to sort ourselves since C++ has ordered maps
             // also store IV in plain along with encrypted value
             this->encInd->write(label, std::pair {encryptedDoc, iv});
-            counter++;
         }
     }
 }
@@ -110,9 +109,9 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchWithoutRemovingDels(const Range
         ustring subkeyPrf = queryToken.first;
         ustring subkeyEnc = queryToken.second;
         std::vector<DbDoc> results;
-        ulong counter = 0;
         
         // for c = 0 until `Get` returns error
+        ulong counter = 0;
         while (true) {
             // d <- Get(D, F(K_1, c)); c++
             ustring label = prf(subkeyPrf, toUstr(counter));
@@ -251,14 +250,13 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         ustring prfOutput = this->genQueryToken(dbKwRange);
         
-        ulong counter = 0;
-        auto itDocsWithSameKw = ind.find(dbKwRange);
-        for (DbDoc dbDoc : itDocsWithSameKw->second) {
+        std::vector<DbDoc> dbDocsWithSameKw = ind.find(dbKwRange)->second;
+        for (ulong counter = 0; counter < dbDocsWithSameKw.size(); counter++) {
+            DbDoc dbDoc = dbDocsWithSameKw[counter];
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, prfOutput + toUstr(counter));
             ustring iv = genIv(IV_LEN);
             ustring encryptedDoc = padAndEncrypt(ENC_CIPHER, this->keyEnc, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             this->encInd->write(label, std::pair {encryptedDoc, iv});
-            counter++;
         }
     }
 }
@@ -282,8 +280,8 @@ std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutRemovingDels(co
     for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
         ustring queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
         std::vector<DbDoc> results;
-        ulong counter = 0;
         
+        ulong counter = 0;
         while (true) {
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
             std::pair<ustring, ustring> encIndVal;
