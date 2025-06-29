@@ -40,7 +40,7 @@ void EncIndRam::clear() {
 EncIndDisk::EncIndDisk() {
     // technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
     // a null kv-pair, but currently `ENC_IND_KV_LEN` is 1024 bits so there's a 2^1024 chance of this happening
-    // USENIX'24's implementation also seems to just do this
+    // USENIX'24's implementation (https://github.com/jgharehchamani/DSE-with-IO-Locality) also seems to just do this
     for (int i = 0; i < ENC_IND_KV_LEN; i++) {
         this->nullKv[i] = 0;
     }
