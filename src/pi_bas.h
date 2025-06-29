@@ -9,10 +9,7 @@
 /******************************************************************************/
 
 
-// this class provides a common implementation for everything but `search()` and `searchAsRangeUnderly()`,
-// which are only implemented in the derived class `PiBas` since that's the only way to do
-// partial template specialization for the case where `DbDoc` is `Doc`
-// (`Doc`s store an update operation, so in this case we need to additionally remove deleted docs when searching)
+// common code between `PiBas` and `PiBasResHiding`
 template <IDbDoc_ DbDoc, class DbKw>
 class PiBasBase : public ISse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbKw> {
     protected:
