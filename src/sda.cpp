@@ -81,7 +81,7 @@ std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldProcess
         if (underly->isEmpty()) {
             continue;
         }
-        // don't filter out deleted tuples in underlying schemes
+        // don't filter out deleted tuples in underlying schemes even if `shouldProcessResults` is `true`
         // the cancellation tuple for a document is not guaranteed to be in same index as the inserting tuple
         // so we can't rely on the individual underlying instances to filter out all deleted documents
         std::vector<Doc> results = underly->search(query, false, isNaive);
