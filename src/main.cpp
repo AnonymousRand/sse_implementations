@@ -196,127 +196,125 @@ int main() {
 
     Range<Kw> query {3, 5};
 
-    std::cout << "------------------------- Debugging Experiment -------------------------" << std::endl;
-    std::cout << "DB size  : 2^" << maxDbSizeExp << std::endl;
-    std::cout << "Query    : "   << query << std::endl;
-    std::cout << "----------------------------------------------------------------" << std::endl;
+    std::cout << "----------------------------- Debugging Experiment -----------------------------" << std::endl;
+    std::cout << "DB size  : 2^" << maxDbSizeExp                                                    << std::endl;
+    std::cout << "Query    : "   << query                                                           << std::endl;
+    std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------- PiBas ----------" << std::endl;
+    std::cout << "---------------- PiBas -----------------" << std::endl;
     std::cout << std::endl;
     expDebug(piBas, maxDbSize, query);
 
-    std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "------------ PiBasResHiding ------------" << std::endl;
     std::cout << std::endl;
     expDebug(piBasResHiding, maxDbSize, query);
 
-    std::cout << "---------- Log-SRC ----------" << std::endl;
+    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
     std::cout << std::endl;
     expDebug(logSrc, maxDbSize, query);
 
-    std::cout << "---------- Log-SRC-i ----------" << std::endl;
+    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
     std::cout << std::endl;
     expDebug(logSrcI, maxDbSize, query);
 
-    std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "--------- SDa[PiBasResHiding] ----------" << std::endl;
     std::cout << std::endl;
     expDebug(sdaPiBas, maxDbSize, query);
 
-    std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
+    std::cout << "----- SDa[Log-SRC[PiBasResHiding]] -----" << std::endl;
     std::cout << std::endl;
     expDebug(sdaLogSrc, maxDbSize, query);
 
-    std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
+    std::cout << "---- SDa[Log-SRC-i[PiBasResHiding]] ----" << std::endl;
     std::cout << std::endl;
     expDebug(sdaLogSrcI, maxDbSize, query);
 
     /////////////////////////////// experiment 1 ///////////////////////////////
 
-    std::cout << "------------------------- Experiment 1 -------------------------" << std::endl;
-    std::cout << "DB size  : 2^"     << maxDbSizeExp << " (2^" << (maxDbSizeExp >= 5 ? maxDbSizeExp - 5 : 0)
-              << " for SDa)" << std::endl;
-    std::cout << "Query    : varied" << std::endl;
-    std::cout << "----------------------------------------------------------------" << std::endl;
+    std::cout << "--------------------------------- Experiment 1 ---------------------------------" << std::endl;
+    std::cout << "DB size  : 2^"     << maxDbSizeExp                                                << std::endl;
+    std::cout << "Query    : varied"                                                                << std::endl;
+    std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------- PiBas ----------" << std::endl;
+    std::cout << "---------------- PiBas -----------------" << std::endl;
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
 
-    std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "------------ PiBasResHiding ------------" << std::endl;
     std::cout << std::endl;
     exp1(piBasResHiding, maxDbSize);
 
-    std::cout << "---------- Log-SRC ----------" << std::endl;
+    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
     std::cout << std::endl;
     exp1(logSrc, maxDbSize);
 
-    std::cout << "---------- Log-SRC-i ----------" << std::endl;
+    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
     std::cout << std::endl;
     exp1(logSrcI, maxDbSize);
 
-    std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "--------- SDa[PiBasResHiding] ----------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaPiBas, maxDbSize / 32);
+    exp1(sdaPiBas, maxDbSize);
 
-    std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
+    std::cout << "----- SDa[Log-SRC[PiBasResHiding]] -----" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrc, maxDbSize / 32);
+    exp1(sdaLogSrc, maxDbSize);
 
-    std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
+    std::cout << "---- SDa[Log-SRC-i[PiBasResHiding]] ----" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrcI, maxDbSize / 32);
+    exp1(sdaLogSrcI, maxDbSize);
 
     /////////////////////////////// experiment 2 ///////////////////////////////
 
-    std::cout << "------------------------- Experiment 2 -------------------------" << std::endl;
-    std::cout << "DB size  : varied, up to 2^" << maxDbSizeExp << " (2^" << (maxDbSizeExp >= 5 ? maxDbSizeExp - 5 : 0)
-              << " for SDa)" << std::endl;
-    std::cout << "Query    : 0-3"              << std::endl;
-    std::cout << "----------------------------------------------------------------" << std::endl;
+    std::cout << "--------------------------------- Experiment 2 ---------------------------------" << std::endl;
+    std::cout << "DB size  : varied, up to 2^" << maxDbSizeExp                                      << std::endl;
+    std::cout << "Query    : 0-3"                                                                   << std::endl;
+    std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------- PiBas ----------" << std::endl;
+    std::cout << "---------------- PiBas -----------------" << std::endl;
     std::cout << std::endl;
     exp2(piBas, maxDbSize);
 
-    std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "------------ PiBasResHiding ------------" << std::endl;
     std::cout << std::endl;
     exp2(piBasResHiding, maxDbSize);
 
-    std::cout << "---------- Log-SRC ----------" << std::endl;
+    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
     std::cout << std::endl;
     exp2(logSrc, maxDbSize);
 
-    std::cout << "---------- Log-SRC-i ----------" << std::endl;
+    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
     std::cout << std::endl;
     exp2(logSrcI, maxDbSize);
 
-    std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
+    std::cout << "--------- SDa[PiBasResHiding] ----------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaPiBas, maxDbSize / 32);
+    exp2(sdaPiBas, maxDbSize);
 
-    std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
+    std::cout << "----- SDa[Log-SRC[PiBasResHiding]] -----" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrc, maxDbSize / 32);
-    
-    std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
+    exp2(sdaLogSrc, maxDbSize);
+
+    std::cout << "---- SDa[Log-SRC-i[PiBasResHiding]] ----" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrcI, maxDbSize / 32);
+    exp2(sdaLogSrcI, maxDbSize);
     
     /////////////////////////////// experiment 3 ///////////////////////////////
 
-    std::cout << "------------------------- Experiment 3 -------------------------" << std::endl;
-    std::cout << "DB size  : 2^"                         << maxDbSizeExp << std::endl;
-    std::cout << "Query    : incurs 50% false positives" << std::endl;
-    std::cout << "----------------------------------------------------------------" << std::endl;
+    std::cout << "--------------------------------- Experiment 3 ---------------------------------" << std::endl;
+    std::cout << "DB size  : 2^" << maxDbSizeExp                                                    << std::endl;
+    std::cout << "Query    : high false positives"                                                  << std::endl;
+    std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------- Log-SRC ----------" << std::endl;
+    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
     std::cout << std::endl;
     exp3(logSrc, maxDbSize);
 
-    std::cout << "---------- Log-SRC-i ----------" << std::endl;
+    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
     std::cout << std::endl;
     exp3(logSrcI, maxDbSize);
 }
