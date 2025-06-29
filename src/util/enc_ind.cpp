@@ -102,7 +102,7 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     // (although they also use caching, presumably since it's slow if we need to keep finding next available locations)
     // this conversion mess is from USENIX'24's implementation
     ulong pos = (*((ulong*)label.c_str())) % this->size;
-    uchar* currKv = new uchar[ENC_IND_KV_LEN];
+    uchar currKv[ENC_IND_KV_LEN]; // I don't think we need a null terminator...?
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int objectsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
     if (objectsReadOrWritten != 1) {
@@ -138,14 +138,12 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
         std::exit(EXIT_FAILURE);
     }
     std::fflush(this->file); // flush to guarantee that we immediately mark the spot we just wrote into as filled
-    delete[] currKv;
-    currKv = nullptr;
 }
 
 
 int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
     ulong pos = (*((ulong*)label.c_str())) % this->size;
-    uchar* currKv = new uchar[ENC_IND_KV_LEN];
+    uchar currKv[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int objectsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
     if (objectsRead != 1) {
@@ -174,16 +172,12 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
     // since we have to iterate through whole index
     // but this only makes reducing false positives all the more important
     if (currLabel != label) {
-        delete[] currKv;
-        currKv = nullptr;
         return -1;
     }
 
     // decode kv pair and return it
     ret.first = ustring(&currKv[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
     ret.second = ustring(&currKv[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
-    delete[] currKv;
-    currKv = nullptr;
     return 0;
 }
 
