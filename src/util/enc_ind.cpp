@@ -1,6 +1,16 @@
 #include <cstring>
+#include <iomanip>
 
 #include "enc_ind.h"
+
+
+// for debugging
+void printStrAsHex(const unsigned char* str, int len) {
+    for (int i = 0; i < len; i++) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(str[i]) << " ";
+    }
+    std::cout << std::endl;
+}
 
 
 /******************************************************************************/
@@ -98,20 +108,24 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     unsigned char* currKv = new unsigned char[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+    if (itemsRead != 1) {
+        std::cerr << "Error reading encrypted index file on `write()`: read no bytes" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 
     // if location is already filled (e.g. because of modulo), find next available location
     unsigned long numPositionsChecked = 1;
     while (std::strcmp((char*)currKv, (char*)this->nullKv) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
-        if (itemsRead != 1) {
-            std::cerr << "Error reading encrypted index file on `write()`: read no bytes" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
         itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file); 
+        if (itemsRead != 1) {
+            std::cerr << "Error reading encrypted index file on `write()`: read no bytes" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
     }
     if (std::strcmp((char*)currKv, (char*)this->nullKv) != 0) {
         std::cerr << "Ran out of space writing to disk encrypted index!" << std::endl;
@@ -133,6 +147,10 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
     unsigned char* currKv = new unsigned char[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+    if (itemsRead != 1) {
+        std::cerr << "Error reading encrypted index file on `find()`: read no bytes" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
     ustring currLabel(currKv, ENC_IND_KEY_LEN);
 
     // if location based on `label` did not match the target (i.e. another kv pair overflowed to here first), scan
@@ -141,14 +159,14 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
     while (currLabel != label && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
-        if (itemsRead != 1) {
-            std::cerr << "Error reading encrypted index file on `find()`: read no bytes" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
         itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+        if (itemsRead != 1) {
+            std::cerr << "Error reading encrypted index file on `find()`: read no bytes" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
         currLabel = ustring(currKv, ENC_IND_KEY_LEN);
     }
     // this does make it a lot slower to verify if an element is nonexistent compared to primary memory storage,
