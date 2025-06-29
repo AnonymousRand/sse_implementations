@@ -73,13 +73,13 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
 
 template <ISdaUnderlySse_ Underly>
 std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query) const {
-    std::vector<Doc> results = this->searchWithoutRemovingDels(query);
+    std::vector<Doc> results = this->searchGeneric(query);
     return removeDeletedDocs(results);
 }
 
 
 template <ISdaUnderlySse_ Underly>
-std::vector<Doc> Sda<Underly>::searchWithoutRemovingDels(const Range<Kw>& query) const {
+std::vector<Doc> Sda<Underly>::searchGeneric(const Range<Kw>& query) const {
     std::vector<Doc> allResults;
     // search through all non-empty indexes
     for (Underly* underly : this->underlys) {
@@ -89,7 +89,7 @@ std::vector<Doc> Sda<Underly>::searchWithoutRemovingDels(const Range<Kw>& query)
         // don't use `underly->search()` here that filters out deleted tuples possibly prematurely
         // since the cancelation tuple for a document is not guaranteed to be in same index as the inserting tuple,
         // we can't rely on the individual underlying instances to filter out all deleted documents
-        std::vector<Doc> results = underly->searchWithoutRemovingDels(query);
+        std::vector<Doc> results = underly->searchGeneric(query);
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
     return allResults;

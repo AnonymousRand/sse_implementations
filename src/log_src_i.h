@@ -27,7 +27,7 @@ class LogSrcI : public ISdaUnderlySse<Doc, Kw> {
         void setup(int secParam, const Db<Doc, Kw>& db) override;
         std::vector<Doc> search(const Range<Kw>& query) const override;
 
-        std::vector<Doc> searchWithoutRemovingDels(const Range<Kw>& query) const override;
+        std::vector<Doc> searchGeneric(const Range<Kw>& query) const override;
         void clear() override;
         Db<Doc, Kw> getDb() const override;
         bool isEmpty() const override;

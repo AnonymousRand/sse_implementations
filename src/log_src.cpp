@@ -63,8 +63,8 @@ std::vector<Doc> LogSrc<Underly>::search(const Range<Kw>& query) const {
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-std::vector<Doc> LogSrc<Underly>::searchWithoutRemovingDels(const Range<Kw>& query) const {
-    return this->underly->searchWithoutRemovingDels(query);
+std::vector<Doc> LogSrc<Underly>::searchGeneric(const Range<Kw>& query) const {
+    return this->underly->searchGeneric(query);
 }
 
 

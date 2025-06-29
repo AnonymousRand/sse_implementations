@@ -14,7 +14,7 @@ class Sda : public IDsse<Doc, Kw> {
         EncIndType encIndType;
         ulong firstEmptyInd = 0;
 
-        std::vector<Doc> searchWithoutRemovingDels(const Range<Kw>& query) const;
+        std::vector<Doc> searchGeneric(const Range<Kw>& query) const;
 
     public:
         Sda(EncIndType encIndType);

@@ -30,7 +30,7 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
-        std::vector<DbDoc> searchWithoutRemovingDels(const Range<DbKw>& query) const override;
+        std::vector<DbDoc> searchGeneric(const Range<DbKw>& query) const override;
         void clear() override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;
@@ -81,7 +81,7 @@ class PiBasResHidingBase : public ISdaUnderlySse<DbDoc, DbKw> {
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
-        std::vector<DbDoc> searchWithoutRemovingDels(const Range<DbKw>& query) const override;
+        std::vector<DbDoc> searchGeneric(const Range<DbKw>& query) const override;
         void clear() override;
         Db<DbDoc, DbKw> getDb() const override;
         bool isEmpty() const override;

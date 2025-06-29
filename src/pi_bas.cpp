@@ -89,18 +89,18 @@ void PiBasBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBas<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchWithoutRemovingDels(query);
+    return this->searchGeneric(query);
 }
 
 
 std::vector<Doc> PiBas<Doc, Kw>::search(const Range<Kw>& query) const {
-    std::vector<Doc> results = this->searchWithoutRemovingDels(query);
+    std::vector<Doc> results = this->searchGeneric(query);
     return removeDeletedDocs(results);
 }
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchWithoutRemovingDels(const Range<DbKw>& query) const {
+std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::searchGeneric(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
 
     // naive range search: just individually query every point in range
@@ -264,18 +264,18 @@ void PiBasResHidingBase<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
 
 template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBasResHiding<DbDoc, DbKw>::search(const Range<DbKw>& query) const {
-    return this->searchWithoutRemovingDels(query);
+    return this->searchGeneric(query);
 }
 
 
 std::vector<Doc> PiBasResHiding<Doc, Kw>::search(const Range<Kw>& query) const {
-    std::vector<Doc> results = this->searchWithoutRemovingDels(query);
+    std::vector<Doc> results = this->searchGeneric(query);
     return removeDeletedDocs(results);
 }
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchWithoutRemovingDels(const Range<DbKw>& query) const {
+std::vector<DbDoc> PiBasResHidingBase<DbDoc, DbKw>::searchGeneric(const Range<DbKw>& query) const {
     std::vector<DbDoc> allResults;
     for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
         ustring queryToken = this->genQueryToken(Range<DbKw> {dbKw, dbKw});
