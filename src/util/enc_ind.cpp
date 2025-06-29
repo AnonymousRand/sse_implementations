@@ -81,8 +81,8 @@ void EncIndDisk::init(unsigned long size) {
     }
     // fill file with zero bits
     for (unsigned long i = 0; i < size; i++) {
-        int itemsWritten = std::fwrite(EncIndDisk::nullKv, ENC_IND_KV_LEN, 1, this->file);
-        if (itemsWritten != 1) {
+        int objectsWritten = std::fwrite(EncIndDisk::nullKv, ENC_IND_KV_LEN, 1, this->file);
+        if (objectsWritten != 1) {
             std::cerr << "Error initializing encrypted index file: wrote no bytes" << std::endl;
             std::exit(EXIT_FAILURE);
         }
@@ -104,8 +104,8 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     unsigned long pos = (*((unsigned long*)label.c_str())) % this->size;
     unsigned char* currKv = new unsigned char[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
-    int itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
-    if (itemsRead != 1) {
+    int objectsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+    if (objectsReadOrWritten != 1) {
         std::cerr << "Error reading encrypted index file on `write()`: read no bytes" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -118,8 +118,8 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file); 
-        if (itemsRead != 1) {
+        objectsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file); 
+        if (objectsReadOrWritten != 1) {
             std::cerr << "Error reading encrypted index file on `write()`: read no bytes" << std::endl;
             std::exit(EXIT_FAILURE);
         }
@@ -132,7 +132,11 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     // encode kv pair and write to file
     ustring kv = label + val.first + val.second;
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
-    std::fwrite(kv.c_str(), ENC_IND_KV_LEN, 1, this->file);
+    objectsReadOrWritten = std::fwrite(kv.c_str(), ENC_IND_KV_LEN, 1, this->file);
+    if (objectsReadOrWritten != 1) {
+        std::cerr << "Error writing to encrypted index file" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
     std::fflush(this->file); // flush to guarantee that we immediately mark the spot we just wrote into as filled
     delete[] currKv;
     currKv = nullptr;
@@ -143,8 +147,8 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
     unsigned long pos = (*((unsigned long*)label.c_str())) % this->size;
     unsigned char* currKv = new unsigned char[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
-    int itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
-    if (itemsRead != 1) {
+    int objectsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+    if (objectsRead != 1) {
         std::cerr << "Error reading encrypted index file on `find()`: read no bytes" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -159,8 +163,8 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
-        if (itemsRead != 1) {
+        objectsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+        if (objectsRead != 1) {
             std::cerr << "Error reading encrypted index file on `find()`: read no bytes" << std::endl;
             std::exit(EXIT_FAILURE);
         }
