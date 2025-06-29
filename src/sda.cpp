@@ -38,7 +38,7 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`; always merge/insert into first index if it's empty
     Db<Doc, Kw> mergedDb;
-    for (long i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
+    for (ulong i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
         // original paper fetches encrypted index and decrypts instead of `getDb()`
         // but that could get messy with Log-SRC-i as it has two indexes
         // instead we just store and get plaintext DB for convenience of implementation
@@ -56,12 +56,12 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
     }
 
     // clear all EDB_<j
-    for (long i = 0; i < this->firstEmptyInd; i++) {
+    for (ulong i = 0; i < this->firstEmptyInd; i++) {
         this->underlys[i]->clear();
     }
 
     // update the pointer to the first empty index
-    long firstEmpty;
+    ulong firstEmpty;
     for (firstEmpty = 0; firstEmpty < this->underlys.size(); firstEmpty++) {
         if (this->underlys[firstEmpty]->isEmpty()) {
             break;

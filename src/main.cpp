@@ -7,20 +7,23 @@
 #include "sda.h"
 
 
-Db<> createDb(int dbSize, bool isDataSkewed) {
+Db<> createDb(ulong dbSize, bool isDataSkewed) {
     Db<> db;
+    if (dbSize == 0) {
+        return db;
+    }
     if (isDataSkewed) {
         // two unique keywords, with all but one being 0 and the other being the max
         // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
-        int kw1 = 0;
-        int kw2 = dbSize - 1;
+        ulong kw1 = 0;
+        ulong kw2 = dbSize - 1;
 
-        for (int i = 0; i < dbSize - 1; i++) {
+        for (ulong i = 0; i < dbSize - 1; i++) {
             db.push_back(DbEntry {Doc(i, kw1, Op::INS), Range<Kw> {kw1, kw1}});
         }
         db.push_back(DbEntry {Doc(dbSize - 1, kw2, Op::INS), Range<Kw> {kw2, kw2}});
     } else {
-        for (int i = 0; i < dbSize; i++) {
+        for (ulong i = 0; i < dbSize; i++) {
             // make keywords and ids inversely proportional to test sorting of Log-SRC-i's second index
             Kw kw = dbSize - i + 1;
             db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
@@ -31,7 +34,10 @@ Db<> createDb(int dbSize, bool isDataSkewed) {
 
 
 // experiment for debugging with fixed query and printed results
-void expDebug(ISse<>& sse, int dbSize, Range<Kw> query) {
+void expDebug(ISse<>& sse, ulong dbSize, Range<Kw> query) {
+    if (dbSize == 0) {
+        return;
+    }
     Db<> db = createDb(dbSize, false);
 
     // setup
@@ -57,7 +63,10 @@ void expDebug(ISse<>& sse, int dbSize, Range<Kw> query) {
 }
 
 
-void exp1(ISse<>& sse, int dbSize) {
+void exp1(ISse<>& sse, ulong dbSize) {
+    if (dbSize == 0) {
+        return;
+    }
     Db<> db = createDb(dbSize, false);
 
     // setup
@@ -69,14 +78,14 @@ void exp1(ISse<>& sse, int dbSize) {
     std::cout << std::endl;
 
     // search
-    for (int i = 0; i <= (int)log2(dbSize); i++) {
-        Range<Kw> query {0, (int)pow(2, i) - 1};
+    for (ulong i = 0; i <= (ulong)log2(dbSize); i++) {
+        Range<Kw> query {0, (ulong)pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << (int)log2(query.size()) << "): " << searchElapsed.count() * 1000 << " ms"
-                  << std::endl;
+        std::cout << "Search time (size 2^" << (ulong)log2(query.size()) << "): " << searchElapsed.count() * 1000
+                  << " ms" << std::endl;
     }
     std::cout << std::endl;
 
@@ -85,10 +94,14 @@ void exp1(ISse<>& sse, int dbSize) {
 }
 
 
-void exp2(ISse<>& sse, int maxDbSize) {
+void exp2(ISse<>& sse, ulong maxDbSize) {
+    if (maxDbSize == 0) {
+        return;
+    }
     Range<Kw> query {0, 3};
-    for (int i = 2; i <= (int)log2(maxDbSize); i++) {
-        int dbSize = (int)pow(2, i);
+
+    for (ulong i = 2; i <= (ulong)log2(maxDbSize); i++) {
+        ulong dbSize = (ulong)pow(2, i);
         Db<> db = createDb(dbSize, false);
 
         // setup
@@ -96,7 +109,7 @@ void exp2(ISse<>& sse, int maxDbSize) {
         sse.setup(KEY_LEN, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size 2^" << (int)log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
+        std::cout << "Setup time (size 2^" << (ulong)log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
                   << std::endl;
 
         // search
@@ -104,7 +117,7 @@ void exp2(ISse<>& sse, int maxDbSize) {
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << (int)log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
+        std::cout << "Search time (size 2^" << (ulong)log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
     }
     std::cout << std::endl;
@@ -114,9 +127,12 @@ void exp2(ISse<>& sse, int maxDbSize) {
 }
 
 
-void exp3(ISse<>& sse, int maxDbSize) {
-    for (int i = 2; i <= (int)log2(maxDbSize); i++) {
-        int dbSize = (int)pow(2, i);
+void exp3(ISse<>& sse, ulong maxDbSize) {
+    if (maxDbSize == 0) {
+        return;
+    }
+    for (ulong i = 2; i <= (ulong)log2(maxDbSize); i++) {
+        ulong dbSize = (ulong)pow(2, i);
         Db<> db = createDb(dbSize, true);
 
         // setup
@@ -124,7 +140,7 @@ void exp3(ISse<>& sse, int maxDbSize) {
         sse.setup(KEY_LEN, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size 2^" << (int)log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
+        std::cout << "Setup time (size 2^" << (ulong)log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
                   << std::endl;
 
         // search
@@ -133,7 +149,7 @@ void exp3(ISse<>& sse, int maxDbSize) {
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << (int)log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
+        std::cout << "Search time (size 2^" << (ulong)log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
     }
     std::cout << std::endl;
@@ -144,10 +160,10 @@ void exp3(ISse<>& sse, int maxDbSize) {
 
 
 int main() {
-    int maxDbSizeExp;
+    ulong maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
-    int maxDbSize = pow(2, maxDbSizeExp);
+    ulong maxDbSize = pow(2, maxDbSizeExp);
 
     std::string encIndTypeStr;
     EncIndType encIndType;
@@ -212,7 +228,8 @@ int main() {
     /////////////////////////////// experiment 1 ///////////////////////////////
 
     std::cout << "------------------------- Experiment 1 -------------------------" << std::endl;
-    std::cout << "DB size  : 2^"     << maxDbSizeExp << " (2^" << maxDbSizeExp - 5 << " for SDa)" << std::endl;
+    std::cout << "DB size  : 2^"     << maxDbSizeExp << " (2^" << (maxDbSizeExp >= 5 ? maxDbSizeExp - 5 : 0)
+              << " for SDa)" << std::endl;
     std::cout << "Query    : varied" << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
@@ -248,39 +265,39 @@ int main() {
     /////////////////////////////// experiment 2 ///////////////////////////////
 
     std::cout << "------------------------- Experiment 2 -------------------------" << std::endl;
-    std::cout << "DB size  : varied, up to 2^" << maxDbSizeExp - 1 << " (2^" << maxDbSizeExp - 1 - 5 << " for SDa)"
-              << std::endl;
+    std::cout << "DB size  : varied, up to 2^" << maxDbSizeExp << " (2^" << (maxDbSizeExp >= 5 ? maxDbSizeExp - 5 : 0)
+              << " for SDa)" << std::endl;
     std::cout << "Query    : 0-3"              << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
     std::cout << "---------- PiBas ----------" << std::endl;
     std::cout << std::endl;
-    exp2(piBas, maxDbSize / 2);
+    exp2(piBas, maxDbSize);
 
     std::cout << "---------- PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp2(piBasResHiding, maxDbSize / 2);
+    exp2(piBasResHiding, maxDbSize);
 
     std::cout << "---------- Log-SRC ----------" << std::endl;
     std::cout << std::endl;
-    exp2(logSrc, maxDbSize / 2);
+    exp2(logSrc, maxDbSize);
 
     std::cout << "---------- Log-SRC-i ----------" << std::endl;
     std::cout << std::endl;
-    exp2(logSrcI, maxDbSize / 2);
+    exp2(logSrcI, maxDbSize);
 
     std::cout << "---------- SDa with PiBas (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaPiBas, maxDbSize / 64);
+    exp2(sdaPiBas, maxDbSize / 32);
 
     std::cout << "---------- SDa with Log-SRC (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrc, maxDbSize / 64);
+    exp2(sdaLogSrc, maxDbSize / 32);
     
     std::cout << "---------- SDa with Log-SRC-i (result-hiding) ----------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrcI, maxDbSize / 64);
+    exp2(sdaLogSrcI, maxDbSize / 32);
     
     /////////////////////////////// experiment 3 ///////////////////////////////
 

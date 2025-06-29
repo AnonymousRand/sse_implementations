@@ -27,5 +27,5 @@ Using GCC instead of G++ to compile will probably produce a wall of errors (diff
 
 # Notes
 
-- Ids and keywords must be integral values, and keywords must be positive. Otherwise, Bad Things may happen.
+- Ids and keywords must be nonnegative integral values. Otherwise, Bad Things may happen.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range-query schemes (as otherwise range queries are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range query schemes Logarithmic-SRC and especially Logarithmic-SRC-i may result in undefined and generally confusing behavior; only insert one document per id for those.
