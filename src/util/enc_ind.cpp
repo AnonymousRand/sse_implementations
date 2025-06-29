@@ -46,14 +46,7 @@ void EncIndRam::clear() {
 /******************************************************************************/
 
 
-EncIndDisk::EncIndDisk() {
-    // technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
-    // a null kv-pair, but currently `ENC_IND_KV_LEN` is 1024 bits so there's a 2^1024 chance of this happening
-    // USENIX'24's implementation (https://github.com/jgharehchamani/DSE-with-IO-Locality) also seems to just do this
-    for (int i = 0; i < ENC_IND_KV_LEN; i++) {
-        this->nullKv[i] = 0;
-    }
-}
+const unsigned char EncIndDisk::nullKv[] = {};
 
 
 EncIndDisk::~EncIndDisk() {
@@ -84,7 +77,7 @@ void EncIndDisk::init(unsigned long size) {
     }
     // fill file with zero bits
     for (unsigned long i = 0; i < size; i++) {
-        int itemsWritten = std::fwrite(this->nullKv, ENC_IND_KV_LEN, 1, this->file);
+        int itemsWritten = std::fwrite(EncIndDisk::nullKv, ENC_IND_KV_LEN, 1, this->file);
         if (itemsWritten != 1) {
             std::cerr << "Error initializing encrypted index file: wrote no bytes" << std::endl;
             std::exit(EXIT_FAILURE);
@@ -115,7 +108,7 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
 
     // if location is already filled (e.g. because of modulo), find next available location
     unsigned long numPositionsChecked = 1;
-    while (std::strcmp((char*)currKv, (char*)this->nullKv) != 0 && numPositionsChecked < this->size) {
+    while (std::strcmp((char*)currKv, (char*)EncIndDisk::nullKv) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
@@ -127,7 +120,7 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
             std::exit(EXIT_FAILURE);
         }
     }
-    if (std::strcmp((char*)currKv, (char*)this->nullKv) != 0) {
+    if (std::strcmp((char*)currKv, (char*)EncIndDisk::nullKv) != 0) {
         std::cerr << "Ran out of space writing to disk encrypted index!" << std::endl;
         std::exit(EXIT_FAILURE);
     }

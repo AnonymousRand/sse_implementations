@@ -60,13 +60,13 @@ class EncIndRam : public IEncInd {
 // for storing in secondary memory
 class EncIndDisk : public IEncInd {
     private:
+        static const unsigned char nullKv[ENC_IND_KV_LEN];
+
         FILE* file = nullptr;
         unsigned long size;
         std::string filename = "";
-        unsigned char nullKv[ENC_IND_KV_LEN]; // I know this can be `static` but no static constructors in C++ :/
 
     public:
-        EncIndDisk();
         ~EncIndDisk();
 
         void init(unsigned long size) override;
