@@ -156,6 +156,10 @@ std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldPro
             }
         }
     }
+    // if there are no choices or something went wrong
+    if (minIdAlias == DUMMY || maxIdAlias == DUMMY) {
+        return std::vector<Doc> {};
+    }
 
     ///////////////////////////////// query 2 //////////////////////////////////
 

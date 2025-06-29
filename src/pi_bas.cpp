@@ -133,7 +133,11 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         std::pair<ustring, ustring> subkeys = this->genQueryToken(dbKwRange);
         
         // for each id in DB(w)
-        std::vector<DbDoc> dbDocsWithSameKw = ind.find(dbKwRange)->second;
+        auto iter = ind.find(dbKwRange);
+        if (iter == ind.end()) {
+            continue;
+        }
+        std::vector<DbDoc> dbDocsWithSameKw = iter->second;
         for (ulong counter = 0; counter < dbDocsWithSameKw.size(); counter++) {
             DbDoc dbDoc = dbDocsWithSameKw[counter];
             // l <- F(K_1, c); d <- Enc(K_2, id); c++
@@ -239,8 +243,11 @@ void PiBasResHiding<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db)
     // for each w in W
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         ustring prfOutput = this->genQueryToken(dbKwRange);
-        
-        std::vector<DbDoc> dbDocsWithSameKw = ind.find(dbKwRange)->second;
+        auto iter = ind.find(dbKwRange);
+        if (iter == ind.end()) {
+            continue;
+        }
+        std::vector<DbDoc> dbDocsWithSameKw = iter->second;
         for (ulong counter = 0; counter < dbDocsWithSameKw.size(); counter++) {
             DbDoc dbDoc = dbDocsWithSameKw[counter];
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, prfOutput + toUstr(counter));
