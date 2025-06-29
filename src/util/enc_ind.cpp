@@ -1,15 +1,18 @@
 #include <cstring>
 #include <iomanip>
+#include <sstream>
 
 #include "enc_ind.h"
 
 
 // for debugging
-void printStrAsHex(const uchar* str, int len) {
+std::string strAsHex(const uchar* str, int len) {
+    std::stringstream ss;
     for (int i = 0; i < len; i++) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(str[i]) << " ";
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(str[i]) << " ";
     }
-    std::cout << std::endl;
+    ss << std::endl;
+    return ss.str();
 }
 
 
