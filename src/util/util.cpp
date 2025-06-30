@@ -261,19 +261,22 @@ void shuffleInd(Ind<IndK, DbDoc>& ind) {
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db) {
-    DbKw maxDbKw = DbKw(MIN_DB_KW);
-    if (!db.empty()) {
-        Range<DbKw> firstDbKwRange = db[0].second;
-        maxDbKw = firstDbKwRange.second;
-        for (DbEntry<DbDoc, DbKw> entry : db) {
-            Range<DbKw> dbKwRange = entry.second;
-            if (dbKwRange.second > maxDbKw) {
-                maxDbKw = dbKwRange.second;
-            }
+Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db) {
+    if (db.empty()) {
+        return DUMMY_RANGE<DbKw>();
+    }
+    DbKw minDbKw = DUMMY;
+    DbKw maxDbKw = DUMMY;
+    for (DbEntry<DbDoc, DbKw> entry : db) {
+        Range<DbKw> dbKwRange = entry.second;
+        if (dbKwRange.first < minDbKw || minDbKw == DUMMY) {
+            minDbKw = dbKwRange.first;
+        }
+        if (dbKwRange.second > maxDbKw || maxDbKw == DUMMY) {
+            maxDbKw = dbKwRange.second;
         }
     }
-    return maxDbKw;
+    return Range {minDbKw, maxDbKw};
 }
 
 
@@ -323,7 +326,7 @@ template void shuffleInd(Ind<Kw, Doc>& ind);
 template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
 //template void shuffleInd(Ind<IdAlias, Doc>& ind);
 
-template Kw findMaxDbKw(const Db<Doc, Kw>& db);
+template Range<Kw> findDbKwBounds(const Db<Doc, Kw>& db);
 
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);

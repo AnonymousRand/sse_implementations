@@ -4,18 +4,23 @@
 
 
 template <class T>
-TdagNode<T>::TdagNode(const Range<T>& range) : range(range), left(nullptr), right(nullptr), extraParent(nullptr) {}
-
-
-template <class T>
 TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
         range(Range<T> {left->range.first, right->range.second}), left(left), right(right), extraParent(nullptr) {}
 
 
 template <class T>
-TdagNode<T>::TdagNode(T maxLeafVal) {
+TdagNode<T>::TdagNode(const Range<T>& leafValRange) {
+    // if leaf node
+    if (leafValRange.size() == 1) {
+        this->range = leafValRange;
+        this->left = nullptr;
+        this->right = nullptr;
+        this->extraParent = nullptr;
+        return;
+    }
+
     std::vector<Range<T>> leafVals;
-    for (T i = T(MIN_DB_KW); i <= maxLeafVal; i++) {
+    for (T i = leafValRange.first; i <= leafValRange.second; i++) {
         leafVals.push_back(Range<T> {i, i});
     }
 

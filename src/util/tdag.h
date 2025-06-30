@@ -16,11 +16,6 @@ class TdagNode {
         bool isExtraParent = false;
 
         /**
-         * Construct a `TdagNode` with the given `Range`, leaving its children `nullptr`.
-         */
-        TdagNode(const Range<T>& range);
-
-        /**
          * Construct a `TdagNode` with the given children, setting its own `range`
          * to the union of its children's ranges.
          */
@@ -37,7 +32,7 @@ class TdagNode {
          * Construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up up to and including the given max
          * leaf value, with consecutive size 1 ranges as leaves.
          */
-        TdagNode(T maxLeafVal);
+        TdagNode(const Range<T>& leafValRange);
         
         ~TdagNode();
 

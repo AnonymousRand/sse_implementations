@@ -226,7 +226,7 @@ template <class IndK, IDbDoc_ DbDoc>
 void shuffleInd(Ind<IndK, DbDoc>& ind);
 
 template <IDbDoc_ DbDoc, class DbKw>
-DbKw findMaxDbKw(const Db<DbDoc, DbKw>& db);
+Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db);
 
 template <IDbDoc_ DbDoc, class DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);

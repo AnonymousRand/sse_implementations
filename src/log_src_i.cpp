@@ -67,7 +67,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
             maxIdAlias = idAlias;
         }
     }
-    this->tdag2 = new TdagNode<IdAlias>(maxIdAlias);
+    this->tdag2 = new TdagNode<IdAlias>(Range {IdAlias(0), maxIdAlias});
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     long stop = db2.size();
@@ -88,8 +88,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     ////////////////////////////// build index 1 ///////////////////////////////
 
     // build TDAG 1 over keywords
-    Kw maxKw = findMaxDbKw(db);
-    this->tdag1 = new TdagNode<Kw>(maxKw);
+    Range<Kw> kwBounds = findDbKwBounds(db);
+    this->tdag1 = new TdagNode<Kw>(kwBounds);
 
     // assign id aliases/TDAG 2 nodes to documents based on index 2
     Db<SrcIDb1Doc, Kw> db1;

@@ -16,7 +16,7 @@ Db<> createUniformDb(long dbSize, bool reverseKwOrder, bool hasDeletions) {
     if (hasDeletions) {
         for (long i = 0; i < dbSize - 1; i++) {
             // if `reverseKwOrder`, make keywords and ids inversely proportional to test sorting of Log-SRC-i's index 2
-            Kw kw = reverseKwOrder ? dbSize - i - 2 : i;
+            Kw kw = reverseKwOrder ? dbSize - i + 1: i;
             db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
             // delete the document with keyword 4
             if (kw == 4) {
@@ -25,7 +25,7 @@ Db<> createUniformDb(long dbSize, bool reverseKwOrder, bool hasDeletions) {
         }
     } else {
         for (long i = 0; i < dbSize; i++) {
-            Kw kw = reverseKwOrder ? dbSize - i - 1 : i;
+            Kw kw = reverseKwOrder ? dbSize - i + 2 : i;
             db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
         }
     }
@@ -39,6 +39,7 @@ void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
+    // adjust params at will
     Db<> db = createUniformDb(dbSize, true, true);
 
     // setup
