@@ -35,6 +35,7 @@ LogSrcI<Underly>::~LogSrcI() {
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->clear();
+
     this->db = db;
     this->_isEmpty = this->db.empty();
 

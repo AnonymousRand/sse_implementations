@@ -29,8 +29,8 @@ LogSrc<Underly>::~LogSrc() {
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->clear();
-    this->db = db;
 
+    this->db = db;
     // need to find largest keyword: we can't pass in all the keywords raw, as leaves need to be contiguous
     Kw maxKw = findMaxDbKw(db);
     this->tdag = new TdagNode<Kw>(maxKw);
