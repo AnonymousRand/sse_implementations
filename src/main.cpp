@@ -226,7 +226,7 @@ int main() {
     /////////////////////////////// experiment 1 ///////////////////////////////
 
     std::cout << "--------------------------------- Experiment 1 ---------------------------------" << std::endl;
-    std::cout << "DB size  : 2^"     << maxDbSizeExp                                                << std::endl;
+    std::cout << "DB size  : 2^" << maxDbSizeExp                                                    << std::endl;
     std::cout << "Query    : varied"                                                                << std::endl;
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
