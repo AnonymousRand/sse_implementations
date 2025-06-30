@@ -29,7 +29,10 @@ class ISse {
 
         /**
          * Free memory and clear the db/index, without fully destroying this object as the destructor does
-         * (so we can still call `setup()` again with the same object, perhaps with a different db)
+         * (so we can still call `setup()` again with the same object, perhaps with a different db).
+         * 
+         * Notes:
+         *     - Should be idempotent and safe to call without `setup()` first as well.
          */
         virtual void clear() = 0;
 
