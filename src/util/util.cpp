@@ -302,21 +302,21 @@ void cleanUpResults(std::vector<DbDoc>& docs) {}
 template <>
 void cleanUpResults(std::vector<Doc>& docs) {
     std::vector<Doc> newDocs;
-    std::unordered_set<Id> deleted;
+    std::unordered_set<Id> deletedIds;
 
-    // find all deletion tuples
+    // find all cancellation tuples
     for (Doc doc : docs) {
         Id id = doc.getId();
         Op op = doc.getOp();
         if (op == Op::DEL) {
-            deleted.insert(id);
+            deletedIds.insert(id);
         }
     }
     // copy over vector without deleted docs
     for (Doc doc : docs) {
         Id id = doc.getId();
         Op op = doc.getOp();
-        if (op == Op::INS && deleted.count(id) == 0) {
+        if (op == Op::INS && deletedIds.count(id) == 0) {
             newDocs.push_back(doc);
         }
     }
