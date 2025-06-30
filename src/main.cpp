@@ -16,7 +16,7 @@ Db<> createUniformDb(ulong dbSize, bool hasDeletions) {
     if (hasDeletions) {
         for (ulong i = 0; i < dbSize - 1; i++) {
             // make keywords and ids inversely proportional to test sorting of Log-SRC-i's second index
-            Kw kw = dbSize - i + 1;
+            Kw kw = dbSize - i - 2;
             db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
             // delete the document with keyword 4
             if (kw == 4) {
@@ -25,7 +25,7 @@ Db<> createUniformDb(ulong dbSize, bool hasDeletions) {
         }
     } else {
         for (ulong i = 0; i < dbSize; i++) {
-            Kw kw = dbSize - i + 1;
+            Kw kw = dbSize - i - 1;
             db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
         }
     }

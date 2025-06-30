@@ -114,7 +114,7 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
 
     // if location is already filled (because of modulo), find next available location
     ulong numPositionsChecked = 1;
-    while (std::strcmp((char*)currKv, (char*)EncIndDisk::nullKv) != 0 && numPositionsChecked < this->size) {
+    while (std::memcmp(currKv, EncIndDisk::nullKv, ENC_IND_KV_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
@@ -126,7 +126,7 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
             std::exit(EXIT_FAILURE);
         }
     }
-    if (std::strcmp((char*)currKv, (char*)EncIndDisk::nullKv) != 0) {
+    if (std::memcmp(currKv, EncIndDisk::nullKv, ENC_IND_KV_LEN) != 0) {
         std::cerr << "Ran out of space writing to disk encrypted index!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
