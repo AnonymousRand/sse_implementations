@@ -45,6 +45,10 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
 
 
 template <class T>
+const std::regex Range<T>::FROM_STR_REGEX("(-?[0-9]+)-(-?[0-9]+)");
+
+
+template <class T>
 Range<T>::Range(const T& start, const T& end) : std::pair<T, T> {start, end} {}
 
 
@@ -76,9 +80,8 @@ std::string Range<T>::toStr() const {
 
 template <class T>
 Range<T> Range<T>::fromStr(const std::string& str) {
-    std::regex re("(.*?)-(.*)");
     std::smatch matches;
-    if (!std::regex_search(str, matches, re) || matches.size() != 3) {
+    if (!std::regex_search(str, matches, Range<T>::FROM_STR_REGEX) || matches.size() != 3) {
         std::cerr << "Error: bad string passed to `Range.fromStr()`, the world is going to end" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -144,7 +147,7 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
 /******************************************************************************/
 
 
-const std::regex Doc::fromStrRegex = std::regex("\\((-?[0-9]+),([0-9]+),([I|D])\\)");
+const std::regex Doc::FROM_STR_REGEX("\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\)");
 
 
 Doc::Doc(Id id, Kw kw, Op op) : IDbDoc<std::tuple<Id, Kw, Op>>(std::tuple {id, kw, op}) {}
@@ -166,7 +169,7 @@ Doc Doc::fromUstr(const ustring& ustr) {
 
 Doc Doc::fromStr(const std::string& str) {
     std::smatch matches;
-    if (!std::regex_search(str, matches, Doc::fromStrRegex) || matches.size() != 4) {
+    if (!std::regex_search(str, matches, Doc::FROM_STR_REGEX) || matches.size() != 4) {
         std::cerr << "Error: bad string passed to `Doc.fromStr()`, the world is going to end now" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -215,7 +218,7 @@ template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id,
 /******************************************************************************/
 
 
-const std::regex SrcIDb1Doc::fromStrRegex = std::regex("\\(([0-9]+-[0-9]+),([0-9]+-[0-9]+)\\)");
+const std::regex SrcIDb1Doc::FROM_STR_REGEX("\\((-?[0-9]+--?[0-9]+),(-?[0-9]+--?[0-9]+)\\)");
 
 
 SrcIDb1Doc::SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange) :
@@ -232,7 +235,7 @@ std::string SrcIDb1Doc::toStr() const {
 SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::smatch matches;
-    if (!std::regex_search(str, matches, SrcIDb1Doc::fromStrRegex) || matches.size() != 3) {
+    if (!std::regex_search(str, matches, SrcIDb1Doc::FROM_STR_REGEX) || matches.size() != 3) {
         std::cerr << "Error: bad string passed to `SrcIDb1Doc.fromUstr()`, the world is going to end now" << std::endl;
         exit(EXIT_FAILURE);
     }

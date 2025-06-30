@@ -123,6 +123,9 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
  */
 template <class T>
 class Range : public std::pair<T, T> {
+    private:
+        static const std::regex FROM_STR_REGEX;
+
     public:
         Range() = default;
         Range(const T& start, const T& end);
@@ -185,7 +188,7 @@ class IDbDoc {
 // these are the "database tuples"; accommodate dynamic SSE by also storing the operation
 class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
     public:
-        static const std::regex fromStrRegex;
+        static const std::regex FROM_STR_REGEX;
 
         Doc() = default;
         Doc(Id id, Kw kw, Op op);
@@ -209,7 +212,7 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
 
 class SrcIDb1Doc : public IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>> {
     public:
-        static const std::regex fromStrRegex;
+        static const std::regex FROM_STR_REGEX;
 
         SrcIDb1Doc() = default;
         SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange);
