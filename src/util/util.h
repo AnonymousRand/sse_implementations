@@ -39,8 +39,7 @@ static const EVP_MD* HASH_FUNC       = EVP_sha512();
 /**
  * Precondition: keywords and ids are both nonnegative integral values (storable by `long`).
  */
-static constexpr long MIN_DB_KW = 0;
-static constexpr long DUMMY     = -1;
+static constexpr long DUMMY = -1;
 
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
