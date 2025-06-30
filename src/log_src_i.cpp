@@ -60,7 +60,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     }
 
     // build TDAG 2 over id aliases
-    IdAlias maxIdAlias = IdAlias(0);
+    IdAlias maxIdAlias = 0;
     for (DbEntry<Doc, IdAlias> dbEntry : db2) {
         IdAlias idAlias = dbEntry.second.first;
         if (idAlias > maxIdAlias) {
