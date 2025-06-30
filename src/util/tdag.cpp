@@ -154,9 +154,22 @@ std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<
 }
 
 
+template <class T>
+Range<T> TdagNode<T>::findSrc(Range<T> targetRange) {
+    // if target range is bigger than this entire tree's range, return what we can
+    if (targetRange.first < this->range.first) {
+        targetRange.first = this->range.first;
+    }
+    if (targetRange.second > this->range.second) {
+        targetRange.second = this->range.second;
+    }
+    return this->findSrcHelper(targetRange);
+}
+
+
 // basically traverses tree with DFS and early exits to find best SRC
 template <class T>
-Range<T> TdagNode<T>::findSrc(const Range<T>& targetRange) {
+Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
     if (this->range.isDisjointFrom(targetRange)) {
