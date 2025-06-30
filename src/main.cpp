@@ -73,13 +73,13 @@ void exp1(ISse<>& sse, long dbSize) {
     std::cout << std::endl;
 
     // search
-    for (long i = 0; i <= log2(dbSize); i++) {
-        Range<Kw> query {0, (long)pow(2, i) - 1};
+    for (long i = 0; i <= std::log2(dbSize); i++) {
+        Range<Kw> query {0, (long)std::pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << log2(query.size()) << "): " << searchElapsed.count() * 1000
+        std::cout << "Search time (size 2^" << std::log2(query.size()) << "): " << searchElapsed.count() * 1000
                   << " ms" << std::endl;
     }
     std::cout << std::endl;
@@ -94,8 +94,8 @@ void exp2(ISse<>& sse, long maxDbSize) {
     }
     Range<Kw> query {0, 3};
 
-    for (long i = 2; i <= log2(maxDbSize); i++) {
-        long dbSize = pow(2, i);
+    for (long i = 2; i <= std::log2(maxDbSize); i++) {
+        long dbSize = std::pow(2, i);
         Db<> db = createUniformDb(dbSize, false, false);
 
         // setup
@@ -103,7 +103,7 @@ void exp2(ISse<>& sse, long maxDbSize) {
         sse.setup(KEY_LEN, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size 2^" << log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
+        std::cout << "Setup time (size 2^" << std::log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
                   << std::endl;
 
         // search
@@ -111,7 +111,7 @@ void exp2(ISse<>& sse, long maxDbSize) {
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
+        std::cout << "Search time (size 2^" << std::log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
     }
     std::cout << std::endl;
@@ -124,8 +124,8 @@ void exp3(ISse<>& sse, long maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
-    for (long i = 2; i <= log2(maxDbSize); i++) {
-        long dbSize = pow(2, i);
+    for (long i = 2; i <= std::log2(maxDbSize); i++) {
+        long dbSize = std::pow(2, i);
         // two unique keywords, with all but one being 0 and the other being the max
         // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
         Db<> db;
@@ -141,7 +141,7 @@ void exp3(ISse<>& sse, long maxDbSize) {
         sse.setup(KEY_LEN, db);
         auto setupEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size 2^" << log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
+        std::cout << "Setup time (size 2^" << std::log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
                   << std::endl;
 
         // search
@@ -150,7 +150,7 @@ void exp3(ISse<>& sse, long maxDbSize) {
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
+        std::cout << "Search time (size 2^" << std::log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
                   << std::endl;
     }
     std::cout << std::endl;
@@ -163,7 +163,7 @@ int main() {
     long maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
-    long maxDbSize = pow(2, maxDbSizeExp);
+    long maxDbSize = std::pow(2, maxDbSizeExp);
 
     std::string encIndTypeStr;
     EncIndType encIndType;
