@@ -83,8 +83,8 @@ void EncIndDisk::init(ulong size) {
     }
     // fill file with zero bits
     for (ulong i = 0; i < size; i++) {
-        int objectsWritten = std::fwrite(EncIndDisk::nullKv, ENC_IND_KV_LEN, 1, this->file);
-        if (objectsWritten != 1) {
+        int itemsWritten = std::fwrite(EncIndDisk::nullKv, ENC_IND_KV_LEN, 1, this->file);
+        if (itemsWritten != 1) {
             std::cerr << "Error initializing encrypted index file: nothing written" << std::endl;
             std::exit(EXIT_FAILURE);
         }
@@ -106,8 +106,8 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     ulong pos = (*((ulong*)label.c_str())) % this->size;
     uchar currKv[ENC_IND_KV_LEN]; // I don't think we need a null terminator...?
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
-    int objectsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
-    if (objectsReadOrWritten != 1) {
+    int itemsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+    if (itemsReadOrWritten != 1) {
         std::cerr << "Error reading encrypted index file on `write()`: nothing read" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -120,8 +120,8 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        objectsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file); 
-        if (objectsReadOrWritten != 1) {
+        itemsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file); 
+        if (itemsReadOrWritten != 1) {
             std::cerr << "Error reading encrypted index file on `write()`: nothing read" << std::endl;
             std::exit(EXIT_FAILURE);
         }
@@ -134,8 +134,8 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     // encode kv pair and write to file
     ustring kv = label + val.first + val.second;
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
-    objectsReadOrWritten = std::fwrite(kv.c_str(), ENC_IND_KV_LEN, 1, this->file);
-    if (objectsReadOrWritten != 1) {
+    itemsReadOrWritten = std::fwrite(kv.c_str(), ENC_IND_KV_LEN, 1, this->file);
+    if (itemsReadOrWritten != 1) {
         std::cerr << "Error writing to encrypted index file" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -147,8 +147,8 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
     ulong pos = (*((ulong*)label.c_str())) % this->size;
     uchar currKv[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
-    int objectsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
-    if (objectsRead != 1) {
+    int itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+    if (itemsRead != 1) {
         std::cerr << "Error reading encrypted index file on `find()`: nothing read" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -163,8 +163,8 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        objectsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
-        if (objectsRead != 1) {
+        itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
+        if (itemsRead != 1) {
             std::cerr << "Error reading encrypted index file on `find()`: nothing read" << std::endl;
             std::exit(EXIT_FAILURE);
         }
