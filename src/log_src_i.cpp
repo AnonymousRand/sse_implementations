@@ -56,7 +56,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         DbEntry<Doc, IdAlias> newDbEntry = DbEntry {doc, Range<IdAlias> {i, i}};
         db2.push_back(newDbEntry);
         Id id = doc.getId();
-        idAliasMapping[id] = IdAlias(i);
+        idAliasMapping[id] = i;
     }
 
     // build TDAG 2 over id aliases
@@ -67,7 +67,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
             maxIdAlias = idAlias;
         }
     }
-    this->tdag2 = new TdagNode<IdAlias>(Range {IdAlias(0), maxIdAlias});
+    this->tdag2 = new TdagNode<IdAlias>(Range<IdAlias> {0, maxIdAlias});
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     long stop = db2.size();
