@@ -140,6 +140,8 @@ std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldPro
     }
     std::vector<SrcIDb1Doc> choices = this->underly1->search(src1, false, false);
 
+    ///////////////////////////////// query 2 //////////////////////////////////
+
     // generate query for query 2 based on query 1 results
     // (filter out unnecessary choices and merge remaining ones into a single id range)
     IdAlias minIdAlias = DUMMY;
@@ -162,8 +164,7 @@ std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldPro
         return std::vector<Doc> {};
     }
 
-    ///////////////////////////////// query 2 //////////////////////////////////
-
+    // perform query 2
     Range<IdAlias> query2 {minIdAlias, maxIdAlias};
     Range<IdAlias> src2 = this->tdag2->findSrc(query2);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
