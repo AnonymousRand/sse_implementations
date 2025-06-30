@@ -237,4 +237,4 @@ template <IDbDoc_ DbDoc, class DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);
 
 template <IDbDoc_ DbDoc>
-void processResults(std::vector<DbDoc>& docs);
+void cleanUpResults(std::vector<DbDoc>& docs);

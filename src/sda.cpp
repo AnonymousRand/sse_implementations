@@ -90,7 +90,7 @@ std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldProcess
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
     if (shouldProcessResults) {
-        processResults(allResults);
+        cleanUpResults(allResults);
     }
 
     return allResults;

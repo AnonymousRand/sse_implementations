@@ -40,7 +40,7 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
     }
 
     if (shouldProcessResults) {
-        processResults(allResults);
+        cleanUpResults(allResults);
     }
 
     return allResults;

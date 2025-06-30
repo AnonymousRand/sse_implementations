@@ -295,12 +295,12 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 
 
 template <IDbDoc_ DbDoc>
-void processResults(std::vector<DbDoc>& docs) {}
+void cleanUpResults(std::vector<DbDoc>& docs) {}
 
 
 // template specialize just this method for `Doc` instead of all SSE classes that use it
 template <>
-void processResults(std::vector<Doc>& docs) {
+void cleanUpResults(std::vector<Doc>& docs) {
     std::vector<Doc> newDocs;
     std::unordered_set<Id> deleted;
 
@@ -336,5 +336,5 @@ template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);
 //template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc, IdAlias>& db);
 
-template void processResults(std::vector<Doc>& docs);
-template void processResults(std::vector<SrcIDb1Doc>& docs);
+template void cleanUpResults(std::vector<Doc>& docs);
+template void cleanUpResults(std::vector<SrcIDb1Doc>& docs);
