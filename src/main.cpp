@@ -39,7 +39,7 @@ void expDebug(ISse<>& sse, ulong dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createUniformDb(dbSize, false, true);
+    Db<> db = createUniformDb(dbSize, true, true);
 
     // setup
     sse.setup(KEY_LEN, db);
