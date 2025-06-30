@@ -15,6 +15,11 @@ std::string strToHex(const uchar* str, int len) {
 }
 
 
+std::string strToHex(const ustring& str) {
+    return strToHex(str.c_str(), str.length());
+}
+
+
 /******************************************************************************/
 /* `EncIndRam`                                                                */
 /******************************************************************************/
