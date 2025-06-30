@@ -25,7 +25,9 @@ std::string strToHex(const ustring& str) {
 /******************************************************************************/
 
 
-void EncIndRam::init(long size) {}
+void EncIndRam::init(long size) {
+    this->clear();
+}
 
 
 void EncIndRam::write(ustring label, std::pair<ustring, ustring> val) {
@@ -66,8 +68,9 @@ EncIndDisk::~EncIndDisk() {
 
 
 void EncIndDisk::init(long size) {
-    this->size = size;
+    this->clear();
 
+    this->size = size;
     // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
     // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
     // the same file its first index was being stored in...

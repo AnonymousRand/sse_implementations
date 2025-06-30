@@ -32,9 +32,6 @@ class IEncInd {
         /**
          * Free memory without fully destroying this object (so we can call `init()` again with the same object).
          * Should be idempotent and safe to call without `init()` first as well.
-         *
-         * Notes:
-         *     - Every `init()` must be followed by a `clear()` for memory freeing!!
          */
         virtual void clear() = 0;
 };

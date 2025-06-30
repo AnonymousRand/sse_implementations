@@ -34,17 +34,9 @@ LogSrcI<Underly>::~LogSrcI() {
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
 void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
+    this->clear();
     this->db = db;
     this->_isEmpty = this->db.empty();
-    // so we don't leak the memory from the previous TDAGs after we call `new` again
-    if (this->tdag1 != nullptr) {
-        delete this->tdag1;
-        this->tdag1 = nullptr;
-    }
-    if (this->tdag2 != nullptr) {
-        delete this->tdag2;
-        this->tdag2 = nullptr;
-    }
 
     ////////////////////////////// build index 2 ///////////////////////////////
 

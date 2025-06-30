@@ -18,6 +18,7 @@ Sda<Underly>::~Sda() {
 
 template <ISdaUnderly_ Underly>
 void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
+    this->clear();
     this->secParam = secParam;
     for (DbEntry<Doc, Kw> entry : db) {
         this->update(entry);

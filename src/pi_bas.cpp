@@ -93,6 +93,7 @@ PiBas<DbDoc, DbKw>::PiBas(EncIndType encIndType) : PiBasBase<DbDoc, DbKw>(encInd
 
 template <IDbDoc_ DbDoc, class DbKw>
 void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+    this->clear();
 
     ////////////////////////////// generate keys ///////////////////////////////
 
@@ -122,7 +123,6 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // randomly permute documents associated with same keyword, required by some schemes on top of PiBas (e.g. Log-SRC)
     shuffleInd(ind);
 
-    this->encInd->clear();
     this->encInd->init(db.size());
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
@@ -209,6 +209,7 @@ PiBasResHiding<DbDoc, DbKw>::PiBasResHiding(EncIndType encIndType) : PiBasBase<D
 
 template <IDbDoc_ DbDoc, class DbKw>
 void PiBasResHiding<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+    this->clear();
 
     ////////////////////////////// generate keys ///////////////////////////////
 
@@ -220,7 +221,6 @@ void PiBasResHiding<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db)
     this->db = db;
     this->_isEmpty = db.empty();
     if (db.empty()) {
-        this->encInd->clear();
         return;
     }
 
@@ -237,7 +237,6 @@ void PiBasResHiding<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db)
         }
     }
 
-    this->encInd->clear();
     this->encInd->init(db.size());
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
