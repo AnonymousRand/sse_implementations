@@ -146,14 +146,15 @@ std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldPro
     IdAlias maxIdAlias = DUMMY;
     for (SrcIDb1Doc choice : choices) {
         Range<Kw> choiceKwRange = choice.get().first;
-        if (query.contains(choiceKwRange)) {
-            Range<IdAlias> choiceIdAliasRange = choice.get().second;
-            if (choiceIdAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
-                minIdAlias = choiceIdAliasRange.first;
-            }
-            if (choiceIdAliasRange.second > maxIdAlias || maxIdAlias == DUMMY) {
-                maxIdAlias = choiceIdAliasRange.second;
-            }
+        if (!query.contains(choiceKwRange)) {
+            continue;
+        }
+        Range<IdAlias> choiceIdAliasRange = choice.get().second;
+        if (choiceIdAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
+            minIdAlias = choiceIdAliasRange.first;
+        }
+        if (choiceIdAliasRange.second > maxIdAlias || maxIdAlias == DUMMY) {
+            maxIdAlias = choiceIdAliasRange.second;
         }
     }
     // if there are no choices or something went wrong
