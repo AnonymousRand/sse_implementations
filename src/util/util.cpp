@@ -327,6 +327,7 @@ template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
 //template void shuffleInd(Ind<IdAlias, Doc>& ind);
 
 template Range<Kw> findDbKwBounds(const Db<Doc, Kw>& db);
+template Range<Kw> findDbKwBounds(const Db<SrcIDb1Doc, Kw>& db);
 
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);

@@ -87,10 +87,6 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     ////////////////////////////// build index 1 ///////////////////////////////
 
-    // build TDAG 1 over keywords
-    Range<Kw> kwBounds = findDbKwBounds(db);
-    this->tdag1 = new TdagNode<Kw>(kwBounds);
-
     // assign id aliases/TDAG 2 nodes to documents based on index 2
     Db<SrcIDb1Doc, Kw> db1;
     for (DbEntry<Doc, Kw> dbEntry : db) {
@@ -101,6 +97,10 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
         db1.push_back(newDbEntry);
     }
+
+    // build TDAG 1 over keywords
+    Range<Kw> kwBounds = findDbKwBounds(db1);
+    this->tdag1 = new TdagNode<Kw>(kwBounds);
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();
