@@ -50,12 +50,12 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-std::vector<Doc> LogSrc<Underly>::search(const Range<Kw>& query, bool shouldProcessResults, bool isNaive) const {
+std::vector<Doc> LogSrc<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
     Range<Kw> src = this->tdag->findSrc(query);
     if (src == DUMMY_RANGE<Kw>()) {
         return std::vector<Doc> {};
     }
-    return this->underly->search(src, shouldProcessResults, false);
+    return this->underly->search(src, shouldCleanUpResults, false);
 }
 
 

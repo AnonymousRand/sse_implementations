@@ -24,7 +24,7 @@ PiBasBase<DbDoc, DbKw>::~PiBasBase() {
 
 template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
-    const Range<DbKw>& query, bool shouldProcessResults, bool isNaive
+    const Range<DbKw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
     std::vector<DbDoc> allResults;
 
@@ -39,7 +39,7 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
         allResults = this->searchBase(query);
     }
 
-    if (shouldProcessResults) {
+    if (shouldCleanUpResults) {
         cleanUpResults(allResults);
     }
 

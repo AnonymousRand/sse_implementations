@@ -19,12 +19,12 @@ class ISse {
         
         /**
          * Params:
-         *     - `shouldProcessResults`: whether to filter out deleted docs or not
+         *     - `shouldCleanUpResults`: whether to filter out deleted docs or not
          *     - `isNaive`: whether to search each point in `query` individually, or the entire range in one go
          *       (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC.
          */
         virtual std::vector<DbDoc> search(
-            const Range<DbKw>& query, bool shouldProcessResults = true, bool isNaive = true
+            const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const = 0;
 
         /**

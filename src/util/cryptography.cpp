@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include <openssl/err.h>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
@@ -12,7 +14,7 @@
 
 void handleErrors() {
     ERR_print_errors_fp(stderr);
-    exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
 }
 
 
@@ -70,7 +72,7 @@ ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input
 }
 
 
-// PRF implemented with HMAC-SHA512, as done in Private Practical Range Search Revisited
+// PRF implemented with HMAC-SHA512, as done in Demertzis'16
 ustring prf(const ustring& key, const ustring& input) {
     unsigned int outputLen;
     uchar* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen);

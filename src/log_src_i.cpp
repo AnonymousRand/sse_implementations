@@ -85,6 +85,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         }
     }
 
+    this->underly2->setup(secParam, db2);
+
     ////////////////////////////// build index 1 ///////////////////////////////
 
     // assign id aliases/TDAG 2 nodes to documents based on index 2
@@ -118,12 +120,11 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     }
 
     this->underly1->setup(secParam, db1);
-    this->underly2->setup(secParam, db2);
 }
 
 
 template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldProcessResults, bool isNaive) const {
+std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
 
     ///////////////////////////////// query 1 //////////////////////////////////
 
@@ -163,7 +164,7 @@ std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldPro
     if (src2 == DUMMY_RANGE<IdAlias>()) {
         return std::vector<Doc> {};
     }
-    return this->underly2->search(src2, shouldProcessResults, false);
+    return this->underly2->search(src2, shouldCleanUpResults, false);
 }
 
 

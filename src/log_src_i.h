@@ -24,7 +24,7 @@ class LogSrcI : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
 
         void setup(int secParam, const Db<Doc, Kw>& db) override;
         std::vector<Doc> search(
-            const Range<Kw>& query, bool shouldProcessResults = true, bool isNaive = true
+            const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override;
 
         void clear() override;

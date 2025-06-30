@@ -40,8 +40,7 @@ void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
-    // adjust params at will
-    Db<> db = createUniformDb(dbSize, true, true);
+    Db<> db = createUniformDb(dbSize, true, true); // adjust params at will
 
     // setup
     sse.setup(KEY_LEN, db);
@@ -124,6 +123,7 @@ void exp3(ISse<>& sse, long maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
+
     for (long i = 2; i <= std::log2(maxDbSize); i++) {
         long dbSize = std::pow(2, i);
         // two unique keywords, with all but one being 0 and the other being the max

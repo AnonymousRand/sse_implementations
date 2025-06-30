@@ -25,7 +25,7 @@ class PiBasBase : public ISse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbKw> {
         virtual ~PiBasBase();
 
         std::vector<DbDoc> search(
-            const Range<DbKw>& query, bool shouldProcessResults = true, bool isNaive = true
+            const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override;
 
         void clear() override;

@@ -147,7 +147,7 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
 /******************************************************************************/
 
 
-const std::regex Doc::FROM_STR_REGEX("\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\)");
+const std::regex Doc::FROM_STR_REGEX("\\((-?[0-9]+),(-?[0-9]+),([I|D])\\)");
 
 
 Doc::Doc(Id id, Kw kw, Op op) : IDbDoc<std::tuple<Id, Kw, Op>>(std::tuple {id, kw, op}) {}
@@ -197,13 +197,13 @@ Op Doc::getOp() const {
 
 bool operator ==(const Doc& doc1, const Doc& doc2) {
     if (std::get<0>(doc1.val) != std::get<0>(doc2.val)) {
-            return false;
+        return false;
     }
     if (std::get<1>(doc1.val) != std::get<1>(doc2.val)) {
-            return false;
+        return false;
     }
     if (std::get<2>(doc1.val) != std::get<2>(doc2.val)) {
-            return false;
+        return false;
     }
     return true;
 }
@@ -268,6 +268,7 @@ Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db) {
     if (db.empty()) {
         return DUMMY_RANGE<DbKw>();
     }
+
     DbKw minDbKw = DUMMY;
     DbKw maxDbKw = DUMMY;
     for (DbEntry<DbDoc, DbKw> entry : db) {

@@ -19,7 +19,7 @@ class Sda : public IDsse<Doc, Kw> {
 
         void setup(int secParam, const Db<Doc, Kw>& db) override;
         std::vector<Doc> search(
-            const Range<Kw>& query, bool shouldProcessResults = true, bool isNaive = true
+            const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override;
         void update(const DbEntry<Doc, Kw>& newEntry) override;
 
