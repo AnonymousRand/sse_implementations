@@ -25,7 +25,7 @@ std::string strToHex(const ustring& str) {
 /******************************************************************************/
 
 
-void EncIndRam::init(ulong size) {}
+void EncIndRam::init(long size) {}
 
 
 void EncIndRam::write(ustring label, std::pair<ustring, ustring> val) {
@@ -65,7 +65,7 @@ EncIndDisk::~EncIndDisk() {
 }
 
 
-void EncIndDisk::init(ulong size) {
+void EncIndDisk::init(long size) {
     this->size = size;
 
     // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
@@ -87,7 +87,7 @@ void EncIndDisk::init(ulong size) {
         std::exit(EXIT_FAILURE);
     }
     // fill file with zero bits
-    for (ulong i = 0; i < size; i++) {
+    for (long i = 0; i < size; i++) {
         int itemsWritten = std::fwrite(EncIndDisk::nullKv, ENC_IND_KV_LEN, 1, this->file);
         if (itemsWritten != 1) {
             std::cerr << "Error initializing encrypted index file: nothing written" << std::endl;
@@ -118,7 +118,7 @@ void EncIndDisk::write(ustring label, std::pair<ustring, ustring> val) {
     }
 
     // if location is already filled (because of modulo), find next available location
-    ulong numPositionsChecked = 1;
+    long numPositionsChecked = 1;
     while (std::memcmp(currKv, EncIndDisk::nullKv, ENC_IND_KV_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
@@ -161,7 +161,7 @@ int EncIndDisk::find(ustring label, std::pair<ustring, ustring>& ret) const {
 
     // if location based on `label` did not match the target (i.e. another kv pair overflowed to here first), scan
     // subsequent locations for where the target could've overflowed to
-    ulong numPositionsChecked = 1;
+    long numPositionsChecked = 1;
     while (currLabel != label && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;

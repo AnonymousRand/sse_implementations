@@ -11,7 +11,7 @@ class Sda : public IDsse<Doc, Kw> {
     protected:
         std::vector<Underly*> underlys;
         EncIndType encIndType;
-        ulong firstEmptyInd = 0;
+        long firstEmptyInd = 0;
 
     public:
         Sda(EncIndType encIndType);

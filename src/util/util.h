@@ -23,6 +23,7 @@
 using uchar = unsigned char;
 using ulong = unsigned long;
 
+
 // lengths are in bytes
 static constexpr int KEY_LEN         = 256 / 8;
 static constexpr int IV_LEN          = 128 / 8;
@@ -36,10 +37,10 @@ static const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
 static const EVP_MD* HASH_FUNC       = EVP_sha512();
 
 /**
- * Precondition: keywords and ids are both nonnegative integral values (storable by `ulong`).
+ * Precondition: keywords and ids are both nonnegative integral values (storable by `long`).
  */
-static constexpr ulong MIN_DB_KW = 0;
-static constexpr ulong DUMMY     = -1;
+static constexpr long MIN_DB_KW = 0;
+static constexpr long DUMMY     = -1;
 
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
@@ -61,9 +62,9 @@ enum class Op : char {
     DEL = 'D'
 };
 
-using Kw      = ulong;
-using Id      = ulong;
-using IdAlias = ulong; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
+using Kw      = long;
+using Id      = long;
+using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 
 // black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
 // i.e. without needing to know what the template param `X` of `IDbDoc` is, unlike `std::derived_from` for example

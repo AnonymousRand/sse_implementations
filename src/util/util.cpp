@@ -103,7 +103,7 @@ std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
 
 
 template class Range<Kw>;
-// commented out since currently `IdAlias` and `Kw` are the same type (`ulong`)
+// commented out since currently `IdAlias` and `Kw` are the same type (`long`)
 //template class Range<IdAlias>;
 
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);

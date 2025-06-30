@@ -25,7 +25,7 @@ class IEncInd {
         // the base class needs to have a virtual destructor for the derived class' constructor to be called
         virtual ~IEncInd() = default;
 
-        virtual void init(ulong size) = 0;
+        virtual void init(long size) = 0;
         virtual void write(ustring label, std::pair<ustring, ustring> val) = 0;
         virtual int find(ustring label, std::pair<ustring, ustring>& ret) const = 0; // returns error code if not found
 
@@ -51,7 +51,7 @@ class EncIndRam : public IEncInd {
         std::map<ustring, std::pair<ustring, ustring>> map;
 
     public:
-        void init(ulong size) override;
+        void init(long size) override;
         void write(ustring label, std::pair<ustring, ustring> val) override;
         int find(ustring label, std::pair<ustring, ustring>& ret) const override;
         void clear() override;
@@ -69,13 +69,13 @@ class EncIndDisk : public IEncInd {
         static const uchar nullKv[ENC_IND_KV_LEN];
 
         FILE* file = nullptr;
-        ulong size;
+        long size;
         std::string filename = "";
 
     public:
         ~EncIndDisk();
 
-        void init(ulong size) override;
+        void init(long size) override;
         void write(ustring label, std::pair<ustring, ustring> val) override;
         int find(ustring label, std::pair<ustring, ustring>& ret) const override;
         void clear() override;

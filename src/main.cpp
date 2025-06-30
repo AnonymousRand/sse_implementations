@@ -7,14 +7,14 @@
 #include "sda.h"
 
 
-Db<> createUniformDb(ulong dbSize, bool reverseKwOrder, bool hasDeletions) {
+Db<> createUniformDb(long dbSize, bool reverseKwOrder, bool hasDeletions) {
     Db<> db;
     if (dbSize == 0) {
         return db;
     }
 
     if (hasDeletions) {
-        for (ulong i = 0; i < dbSize - 1; i++) {
+        for (long i = 0; i < dbSize - 1; i++) {
             // if `reverseKwOrder`, make keywords and ids inversely proportional to test sorting of Log-SRC-i's index 2
             Kw kw = reverseKwOrder ? dbSize - i - 2 : i;
             db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
@@ -24,7 +24,7 @@ Db<> createUniformDb(ulong dbSize, bool reverseKwOrder, bool hasDeletions) {
             }
         }
     } else {
-        for (ulong i = 0; i < dbSize; i++) {
+        for (long i = 0; i < dbSize; i++) {
             Kw kw = reverseKwOrder ? dbSize - i - 1 : i;
             db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
         }
@@ -35,7 +35,7 @@ Db<> createUniformDb(ulong dbSize, bool reverseKwOrder, bool hasDeletions) {
 
 
 // experiment for debugging with fixed query and printed results
-void expDebug(ISse<>& sse, ulong dbSize, Range<Kw> query) {
+void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
@@ -56,7 +56,7 @@ void expDebug(ISse<>& sse, ulong dbSize, Range<Kw> query) {
 }
 
 
-void exp1(ISse<>& sse, ulong dbSize) {
+void exp1(ISse<>& sse, long dbSize) {
     if (dbSize == 0) {
         return;
     }
@@ -71,8 +71,8 @@ void exp1(ISse<>& sse, ulong dbSize) {
     std::cout << std::endl;
 
     // search
-    for (ulong i = 0; i <= log2(dbSize); i++) {
-        Range<Kw> query {0, (ulong)pow(2, i) - 1};
+    for (long i = 0; i <= log2(dbSize); i++) {
+        Range<Kw> query {0, (long)pow(2, i) - 1};
         auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
         auto searchEndTime = std::chrono::high_resolution_clock::now();
@@ -86,14 +86,14 @@ void exp1(ISse<>& sse, ulong dbSize) {
 }
 
 
-void exp2(ISse<>& sse, ulong maxDbSize) {
+void exp2(ISse<>& sse, long maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
     Range<Kw> query {0, 3};
 
-    for (ulong i = 2; i <= log2(maxDbSize); i++) {
-        ulong dbSize = pow(2, i);
+    for (long i = 2; i <= log2(maxDbSize); i++) {
+        long dbSize = pow(2, i);
         Db<> db = createUniformDb(dbSize, false, false);
 
         // setup
@@ -118,18 +118,18 @@ void exp2(ISse<>& sse, ulong maxDbSize) {
 }
 
 
-void exp3(ISse<>& sse, ulong maxDbSize) {
+void exp3(ISse<>& sse, long maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
-    for (ulong i = 2; i <= log2(maxDbSize); i++) {
-        ulong dbSize = pow(2, i);
+    for (long i = 2; i <= log2(maxDbSize); i++) {
+        long dbSize = pow(2, i);
         // two unique keywords, with all but one being 0 and the other being the max
         // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
         Db<> db;
-        ulong kw1 = 0;
-        ulong kw2 = dbSize - 1;
-        for (ulong i = 0; i < dbSize - 1; i++) {
+        long kw1 = 0;
+        long kw2 = dbSize - 1;
+        for (long i = 0; i < dbSize - 1; i++) {
             db.push_back(DbEntry {Doc(i, kw1, Op::INS), Range<Kw> {kw1, kw1}});
         }
         db.push_back(DbEntry {Doc(dbSize - 1, kw2, Op::INS), Range<Kw> {kw2, kw2}});
@@ -158,10 +158,10 @@ void exp3(ISse<>& sse, ulong maxDbSize) {
 
 
 int main() {
-    ulong maxDbSizeExp;
+    long maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
-    ulong maxDbSize = pow(2, maxDbSizeExp);
+    long maxDbSize = pow(2, maxDbSizeExp);
 
     std::string encIndTypeStr;
     EncIndType encIndType;
