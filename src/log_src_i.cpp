@@ -37,7 +37,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->clear();
 
     this->db = db;
-    this->_isEmpty = this->db.empty();
+    this->_isEmpty = db.empty();
 
     ////////////////////////////// build index 2 ///////////////////////////////
 
