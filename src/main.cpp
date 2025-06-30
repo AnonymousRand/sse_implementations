@@ -16,7 +16,8 @@ Db<> createUniformDb(long dbSize, bool reverseKwOrder, bool hasDeletions) {
     if (hasDeletions) {
         for (long i = 0; i < dbSize - 1; i++) {
             // if `reverseKwOrder`, make keywords and ids inversely proportional to test sorting of Log-SRC-i's index 2
-            Kw kw = reverseKwOrder ? dbSize - i + 1: i;
+            // `+1` to test the case where the smallest keyword is greater than `0` (e.g. for TDAGs)
+            Kw kw = reverseKwOrder ? dbSize - i + 1 : i;
             db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
             // delete the document with keyword 4
             if (kw == 4) {
