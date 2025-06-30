@@ -306,9 +306,9 @@ void cleanUpResults(std::vector<Doc>& docs) {
 
     // find all cancellation tuples
     for (Doc doc : docs) {
-        Id id = doc.getId();
         Op op = doc.getOp();
         if (op == Op::DEL) {
+            Id id = doc.getId();
             deletedIds.insert(id);
         }
     }
