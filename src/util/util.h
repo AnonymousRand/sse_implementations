@@ -37,7 +37,9 @@ static const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
 static const EVP_MD* HASH_FUNC       = EVP_sha512();
 
 /**
- * Precondition: keywords and ids are both nonnegative integral values (storable by `long`).
+ * Precondition:
+ *     - Keywords and ids are both nonnegative integral values (storable by `long`)
+ *       (as `DUMMY` is used for both).
  */
 static constexpr long DUMMY = -1;
 
@@ -116,7 +118,8 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 
 /**
- * Precondition: range end is greater than or equal to range start.
+ * Precondition:
+ *     - Range end is greater than or equal to range start.
  */
 template <class T>
 class Range : public std::pair<T, T> {
