@@ -90,4 +90,3 @@ void LogSrc<Underly>::setEncIndType(EncIndType encIndType) {
 
 
 template class LogSrc<PiBas>;
-template class LogSrc<PiBasResHiding>;

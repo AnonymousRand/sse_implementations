@@ -9,11 +9,11 @@
 
 
 template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc, Kw>>
-LogSrcILoc<Underly>::LogSrcILoc() : LogSrcIBase() {}
+LogSrcILoc<Underly>::LogSrcILoc() : LogSrcIBase<Underly>() {}
 
 
 template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc, Kw>>
-LogSrcILoc<Underly>::LogSrcILoc(EncIndType encIndType) : LogSrcIBase(encIndType) {}
+LogSrcILoc<Underly>::LogSrcILoc(EncIndType encIndType) : LogSrcIBase<Underly>(encIndType) {}
 
 
 template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc, Kw>>
@@ -159,6 +159,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 }
 
 
+template class LogSrcIBase<PiBasLoc>;
 template class LogSrcILoc<PiBasLoc>;
 
 
@@ -168,7 +169,9 @@ template class LogSrcILoc<PiBasLoc>;
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-PiBasLoc<DbDoc, DbKw>::PiBasLoc(EncIndType endIndType) : PiBasBase<DbDoc, DbKw>(encIndType) 
+PiBasLoc<DbDoc, DbKw>::PiBasLoc(EncIndType encIndType) {
+    this->setEncIndType(encIndType);
+}
 
 
 template <IDbDoc_ DbDoc, class DbKw>
@@ -246,9 +249,8 @@ std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
     std::vector<DbDoc> results;
     ustring queryToken = this->genQueryToken(query);
     for (long counter = 0; counter < kwResCount; counter++) {
-        std::pair<ustring, ustring> encIndVal = this->encInd->find(
-            query, kwResCount, counter, this->minDbKw, this->leafCount
-        );
+        std::pair<ustring, ustring> encIndVal;
+        this->encInd->find(query, kwResCount, counter, this->minDbKw, this->leafCount, encIndVal);
         ustring encryptedDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
         // technically we decrypt in the client, but since there's no client-server distinction in this implementation
@@ -276,10 +278,10 @@ template <IDbDoc_ DbDoc, class DbKw>
 void PiBasLoc<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
     switch (encIndType) {
         case EncIndType::RAM:
-            this->encInd = new EncIndLocRam();
+            this->encInd = new EncIndLocRam<DbKw>();
             break;
         case EncIndType::DISK:
-            this->encInd = new EncIndLocDisk();
+            this->encInd = new EncIndLocDisk<DbKw>();
             break;
     }
 }

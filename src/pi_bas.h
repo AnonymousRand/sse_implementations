@@ -23,8 +23,6 @@ class PiBasBase : public ISse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbKw> {
         ustring genQueryToken(const Range<DbKw>& query) const;
 
     public:
-        PiBasBase() = default;
-        PiBasBase(EncIndType encIndType);
         virtual ~PiBasBase() = default;
 
         std::vector<DbDoc> search(

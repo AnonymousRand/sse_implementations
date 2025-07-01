@@ -59,8 +59,9 @@ template <class T>
 class IDbDoc;
 class Doc;
 enum class Op : char {
-    INS = 'I',
-    DEL = 'D'
+    INS   = 'I',
+    DEL   = 'D',
+    DUMMY = '-'
 };
 
 using Kw      = long;

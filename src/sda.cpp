@@ -1,5 +1,6 @@
 #include "log_src.h"
 #include "log_src_i.h"
+#include "log_src_i_loc.h"
 #include "pi_bas.h"
 #include "sda.h"
 
@@ -116,6 +117,7 @@ void Sda<Underly>::setEncIndType(EncIndType encIndType) {
 }
 
 
-template class Sda<PiBasResHiding<>>;
-template class Sda<LogSrc<PiBasResHiding>>;
-template class Sda<LogSrcI<PiBasResHiding>>;
+template class Sda<PiBas<>>;
+template class Sda<LogSrc<PiBas>>;
+template class Sda<LogSrcI<PiBas>>;
+template class Sda<LogSrcILoc<PiBasLoc>>;

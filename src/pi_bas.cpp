@@ -8,12 +8,6 @@
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-PiBasBase<DbDoc, DbKw>::PiBasBase(EncIndType encIndType) {
-    this->setEncIndType(encIndType);
-}
-
-
-template <IDbDoc_ DbDoc, class DbKw>
 std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
     const Range<DbKw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
@@ -69,7 +63,9 @@ bool PiBasBase<DbDoc, DbKw>::isEmpty() const {
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-PiBas<DbDoc, DbKw>::PiBas(EncIndType encIndType) : PiBasBase<DbDoc, DbKw>(encIndType) {}
+PiBas<DbDoc, DbKw>::PiBas(EncIndType encIndType) {
+    this->setEncIndType(encIndType);
+}
 
 
 template <IDbDoc_ DbDoc, class DbKw>

@@ -47,7 +47,7 @@ class LogSrcIBase : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-class LogSrcI : LogSrcIBase<Underly> {
+class LogSrcI : public LogSrcIBase<Underly> {
     public:
         LogSrcI();
         LogSrcI(EncIndType encIndType);

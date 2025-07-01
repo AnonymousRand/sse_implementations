@@ -9,16 +9,16 @@
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrcIBase<Underly>::LogSrcIBase() : underly1(new Underly<SrcIBaseDb1Doc, Kw>()), underly2(new Underly<Doc, IdAlias>()) {}
+LogSrcIBase<Underly>::LogSrcIBase() : underly1(new Underly<SrcIDb1Doc, Kw>()), underly2(new Underly<Doc, IdAlias>()) {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
 LogSrcIBase<Underly>::LogSrcIBase(EncIndType encIndType)
-        : LogSrcIBase(new Underly<SrcIBaseDb1Doc, Kw>(), new Underly<Doc, IdAlias>(), encIndType) {}
+        : LogSrcIBase(new Underly<SrcIDb1Doc, Kw>(), new Underly<Doc, IdAlias>(), encIndType) {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrcIBase<Underly>::LogSrcIBase(Underly<SrcIBaseDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType)
+LogSrcIBase<Underly>::LogSrcIBase(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType)
         : underly1(underly1), underly2(underly2) {
     this->setEncIndType(encIndType);
 }
@@ -47,7 +47,7 @@ std::vector<Doc> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shoul
     if (src1 == DUMMY_RANGE<Kw>()) { 
         return std::vector<Doc> {};
     }
-    std::vector<SrcIBaseDb1Doc> choices = this->underly1->search(src1, false, false);
+    std::vector<SrcIDb1Doc> choices = this->underly1->search(src1, false, false);
 
     ///////////////////////////////// query 2 //////////////////////////////////
 
@@ -55,7 +55,7 @@ std::vector<Doc> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shoul
     // (filter out unnecessary choices and merge remaining ones into a single id range)
     IdAlias minIdAlias = DUMMY;
     IdAlias maxIdAlias = DUMMY;
-    for (SrcIBaseDb1Doc choice : choices) {
+    for (SrcIDb1Doc choice : choices) {
         Range<Kw> choiceKwRange = choice.get().first;
         if (!query.contains(choiceKwRange)) {
             continue;
@@ -119,6 +119,9 @@ void LogSrcIBase<Underly>::setEncIndType(EncIndType encIndType) {
 }
 
 
+template class LogSrcIBase<PiBas>;
+
+
 /******************************************************************************/
 /* `LogSrcI`                                                                  */
 
@@ -126,11 +129,11 @@ void LogSrcIBase<Underly>::setEncIndType(EncIndType encIndType) {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI() : LogSrcIBase() {}
+LogSrcI<Underly>::LogSrcI() : LogSrcIBase<Underly>() {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI(EncIndType encIndType) : LogSrcIBase(encIndType) {}
+LogSrcI<Underly>::LogSrcI(EncIndType encIndType) : LogSrcIBase<Underly>(encIndType) {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
@@ -191,13 +194,13 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     ////////////////////////////// build index 1 ///////////////////////////////
 
     // assign id aliases/TDAG 2 nodes to documents based on index 2
-    Db<SrcIBaseDb1Doc, Kw> db1;
+    Db<SrcIDb1Doc, Kw> db1;
     for (DbEntry<Doc, Kw> dbEntry : db) {
         Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
         IdAlias idAlias = idAliasMapping[doc.getId()];
-        SrcIBaseDb1Doc newDoc {kwRange, Range<IdAlias> {idAlias, idAlias}};
-        DbEntry<SrcIBaseDb1Doc, Kw> newDbEntry {newDoc, kwRange};
+        SrcIDb1Doc newDoc {kwRange, Range<IdAlias> {idAlias, idAlias}};
+        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
         db1.push_back(newDbEntry);
     }
 
@@ -205,11 +208,11 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     Range<Kw> kwBounds = findDbKwBounds(db1);
     this->tdag1 = new TdagNode<Kw>(kwBounds);
 
-    // replicate every document (in this case `SrcIBaseDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
+    // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();
     for (long i = 0; i < stop; i++) {
-        DbEntry<SrcIBaseDb1Doc, Kw> dbEntry = db1[i];
-        SrcIBaseDb1Doc doc = dbEntry.first;
+        DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
+        SrcIDb1Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
         std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {

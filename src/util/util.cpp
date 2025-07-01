@@ -147,7 +147,7 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
 /******************************************************************************/
 
 
-const std::regex Doc::FROM_STR_REGEX("\\((-?[0-9]+),(-?[0-9]+),([I|D])\\)");
+const std::regex Doc::FROM_STR_REGEX("\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\)");
 
 
 Doc::Doc(Id id, Kw kw, Op op) : IDbDoc<std::tuple<Id, Kw, Op>>(std::tuple {id, kw, op}) {}
@@ -313,10 +313,11 @@ void cleanUpResults(std::vector<Doc>& docs) {
             deletedIds.insert(id);
         }
     }
-    // copy over vector without deleted docs
+    // copy over vector without deleted (or dummy) docs
     for (Doc doc : docs) {
         Id id = doc.getId();
         Op op = doc.getOp();
+        // make sure all dummy docs have `Op::DUMMY` so they are filtered out as well!
         if (op == Op::INS && deletedIds.count(id) == 0) {
             newDocs.push_back(doc);
         }
