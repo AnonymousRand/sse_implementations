@@ -5,9 +5,16 @@
 #include "util/tdag.h"
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-class LogSrcI : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
-    private:
+/******************************************************************************/
+/* `LogSrcIBase`                                                              */
+
+/******************************************************************************/
+
+
+// common code between `LogSrcI` and `LogSrcILoc`
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+class LogSrcIBase : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
+    protected:
         Underly<SrcIDb1Doc, Kw>* underly1 = nullptr;
         Underly<Doc, IdAlias>* underly2 = nullptr;
         TdagNode<Kw>* tdag1 = nullptr;
@@ -15,14 +22,13 @@ class LogSrcI : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         Db<Doc, Kw> db; // store since neither underlying instance contains the original DB
         bool _isEmpty = false;
 
-        LogSrcI(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType);
+        LogSrcIBase(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType);
 
     public:
-        LogSrcI();
-        LogSrcI(EncIndType encIndType);
-        ~LogSrcI();
+        LogSrcIBase();
+        LogSrcIBase(EncIndType encIndType);
+        virtual ~LogSrcIBase();
 
-        void setup(int secParam, const Db<Doc, Kw>& db) override;
         std::vector<Doc> search(
             const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override;
@@ -31,4 +37,20 @@ class LogSrcI : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         Db<Doc, Kw> getDb() const override;
         bool isEmpty() const override;
         void setEncIndType(EncIndType encIndType) override;
+};
+
+
+/******************************************************************************/
+/* `LogSrcI`                                                                  */
+
+/******************************************************************************/
+
+
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+class LogSrcI : LogSrcIBase<Underly> {
+    public:
+        LogSrcI();
+        LogSrcI(EncIndType encIndType);
+
+        void setup(int secParam, const Db<Doc, Kw>& db) override;
 };

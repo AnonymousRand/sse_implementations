@@ -6,7 +6,7 @@
 
 // don't use template template param for `Underly` because they may have other deeper underlying schemes 
 // (e.g. `Sda<LogSrcI<PiBas>>`) and it gets complicated, so instead just specify all template params for `Underly` fully
-template <ISdaUnderly_ Underly>
+template <IsSdaUnderly Underly>
 class Sda : public IDsse<Doc, Kw> {
     protected:
         std::vector<Underly*> underlys;

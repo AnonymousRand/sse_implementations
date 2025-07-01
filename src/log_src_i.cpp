@@ -2,24 +2,30 @@
 #include "pi_bas.h"
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI() : underly1(new Underly<SrcIDb1Doc, Kw>()), underly2(new Underly<Doc, IdAlias>()) {}
+/******************************************************************************/
+/* `LogSrcIBase`                                                              */
+
+/******************************************************************************/
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI(EncIndType encIndType)
-        : LogSrcI(new Underly<SrcIDb1Doc, Kw>(), new Underly<Doc, IdAlias>(), encIndType) {}
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+LogSrcIBase<Underly>::LogSrcIBase() : underly1(new Underly<SrcIBaseDb1Doc, Kw>()), underly2(new Underly<Doc, IdAlias>()) {}
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType)
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+LogSrcIBase<Underly>::LogSrcIBase(EncIndType encIndType)
+        : LogSrcIBase(new Underly<SrcIBaseDb1Doc, Kw>(), new Underly<Doc, IdAlias>(), encIndType) {}
+
+
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+LogSrcIBase<Underly>::LogSrcIBase(Underly<SrcIBaseDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType)
         : underly1(underly1), underly2(underly2) {
     this->setEncIndType(encIndType);
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-LogSrcI<Underly>::~LogSrcI() {
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+LogSrcIBase<Underly>::~LogSrcIBase() {
     this->clear();
     if (this->underly1 != nullptr) {
         delete this->underly1;
@@ -32,7 +38,102 @@ LogSrcI<Underly>::~LogSrcI() {
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+std::vector<Doc> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
+
+    ///////////////////////////////// query 1 //////////////////////////////////
+
+    Range<Kw> src1 = this->tdag1->findSrc(query);
+    if (src1 == DUMMY_RANGE<Kw>()) { 
+        return std::vector<Doc> {};
+    }
+    std::vector<SrcIBaseDb1Doc> choices = this->underly1->search(src1, false, false);
+
+    ///////////////////////////////// query 2 //////////////////////////////////
+
+    // generate query for query 2 based on query 1 results
+    // (filter out unnecessary choices and merge remaining ones into a single id range)
+    IdAlias minIdAlias = DUMMY;
+    IdAlias maxIdAlias = DUMMY;
+    for (SrcIBaseDb1Doc choice : choices) {
+        Range<Kw> choiceKwRange = choice.get().first;
+        if (!query.contains(choiceKwRange)) {
+            continue;
+        }
+        Range<IdAlias> choiceIdAliasRange = choice.get().second;
+        if (choiceIdAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
+            minIdAlias = choiceIdAliasRange.first;
+        }
+        if (choiceIdAliasRange.second > maxIdAlias || maxIdAlias == DUMMY) {
+            maxIdAlias = choiceIdAliasRange.second;
+        }
+    }
+    // if there are no choices or something went wrong
+    if (minIdAlias == DUMMY || maxIdAlias == DUMMY) {
+        return std::vector<Doc> {};
+    }
+
+    // perform query 2
+    Range<IdAlias> query2 {minIdAlias, maxIdAlias};
+    Range<IdAlias> src2 = this->tdag2->findSrc(query2);
+    if (src2 == DUMMY_RANGE<IdAlias>()) {
+        return std::vector<Doc> {};
+    }
+    return this->underly2->search(src2, shouldCleanUpResults, false);
+}
+
+
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+void LogSrcIBase<Underly>::clear() {
+    if (this->tdag1 != nullptr) {
+        delete this->tdag1;
+        this->tdag1 = nullptr;
+    }
+    if (this->tdag2 != nullptr) {
+        delete this->tdag2;
+        this->tdag2 = nullptr;
+    }
+    this->underly1->clear();
+    this->underly2->clear();
+    this->db.clear();
+    this->_isEmpty = true;
+}
+
+
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+Db<Doc, Kw> LogSrcIBase<Underly>::getDb() const {
+    return this->db;
+}
+
+
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+bool LogSrcIBase<Underly>::isEmpty() const {
+    return this->_isEmpty;
+}
+
+
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+void LogSrcIBase<Underly>::setEncIndType(EncIndType encIndType) {
+    this->underly1->setEncIndType(encIndType);
+    this->underly2->setEncIndType(encIndType);
+}
+
+
+/******************************************************************************/
+/* `LogSrcI`                                                                  */
+
+/******************************************************************************/
+
+
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+LogSrcI<Underly>::LogSrcI() : LogSrcIBase() {}
+
+
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+LogSrcI<Underly>::LogSrcI(EncIndType encIndType) : LogSrcIBase(encIndType) {}
+
+
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
 void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->clear();
 
@@ -90,13 +191,13 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     ////////////////////////////// build index 1 ///////////////////////////////
 
     // assign id aliases/TDAG 2 nodes to documents based on index 2
-    Db<SrcIDb1Doc, Kw> db1;
+    Db<SrcIBaseDb1Doc, Kw> db1;
     for (DbEntry<Doc, Kw> dbEntry : db) {
         Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
         IdAlias idAlias = idAliasMapping[doc.getId()];
-        SrcIDb1Doc newDoc {kwRange, Range<IdAlias> {idAlias, idAlias}};
-        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
+        SrcIBaseDb1Doc newDoc {kwRange, Range<IdAlias> {idAlias, idAlias}};
+        DbEntry<SrcIBaseDb1Doc, Kw> newDbEntry {newDoc, kwRange};
         db1.push_back(newDbEntry);
     }
 
@@ -104,11 +205,11 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     Range<Kw> kwBounds = findDbKwBounds(db1);
     this->tdag1 = new TdagNode<Kw>(kwBounds);
 
-    // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
+    // replicate every document (in this case `SrcIBaseDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();
     for (long i = 0; i < stop; i++) {
-        DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
-        SrcIDb1Doc doc = dbEntry.first;
+        DbEntry<SrcIBaseDb1Doc, Kw> dbEntry = db1[i];
+        SrcIBaseDb1Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
         std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {
@@ -123,86 +224,4 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 }
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-std::vector<Doc> LogSrcI<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
-
-    ///////////////////////////////// query 1 //////////////////////////////////
-
-    Range<Kw> src1 = this->tdag1->findSrc(query);
-    if (src1 == DUMMY_RANGE<Kw>()) { 
-        return std::vector<Doc> {};
-    }
-    std::vector<SrcIDb1Doc> choices = this->underly1->search(src1, false, false);
-
-    ///////////////////////////////// query 2 //////////////////////////////////
-
-    // generate query for query 2 based on query 1 results
-    // (filter out unnecessary choices and merge remaining ones into a single id range)
-    IdAlias minIdAlias = DUMMY;
-    IdAlias maxIdAlias = DUMMY;
-    for (SrcIDb1Doc choice : choices) {
-        Range<Kw> choiceKwRange = choice.get().first;
-        if (!query.contains(choiceKwRange)) {
-            continue;
-        }
-        Range<IdAlias> choiceIdAliasRange = choice.get().second;
-        if (choiceIdAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
-            minIdAlias = choiceIdAliasRange.first;
-        }
-        if (choiceIdAliasRange.second > maxIdAlias || maxIdAlias == DUMMY) {
-            maxIdAlias = choiceIdAliasRange.second;
-        }
-    }
-    // if there are no choices or something went wrong
-    if (minIdAlias == DUMMY || maxIdAlias == DUMMY) {
-        return std::vector<Doc> {};
-    }
-
-    // perform query 2
-    Range<IdAlias> query2 {minIdAlias, maxIdAlias};
-    Range<IdAlias> src2 = this->tdag2->findSrc(query2);
-    if (src2 == DUMMY_RANGE<IdAlias>()) {
-        return std::vector<Doc> {};
-    }
-    return this->underly2->search(src2, shouldCleanUpResults, false);
-}
-
-
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-void LogSrcI<Underly>::clear() {
-    if (this->tdag1 != nullptr) {
-        delete this->tdag1;
-        this->tdag1 = nullptr;
-    }
-    if (this->tdag2 != nullptr) {
-        delete this->tdag2;
-        this->tdag2 = nullptr;
-    }
-    this->underly1->clear();
-    this->underly2->clear();
-    this->db.clear();
-    this->_isEmpty = true;
-}
-
-
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-Db<Doc, Kw> LogSrcI<Underly>::getDb() const {
-    return this->db;
-}
-
-
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-bool LogSrcI<Underly>::isEmpty() const {
-    return this->_isEmpty;
-}
-
-
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
-void LogSrcI<Underly>::setEncIndType(EncIndType encIndType) {
-    this->underly1->setEncIndType(encIndType);
-    this->underly2->setEncIndType(encIndType);
-}
-
-
 template class LogSrcI<PiBas>;
-template class LogSrcI<PiBasResHiding>;

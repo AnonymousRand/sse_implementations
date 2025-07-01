@@ -41,7 +41,7 @@ class ISse {
 
 
 template <class T>
-concept ISse_ = requires(T t) {
+concept IsSse = requires(T t) {
     []<class ... Args>(ISse<Args ...>&){}(t);
 };
 
@@ -72,6 +72,6 @@ class ISdaUnderly {
 
 
 template <class T>
-concept ISdaUnderly_ = requires(T t) {
+concept IsSdaUnderly = requires(T t) {
     []<class ... Args>(ISdaUnderly<Args ...>&){}(t);
 };

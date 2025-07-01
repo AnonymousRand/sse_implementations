@@ -5,7 +5,7 @@
 #include "util/tdag.h"
 
 
-template <template <class ...> class Underly> requires ISse_<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
 class LogSrc : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
     private:
         Underly<Doc, Kw>* underly = nullptr;

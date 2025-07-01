@@ -3,6 +3,7 @@
 
 #include "log_src.h"
 #include "log_src_i.h"
+#include "log_src_i_loc.h"
 #include "pi_bas.h"
 #include "sda.h"
 
@@ -180,12 +181,13 @@ int main() {
     std::cout << std::endl;
 
     PiBas<> piBas(encIndType);
-    PiBasResHiding<> piBasResHiding(encIndType);
     LogSrc<PiBas> logSrc(encIndType);
     LogSrcI<PiBas> logSrcI(encIndType);
-    Sda<PiBasResHiding<>> sdaPiBas(encIndType);
-    Sda<LogSrc<PiBasResHiding>> sdaLogSrc(encIndType);
-    Sda<LogSrcI<PiBasResHiding>> sdaLogSrcI(encIndType);
+    LogSrcILoc<PiBasLoc> logSrcILoc(encIndType);
+    Sda<PiBas<>> sdaPiBas(encIndType);
+    Sda<LogSrc<PiBas>> sdaLogSrc(encIndType);
+    Sda<LogSrcI<PiBas>> sdaLogSrcI(encIndType);
+    Sda<LogSrcILoc<PiBasLoc>> sdaLogSrcILoc(encIndType);
 
     /////////////////////////// debugging experiment ///////////////////////////
 
@@ -201,10 +203,6 @@ int main() {
     std::cout << std::endl;
     expDebug(piBas, maxDbSize, query);
 
-    std::cout << "------------ PiBasResHiding ------------" << std::endl;
-    std::cout << std::endl;
-    expDebug(piBasResHiding, maxDbSize, query);
-
     std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
     std::cout << std::endl;
     expDebug(logSrc, maxDbSize, query);
@@ -213,17 +211,25 @@ int main() {
     std::cout << std::endl;
     expDebug(logSrcI, maxDbSize, query);
 
-    std::cout << "--------- SDa[PiBasResHiding] ----------" << std::endl;
+    std::cout << "---------- Log-SRC-i*[PiBas] -----------" << std::endl;
+    std::cout << std::endl;
+    expDebug(logSrcILoc, maxDbSize, query);
+
+    std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
     std::cout << std::endl;
     expDebug(sdaPiBas, maxDbSize, query);
 
-    std::cout << "----- SDa[Log-SRC[PiBasResHiding]] -----" << std::endl;
+    std::cout << "--------- SDa[Log-SRC[PiBas]] ----------" << std::endl;
     std::cout << std::endl;
     expDebug(sdaLogSrc, maxDbSize, query);
 
-    std::cout << "---- SDa[Log-SRC-i[PiBasResHiding]] ----" << std::endl;
+    std::cout << "-------- SDa[Log-SRC-i[PiBas]] ---------" << std::endl;
     std::cout << std::endl;
     expDebug(sdaLogSrcI, maxDbSize, query);
+
+    std::cout << "-------- SDa[Log-SRC-i*[PiBas]] --------" << std::endl;
+    std::cout << std::endl;
+    expDebug(sdaLogSrcILoc, maxDbSize, query);
 
     /////////////////////////////// experiment 1 ///////////////////////////////
 
@@ -237,10 +243,6 @@ int main() {
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
 
-    std::cout << "------------ PiBasResHiding ------------" << std::endl;
-    std::cout << std::endl;
-    exp1(piBasResHiding, maxDbSize);
-
     std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
     std::cout << std::endl;
     exp1(logSrc, maxDbSize);
@@ -249,17 +251,25 @@ int main() {
     std::cout << std::endl;
     exp1(logSrcI, maxDbSize);
 
-    std::cout << "--------- SDa[PiBasResHiding] ----------" << std::endl;
+    std::cout << "---------- Log-SRC-i*[PiBas] -----------" << std::endl;
+    std::cout << std::endl;
+    exp1(logSrcILoc, maxDbSize);
+
+    std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
     std::cout << std::endl;
     exp1(sdaPiBas, maxDbSize);
 
-    std::cout << "----- SDa[Log-SRC[PiBasResHiding]] -----" << std::endl;
+    std::cout << "--------- SDa[Log-SRC[PiBas]] ----------" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrc, maxDbSize);
 
-    std::cout << "---- SDa[Log-SRC-i[PiBasResHiding]] ----" << std::endl;
+    std::cout << "-------- SDa[Log-SRC-i[PiBas]] ---------" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrcI, maxDbSize);
+
+    std::cout << "-------- SDa[Log-SRC-i*[PiBas]] --------" << std::endl;
+    std::cout << std::endl;
+    exp1(sdaLogSrcILoc, maxDbSize);
 
     /////////////////////////////// experiment 2 ///////////////////////////////
 
@@ -273,10 +283,6 @@ int main() {
     std::cout << std::endl;
     exp2(piBas, maxDbSize);
 
-    std::cout << "------------ PiBasResHiding ------------" << std::endl;
-    std::cout << std::endl;
-    exp2(piBasResHiding, maxDbSize);
-
     std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
     std::cout << std::endl;
     exp2(logSrc, maxDbSize);
@@ -285,17 +291,25 @@ int main() {
     std::cout << std::endl;
     exp2(logSrcI, maxDbSize);
 
-    std::cout << "--------- SDa[PiBasResHiding] ----------" << std::endl;
+    std::cout << "---------- Log-SRC-i*[PiBas] -----------" << std::endl;
+    std::cout << std::endl;
+    exp2(logSrcILoc, maxDbSize);
+
+    std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
     std::cout << std::endl;
     exp2(sdaPiBas, maxDbSize);
 
-    std::cout << "----- SDa[Log-SRC[PiBasResHiding]] -----" << std::endl;
+    std::cout << "--------- SDa[Log-SRC[PiBas]] ----------" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrc, maxDbSize);
 
-    std::cout << "---- SDa[Log-SRC-i[PiBasResHiding]] ----" << std::endl;
+    std::cout << "-------- SDa[Log-SRC-i[PiBas]] ---------" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrcI, maxDbSize);
+
+    std::cout << "-------- SDa[Log-SRC-i*[PiBas]] --------" << std::endl;
+    std::cout << std::endl;
+    exp2(sdaLogSrcILoc, maxDbSize);
     
     /////////////////////////////// experiment 3 ///////////////////////////////
 

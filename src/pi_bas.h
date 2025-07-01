@@ -59,27 +59,3 @@ class PiBas : public PiBasBase<DbDoc, DbKw> {
         void clear() override;
         void setEncIndType(EncIndType encIndType) override;
 };
-
-
-/******************************************************************************/
-/* `PiBasLoc`                                                                 */
-/******************************************************************************/
-
-
-template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
-class PiBasLoc : public PiBasBase<DbDoc, DbKw> {
-    private:
-        IEncIndLoc* encInd = nullptr;
-
-        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
-
-    public:
-        PiBasLoc() = default;
-        PiBasLoc(EncIndType encIndType);
-        ~PiBasLoc();
-
-        void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
-
-        void clear() override;
-        void setEncIndType(EncIndType encIndType) override;
-};

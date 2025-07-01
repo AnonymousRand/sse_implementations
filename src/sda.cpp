@@ -4,19 +4,19 @@
 #include "sda.h"
 
 
-template <ISdaUnderly_ Underly>
+template <IsSdaUnderly Underly>
 Sda<Underly>::Sda(EncIndType encIndType) {
     this->setEncIndType(encIndType);
 }
 
 
-template <ISdaUnderly_ Underly>
+template <IsSdaUnderly Underly>
 Sda<Underly>::~Sda() {
     this->clear();
 }
 
 
-template <ISdaUnderly_ Underly>
+template <IsSdaUnderly Underly>
 void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->clear();
 
@@ -27,7 +27,7 @@ void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 }
 
 
-template <ISdaUnderly_ Underly>
+template <IsSdaUnderly Underly>
 void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
@@ -74,7 +74,7 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
 }
 
 
-template <ISdaUnderly_ Underly>
+template <IsSdaUnderly Underly>
 std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
     std::vector<Doc> allResults;
 
@@ -97,7 +97,7 @@ std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUp
 }
 
 
-template <ISdaUnderly_ Underly>
+template <IsSdaUnderly Underly>
 void Sda<Underly>::clear() {
     // apparently vector `clear()` automatically calls the destructor for each element *unless* it is a pointer
     for (Underly* underly : this->underlys) {
@@ -110,7 +110,7 @@ void Sda<Underly>::clear() {
 }
 
 
-template <ISdaUnderly_ Underly>
+template <IsSdaUnderly Underly>
 void Sda<Underly>::setEncIndType(EncIndType encIndType) {
     this->encIndType = encIndType;
 }
