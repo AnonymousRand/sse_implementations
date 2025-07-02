@@ -198,7 +198,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     ////////////////////////////// build index 1 ///////////////////////////////
 
-    // build TDAG 1 over keywords
+    // build TDAG 1 over `Kw`s
     Range<Kw> kwBounds = findDbKwBounds(db1);
     this->tdag1 = new TdagNode<Kw>(kwBounds);
 

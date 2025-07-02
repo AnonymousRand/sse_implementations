@@ -105,7 +105,7 @@ std::string fromUstr(const ustring& ustr);
 // provide hash function for `ustring`s to use faster hashmap-based structures, like `unordered_map` instead of `map`
 template <>
 struct std::hash<ustring> {
-    std::size_t operator ()(const ustring& ustr) const noexcept {
+    inline std::size_t operator ()(const ustring& ustr) const noexcept {
         return std::hash<std::string>{}(fromUstr(ustr));
     }
 };
@@ -133,6 +133,7 @@ class Range : public std::pair<T, T> {
 
         T size() const;
         bool contains(const Range<T>& target) const;
+        bool contains(T target) const;
         bool isDisjointFrom(const Range<T>& target) const;
 
         std::string toStr() const;
@@ -146,7 +147,7 @@ class Range : public std::pair<T, T> {
 template <>
 template <class T>
 struct std::hash<Range<T>> {
-    std::size_t operator ()(const Range<T>& range) const noexcept {
+    inline std::size_t operator ()(const Range<T>& range) const noexcept {
         return std::hash<std::string>{}(range.toStr());
     }
 };
@@ -207,7 +208,7 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
 
 template <>
 struct std::hash<Doc> {
-    std::size_t operator ()(const Doc& doc) const noexcept {
+    inline std::size_t operator ()(const Doc& doc) const noexcept {
         return std::hash<std::string>{}(doc.toStr());
     }
 };

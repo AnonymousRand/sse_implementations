@@ -60,7 +60,6 @@ ulong IEncIndLoc<DbKw>::map(
     // plus any earlier items in the same bucket (which we will use `rank` to determine)
     pos += bucketWithinLevel * std::pow(2, level);
     pos += rank;
-    //std::cout << "map, level and bucketWithinLevel are " << level << ", " << bucketWithinLevel << ", final pos is " << pos << std::endl;
     return pos;
 }
 
@@ -72,7 +71,6 @@ ulong IEncIndLoc<DbKw>::map(
 
 void EncIndRamBase::initBase(long size) {
     this->arr = new uchar[size * ENC_IND_KV_LEN];
-    //std::cout << "initBase, size of arr is " << size << std::endl;
     // fill array with zero bits
     for (long i = 0; i < size; i++) {
         std::memcpy(&this->arr[i * ENC_IND_KV_LEN], NULL_KV, ENC_IND_KV_LEN);
@@ -90,7 +88,6 @@ void EncIndRamBase::clearBase() {
 
 void EncIndRamBase::writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val) {
     ustring kv = label + val.first + val.second;
-    //std::cout << "write to pos " << pos << std::endl;
     std::memcpy(&this->arr[pos * ENC_IND_KV_LEN], kv.c_str(), ENC_IND_KV_LEN);
 }
 
@@ -360,7 +357,6 @@ template <class DbKw>
 void EncIndLocRam<DbKw>::init(long size) {
     this->clear();
     this->initBase(size);
-    //std::cout << "init, size of arr is " << size << std::endl;
 }
 
 

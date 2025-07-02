@@ -65,6 +65,12 @@ bool Range<T>::contains(const Range<T>& target) const {
 
 
 template <class T>
+bool Range<T>::contains(T target) const {
+    return this->first <= target && this->second >= target;
+}
+
+
+template <class T>
 bool Range<T>::isDisjointFrom(const Range<T>& target) const {
     return this->second < target.first || this->first > target.second;
 }

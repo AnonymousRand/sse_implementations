@@ -31,9 +31,10 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->clear();
 
     this->db = db;
-    // need to find smallest and largest keywords: we can't pass in all keywords raw, as leaves need to be contiguous
+    // build TDAG 1 over `Kw`s
     Range<Kw> kwBounds = findDbKwBounds(db);
     this->tdag = new TdagNode<Kw>(kwBounds);
+
     // replicate every document to all keyword ranges/TDAG nodes that cover it
     Db<Doc, Kw> dbWithReplications;
     for (DbEntry<Doc, Kw> dbEntry : db) {

@@ -8,28 +8,44 @@
 #include "sda.h"
 
 
-// TODO make kws random (except at least one must have kw 4)
-Db<> createUniformDb(long dbSize, bool hasDeletions) {
-    Db<> db;
+Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
     if (dbSize == 0) {
-        return db;
+        return Db<> {};
+    }
+    Db<> db;
+    std::uniform_int_distribution<long> dist(0, dbSize - 1);
+
+    db.push_back(DbEntry {Doc {0, 4, Op::INS}, Range<Kw> {4, 4}});
+    Id minId = 1;
+    Id maxId = dbSize - 1;
+    if (hasDeletions) {
+        // delete the document with keyword 4
+        db.push_back(DbEntry {Doc {0, 4, Op::DEL}, Range<Kw> {4, 4}});
+        maxId = dbSize - 2;
     }
 
-    if (hasDeletions) {
-        for (long i = 0; i < dbSize - 1; i++) {
-            // if `reverseKwOrder`, make keywords and ids inversely proportional to test sorting of Log-SRC-i's index 2
-            // `+1` to test the case where the smallest keyword is greater than `0` (e.g. for TDAGs)
-            Kw kw = reverseKwOrder ? dbSize - i + 1 : i;
-            db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
-            // delete the document with keyword 4
-            if (kw == 4) {
-                db.push_back(DbEntry {Doc(i, kw, Op::DEL), Range<Kw> {kw, kw}});
-            }
+    // add in debugging experiment docs if we have the space to
+    if (maxId - minId >= 1) {
+        db.push_back(DbEntry {Doc {1, 3, Op::INS}, Range<Kw> {3, 3}});
+        minId++;
+    }
+    if (maxId - minId >= 1) {
+        db.push_back(DbEntry {Doc {2, 5, Op::INS}, Range<Kw> {5, 5}});
+        minId++;
+    }
+
+    if (isRandom) {
+        // fill the rest with random keywords
+        for (Id id = minId; id <= maxId; id++) {
+            Kw kw = dist(RNG);
+            db.push_back(DbEntry {Doc {id, kw, Op::INS}, Range<Kw> {kw, kw}});
         }
     } else {
-        for (long i = 0; i < dbSize; i++) {
-            Kw kw = reverseKwOrder ? dbSize - i + 2 : i;
-            db.push_back(DbEntry {Doc(i, kw, Op::INS), Range<Kw> {kw, kw}});
+        for (Id id = minId; id <= maxId; id++) {
+            // make keywords and ids inversely proportional to test sorting of Log-SRC-i's index 2
+            // and make them non-contiguous to test Log-SRC as well
+            Kw kw = (dbSize - id) * 2;
+            db.push_back(DbEntry {Doc {id, kw, Op::INS}, Range<Kw> {kw, kw}});
         }
     }
 
@@ -42,7 +58,7 @@ void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createUniformDb(dbSize, true, true); // adjust params at will
+    Db<> db = createDb(dbSize, true, true); // adjust params at will
 
     // setup
     sse.setup(KEY_LEN, db);
@@ -51,7 +67,12 @@ void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
     std::vector<Doc> results = sse.search(query);
     std::cout << "Results (id,kw,op):" << std::endl;
     for (Doc result : results) {
-        std::cout << result << " with keyword " << result.getKw() << std::endl;
+        Kw kw = result.getKw();
+        if (query.contains(kw)) {
+            std::cout << result << " with keyword " << kw << std::endl;
+        } else {
+            std::cout << result << " with keyword " << kw << " (false positive)" << std::endl;
+        }
     }
     std::cout << std::endl;
 
@@ -63,7 +84,7 @@ void exp1(ISse<>& sse, long dbSize) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createUniformDb(dbSize, false, false);
+    Db<> db = createDb(dbSize, true, true);
 
     // setup
     auto setupStart = std::chrono::high_resolution_clock::now();
@@ -97,7 +118,7 @@ void exp2(ISse<>& sse, long maxDbSize) {
 
     for (long i = 2; i <= std::log2(maxDbSize); i++) {
         long dbSize = std::pow(2, i);
-        Db<> db = createUniformDb(dbSize, false, false);
+        Db<> db = createDb(dbSize, true, true);
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();
