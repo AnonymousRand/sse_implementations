@@ -164,7 +164,6 @@ void PiBas<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
         this->encInd->clear();
-        this->encInd = nullptr;
     }
 }
 

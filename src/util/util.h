@@ -205,6 +205,13 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
         friend bool operator ==(const Doc& doc1, const Doc& doc2);
 };
 
+template <>
+struct std::hash<Doc> {
+    std::size_t operator ()(const Doc& doc) const noexcept {
+        return std::hash<std::string>{}(doc.toStr());
+    }
+};
+
 
 /******************************************************************************/
 /* `SrcIDb1Doc`                                                               */

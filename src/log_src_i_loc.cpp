@@ -24,22 +24,34 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     ////////////////////////////// build index 2 ///////////////////////////////
 
-    // sort documents by keyword to assign index 2 nodes/"identifier aliases"
+    std::cout << "db" << std::endl;
+    for (auto entry : db) {
+        std::cout << "doc " << entry.first << " has kw " << entry.second << std::endl;
+    }
+
+    // sort documents by keyword and assign index 2 nodes/"identifier aliases"
     auto sortByKw = [](const DbEntry<Doc, Kw>& dbEntry1, const DbEntry<Doc, Kw>& dbEntry2) {
         return dbEntry1.first.getKw() < dbEntry2.first.getKw();
     };
-
     Db<Doc, Kw> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
+    std::cout << "dbSorted" << std::endl;
+    for (auto entry : dbSorted) {
+        std::cout << "doc " << entry.first << " has kw " << entry.second << std::endl;
+    }
+    Db<SrcIDb1Doc, Kw> db1;
     Db<Doc, IdAlias> db2;
-    std::unordered_map<Id, IdAlias> idAliasMapping; // for quick reference when buiding index 1
     for (long i = 0; i < dbSorted.size(); i++) {
         DbEntry<Doc, Kw> dbEntry = dbSorted[i];
         Doc doc = dbEntry.first;
-        DbEntry<Doc, IdAlias> newDbEntry = DbEntry {doc, Range<IdAlias> {i, i}};
-        db2.push_back(newDbEntry);
-        Id id = doc.getId();
-        idAliasMapping[id] = i;
+        Range<Kw> kwRange = dbEntry.second;
+        // populate `db1` leaves
+        SrcIDb1Doc newDoc1 {kwRange, Range<IdAlias> {i, i}};
+        DbEntry<SrcIDb1Doc, Kw> newDbEntry1 {newDoc1, kwRange};
+        db1.push_back(newDbEntry1);
+        // populate `db2` leaves
+        DbEntry<Doc, IdAlias> newDbEntry2 = DbEntry {doc, Range<IdAlias> {i, i}};
+        db2.push_back(newDbEntry2);
     }
 
     // build TDAG 2 over id aliases
@@ -53,6 +65,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     // pad TDAG 2 to power of two # of leaves, as that is required in the case of locality-aware Log-SRC-i*
     if (!std::has_single_bit(db2.size())) {
         long amountToPad = std::pow(2, std::ceil(std::log2(db2.size()))) - db2.size();
+        std::cout << "padding index 2, original size " << db2.size() << " new size " << db2.size() + amountToPad << std::endl;
         for (long i = 0; i < amountToPad; i++) {
             maxIdAlias++;
             Doc dummyDoc {DUMMY, DUMMY, Op::DUMMY};
@@ -82,62 +95,41 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     ////////////////////////////// build index 1 ///////////////////////////////
 
-    // in the case of locality-aware Log-SRC-i*, we also need to clean up deleted docs and replace them and their
-    // cancellation tuples with dummies so that we don't have more `Doc`s associated with some `Range<Kw>` than 
-    // the size of this keyword range and hence the bucket size we've allocated for it in the encrypted index
-    // (of course, we assume database search for ranges => no two `Doc`s share same `Kw` except for cancellation tuples)
-    Range<Kw> kwBounds = findDbKwBounds(db);
-    Db<Doc, Kw> dbCleaned;
-    if (kwBounds.size() < db.size()) {
-        std::unordered_set<Id> deletedIds;
-
-        // find all cancellation tuples
-        for (DbEntry<Doc, Kw> dbEntry : db) {
-            Doc doc = dbEntry.first;
-            Op op = doc.getOp();
-            if (op == Op::DEL) {
-                Id id = doc.getId();
-                deletedIds.insert(id);
-            }
-        }
-        // copy over vector without deleted (or dummy) docs
-        for (DbEntry<Doc, Kw> dbEntry : db) {
-            Doc doc = dbEntry.first;
-            Id id = doc.getId();
-            Op op = doc.getOp();
-            if (op == Op::INS && deletedIds.count(id) == 0) {
-                dbCleaned.push_back(dbEntry);
-            }
-        }
-    } else {
-        dbCleaned = db;
+    std::cout << "db1" << std::endl;
+    for (auto entry : db1) {
+        std::cout << "(kw,id') " << entry.first << " has kw " << entry.second << std::endl;
+    }
+    std::cout << "db2" << std::endl;
+    for (auto entry : db2) {
+        std::cout << "doc " << entry.first << " has id' " << entry.second << std::endl;
     }
 
-    // assign id aliases/TDAG 2 nodes to documents based on index 2
-    Db<SrcIDb1Doc, Kw> db1;
-    for (DbEntry<Doc, Kw> dbEntry : dbCleaned) {
-        Doc doc = dbEntry.first;
-        Range<Kw> kwRange = dbEntry.second;
-        IdAlias idAlias = idAliasMapping[doc.getId()];
-        SrcIDb1Doc newDoc {kwRange, Range<IdAlias> {idAlias, idAlias}};
-        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
-        db1.push_back(newDbEntry);
-    }
-
-    // build TDAG 1 over keywords
-    kwBounds = findDbKwBounds(dbCleaned);
+    // build TDAG 1 over `Kw`s
+    // since `Kw`s have no guarantee of being contiguous but the leaves and hence bottom level in the index must be,
+    // we need to pad `db1` to have (exactly) one doc per `Kw` (we can just leave blanks in the case of non-locality
+    // Log-SRC-i since docs are placed pseudorandomly in the index, but here we have to pad to avoid empty buckets
+    // in the index that the server knows corresponds to a lack of docs with that keyword)
+    // TODO
+    Range<Kw> kwBounds = findDbKwBounds(db1);
+    //std::unordered_set<Range<Kw>> uniqDbKwRanges = getUniqDbKwRanges(db1);
+    //if (uniqDbKwRanges.size() < kwBounds.size()) {
+    //    for 
+    //}
     // also pad to power of 2
     Kw maxKw = kwBounds.second;
     if (!std::has_single_bit((ulong)kwBounds.size())) {
         long amountToPad = std::pow(2, std::ceil(std::log2(kwBounds.size()))) - kwBounds.size();
+        //std::cout << "padding index 1, original size " << kwBounds.size() << " new size " << kwBounds.size() + amountToPad << std::endl;
         for (long i = 0; i < amountToPad; i++) {
             maxKw++;
             SrcIDb1Doc dummyDoc {DUMMY_RANGE<Kw>(), DUMMY_RANGE<IdAlias>()};
             DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummyDoc, Range<IdAlias> {maxKw, maxKw}};
             db1.push_back(dummyDbEntry);
+            //std::cout << "padding, size of db 1 is now " << db1.size() << std::endl;
         }
     }
     this->tdag1 = new TdagNode<Kw>(Range {kwBounds.first, maxKw});
+    //std::cout << "finished padding, size of db 1 is now " << db1.size() << std::endl;
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();
@@ -158,7 +150,6 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 }
 
 
-template class LogSrcIBase<PiBasLoc>;
 template class LogSrcILoc<PiBasLoc>;
 
 
@@ -268,7 +259,6 @@ void PiBasLoc<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
         this->encInd->clear();
-        this->encInd = nullptr;
     }
 }
 

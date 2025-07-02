@@ -1,10 +1,12 @@
 #include "log_src_i.h"
 #include "pi_bas.h"
 
+// needed to bring in explicit template instantiation of `LogSrcIBase<PiBasLoc>`, otherwise undefined reference
+#include "log_src_i_loc.cpp"
+
 
 /******************************************************************************/
 /* `LogSrcIBase`                                                              */
-
 /******************************************************************************/
 
 
@@ -124,7 +126,6 @@ template class LogSrcIBase<PiBas>;
 
 /******************************************************************************/
 /* `LogSrcI`                                                                  */
-
 /******************************************************************************/
 
 
@@ -152,15 +153,19 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     Db<Doc, Kw> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
+    Db<SrcIDb1Doc, Kw> db1;
     Db<Doc, IdAlias> db2;
-    std::unordered_map<Id, IdAlias> idAliasMapping; // for quick reference when buiding index 1
     for (long i = 0; i < dbSorted.size(); i++) {
         DbEntry<Doc, Kw> dbEntry = dbSorted[i];
         Doc doc = dbEntry.first;
-        DbEntry<Doc, IdAlias> newDbEntry = DbEntry {doc, Range<IdAlias> {i, i}};
-        db2.push_back(newDbEntry);
-        Id id = doc.getId();
-        idAliasMapping[id] = i;
+        Range<Kw> kwRange = dbEntry.second;
+        // populate `db1` leaves
+        SrcIDb1Doc newDoc1 {kwRange, Range<IdAlias> {i, i}};
+        DbEntry<SrcIDb1Doc, Kw> newDbEntry1 {newDoc1, kwRange};
+        db1.push_back(newDbEntry1);
+        // populate `db2` leaves
+        DbEntry<Doc, IdAlias> newDbEntry2 = DbEntry {doc, Range<IdAlias> {i, i}};
+        db2.push_back(newDbEntry2);
     }
 
     // build TDAG 2 over id aliases
@@ -192,17 +197,6 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->underly2->setup(secParam, db2);
 
     ////////////////////////////// build index 1 ///////////////////////////////
-
-    // assign id aliases/TDAG 2 nodes to documents based on index 2
-    Db<SrcIDb1Doc, Kw> db1;
-    for (DbEntry<Doc, Kw> dbEntry : db) {
-        Doc doc = dbEntry.first;
-        Range<Kw> kwRange = dbEntry.second;
-        IdAlias idAlias = idAliasMapping[doc.getId()];
-        SrcIDb1Doc newDoc {kwRange, Range<IdAlias> {idAlias, idAlias}};
-        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
-        db1.push_back(newDbEntry);
-    }
 
     // build TDAG 1 over keywords
     Range<Kw> kwBounds = findDbKwBounds(db1);

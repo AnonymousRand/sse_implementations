@@ -8,7 +8,8 @@
 #include "sda.h"
 
 
-Db<> createUniformDb(long dbSize, bool reverseKwOrder, bool hasDeletions) {
+// TODO make kws random (except at least one must have kw 4)
+Db<> createUniformDb(long dbSize, bool hasDeletions) {
     Db<> db;
     if (dbSize == 0) {
         return db;
