@@ -1,3 +1,9 @@
+/**
+ * Indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries,
+ * each of which correspond to `std::pair<label, std::pair<encrypted doc, IV>>`.
+ */
+
+
 #pragma once
 
 
@@ -30,7 +36,13 @@ class IEncInd {
 
         virtual void init(long size) = 0;
         virtual void write(const ustring& label, const std::pair<ustring, ustring>& val) = 0;
-        virtual int find(const ustring& label, std::pair<ustring, ustring>& ret) const = 0; // returns error code if not found
+
+        /**
+         * Returns:
+         *     - `0` if found
+         *     - `-1` if not found
+         */
+        virtual int find(const ustring& label, std::pair<ustring, ustring>& ret) const = 0;
 
         /**
          * Free memory without fully destroying this object (so we can call `init()` again with the same object).
