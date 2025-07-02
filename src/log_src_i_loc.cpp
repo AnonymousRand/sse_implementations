@@ -189,7 +189,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->leafCount = dbKwBounds.size();
     this->minDbKw = dbKwBounds.first;
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
-        ustring prfOutput = this->genQueryToken(dbKwRange);
+        ustring queryToken = this->genQueryToken(dbKwRange);
         
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
@@ -200,7 +200,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         this->kwResCounts[dbKwRange] = dbKwResCount;
         for (long counter = 0; counter < dbKwResCount; counter++) {
             DbDoc dbDoc = dbDocsWithSameKw[counter];
-            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, prfOutput + toUstr(counter));
+            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
             ustring iv = genIv(IV_LEN);
             ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->keyEnc, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             this->encInd->write(

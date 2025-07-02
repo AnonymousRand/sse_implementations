@@ -110,20 +110,24 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
-        ustring prfOutput = this->genQueryToken(dbKwRange);
-        // TODO finish pseudocode comments
-        // for each id in DB(w)
+        // this is PRF(K_1, w)
+        ustring queryToken = this->genQueryToken(dbKwRange);
+
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
             continue;
         }
         std::vector<DbDoc> dbDocsWithSameKw = iter->second;
+        // for each id in DB(w)
         for (long counter = 0; counter < dbDocsWithSameKw.size(); counter++) {
             DbDoc dbDoc = dbDocsWithSameKw[counter];
-            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, prfOutput + toUstr(counter));
+            // l <- Hash(PRF(K_1, w) || c)
+            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
+            // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             // for some reason padding to exactly n blocks generates n + 1 blocks, so we pad to one less byte
             ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->keyEnc, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
+            // store (l, d) into key-value store
             // also store IV in plain along with encrypted value
             this->encInd->write(label, std::pair {encryptedDbDoc, iv});
         }
@@ -139,7 +143,9 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     // for c = 0 until `Get` returns error
     long counter = 0;
     while (true) {
+        // l <- Hash(PRF(K_1, w) || c) (same as in `setup()`!)
         ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
+        // res <- encInd.get(l)
         std::pair<ustring, ustring> encIndVal;
         int status = this->encInd->find(label, encIndVal);
         if (status == -1) {
