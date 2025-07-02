@@ -63,12 +63,6 @@ bool PiBasBase<DbDoc, DbKw>::isEmpty() const {
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-PiBas<DbDoc, DbKw>::PiBas(EncIndType encIndType) {
-    this->setEncIndType(encIndType);
-}
-
-
-template <IDbDoc_ DbDoc, class DbKw>
 PiBas<DbDoc, DbKw>::~PiBas() {
     this->clear();
 }
@@ -170,19 +164,6 @@ void PiBas<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
         this->encInd->clear();
-    }
-}
-
-
-template <IDbDoc_ DbDoc, class DbKw>
-void PiBas<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
-    switch (encIndType) {
-        case EncIndType::RAM:
-            this->encInd = new EncIndRam();
-            break;
-        case EncIndType::DISK:
-            this->encInd = new EncIndDisk();
-            break;
     }
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "util/enc_ind.h"
+#include "util/util.h"
 
 
 /******************************************************************************/
@@ -35,8 +35,6 @@ class ISse {
          *     - Should be idempotent and safe to call without `setup()` first as well.
          */
         virtual void clear() = 0;
-
-        virtual void setEncIndType(EncIndType encIndType) = 0;
 };
 
 

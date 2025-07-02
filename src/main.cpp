@@ -58,7 +58,7 @@ void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createDb(dbSize, true, true); // adjust params at will
+    Db<> db = createDb(dbSize, false, true); // adjust params at will
 
     // setup
     sse.setup(KEY_LEN, db);
@@ -187,29 +187,16 @@ int main() {
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
     long maxDbSize = std::pow(2, maxDbSizeExp);
-
-    std::string encIndTypeStr;
-    EncIndType encIndType;
-    do {
-        std::cout << "Encrypted indexes stored on RAM or disk? [r/d]: ";
-        std::cin >> encIndTypeStr;
-    } while (encIndTypeStr != "r" && encIndTypeStr != "d");
-    std::cout << std::endl;
-    if (encIndTypeStr == "r") {
-        encIndType = EncIndType::RAM;
-    } else {
-        encIndType = EncIndType::DISK;
-    }
     std::cout << std::endl;
 
-    PiBas<> piBas(encIndType);
-    LogSrc<PiBas> logSrc(encIndType);
-    LogSrcI<PiBas> logSrcI(encIndType);
-    LogSrcILoc<PiBasLoc> logSrcILoc(encIndType);
-    Sda<PiBas<>> sdaPiBas(encIndType);
-    Sda<LogSrc<PiBas>> sdaLogSrc(encIndType);
-    Sda<LogSrcI<PiBas>> sdaLogSrcI(encIndType);
-    Sda<LogSrcILoc<PiBasLoc>> sdaLogSrcILoc(encIndType);
+    PiBas<> piBas;
+    LogSrc<PiBas> logSrc;
+    LogSrcI<PiBas> logSrcI;
+    LogSrcILoc<PiBasLoc> logSrcILoc;
+    Sda<PiBas<>> sdaPiBas;
+    Sda<LogSrc<PiBas>> sdaLogSrc;
+    Sda<LogSrcI<PiBas>> sdaLogSrcI;
+    Sda<LogSrcILoc<PiBasLoc>> sdaLogSrcILoc;
 
     /////////////////////////// debugging experiment ///////////////////////////
 

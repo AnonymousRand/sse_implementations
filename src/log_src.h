@@ -12,11 +12,10 @@ class LogSrc : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         TdagNode<Kw>* tdag = nullptr;
         Db<Doc, Kw> db; // store instead of using underlying instance's `db` since that one has replications
 
-        LogSrc(Underly<Doc, Kw>* underly, EncIndType encIndType);
+        LogSrc(Underly<Doc, Kw>* underly);
 
     public:
         LogSrc();
-        LogSrc(EncIndType encIndType);
         ~LogSrc();
 
         void setup(int secParam, const Db<Doc, Kw>& db) override;
@@ -27,5 +26,4 @@ class LogSrc : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         void clear() override;
         Db<Doc, Kw> getDb() const override;
         bool isEmpty() const override;
-        void setEncIndType(EncIndType encIndType) override;
 };

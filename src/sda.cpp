@@ -6,12 +6,6 @@
 
 
 template <IsSdaUnderly Underly>
-Sda<Underly>::Sda(EncIndType encIndType) {
-    this->setEncIndType(encIndType);
-}
-
-
-template <IsSdaUnderly Underly>
 Sda<Underly>::~Sda() {
     this->clear();
 }
@@ -33,7 +27,6 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
         Underly* newUnderly = new Underly();
-        newUnderly->setEncIndType(this->encIndType);
         newUnderly->setup(this->secParam, Db<Doc, Kw> {newEntry});
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
@@ -54,7 +47,6 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
         this->underlys[this->firstEmptyInd]->setup(this->secParam, mergedDb);
     } else {
         Underly* newUnderly = new Underly();
-        newUnderly->setEncIndType(this->encIndType);
         newUnderly->setup(this->secParam, mergedDb);
         this->underlys.push_back(newUnderly);
     }
@@ -108,12 +100,6 @@ void Sda<Underly>::clear() {
         }
     }
     this->underlys.clear();
-}
-
-
-template <IsSdaUnderly Underly>
-void Sda<Underly>::setEncIndType(EncIndType encIndType) {
-    this->encIndType = encIndType;
 }
 
 

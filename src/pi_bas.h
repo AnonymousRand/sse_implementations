@@ -2,6 +2,7 @@
 
 
 #include "sse.h"
+#include "util/enc_ind.h"
 
 
 /******************************************************************************/
@@ -43,17 +44,14 @@ class PiBasBase : public ISse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbKw> {
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBas : public PiBasBase<DbDoc, DbKw> {
     private:
-        IEncInd* encInd = nullptr;
+        EncInd* encInd = new EncInd;
 
         std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
 
     public:
-        PiBas() = default;
-        PiBas(EncIndType encIndType);
         ~PiBas();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         void clear() override;
-        void setEncIndType(EncIndType encIndType) override;
 };

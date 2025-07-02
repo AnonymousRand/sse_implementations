@@ -10,11 +10,9 @@ template <IsSdaUnderly Underly>
 class Sda : public IDsse<Doc, Kw> {
     protected:
         std::vector<Underly*> underlys;
-        EncIndType encIndType;
         long firstEmptyInd = 0;
 
     public:
-        Sda(EncIndType encIndType);
         ~Sda();
 
         void setup(int secParam, const Db<Doc, Kw>& db) override;
@@ -24,5 +22,4 @@ class Sda : public IDsse<Doc, Kw> {
         void update(const DbEntry<Doc, Kw>& newEntry) override;
 
         void clear() override;
-        void setEncIndType(EncIndType encIndType) override;
 };

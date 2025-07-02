@@ -12,10 +12,6 @@ LogSrcILoc<Underly>::LogSrcILoc() : LogSrcIBase<Underly>() {}
 
 
 template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc, Kw>>
-LogSrcILoc<Underly>::LogSrcILoc(EncIndType encIndType) : LogSrcIBase<Underly>(encIndType) {}
-
-
-template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc, Kw>>
 void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->clear();
 
@@ -142,12 +138,6 @@ template class LogSrcILoc<PiBasLoc>;
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-PiBasLoc<DbDoc, DbKw>::PiBasLoc(EncIndType encIndType) {
-    this->setEncIndType(encIndType);
-}
-
-
-template <IDbDoc_ DbDoc, class DbKw>
 PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
     this->clear();
 }
@@ -242,19 +232,6 @@ void PiBasLoc<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
         this->encInd->clear();
-    }
-}
-
-
-template <IDbDoc_ DbDoc, class DbKw>
-void PiBasLoc<DbDoc, DbKw>::setEncIndType(EncIndType encIndType) {
-    switch (encIndType) {
-        case EncIndType::RAM:
-            this->encInd = new EncIndLocRam<DbKw>();
-            break;
-        case EncIndType::DISK:
-            this->encInd = new EncIndLocDisk<DbKw>();
-            break;
     }
 }
 

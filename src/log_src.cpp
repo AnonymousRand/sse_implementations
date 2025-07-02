@@ -7,13 +7,7 @@ LogSrc<Underly>::LogSrc() : underly(new Underly<Doc, Kw>()) {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrc<Underly>::LogSrc(EncIndType encIndType) : LogSrc(new Underly<Doc, Kw>(), encIndType) {}
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrc<Underly>::LogSrc(Underly<Doc, Kw>* underly, EncIndType encIndType) : underly(underly) {
-    this->setEncIndType(encIndType);
-}
+LogSrc<Underly>::LogSrc(Underly<Doc, Kw>* underly) : underly(underly) {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
@@ -81,12 +75,6 @@ Db<Doc, Kw> LogSrc<Underly>::getDb() const {
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
 bool LogSrc<Underly>::isEmpty() const {
     return this->underly->isEmpty();
-}
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-void LogSrc<Underly>::setEncIndType(EncIndType encIndType) {
-    this->underly->setEncIndType(encIndType);
 }
 
 

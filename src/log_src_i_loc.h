@@ -3,6 +3,7 @@
 
 #include "log_src_i.h" 
 #include "pi_bas.h" 
+#include "util/enc_ind.h"
 
 
 /******************************************************************************/
@@ -13,7 +14,7 @@
 template <class DbKw>
 class ILogSrcILocUnderly {
     protected:
-        IEncIndLoc<DbKw>* encInd = nullptr;
+        EncIndLoc<DbKw>* encInd = new EncIndLoc<DbKw>;
 };
 
 
@@ -34,7 +35,6 @@ template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Under
 class LogSrcILoc : public LogSrcIBase<Underly> {
     public:
         LogSrcILoc();
-        LogSrcILoc(EncIndType encIndType);
 
         void setup(int secParam, const Db<Doc, Kw>& db) override;
 };
@@ -55,12 +55,9 @@ class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> 
         std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
 
     public:
-        PiBasLoc() = default;
-        PiBasLoc(EncIndType encIndType);
         ~PiBasLoc();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         void clear() override;
-        void setEncIndType(EncIndType encIndType) override;
 };

@@ -21,11 +21,10 @@ class LogSrcIBase : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         Db<Doc, Kw> db; // store since neither underlying instance contains the original DB
         bool _isEmpty = false;
 
-        LogSrcIBase(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType);
+        LogSrcIBase(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2);
 
     public:
         LogSrcIBase();
-        LogSrcIBase(EncIndType encIndType);
         virtual ~LogSrcIBase();
 
         std::vector<Doc> search(
@@ -35,7 +34,6 @@ class LogSrcIBase : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         void clear() override;
         Db<Doc, Kw> getDb() const override;
         bool isEmpty() const override;
-        void setEncIndType(EncIndType encIndType) override;
 };
 
 
@@ -48,7 +46,6 @@ template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
 class LogSrcI : public LogSrcIBase<Underly> {
     public:
         LogSrcI();
-        LogSrcI(EncIndType encIndType);
 
         void setup(int secParam, const Db<Doc, Kw>& db) override;
 };

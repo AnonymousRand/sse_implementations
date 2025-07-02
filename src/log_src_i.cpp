@@ -15,15 +15,8 @@ LogSrcIBase<Underly>::LogSrcIBase() : underly1(new Underly<SrcIDb1Doc, Kw>()), u
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrcIBase<Underly>::LogSrcIBase(EncIndType encIndType)
-        : LogSrcIBase(new Underly<SrcIDb1Doc, Kw>(), new Underly<Doc, IdAlias>(), encIndType) {}
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrcIBase<Underly>::LogSrcIBase(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2, EncIndType encIndType)
-        : underly1(underly1), underly2(underly2) {
-    this->setEncIndType(encIndType);
-}
+LogSrcIBase<Underly>::LogSrcIBase(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2)
+        : underly1(underly1), underly2(underly2) {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
@@ -114,13 +107,6 @@ bool LogSrcIBase<Underly>::isEmpty() const {
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-void LogSrcIBase<Underly>::setEncIndType(EncIndType encIndType) {
-    this->underly1->setEncIndType(encIndType);
-    this->underly2->setEncIndType(encIndType);
-}
-
-
 template class LogSrcIBase<PiBas>;
 
 
@@ -131,10 +117,6 @@ template class LogSrcIBase<PiBas>;
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
 LogSrcI<Underly>::LogSrcI() : LogSrcIBase<Underly>() {}
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrcI<Underly>::LogSrcI(EncIndType encIndType) : LogSrcIBase<Underly>(encIndType) {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
