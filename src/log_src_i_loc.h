@@ -47,17 +47,17 @@ class LogSrcILoc : public LogSrcIBase<Underly> {
 
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> {
-    private:
-        std::unordered_map<Range<DbKw>, long> kwResCounts;
-        long leafCount;
-        long minDbKw;
-
-        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
-
     public:
         ~PiBasLoc();
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
         void clear() override;
+
+    private:
+        std::unordered_map<Range<DbKw>, long> kwResCounts;
+        long leafCount;
+        long minDbKw;
+
+        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
 };

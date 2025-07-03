@@ -124,9 +124,6 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
  */
 template <class T>
 class Range : public std::pair<T, T> {
-    private:
-        static const std::regex FROM_STR_REGEX;
-
     public:
         Range() = default;
         Range(const T& start, const T& end);
@@ -141,6 +138,9 @@ class Range : public std::pair<T, T> {
         ustring toUstr() const;
         template <class T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
+
+    private:
+        static const std::regex FROM_STR_REGEX;
 };
 
 
@@ -166,9 +166,6 @@ static Range<T> DUMMY_RANGE() {
 // interface for documents in dataset
 template <class T>
 class IDbDoc {
-    protected:
-        T val;
-
     public:
         IDbDoc() = default;
         IDbDoc(const T& val);
@@ -179,6 +176,9 @@ class IDbDoc {
 
         template <class T2>
         friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2>& iDbDoc);
+
+    protected:
+        T val;
 };
 
 

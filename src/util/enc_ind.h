@@ -19,12 +19,6 @@
 
 // common code
 class EncIndBase {
-    protected:
-        FILE* file = nullptr;
-        std::string filename = "";
-
-        void readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const;
-
     public:
         virtual ~EncIndBase();
 
@@ -32,6 +26,12 @@ class EncIndBase {
         void clear();
 
         void writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val);
+
+    protected:
+        FILE* file = nullptr;
+        std::string filename = "";
+
+        void readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const;
 };
 
 
@@ -41,13 +41,13 @@ class EncIndBase {
 
 
 class EncInd : public EncIndBase {
-    private:
-        long size;
-
     public:
         void init(long size);
         void write(const ustring& label, const std::pair<ustring, ustring>& val);
         int find(const ustring& label, std::pair<ustring, ustring>& ret) const;
+
+    private:
+        long size;
 };
 
 

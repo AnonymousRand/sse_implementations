@@ -11,9 +11,6 @@
 
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
 class ISse {
-    protected:
-        int secParam;
-
     public:
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         
@@ -35,6 +32,9 @@ class ISse {
          *     - Should be idempotent and safe to call without `setup()` first as well.
          */
         virtual void clear() = 0;
+
+    protected:
+        int secParam;
 };
 
 

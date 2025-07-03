@@ -7,13 +7,6 @@
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
 class LogSrc : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
-    private:
-        Underly<Doc, Kw>* underly = nullptr;
-        TdagNode<Kw>* tdag = nullptr;
-        Db<Doc, Kw> db; // store instead of using underlying instance's `db` since that one has replications
-
-        LogSrc(Underly<Doc, Kw>* underly);
-
     public:
         LogSrc();
         ~LogSrc();
@@ -26,4 +19,11 @@ class LogSrc : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         void clear() override;
         Db<Doc, Kw> getDb() const override;
         bool isEmpty() const override;
+
+    private:
+        Underly<Doc, Kw>* underly = nullptr;
+        TdagNode<Kw>* tdag = nullptr;
+        Db<Doc, Kw> db; // store instead of using underlying instance's `db` since that one has replications
+
+        LogSrc(Underly<Doc, Kw>* underly);
 };

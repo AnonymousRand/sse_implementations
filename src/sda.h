@@ -8,10 +8,6 @@
 // (e.g. `Sda<LogSrcI<PiBas>>`) and it gets complicated, so instead just specify all template params for `Underly` fully
 template <IsSdaUnderly Underly>
 class Sda : public IDsse<Doc, Kw> {
-    protected:
-        std::vector<Underly*> underlys;
-        long firstEmptyInd = 0;
-
     public:
         ~Sda();
 
@@ -22,4 +18,8 @@ class Sda : public IDsse<Doc, Kw> {
         void update(const DbEntry<Doc, Kw>& newEntry) override;
 
         void clear() override;
+
+    protected:
+        std::vector<Underly*> underlys;
+        long firstEmptyInd = 0;
 };
