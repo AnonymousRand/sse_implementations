@@ -2,7 +2,7 @@
 
 
 #include "sse.h"
-#include "util/tdag.h"
+#include "utils/tdag.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>

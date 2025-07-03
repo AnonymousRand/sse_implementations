@@ -2,7 +2,7 @@
 
 
 #include "sse.h"
-#include "util/enc_ind.h"
+#include "utils/enc_ind.h"
 
 
 /******************************************************************************/

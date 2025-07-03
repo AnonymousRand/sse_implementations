@@ -3,7 +3,7 @@
 
 #include <openssl/evp.h>
 
-#include "util.h"
+#include "utils.h"
 
 
 ustring genKey(int keyLen);

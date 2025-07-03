@@ -3,7 +3,7 @@
 
 #include "log_src_i.h" 
 #include "pi_bas.h" 
-#include "util/enc_ind.h"
+#include "utils/enc_ind.h"
 
 
 /******************************************************************************/
