@@ -1,7 +1,7 @@
+#include "util.h"
+
 #include <algorithm>
 #include <sstream>
-
-#include "util.h"
 
 
 /******************************************************************************/

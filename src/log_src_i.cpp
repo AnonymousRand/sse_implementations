@@ -1,8 +1,8 @@
 #include "log_src_i.h"
-#include "pi_bas.h"
 
 // needed to bring in explicit template instantiation of `LogSrcIBase<PiBasLoc>`, otherwise undefined reference
 #include "log_src_i_loc.cpp"
+#include "pi_bas.h"
 
 
 /******************************************************************************/

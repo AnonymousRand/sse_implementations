@@ -1,6 +1,6 @@
-#include <deque>
-
 #include "tdag.h"
+
+#include <deque>
 
 
 template <class T>

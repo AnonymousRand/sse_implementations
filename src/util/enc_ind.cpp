@@ -1,8 +1,8 @@
+#include "enc_ind.h"
+
 #include <cstring>
 #include <iomanip>
 #include <sstream>
-
-#include "enc_ind.h"
 
 
 // this initializes everything to `\0`, i.e. zero bits
