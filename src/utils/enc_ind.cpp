@@ -119,6 +119,7 @@ void EncInd::init(long size) {
 
 
 void EncInd::write(const ustring& label, const std::pair<ustring, ustring>& val) {
+    // this conversion mess is from USENIX'24
     ulong pos = (*((ulong*)label.c_str())) % this->size;
     uchar currKv[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
