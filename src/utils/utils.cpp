@@ -20,8 +20,8 @@ ustring toUstr(const std::string& s) {
 }
 
 
-ustring toUstr(uchar* p, int len) {
-    return ustring(p, len);
+ustring toUstr(uchar* ucstr, int len) {
+    return ustring(ucstr, len);
 }
 
 

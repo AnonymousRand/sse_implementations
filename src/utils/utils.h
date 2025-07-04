@@ -99,7 +99,7 @@ using ustring = std::basic_string<uchar>;
 
 ustring toUstr(long n);
 ustring toUstr(const std::string& s);
-ustring toUstr(uchar* p, int len);
+ustring toUstr(uchar* ucstr, int len);
 std::string fromUstr(const ustring& ustr);
 
 // provide hash function for `ustring`s to use faster hashmap-based structures, like `unordered_map` instead of `map`
