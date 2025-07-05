@@ -1,12 +1,12 @@
-debug_output = cmake-build-debug/
-release_output = cmake-build-release/
+debug_output = build-debug/
+release_output = build-release/
 
 .PHONY: all clean debug release
 
 all: debug release
 
 clean:
-	rm -rf cmake-build*
+	rm -rf build-*
 
 debug:
 	conan install . --output-folder=$(debug_output) --build=missing --profile:build=sse_implementations_debug --profile:host=sse_implementations_debug

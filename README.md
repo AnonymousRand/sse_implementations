@@ -36,11 +36,11 @@ Implementations of the following [searchable symmetric encryption](https://en.wi
     ```
     and then run either the non-compiler-optimized (debug) version with
     ```
-    ./cmake-build-debug/main
+    ./build-debug/main
     ```
     or the compiler-optimized (release) version with
     ```
-    ./cmake-build-release/main
+    ./build-release/main
     ```
 
 # Notes
