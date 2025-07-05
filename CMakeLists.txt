@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenSSL REQUIRED CONFIG)
 
-add_executable(main
+add_executable(
+    main
     src/main.cpp
     src/log_src.cpp
     src/log_src_i_loc.cpp
