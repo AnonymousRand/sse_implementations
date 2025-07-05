@@ -24,7 +24,7 @@ g++ *.cpp utils/*.cpp -lcrypto -o out/a.out -std=c++20
 
 Using GCC instead of G++ to compile will probably produce a wall of errors (different linking mechanics?).
 
-~~too lazy to create a Makefile right now~~
+~~too lazy to set up CMake or whatever right now~~
 
 # Notes
 
