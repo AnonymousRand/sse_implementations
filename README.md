@@ -23,9 +23,10 @@ Implementations of the following [searchable symmetric encryption](https://en.wi
     conan profile detect --name=sse_implementations_debug
     conan profile detect --name=sse_implementations_release
     ```
-3. Edit both Conan profiles (by default at `~/.conan2/profiles/`) to ensure that C++20 is used:
+3. Edit both Conan profiles (by default at `~/.conan2/profiles/`):
+    - Set `build_type=Debug` for the debugging profile and `build_type=Release` for the release profile.
     - Make sure `compiler.cppstd=20` is set (`gnu20` is fine too if using `compiler=gnu`).
-    - If the "default" compiler (e.g. `/usr/bin/g++`) is not the correct version and something like `g++-10` was separately installed (e.g. to `/usr/bin/g++-10`), add the following to the bottom of both profiles to specify the compiler executable:
+    - If your "default" compiler (e.g. `/usr/bin/g++`) is not the correct version and something like `g++-10` was separately installed (e.g. to `/usr/bin/g++-10`), add the following to the bottom of both profiles to specify the compiler executable:
         ```
         [conf]
         tools.build:compiler_executables={"cpp": "<path to compiler executable>"}
