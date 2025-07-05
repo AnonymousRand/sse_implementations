@@ -1,7 +1,6 @@
 #include "log_src_i.h"
 
-// needed to bring in explicit template instantiation of `LogSrcIBase<PiBasLoc>`, otherwise undefined reference
-#include "log_src_i_loc.cpp"
+#include "log_src_i_loc.cpp" // needed to bring in explicit template instatiation of `LogSrcILoc<PiBasLoc>`
 #include "pi_bas.h"
 
 
@@ -108,6 +107,7 @@ bool LogSrcIBase<Underly>::isEmpty() const {
 
 
 template class LogSrcIBase<PiBas>;
+template class LogSrcIBase<PiBasLoc>;
 
 
 /******************************************************************************/

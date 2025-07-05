@@ -10,11 +10,12 @@ Implementations of the following [searchable symmetric encryption](https://en.wi
 
 # Requirements
 
-- C++20 and `concepts` are required, which seems to require at least G++ version 10. To check the currently installed G++ version, use `g++ --version` at the command line.
-    - To update G++ with `apt`, try something like `apt install g++-10`, and then use `g++-10` instead of `g++` on the command line during compilation.
+- C++20 and `concepts` are required, which seems to require at least g++ version 10. To check the currently installed g++ version, use `g++ --version` at the command line.
+    - To update g++ with `apt`, try something like `apt install g++-10`, and then use `g++-10` instead of `g++` on the command line during compilation.
+    - For development: `g++-10` might sometimes bug out on outputting error messages, so `g++-11` is probably better.
 - The OpenSSL library needed to compile the program can be installed with `apt install libssl-dev` (if using `apt`).
 
-# Compiling
+# Running
 
 ```
 cd src/

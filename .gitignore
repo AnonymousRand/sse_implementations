@@ -1,5 +1,6 @@
 # generated program files
-src/out/
+out/enc_ind*
+cmake-build*
 
 # vim
 *.swp

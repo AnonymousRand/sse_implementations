@@ -58,6 +58,11 @@ bool PiBasBase<DbDoc, DbKw>::isEmpty() const {
 }
 
 
+template class PiBasBase<Doc, Kw>;        // PiBas
+template class PiBasBase<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
+//template class PiBasBase<Doc, IdAlias>; // Log-SRC-i index 2
+
+
 /******************************************************************************/
 /* `PiBas`                                                                    */
 /******************************************************************************/
@@ -169,6 +174,6 @@ void PiBas<DbDoc, DbKw>::clear() {
 }
 
 
-template class PiBas<Doc, Kw>;        // PiBas
-template class PiBas<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
-//template class PiBas<Doc, IdAlias>; // Log-SRC-i index 2
+template class PiBas<Doc, Kw>;
+template class PiBas<SrcIDb1Doc, Kw>;
+//template class PiBas<Doc, IdAlias>;
