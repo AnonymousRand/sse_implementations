@@ -34,7 +34,7 @@ Implementations of the following [searchable symmetric encryption](https://en.wi
     ```
     make
     ```
-    and then run either the non-compiler-optimized (debug) main executable with
+    and then run either the non-compiler-optimized (debug) version with
     ```
     ./cmake-build-debug/main
     ```
