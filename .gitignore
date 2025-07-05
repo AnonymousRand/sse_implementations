@@ -1,6 +1,9 @@
 # generated program files
 out/enc_ind*
+
+# CMake
 cmake-build*
+CMakeUserPresets.json
 
 # vim
 *.swp

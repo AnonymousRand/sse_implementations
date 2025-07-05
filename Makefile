@@ -1,3 +1,6 @@
+debug_output = cmake-build-debug/
+release_output = cmake-build-release/
+
 .PHONY: all clean debug release
 
 all: debug release
@@ -5,14 +8,12 @@ all: debug release
 clean:
 	rm -rf cmake-build*
 
-cmake-build-debug:
-	cmake -S . -B cmake-build-debug -DCMAKE_BUILD_TYPE=Debug
+debug:
+	conan install . --output-folder=$(debug_output) --build=missing --profile:build=sse_implementations_debug --profile:host=sse_implementations_debug
+	cmake -S . -B $(debug_output) -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE="$(debug_output)/conan_toolchain.cmake" --debug-output
+	cmake --build $(debug_output) --config Debug
 
-cmake-build-release:
-	cmake -S . -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
-
-debug: | cmake-build-debug
-	cmake --build cmake-build-debug --config Debug
-
-release: | cmake-build-release
-	cmake --build cmake-build-release --config Release
+release:
+	conan install . --output-folder=$(release_output) --build=missing --profile:build=sse_implementations_release --profile:host=sse_implementations_release
+	cmake -S . -B $(release_output) -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$(release_output)/conan_toolchain.cmake"
+	cmake --build $(release_output) --config Release
