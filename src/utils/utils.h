@@ -247,3 +247,13 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);
 
 template <IDbDoc_ DbDoc>
 void cleanUpResults(std::vector<DbDoc>& docs);
+
+
+/******************************************************************************/
+/* Debugging                                                                  */
+/******************************************************************************/
+
+
+std::string strToHex(const uchar* str, int len);
+
+std::string strToHex(const ustring& str);

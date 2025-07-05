@@ -1,6 +1,8 @@
 #include "utils.h"
 
 #include <algorithm>
+#include <cstring>
+#include <iomanip>
 #include <sstream>
 
 
@@ -346,3 +348,22 @@ template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw
 
 template void cleanUpResults(std::vector<Doc>& docs);
 template void cleanUpResults(std::vector<SrcIDb1Doc>& docs);
+
+
+/******************************************************************************/
+/* Debugging                                                                  */
+/******************************************************************************/
+
+
+std::string strToHex(const uchar* str, int len) {
+    std::stringstream ss;
+    for (int i = 0; i < len; i++) {
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(str[i]) << " ";
+    }
+    return ss.str();
+}
+
+
+std::string strToHex(const ustring& str) {
+    return strToHex(str.c_str(), str.length());
+}
