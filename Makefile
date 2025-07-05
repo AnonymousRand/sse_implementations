@@ -10,7 +10,7 @@ clean:
 
 debug:
 	conan install . --output-folder=$(debug_output) --build=missing --profile:build=sse_implementations_debug --profile:host=sse_implementations_debug
-	cmake -S . -B $(debug_output) -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE="$(debug_output)/conan_toolchain.cmake" --debug-output
+	cmake -S . -B $(debug_output) -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE="$(debug_output)/conan_toolchain.cmake"
 	cmake --build $(debug_output) --config Debug
 
 release:
