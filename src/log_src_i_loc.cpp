@@ -88,7 +88,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
             db2.push_back(dummyDbEntry);
         }
     }
-    this->tdag2 = new TdagNode<IdAlias>(Range<IdAlias> {0, maxIdAlias});
+    this->tdag2 = new TdagNode<IdAlias>(Range {IdAlias(0), maxIdAlias});
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     long stop = db2.size();
