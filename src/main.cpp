@@ -58,7 +58,7 @@ void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createDb(dbSize, false, true); // adjust params at will
+    Db<> db = createDb(dbSize, true, true); // adjust params at will
 
     // setup
     sse.setup(KEY_LEN, db);
@@ -224,6 +224,7 @@ int main() {
     std::cout << std::endl;
     expDebug(logSrcILoc, maxDbSize, query);
 
+    /*
     std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
     std::cout << std::endl;
     expDebug(sdaPiBas, maxDbSize, query);
@@ -335,4 +336,5 @@ int main() {
     std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
     std::cout << std::endl;
     exp3(logSrcI, maxDbSize);
+    */
 }
