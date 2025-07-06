@@ -219,12 +219,12 @@ struct std::hash<Doc> {
 /******************************************************************************/
 
 
-class SrcIDb1Doc : public IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>> {
+class SrcIDb1Doc : public IDbDoc<std::pair<Kw, Range<IdAlias>>> {
     public:
         static const std::regex FROM_STR_REGEX;
 
         SrcIDb1Doc() = default;
-        SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange);
+        SrcIDb1Doc(Kw kw, const Range<IdAlias>& idAliasRange);
 
         std::string toStr() const override;
         static SrcIDb1Doc fromUstr(const ustring& ustr);

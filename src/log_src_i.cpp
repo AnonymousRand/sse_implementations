@@ -45,8 +45,8 @@ std::vector<Doc> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shoul
     IdAlias minIdAlias = DUMMY;
     IdAlias maxIdAlias = DUMMY;
     for (SrcIDb1Doc choice : choices) {
-        Range<Kw> choiceKwRange = choice.get().first;
-        if (!query.contains(choiceKwRange)) {
+        Kw choiceKw = choice.get().first;
+        if (!query.contains(choiceKw)) {
             continue;
         }
         Range<IdAlias> choiceIdAliasRange = choice.get().second;
@@ -123,28 +123,51 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     ////////////////////////////// build index 2 ///////////////////////////////
 
-    // sort documents by keyword to assign index 2 nodes/"identifier aliases"
+    // sort documents by keyword
     auto sortByKw = [](const DbEntry<Doc, Kw>& dbEntry1, const DbEntry<Doc, Kw>& dbEntry2) {
         return dbEntry1.first.getKw() < dbEntry2.first.getKw();
     };
-
     Db<Doc, Kw> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
+
+    // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2` leaves with this information
     Db<SrcIDb1Doc, Kw> db1;
     Db<Doc, IdAlias> db2;
     db1.reserve(dbSorted.size());
     db2.reserve(dbSorted.size());
+    Kw prevKw = DUMMY;
+    IdAlias firstIdAliasWithKw;
+    IdAlias lastIdAliasWithKw;
+    auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
+        Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
+        SrcIDb1Doc newDoc1 {prevKw, idAliasRangeWithKw};
+        DbEntry<SrcIDb1Doc, Kw> newDbEntry1 {newDoc1, Range {prevKw, prevKw}};
+        db1.push_back(newDbEntry1);
+    };
+
     for (long idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
         DbEntry<Doc, Kw> dbEntry = dbSorted[idAlias];
         Doc doc = dbEntry.first;
-        Range<Kw> kwRange = dbEntry.second;
-        // populate `db1` leaves
-        SrcIDb1Doc newDoc1 {kwRange, Range<IdAlias> {idAlias, idAlias}};
-        DbEntry<SrcIDb1Doc, Kw> newDbEntry1 {newDoc1, kwRange};
-        db1.push_back(newDbEntry1);
+        Kw kw = dbEntry.second.first; // entries in `db` must have size 1 `Kw` ranges!
         // populate `db2` leaves
         DbEntry<Doc, IdAlias> newDbEntry2 = DbEntry {doc, Range<IdAlias> {idAlias, idAlias}};
         db2.push_back(newDbEntry2);
+
+        // populate `db1` leaves
+        if (kw != prevKw) {
+            if (prevKw != DUMMY) {
+                addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
+            }
+            prevKw = kw;
+            firstIdAliasWithKw = idAlias;
+            lastIdAliasWithKw = idAlias;
+        } else {
+            lastIdAliasWithKw = idAlias;
+        }
+    }
+    // make sure to write in last `Kw` (which cannot be detected by `kw != prevKw` in the loop above)
+    if (prevKw != DUMMY) {
+        addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
     }
 
     // build TDAG 2 over id aliases
@@ -181,8 +204,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     ////////////////////////////// build index 1 ///////////////////////////////
 
     // build TDAG 1 over `Kw`s
-    Range<Kw> kwBounds = findDbKwBounds(db1);
-    this->tdag1 = new TdagNode<Kw>(kwBounds);
+    Range<Kw> db1KwBounds = findDbKwBounds(db1);
+    this->tdag1 = new TdagNode<Kw>(db1KwBounds);
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();

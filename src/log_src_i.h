@@ -45,5 +45,10 @@ class LogSrcI : public LogSrcIBase<Underly> {
     public:
         LogSrcI();
 
+        /**
+         * Precondition:
+         *     - Entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
+         *     - Entries in `db` cannot have keyword equal to `DUMMY`.
+         */
         void setup(int secParam, const Db<Doc, Kw>& db) override;
 };

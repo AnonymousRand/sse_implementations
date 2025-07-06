@@ -226,11 +226,11 @@ template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id,
 /******************************************************************************/
 
 
-const std::regex SrcIDb1Doc::FROM_STR_REGEX("\\((-?[0-9]+--?[0-9]+),(-?[0-9]+--?[0-9]+)\\)");
+const std::regex SrcIDb1Doc::FROM_STR_REGEX("\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\)");
 
 
-SrcIDb1Doc::SrcIDb1Doc(const Range<Kw>& kwRange, const Range<IdAlias>& idAliasRange) :
-        IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>(std::pair {kwRange, idAliasRange}) {}
+SrcIDb1Doc::SrcIDb1Doc(Kw kw, const Range<IdAlias>& idAliasRange) :
+        IDbDoc<std::pair<Kw, Range<IdAlias>>>(std::pair {kw, idAliasRange}) {}
 
 
 std::string SrcIDb1Doc::toStr() const {
@@ -247,14 +247,14 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
         std::cerr << "Error: bad string passed to `SrcIDb1Doc.fromUstr()`, the world is going to end now" << std::endl;
         exit(EXIT_FAILURE);
     }
-    Range<Kw> kwRange = Range<Kw>::fromStr(matches[1].str());
+    Kw kw = std::stol(matches[1].str());
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
-    return SrcIDb1Doc {kwRange, idAliasRange};
+    return SrcIDb1Doc {kw, idAliasRange};
 }
 
 
-template class IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>;
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Range<Kw>, Range<IdAlias>>>& iDbDoc);
+template class IDbDoc<std::pair<Kw, Range<IdAlias>>>;
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Kw, Range<IdAlias>>>& iDbDoc);
 
 
 /******************************************************************************/
