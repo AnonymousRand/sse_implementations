@@ -180,13 +180,13 @@ template class LogSrcILoc<PiBasLoc>;
 /******************************************************************************/
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
     this->clear();
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
     
@@ -244,7 +244,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     auto iter = this->kwResCounts.find(query);
     if (iter == this->kwResCounts.end()) {
@@ -270,7 +270,7 @@ std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 void PiBasLoc<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {

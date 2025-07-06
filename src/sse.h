@@ -9,7 +9,7 @@
 /******************************************************************************/
 
 
-template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
+template <IsDbDOc DbDoc = Doc, class DbKw = Kw>
 class ISse {
     public:
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
@@ -49,7 +49,7 @@ concept IsSse = requires(T t) {
 /******************************************************************************/
 
 
-template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
+template <IsDbDOc DbDoc = Doc, class DbKw = Kw>
 class IDsse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
@@ -61,7 +61,7 @@ class IDsse : public virtual ISse<DbDoc, DbKw> {
 /******************************************************************************/
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual Db<DbDoc, DbKw> getDb() const = 0;

@@ -8,7 +8,7 @@
 /******************************************************************************/
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
     const Range<DbKw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
@@ -33,26 +33,26 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 ustring PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     return prf(this->keyPrf, query.toUstr());
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 void PiBasBase<DbDoc, DbKw>::clear() {
     this->db.clear();
     this->_isEmpty = true;
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
     return this->db;
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 bool PiBasBase<DbDoc, DbKw>::isEmpty() const {
     return this->_isEmpty;
 }
@@ -68,13 +68,13 @@ template class PiBasBase<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
 /******************************************************************************/
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 PiBas<DbDoc, DbKw>::~PiBas() {
     this->clear();
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
 
@@ -135,7 +135,7 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbDoc> results;
     ustring queryToken = this->genQueryToken(query);
@@ -165,7 +165,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 }
 
 
-template <IDbDoc_ DbDoc, class DbKw>
+template <IsDbDOc DbDoc, class DbKw>
 void PiBas<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {

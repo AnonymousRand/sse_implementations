@@ -50,7 +50,7 @@ class LogSrcILoc : public LogSrcIBase<Underly> {
 /******************************************************************************/
 
 
-template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
+template <IsDbDOc DbDoc = Doc, class DbKw = Kw>
 class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> {
     public:
         ~PiBasLoc();
