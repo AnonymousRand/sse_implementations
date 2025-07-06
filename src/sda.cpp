@@ -36,6 +36,7 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`; always merge/insert into first index if it's empty
     Db<Doc, Kw> mergedDb;
+    mergedDb.reserve(std::pow(2, this->firstEmptyInd));
     for (long i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
         // original paper fetches encrypted index and decrypts instead of `getDb()`
         // but that could get messy with Log-SRC-i as it has two indexes
