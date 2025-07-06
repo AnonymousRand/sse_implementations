@@ -42,7 +42,7 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
         // but that could get messy with Log-SRC-i as it has two indexes
         // instead we just store and get plaintext DB for convenience of implementation
         Db<Doc, Kw> underlyDb = this->underlys[i]->getDb();
-        mergedDb.insert(mergedDb.begin(), underlyDb.begin(), underlyDb.end());
+        mergedDb.insert(mergedDb.end(), underlyDb.begin(), underlyDb.end());
     }
     mergedDb.push_back(newEntry);
     if (this->firstEmptyInd < this->underlys.size() - 1) {
