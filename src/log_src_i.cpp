@@ -132,16 +132,16 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
     Db<SrcIDb1Doc, Kw> db1;
     Db<Doc, IdAlias> db2;
-    for (long i = 0; i < dbSorted.size(); i++) {
-        DbEntry<Doc, Kw> dbEntry = dbSorted[i];
+    for (long idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
+        DbEntry<Doc, Kw> dbEntry = dbSorted[idAlias];
         Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
         // populate `db1` leaves
-        SrcIDb1Doc newDoc1 {kwRange, Range<IdAlias> {i, i}};
+        SrcIDb1Doc newDoc1 {kwRange, Range<IdAlias> {idAlias, idAlias}};
         DbEntry<SrcIDb1Doc, Kw> newDbEntry1 {newDoc1, kwRange};
         db1.push_back(newDbEntry1);
         // populate `db2` leaves
-        DbEntry<Doc, IdAlias> newDbEntry2 = DbEntry {doc, Range<IdAlias> {i, i}};
+        DbEntry<Doc, IdAlias> newDbEntry2 = DbEntry {doc, Range<IdAlias> {idAlias, idAlias}};
         db2.push_back(newDbEntry2);
     }
 
