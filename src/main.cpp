@@ -58,7 +58,7 @@ void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createDb(dbSize, true, true); // adjust params at will
+    Db<> db = createDb(dbSize, false, true); // adjust params at will
 
     // setup
     sse.setup(KEY_LEN, db);
