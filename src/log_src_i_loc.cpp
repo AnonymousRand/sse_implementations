@@ -126,7 +126,6 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         if (kw == prevKw) {
             continue;
         }
-
         // if non-contiguous `Kw`s detected, fill in the gap with dummies
         if (kw > prevKw + 1) {
             for (Kw paddingKw = prevKw + 1; paddingKw < kw; paddingKw++) {
@@ -137,7 +136,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         prevKw = kw;
     }
 
-    // after guaranteeing contiguousness of `Kw`s, pad `db1` to power of 2 as well
+    // after guaranteeing contiguous-ness of `Kw`s, pad `db1` to power of 2 as well
     Range<Kw> db1KwBounds = findDbKwBounds(db1);
     Kw maxDb1Kw = db1KwBounds.second;
     if (!std::has_single_bit((ulong)db1.size())) {
