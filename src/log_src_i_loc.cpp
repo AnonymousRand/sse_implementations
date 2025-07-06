@@ -29,6 +29,8 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
     Db<SrcIDb1Doc, Kw> db1;
     Db<Doc, IdAlias> db2;
+    db1.reserve(dbSorted.size());
+    db2.reserve(dbSorted.size());
     for (long idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
         DbEntry<Doc, Kw> dbEntry = dbSorted[idAlias];
         Doc doc = dbEntry.first;
@@ -54,6 +56,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     // pad TDAG 2 to power of two # of leaves, as that is required in the case of locality-aware Log-SRC-i*
     if (!std::has_single_bit(db2.size())) {
         long amountToPad = std::pow(2, std::ceil(std::log2(db2.size()))) - db2.size();
+        db2.reserve(db2.size() + amountToPad);
         for (long i = 0; i < amountToPad; i++) {
             maxIdAlias++;
             Doc dummyDoc {DUMMY, DUMMY, Op::DUMMY};
@@ -65,6 +68,9 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     long stop = db2.size();
+    long topLevel = std::log2(stop);
+    long newSize = topLevel * (2 * stop) - (1 - std::pow(2, -topLevel)) * std::pow(2, topLevel+1) + stop;
+    db2.reserve(newSize);
     for (long i = 0; i < stop; i++) {
         DbEntry<Doc, IdAlias> dbEntry = db2[i];
         Doc doc = dbEntry.first;
@@ -113,6 +119,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     Kw maxKw = kwBounds.second;
     if (!std::has_single_bit((ulong)kwBounds.size())) {
         long amountToPad = std::pow(2, std::ceil(std::log2(kwBounds.size()))) - kwBounds.size();
+        db1.reserve(db1.size() + amountToPad);
         for (long i = 0; i < amountToPad; i++) {
             maxKw++;
             DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummyDoc, Range<Kw> {maxKw, maxKw}};
@@ -123,6 +130,9 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();
+    topLevel = std::log2(stop);
+    newSize = topLevel * (2 * stop) - (1 - std::pow(2, -topLevel)) * std::pow(2, topLevel+1) + stop;
+    db1.reserve(newSize);
     for (long i = 0; i < stop; i++) {
         DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
         SrcIDb1Doc doc = dbEntry.first;

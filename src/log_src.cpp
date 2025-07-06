@@ -28,6 +28,10 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     // replicate every document to all keyword ranges/TDAG nodes that cover it
     Db<Doc, Kw> dbWithReplications;
+    // see `EncIndLoc::map()` in `utils/enc_ind.cpp` for where this formula comes from
+    long topLevel = std::log2(db.size());
+    long newSize = topLevel * (2 * db.size()) - (1 - std::pow(2, -topLevel)) * std::pow(2, topLevel+1) + db.size();
+    db.reserve(newSize);
     for (DbEntry<Doc, Kw> dbEntry : db) {
         Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
