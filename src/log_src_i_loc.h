@@ -36,6 +36,10 @@ class LogSrcILoc : public LogSrcIBase<Underly> {
     public:
         LogSrcILoc();
 
+        /**
+         * Precondition:
+         *     - Entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
+         */
         void setup(int secParam, const Db<Doc, Kw>& db) override;
 };
 

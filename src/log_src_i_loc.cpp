@@ -50,6 +50,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
             maxIdAlias = idAlias;
         }
     }
+
     // pad TDAG 2 to power of two # of leaves, as that is required in the case of locality-aware Log-SRC-i*
     if (!std::has_single_bit(db2.size())) {
         long amountToPad = std::pow(2, std::ceil(std::log2(db2.size()))) - db2.size();
@@ -86,23 +87,32 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     // we need to pad `db1` to have (exactly) one doc per `Kw` (we can just leave blanks in the case of non-locality
     // Log-SRC-i since docs are placed pseudorandomly in the index, but here we have to pad to avoid empty buckets
     // in the index that the server knows corresponds to a lack of docs with that keyword)
-    Range<Kw> kwBounds = findDbKwBounds(db1);
-    Kw minKw = kwBounds.first;
-    Kw maxKw = kwBounds.second;
-    std::unordered_set<Range<Kw>> uniqDbKwRanges = getUniqDbKwRanges(db1);
-    if (uniqDbKwRanges.size() < kwBounds.size()) {
-        SrcIDb1Doc dummyDoc {DUMMY_RANGE<Kw>(), DUMMY_RANGE<IdAlias>()};
-        for (Kw kw = minKw; kw <= maxKw; kw++) {
-            if (uniqDbKwRanges.count(Range {kw, kw}) == 0) {
-                DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummyDoc, Range<Kw> {kw, kw}};
+    DbEntry<Doc, Kw> dbEntry = dbSorted[0];
+    Kw prevKw = dbEntry.second.first; // entries in `db` must have size 1 `Kw` ranges!
+    SrcIDb1Doc dummyDoc {DUMMY_RANGE<Kw>(), DUMMY_RANGE<IdAlias>()};
+    for (long i = 1; i < dbSorted.size(); i++) {
+        dbEntry = dbSorted[i];
+        Kw kw = dbEntry.second.first;
+        if (kw == prevKw) {
+            continue;
+        }
+
+        // if non-contiguous `Kw`s detected, fill in the gap with dummies
+        if (kw > prevKw + 1) {
+            for (Kw paddingKw = prevKw + 1; paddingKw < kw; paddingKw++) {
+                DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummyDoc, Range<Kw> {paddingKw, paddingKw}};
                 db1.push_back(dummyDbEntry);
             }
         }
+        prevKw = kw;
     }
-    // after guaranteeing contiguousness of `Kw`s, pad to power of 2 as well
+
+    // after guaranteeing contiguousness of `Kw`s, pad `db1` to power of 2 as well
+    Range<Kw> kwBounds = findDbKwBounds(db1);
+    Kw minKw = kwBounds.first;
+    Kw maxKw = kwBounds.second;
     if (!std::has_single_bit((ulong)kwBounds.size())) {
         long amountToPad = std::pow(2, std::ceil(std::log2(kwBounds.size()))) - kwBounds.size();
-        SrcIDb1Doc dummyDoc {DUMMY_RANGE<Kw>(), DUMMY_RANGE<IdAlias>()};
         for (long i = 0; i < amountToPad; i++) {
             maxKw++;
             DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummyDoc, Range<Kw> {maxKw, maxKw}};

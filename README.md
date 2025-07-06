@@ -46,4 +46,5 @@ Implementations of the following [searchable symmetric encryption](https://en.wi
 # Notes
 
 - Ids and keywords must be nonnegative integral values. Otherwise, Bad Things may happen.
+- While each database tuple possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range-query schemes (as otherwise range queries are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range query schemes Logarithmic-SRC and especially Logarithmic-SRC-i may result in undefined and generally confusing behavior; only insert one document per id for those.
