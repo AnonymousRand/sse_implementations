@@ -32,8 +32,6 @@ class LogSrcIBase : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         TdagNode<IdAlias>* tdag2 = nullptr;
         Db<Doc, Kw> db; // store since neither underlying instance contains the original DB
         bool _isEmpty = false;
-
-        LogSrcIBase(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2);
 };
 
 

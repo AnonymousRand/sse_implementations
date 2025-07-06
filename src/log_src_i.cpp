@@ -14,11 +14,6 @@ LogSrcIBase<Underly>::LogSrcIBase() : underly1(new Underly<SrcIDb1Doc, Kw>()), u
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrcIBase<Underly>::LogSrcIBase(Underly<SrcIDb1Doc, Kw>* underly1, Underly<Doc, IdAlias>* underly2)
-        : underly1(underly1), underly2(underly2) {}
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
 LogSrcIBase<Underly>::~LogSrcIBase() {
     this->clear();
     if (this->underly1 != nullptr) {

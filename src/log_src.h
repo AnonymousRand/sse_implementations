@@ -24,6 +24,4 @@ class LogSrc : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
         Underly<Doc, Kw>* underly = nullptr;
         TdagNode<Kw>* tdag = nullptr;
         Db<Doc, Kw> db; // store instead of using underlying instance's `db` since that one has replications
-
-        LogSrc(Underly<Doc, Kw>* underly);
 };
