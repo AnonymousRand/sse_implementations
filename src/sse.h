@@ -50,19 +50,19 @@ concept IsSse = requires(T t) {
 
 
 template <IDbDoc_ DbDoc = Doc, class DbKw = Kw>
-class IDsse : public ISse<DbDoc, DbKw> {
+class IDsse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
 };
 
 
 /******************************************************************************/
-/* `ISdaUnderly`                                                              */
+/* `ISdaUnderlySse`                                                           */
 /******************************************************************************/
 
 
 template <IDbDoc_ DbDoc, class DbKw>
-class ISdaUnderly {
+class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual Db<DbDoc, DbKw> getDb() const = 0;
         virtual bool isEmpty() const = 0;
@@ -70,6 +70,6 @@ class ISdaUnderly {
 
 
 template <class T>
-concept IsSdaUnderly = requires(T t) {
-    []<class ... Args>(ISdaUnderly<Args ...>&){}(t);
+concept IsSdaUnderlySse = requires(T t) {
+    []<class ... Args>(ISdaUnderlySse<Args ...>&){}(t);
 };

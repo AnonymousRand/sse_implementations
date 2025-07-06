@@ -12,7 +12,7 @@
 
 // common code between `LogSrcI` and `LogSrcILoc`
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-class LogSrcIBase : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
+class LogSrcIBase : public ISdaUnderlySse<Doc, Kw> {
     public:
         LogSrcIBase();
         virtual ~LogSrcIBase();

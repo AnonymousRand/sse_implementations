@@ -6,7 +6,7 @@
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-class LogSrc : public ISse<Doc, Kw>, public ISdaUnderly<Doc, Kw> {
+class LogSrc : public ISdaUnderlySse<Doc, Kw> {
     public:
         LogSrc();
         ~LogSrc();
