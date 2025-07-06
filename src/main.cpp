@@ -58,7 +58,7 @@ void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
     if (dbSize == 0) {
         return;
     }
-    Db<> db = createDb(dbSize, false, true); // adjust params at will
+    Db<> db = createDb(dbSize, true, true); // adjust params at will
 
     // setup
     sse.setup(KEY_LEN, db);
@@ -203,8 +203,8 @@ int main() {
     Range<Kw> query {3, 5};
 
     std::cout << "----------------------------- Debugging Experiment -----------------------------" << std::endl;
-    std::cout << "DB size  : 2^" << maxDbSizeExp                                                    << std::endl;
-    std::cout << "Query    : "   << query                                                           << std::endl;
+    std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
+    std::cout << "Query  : "   << query                                                             << std::endl;
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
@@ -243,8 +243,8 @@ int main() {
     /////////////////////////////// experiment 1 ///////////////////////////////
 
     std::cout << "--------------------------------- Experiment 1 ---------------------------------" << std::endl;
-    std::cout << "DB size  : 2^" << maxDbSizeExp                                                    << std::endl;
-    std::cout << "Query    : varied"                                                                << std::endl;
+    std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
+    std::cout << "Query  : varied"                                                                  << std::endl;
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
@@ -283,8 +283,8 @@ int main() {
     /////////////////////////////// experiment 2 ///////////////////////////////
 
     std::cout << "--------------------------------- Experiment 2 ---------------------------------" << std::endl;
-    std::cout << "DB size  : varied, up to 2^" << maxDbSizeExp                                      << std::endl;
-    std::cout << "Query    : 0-3"                                                                   << std::endl;
+    std::cout << "DB size: varied, up to 2^" << maxDbSizeExp                                        << std::endl;
+    std::cout << "Query  : 0-3"                                                                     << std::endl;
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
@@ -323,8 +323,8 @@ int main() {
     /////////////////////////////// experiment 3 ///////////////////////////////
 
     std::cout << "--------------------------------- Experiment 3 ---------------------------------" << std::endl;
-    std::cout << "DB size  : 2^" << maxDbSizeExp                                                    << std::endl;
-    std::cout << "Query    : high false positives"                                                  << std::endl;
+    std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
+    std::cout << "Query  : high false positives"                                                    << std::endl;
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
