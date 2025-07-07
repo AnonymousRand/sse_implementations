@@ -12,10 +12,10 @@ class Sda : public IDsse<Doc, Kw> {
         ~Sda();
 
         void setup(int secParam, const Db<Doc, Kw>& db) override;
+        void update(const DbEntry<Doc, Kw>& newEntry) override;
         std::vector<Doc> search(
             const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override;
-        void update(const DbEntry<Doc, Kw>& newEntry) override;
 
         void clear() override;
 
