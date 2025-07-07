@@ -9,8 +9,8 @@ add_executable(
     main
     src/main.cpp
     src/log_src.cpp
-    src/log_src_i_loc.cpp
     src/log_src_i.cpp
+    src/log_src_i_loc.cpp
     src/pi_bas.cpp
     src/sda.cpp
     src/utils/cryptography.cpp

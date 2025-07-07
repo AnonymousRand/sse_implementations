@@ -19,7 +19,7 @@ class Sda : public IDsse<Doc, Kw> {
 
         void clear() override;
 
-    protected:
+    private:
         std::vector<Underly*> underlys;
         long firstEmptyInd = 0;
 };
