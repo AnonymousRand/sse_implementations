@@ -24,11 +24,11 @@ void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
 
 template <IsSdaUnderlySse Underly>
-void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
+void Sda<Underly>::update(const DbEntry<Doc, Kw>& newDbEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
         Underly* newUnderly = new Underly();
-        newUnderly->setup(this->secParam, Db<Doc, Kw> {newEntry});
+        newUnderly->setup(this->secParam, Db<Doc, Kw> {newDbEntry});
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
         return;
@@ -44,7 +44,7 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newEntry) {
         Db<Doc, Kw> underlyDb = this->underlys[i]->getDb();
         mergedDb.insert(mergedDb.end(), underlyDb.begin(), underlyDb.end());
     }
-    mergedDb.push_back(newEntry);
+    mergedDb.push_back(newDbEntry);
     if (this->firstEmptyInd < this->underlys.size() - 1) {
         this->underlys[this->firstEmptyInd]->setup(this->secParam, mergedDb);
     } else {
