@@ -29,7 +29,7 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
         ustring keyPrf;
         ustring keyEnc;
         Db<DbDoc, DbKw> db;
-        bool _isEmpty = false;
+        bool _isEmpty = true;
 
         virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
         ustring genQueryToken(const Range<DbKw>& query) const;
