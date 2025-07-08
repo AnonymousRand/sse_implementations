@@ -13,7 +13,7 @@ Implementations of the following [searchable symmetric encryption](https://en.wi
 - CMake
 - [Conan 2](https://docs.conan.io/2/installation.html)
 - A C++ compiler that supports C++20 (ideally g++ version 10 or above; install with `apt install g++-10` if using `apt`)
-- Only tested on Linux systems
+- Only tested on Linux systems. To run on Windows, don't.
 
 # Running
 
