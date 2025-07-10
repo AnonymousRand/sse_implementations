@@ -117,12 +117,12 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         if (iter == ind.end()) {
             continue;
         }
-        std::vector<DbDoc> dbDocsWithSameKw = iter->second;
+        std::vector<DbDoc> dbDocsWithSameDbKw = iter->second;
         // for each id in DB(w)
-        for (long kwCounter = 0; kwCounter < dbDocsWithSameKw.size(); kwCounter++) {
-            DbDoc dbDoc = dbDocsWithSameKw[kwCounter];
+        for (long dbKwCounter = 0; dbKwCounter < dbDocsWithSameDbKw.size(); dbKwCounter++) {
+            DbDoc dbDoc = dbDocsWithSameDbKw[dbKwCounter];
             // l <- Hash(PRF(K_1, w) || c)
-            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(kwCounter));
+            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             // for some reason padding to exactly n blocks generates n + 1 blocks, so we pad to one less byte
@@ -141,10 +141,10 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     ustring queryToken = this->genQueryToken(query);
         
     // for c = 0 until `Get` returns error
-    long kwCounter = 0;
+    long dbKwCounter = 0;
     while (true) {
         // l <- Hash(PRF(K_1, w) || c) (same as in `setup()`!)
-        ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(kwCounter));
+        ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
         // res <- encInd.get(l)
         std::pair<ustring, ustring> encIndVal;
         bool isFound = this->encInd->find(label, encIndVal);
@@ -158,7 +158,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
         ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDbDoc, iv);
         DbDoc result = DbDoc::fromUstr(decryptedDbDoc);
         results.push_back(result);
-        kwCounter++;
+        dbKwCounter++;
     }
 
     return results;
