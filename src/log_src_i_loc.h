@@ -51,7 +51,7 @@ class LogSrcILoc : public LogSrcIBase<Underly> {
 /******************************************************************************/
 
 
-template <IsDbDOc DbDoc = Doc, class DbKw = Kw>
+template <IsDbDoc DbDoc = Doc, class DbKw = Kw>
 class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> {
     public:
         ~PiBasLoc();
