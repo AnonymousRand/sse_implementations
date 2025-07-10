@@ -68,7 +68,7 @@ void EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) con
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int itemsRead = std::fread(kv, ENC_IND_KV_LEN, 1, this->file);
     if (itemsRead != 1) {
-        std::cerr << "EncIndBase::readValFromPos(): error reading file (nothing read)" << std::endl;
+        std::cerr << "EncIndBase::readValFromPos(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
     ret.first = ustring(&kv[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
@@ -106,7 +106,7 @@ void EncInd::write(const ustring& label, const std::pair<ustring, ustring>& val)
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int itemsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
     if (itemsReadOrWritten != 1) {
-        std::cerr << "EncInd::write(): error reading file (nothing read)" << std::endl;
+        std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -120,7 +120,7 @@ void EncInd::write(const ustring& label, const std::pair<ustring, ustring>& val)
         }
         itemsReadOrWritten = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file); 
         if (itemsReadOrWritten != 1) {
-            std::cerr << "EncInd::write(): error reading file (nothing read)" << std::endl;
+            std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -140,7 +140,7 @@ bool EncInd::find(const ustring& label, std::pair<ustring, ustring>& ret) const 
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
     if (itemsRead != 1) {
-        std::cerr << "EncInd::find(): error reading file (nothing read)" << std::endl;
+        std::cerr << "EncInd::find(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
     const uchar* labelCStr = label.c_str();
@@ -156,7 +156,7 @@ bool EncInd::find(const ustring& label, std::pair<ustring, ustring>& ret) const 
         }
         itemsRead = std::fread(currKv, ENC_IND_KV_LEN, 1, this->file);
         if (itemsRead != 1) {
-            std::cerr << "EncInd::find(): error reading file (nothing read)" << std::endl;
+            std::cerr << "EncInd::find(): error reading from file (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
