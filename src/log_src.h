@@ -11,12 +11,14 @@ class LogSrc : public ISdaUnderlySse<Doc, Kw> {
         LogSrc();
         ~LogSrc();
 
+        // `ISse`
         void setup(int secParam, const Db<Doc, Kw>& db) override;
         std::vector<Doc> search(
             const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override;
-
         void clear() override;
+
+        // `ISdaUnderlySse`
         Db<Doc, Kw> getDb() const override;
         long getSize() const override;
 

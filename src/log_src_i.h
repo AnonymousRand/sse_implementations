@@ -17,11 +17,13 @@ class LogSrcIBase : public ISdaUnderlySse<Doc, Kw> {
         LogSrcIBase();
         virtual ~LogSrcIBase();
 
+        // `ISse`
         std::vector<Doc> search(
             const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override;
-
         void clear() override;
+
+        // `ISdaUnderlySse`
         Db<Doc, Kw> getDb() const override;
         long getSize() const override;
 
@@ -45,6 +47,7 @@ class LogSrcI : public LogSrcIBase<Underly> {
     public:
         LogSrcI();
 
+        // `ISse`
         /**
          * Precondition:
          *     - Entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.

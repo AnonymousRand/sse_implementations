@@ -24,6 +24,43 @@ void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
 
 template <IsSdaUnderlySse Underly>
+std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
+    std::vector<Doc> allResults;
+
+    // search through all non-empty indexes
+    for (Underly* underly : this->underlys) {
+        if (underly->getSize() == 0) {
+            continue;
+        }
+        // don't filter out deleted tuples in underlying schemes even if `shouldCleanUpResults` is `true`
+        // the cancellation tuple for a document is not guaranteed to be in same index as the inserting tuple
+        // so we can't rely on the individual underlying instances to filter out all deleted documents
+        std::vector<Doc> results = underly->search(query, false, isNaive);
+        allResults.insert(allResults.end(), results.begin(), results.end());
+    }
+
+    if (shouldCleanUpResults) {
+        cleanUpResults(allResults);
+    }
+    return allResults;
+}
+
+
+template <IsSdaUnderlySse Underly>
+void Sda<Underly>::clear() {
+    // apparently vector `clear()` automatically calls the destructor for each element *unless* it is a pointer
+    for (Underly* underly : this->underlys) {
+        if (underly != nullptr) {
+            delete underly;
+            underly = nullptr;
+        }
+    }
+    this->underlys.clear();
+    this->firstEmptyInd = 0;
+}
+
+
+template <IsSdaUnderlySse Underly>
 void Sda<Underly>::update(const DbEntry<Doc, Kw>& newDbEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
@@ -66,43 +103,6 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newDbEntry) {
         }
     }
     this->firstEmptyInd = firstEmpty;
-}
-
-
-template <IsSdaUnderlySse Underly>
-std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
-    std::vector<Doc> allResults;
-
-    // search through all non-empty indexes
-    for (Underly* underly : this->underlys) {
-        if (underly->getSize() == 0) {
-            continue;
-        }
-        // don't filter out deleted tuples in underlying schemes even if `shouldCleanUpResults` is `true`
-        // the cancellation tuple for a document is not guaranteed to be in same index as the inserting tuple
-        // so we can't rely on the individual underlying instances to filter out all deleted documents
-        std::vector<Doc> results = underly->search(query, false, isNaive);
-        allResults.insert(allResults.end(), results.begin(), results.end());
-    }
-
-    if (shouldCleanUpResults) {
-        cleanUpResults(allResults);
-    }
-    return allResults;
-}
-
-
-template <IsSdaUnderlySse Underly>
-void Sda<Underly>::clear() {
-    // apparently vector `clear()` automatically calls the destructor for each element *unless* it is a pointer
-    for (Underly* underly : this->underlys) {
-        if (underly != nullptr) {
-            delete underly;
-            underly = nullptr;
-        }
-    }
-    this->underlys.clear();
-    this->firstEmptyInd = 0;
 }
 
 
