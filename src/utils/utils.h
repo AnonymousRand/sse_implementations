@@ -74,16 +74,16 @@ using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 // (Java generics `extends`: look what they need to mimic a fraction of my power)
 // (and this doesn't even enforce existence of instance methods as clearly as Java, so just pretend that it does)
 template <class T>
-concept IsDbDOc = requires(T t) {
+concept IsDbDoc = requires(T t) {
     []<class X>(IDbDoc<X>&){}(t);
 };
 
 // allow polymorphic types for DB (since Log-SRC-i exists)
-template <IsDbDOc DbDoc = Doc, class DbKw = Kw> 
+template <IsDbDoc DbDoc = Doc, class DbKw = Kw> 
 using DbEntry = std::pair<DbDoc, Range<DbKw>>;
 // technically dbs only need to contain the `DbDoc` part since `Doc` is the full (id,kw,op) tuple
 // but we will also explicitly store keyword ranges (`DbKw`) for convenience in our implementation
-template <IsDbDOc DbDoc = Doc, class DbKw = Kw>
+template <IsDbDoc DbDoc = Doc, class DbKw = Kw>
 using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class IndK, class DbDoc>
 using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
@@ -236,16 +236,16 @@ class SrcIDb1Doc : public IDbDoc<std::pair<Kw, Range<IdAlias>>> {
 /******************************************************************************/
 
 
-template <class IndK, IsDbDOc DbDoc>
+template <class IndK, IsDbDoc DbDoc>
 void shuffleInd(Ind<IndK, DbDoc>& ind);
 
-template <IsDbDOc DbDoc, class DbKw>
+template <IsDbDoc DbDoc, class DbKw>
 Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db);
 
-template <IsDbDOc DbDoc, class DbKw>
+template <IsDbDoc DbDoc, class DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);
 
-template <IsDbDOc DbDoc>
+template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& docs);
 
 

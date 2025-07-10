@@ -262,7 +262,7 @@ template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Kw, 
 /******************************************************************************/
 
 
-template <class IndK, IsDbDOc DbDoc>
+template <class IndK, IsDbDoc DbDoc>
 void shuffleInd(Ind<IndK, DbDoc>& ind) {
     for (std::pair pair : ind) {
         std::vector<DbDoc> dbDocs = pair.second;
@@ -271,7 +271,7 @@ void shuffleInd(Ind<IndK, DbDoc>& ind) {
 }
 
 
-template <IsDbDOc DbDoc, class DbKw>
+template <IsDbDoc DbDoc, class DbKw>
 Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db) {
     if (db.empty()) {
         return DUMMY_RANGE<DbKw>();
@@ -292,7 +292,7 @@ Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <IsDbDOc DbDoc, class DbKw>
+template <IsDbDoc DbDoc, class DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
     std::unordered_set<Range<DbKw>> uniqDbKwRanges;
     for (DbEntry<DbDoc, DbKw> entry : db) {
@@ -303,7 +303,7 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <IsDbDOc DbDoc>
+template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& docs) {}
 
 

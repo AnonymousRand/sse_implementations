@@ -12,7 +12,7 @@
 
 // common code between `PiBas` and `PiBasLoc`
 // note that we use the result-hiding variant of PiBas from figure 12 of Demertzis'20 (SDa paper) since SDa wants that
-template <IsDbDOc DbDoc, class DbKw>
+template <IsDbDoc DbDoc, class DbKw>
 class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
     public:
         virtual ~PiBasBase() = default;
@@ -43,7 +43,7 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
 /******************************************************************************/
 
 
-template <IsDbDOc DbDoc = Doc, class DbKw = Kw>
+template <IsDbDoc DbDoc = Doc, class DbKw = Kw>
 class PiBas : public PiBasBase<DbDoc, DbKw> {
     public:
         ~PiBas();
