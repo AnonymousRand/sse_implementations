@@ -180,14 +180,16 @@ template class LogSrcILoc<underly::PiBasLoc>;
 /******************************************************************************/
 
 
+namespace underly {
+
 template <IsDbDoc DbDoc, class DbKw>
-underly::PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
+PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
     this->clear();
 }
 
 
 template <IsDbDoc DbDoc, class DbKw>
-void underly::PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
     
     ////////////////////////////// generate keys ///////////////////////////////
@@ -245,7 +247,7 @@ void underly::PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& 
 
 
 template <IsDbDoc DbDoc, class DbKw>
-std::vector<DbDoc> underly::PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     auto iter = this->kwResCounts.find(query);
     if (iter == this->kwResCounts.end()) {
         return std::vector<DbDoc> {};
@@ -271,7 +273,7 @@ std::vector<DbDoc> underly::PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>&
 
 
 template <IsDbDoc DbDoc, class DbKw>
-void underly::PiBasLoc<DbDoc, DbKw>::clear() {
+void PiBasLoc<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
         this->encInd->clear();
@@ -279,6 +281,8 @@ void underly::PiBasLoc<DbDoc, DbKw>::clear() {
 }
 
 
-template class underly::PiBasLoc<Doc, Kw>;       
-template class underly::PiBasLoc<SrcIDb1Doc, Kw>;
-//template class underly::PiBasLoc<Doc, IdAlias>;
+template class PiBasLoc<Doc, Kw>;       
+template class PiBasLoc<SrcIDb1Doc, Kw>;
+//template class PiBasLoc<Doc, IdAlias>;
+
+} // namespace `underly`
