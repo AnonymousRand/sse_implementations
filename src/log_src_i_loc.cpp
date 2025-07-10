@@ -232,7 +232,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         }
         std::vector<DbDoc> dbDocsWithSameKw = iter->second;
         long dbKwCount = dbDocsWithSameKw.size();
-        this->kwCounts[dbKwRange] = dbKwCount;
+        this->dbKwCounts[dbKwRange] = dbKwCount;
         for (long dbKwCounter = 0; dbKwCounter < dbKwCount; dbKwCounter++) {
             DbDoc dbDoc = dbDocsWithSameKw[dbKwCounter];
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
@@ -248,8 +248,8 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 template <IsDbDoc DbDoc, class DbKw>
 std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
-    auto iter = this->kwCounts.find(query);
-    if (iter == this->kwCounts.end()) {
+    auto iter = this->dbKwCounts.find(query);
+    if (iter == this->dbKwCounts.end()) {
         return std::vector<DbDoc> {};
     }
     long kwCount = iter->second;
