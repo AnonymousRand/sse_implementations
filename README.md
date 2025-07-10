@@ -17,6 +17,8 @@ Since many of these can be instantiated with various underlying schemes, the fol
 - SDa[Logarithmic-SRC-i[PiBas]]
 - SDa[Logarithmic-SRC-i\*[PiBas]]
 
+See [src/main.cpp](src/main.cpp) for usage examples.
+
 # Requirements
 
 - CMake
