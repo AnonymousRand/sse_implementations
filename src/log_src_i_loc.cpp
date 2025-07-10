@@ -230,11 +230,11 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         if (iter == ind.end()) {
             continue;
         }
-        std::vector<DbDoc> dbDocsWithSameKw = iter->second;
-        long dbKwCount = dbDocsWithSameKw.size();
+        std::vector<DbDoc> dbDocsWithSameDbKw = iter->second;
+        long dbKwCount = dbDocsWithSameDbKw.size();
         this->dbKwCounts[dbKwRange] = dbKwCount;
         for (long dbKwCounter = 0; dbKwCounter < dbKwCount; dbKwCounter++) {
-            DbDoc dbDoc = dbDocsWithSameKw[dbKwCounter];
+            DbDoc dbDoc = dbDocsWithSameDbKw[dbKwCounter];
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
             ustring iv = genIv(IV_LEN);
             ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->keyEnc, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
