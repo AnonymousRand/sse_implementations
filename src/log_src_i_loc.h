@@ -63,7 +63,7 @@ class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> 
         void clear() override;
 
     private:
-        std::unordered_map<Range<DbKw>, long> kwResCounts;
+        std::unordered_map<Range<DbKw>, long> dbKwCounts;
         long leafCount;
         long minDbKw;
 
