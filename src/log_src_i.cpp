@@ -102,7 +102,7 @@ long LogSrcIBase<Underly>::getSize() const {
 
 
 template class LogSrcIBase<PiBas>;
-template class LogSrcIBase<PiBasLoc>;
+template class LogSrcIBase<underly_only::PiBasLoc>;
 
 
 /******************************************************************************/

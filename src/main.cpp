@@ -187,11 +187,11 @@ int main() {
     PiBas<> piBas;
     LogSrc<PiBas> logSrc;
     LogSrcI<PiBas> logSrcI;
-    LogSrcILoc<PiBasLoc> logSrcILoc;
+    LogSrcILoc<underly_only::PiBasLoc> logSrcILoc;
     Sda<PiBas<>> sdaPiBas;
     Sda<LogSrc<PiBas>> sdaLogSrc;
     Sda<LogSrcI<PiBas>> sdaLogSrcI;
-    Sda<LogSrcILoc<PiBasLoc>> sdaLogSrcILoc;
+    Sda<LogSrcILoc<underly_only::PiBasLoc>> sdaLogSrcILoc;
 
     /////////////////////////// debugging experiment ///////////////////////////
 

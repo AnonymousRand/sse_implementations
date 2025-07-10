@@ -51,6 +51,8 @@ class LogSrcILoc : public LogSrcIBase<Underly> {
 /******************************************************************************/
 
 
+namespace underly_only {
+
 template <IsDbDoc DbDoc = Doc, class DbKw = Kw>
 class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> {
     public:
@@ -67,3 +69,5 @@ class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> 
 
         std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
 };
+
+} // namespace `underly_only`
