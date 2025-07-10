@@ -119,10 +119,10 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         }
         std::vector<DbDoc> dbDocsWithSameKw = iter->second;
         // for each id in DB(w)
-        for (long counter = 0; counter < dbDocsWithSameKw.size(); counter++) {
-            DbDoc dbDoc = dbDocsWithSameKw[counter];
+        for (long kwCounter = 0; kwCounter < dbDocsWithSameKw.size(); kwCounter++) {
+            DbDoc dbDoc = dbDocsWithSameKw[kwCounter];
             // l <- Hash(PRF(K_1, w) || c)
-            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
+            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(kwCounter));
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             // for some reason padding to exactly n blocks generates n + 1 blocks, so we pad to one less byte
@@ -141,10 +141,10 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     ustring queryToken = this->genQueryToken(query);
         
     // for c = 0 until `Get` returns error
-    long counter = 0;
+    long kwCounter = 0;
     while (true) {
         // l <- Hash(PRF(K_1, w) || c) (same as in `setup()`!)
-        ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
+        ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(kwCounter));
         // res <- encInd.get(l)
         std::pair<ustring, ustring> encIndVal;
         bool isFound = this->encInd->find(label, encIndVal);
@@ -158,7 +158,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
         ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDbDoc, iv);
         DbDoc result = DbDoc::fromUstr(decryptedDbDoc);
         results.push_back(result);
-        counter++;
+        kwCounter++;
     }
 
     return results;
