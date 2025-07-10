@@ -172,7 +172,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 }
 
 
-template class LogSrcILoc<underly_only::PiBasLoc>;
+template class LogSrcILoc<underly::PiBasLoc>;
 
 
 /******************************************************************************/
@@ -181,13 +181,13 @@ template class LogSrcILoc<underly_only::PiBasLoc>;
 
 
 template <IsDbDoc DbDoc, class DbKw>
-underly_only::PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
+underly::PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
     this->clear();
 }
 
 
 template <IsDbDoc DbDoc, class DbKw>
-void underly_only::PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+void underly::PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
     
     ////////////////////////////// generate keys ///////////////////////////////
@@ -245,7 +245,7 @@ void underly_only::PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, Db
 
 
 template <IsDbDoc DbDoc, class DbKw>
-std::vector<DbDoc> underly_only::PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+std::vector<DbDoc> underly::PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     auto iter = this->kwResCounts.find(query);
     if (iter == this->kwResCounts.end()) {
         return std::vector<DbDoc> {};
@@ -271,7 +271,7 @@ std::vector<DbDoc> underly_only::PiBasLoc<DbDoc, DbKw>::searchBase(const Range<D
 
 
 template <IsDbDoc DbDoc, class DbKw>
-void underly_only::PiBasLoc<DbDoc, DbKw>::clear() {
+void underly::PiBasLoc<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
         this->encInd->clear();
@@ -279,6 +279,6 @@ void underly_only::PiBasLoc<DbDoc, DbKw>::clear() {
 }
 
 
-template class underly_only::PiBasLoc<Doc, Kw>;       
-template class underly_only::PiBasLoc<SrcIDb1Doc, Kw>;
-//template class underly_only::PiBasLoc<Doc, IdAlias>;
+template class underly::PiBasLoc<Doc, Kw>;       
+template class underly::PiBasLoc<SrcIDb1Doc, Kw>;
+//template class underly::PiBasLoc<Doc, IdAlias>;
