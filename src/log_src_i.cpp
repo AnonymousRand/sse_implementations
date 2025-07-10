@@ -85,7 +85,7 @@ void LogSrcIBase<Underly>::clear() {
     this->underly1->clear();
     this->underly2->clear();
     this->db.clear();
-    this->_isEmpty = true;
+    this->size = 0;
 }
 
 
@@ -96,8 +96,8 @@ Db<Doc, Kw> LogSrcIBase<Underly>::getDb() const {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-bool LogSrcIBase<Underly>::isEmpty() const {
-    return this->_isEmpty;
+long LogSrcIBase<Underly>::getSize() const {
+    return this->size;
 }
 
 
@@ -119,7 +119,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->clear();
 
     this->db = db;
-    this->_isEmpty = db.empty();
+    this->size = db.size();
 
     ////////////////////////////// build index 2 ///////////////////////////////
 

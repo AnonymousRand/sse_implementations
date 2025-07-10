@@ -74,8 +74,8 @@ Db<Doc, Kw> LogSrc<Underly>::getDb() const {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-bool LogSrc<Underly>::isEmpty() const {
-    return this->underly->isEmpty();
+long LogSrc<Underly>::getSize() const {
+    return this->underly->getSize();
 }
 
 

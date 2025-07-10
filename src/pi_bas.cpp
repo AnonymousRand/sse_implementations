@@ -42,7 +42,7 @@ ustring PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
 template <IsDbDOc DbDoc, class DbKw>
 void PiBasBase<DbDoc, DbKw>::clear() {
     this->db.clear();
-    this->_isEmpty = true;
+    this->size = 0;
 }
 
 
@@ -53,8 +53,8 @@ Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
 
 
 template <IsDbDOc DbDoc, class DbKw>
-bool PiBasBase<DbDoc, DbKw>::isEmpty() const {
-    return this->_isEmpty;
+long PiBasBase<DbDoc, DbKw>::getSize() const {
+    return this->size;
 }
 
 
@@ -86,7 +86,7 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     /////////////////////////////// build index ////////////////////////////////
 
     this->db = db;
-    this->_isEmpty = db.empty();
+    this->size = db.size();
     if (db.empty()) {
         return;
     }

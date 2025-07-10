@@ -65,7 +65,7 @@ template <IsDbDOc DbDoc, class DbKw>
 class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual Db<DbDoc, DbKw> getDb() const = 0;
-        virtual bool isEmpty() const = 0;
+        virtual long getSize() const = 0;
 };
 
 

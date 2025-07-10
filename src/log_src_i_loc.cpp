@@ -17,7 +17,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     this->clear();
 
     this->db = db;
-    this->_isEmpty = db.empty();
+    this->size = db.size();
 
     ////////////////////////////// build index 2 ///////////////////////////////
 
@@ -198,7 +198,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     /////////////////////////////// build index ////////////////////////////////
 
     this->db = db;
-    this->_isEmpty = db.empty();
+    this->size = db.size();
     if (db.empty()) {
         return;
     }

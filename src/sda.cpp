@@ -61,7 +61,7 @@ void Sda<Underly>::update(const DbEntry<Doc, Kw>& newDbEntry) {
     // update the pointer to the first empty index
     long firstEmpty;
     for (firstEmpty = 0; firstEmpty < this->underlys.size(); firstEmpty++) {
-        if (this->underlys[firstEmpty]->isEmpty()) {
+        if (this->underlys[firstEmpty]->getSize() == 0) {
             break;
         }
     }
@@ -75,7 +75,7 @@ std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUp
 
     // search through all non-empty indexes
     for (Underly* underly : this->underlys) {
-        if (underly->isEmpty()) {
+        if (underly->getSize() == 0) {
             continue;
         }
         // don't filter out deleted tuples in underlying schemes even if `shouldCleanUpResults` is `true`
@@ -102,6 +102,7 @@ void Sda<Underly>::clear() {
         }
     }
     this->underlys.clear();
+    this->firstEmptyInd = 0;
 }
 
 

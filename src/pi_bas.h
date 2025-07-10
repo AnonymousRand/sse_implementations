@@ -23,13 +23,13 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
 
         void clear() override;
         Db<DbDoc, DbKw> getDb() const override;
-        bool isEmpty() const override;
+        long getSize() const override;
 
     protected:
         ustring keyPrf;
         ustring keyEnc;
         Db<DbDoc, DbKw> db;
-        bool _isEmpty = true;
+        long size;
 
         virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
         ustring genQueryToken(const Range<DbKw>& query) const;

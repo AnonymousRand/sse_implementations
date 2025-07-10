@@ -18,7 +18,7 @@ class LogSrc : public ISdaUnderlySse<Doc, Kw> {
 
         void clear() override;
         Db<Doc, Kw> getDb() const override;
-        bool isEmpty() const override;
+        long getSize() const override;
 
     private:
         Underly<Doc, Kw>* underly = nullptr;

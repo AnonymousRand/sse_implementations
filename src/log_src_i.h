@@ -23,7 +23,7 @@ class LogSrcIBase : public ISdaUnderlySse<Doc, Kw> {
 
         void clear() override;
         Db<Doc, Kw> getDb() const override;
-        bool isEmpty() const override;
+        long getSize() const override;
 
     protected:
         Underly<SrcIDb1Doc, Kw>* underly1 = nullptr;
@@ -31,7 +31,7 @@ class LogSrcIBase : public ISdaUnderlySse<Doc, Kw> {
         TdagNode<Kw>* tdag1 = nullptr;
         TdagNode<IdAlias>* tdag2 = nullptr;
         Db<Doc, Kw> db; // store since neither underlying instance contains the original DB
-        bool _isEmpty = true;
+        long size;
 };
 
 
