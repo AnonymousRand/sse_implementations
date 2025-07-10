@@ -25,13 +25,12 @@ class EncIndBase {
         virtual void init(long size);
         void clear();
 
-        void writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val);
-
     protected:
         FILE* file = nullptr;
         std::string filename = "";
 
         void readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const;
+        void writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val);
 };
 
 
