@@ -63,18 +63,6 @@ void EncIndBase::clear() {
 }
 
 
-void EncIndBase::writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val) {
-    ustring kv = label + val.first + val.second;
-    std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
-    int itemsWritten = std::fwrite(kv.c_str(), ENC_IND_KV_LEN, 1, this->file);
-    if (itemsWritten != 1) {
-        std::cerr << "EncIndBase::writeToPos(): error writing to file (nothing written)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    std::fflush(this->file);
-}
-
-
 void EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const {
     uchar kv[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
@@ -85,6 +73,18 @@ void EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) con
     }
     ret.first = ustring(&kv[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
     ret.second = ustring(&kv[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
+}
+
+
+void EncIndBase::writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val) {
+    ustring kv = label + val.first + val.second;
+    std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
+    int itemsWritten = std::fwrite(kv.c_str(), ENC_IND_KV_LEN, 1, this->file);
+    if (itemsWritten != 1) {
+        std::cerr << "EncIndBase::writeToPos(): error writing to file (nothing written)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    std::fflush(this->file);
 }
 
 
