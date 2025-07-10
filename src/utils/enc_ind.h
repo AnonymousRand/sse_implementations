@@ -44,7 +44,13 @@ class EncInd : public EncIndBase {
     public:
         void init(long size);
         void write(const ustring& label, const std::pair<ustring, ustring>& val);
-        int find(const ustring& label, std::pair<ustring, ustring>& ret) const;
+
+        /**
+         * Returns:
+         *     - `true` if `label` found.
+         *     - `false` if `label` not found.
+         */
+        bool find(const ustring& label, std::pair<ustring, ustring>& ret) const;
 
     private:
         long size;

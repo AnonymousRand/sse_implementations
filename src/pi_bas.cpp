@@ -147,8 +147,8 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
         ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
         // res <- encInd.get(l)
         std::pair<ustring, ustring> encIndVal;
-        int status = this->encInd->find(label, encIndVal);
-        if (status == -1) {
+        bool isFound = this->encInd->find(label, encIndVal);
+        if (!isFound) {
             break;
         }
         ustring encryptedDbDoc = encIndVal.first;

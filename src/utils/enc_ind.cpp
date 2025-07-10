@@ -134,7 +134,7 @@ void EncInd::write(const ustring& label, const std::pair<ustring, ustring>& val)
 }
 
 
-int EncInd::find(const ustring& label, std::pair<ustring, ustring>& ret) const {
+bool EncInd::find(const ustring& label, std::pair<ustring, ustring>& ret) const {
     ulong pos = (*((ulong*)label.c_str())) % this->size;
     uchar currKv[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
@@ -162,12 +162,12 @@ int EncInd::find(const ustring& label, std::pair<ustring, ustring>& ret) const {
     }
     if (std::memcmp(currKv, labelCStr, ENC_IND_KEY_LEN) != 0) {
         // not found
-        return -1;
+        return false;
     }
 
     // decode kv pair and return it
     this->readValFromPos(pos, ret);
-    return 0;
+    return true;
 }
 
 
