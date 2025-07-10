@@ -231,15 +231,15 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             continue;
         }
         std::vector<DbDoc> dbDocsWithSameKw = iter->second;
-        long dbKwResCount = dbDocsWithSameKw.size();
-        this->kwResCounts[dbKwRange] = dbKwResCount;
-        for (long counter = 0; counter < dbKwResCount; counter++) {
-            DbDoc dbDoc = dbDocsWithSameKw[counter];
-            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(counter));
+        long dbKwCount = dbDocsWithSameKw.size();
+        this->kwCounts[dbKwRange] = dbKwCount;
+        for (long dbKwCounter = 0; dbKwCounter < dbKwCount; dbKwCounter++) {
+            DbDoc dbDoc = dbDocsWithSameKw[dbKwCounter];
+            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
             ustring iv = genIv(IV_LEN);
             ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->keyEnc, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             this->encInd->write(
-                label, std::pair {encryptedDbDoc, iv}, dbKwRange, dbKwResCount, counter, this->minDbKw, this->leafCount
+                label, std::pair {encryptedDbDoc, iv}, dbKwRange, dbKwCount, dbKwCounter, this->minDbKw, this->leafCount
             );
         }
     }
@@ -248,17 +248,17 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 template <IsDbDoc DbDoc, class DbKw>
 std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
-    auto iter = this->kwResCounts.find(query);
-    if (iter == this->kwResCounts.end()) {
+    auto iter = this->kwCounts.find(query);
+    if (iter == this->kwCounts.end()) {
         return std::vector<DbDoc> {};
     }
-    long kwResCount = iter->second;
+    long kwCount = iter->second;
 
     std::vector<DbDoc> results;
     ustring queryToken = this->genQueryToken(query);
-    for (long counter = 0; counter < kwResCount; counter++) {
+    for (long dbKwCounter = 0; dbKwCounter < kwCount; dbKwCounter++) {
         std::pair<ustring, ustring> encIndVal;
-        this->encInd->find(query, kwResCount, counter, this->minDbKw, this->leafCount, encIndVal);
+        this->encInd->find(query, kwCount, dbKwCounter, this->minDbKw, this->leafCount, encIndVal);
         ustring encryptedDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
         // technically we decrypt in the client, but since there's no client-server distinction in this implementation
