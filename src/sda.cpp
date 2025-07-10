@@ -84,10 +84,10 @@ std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUp
         std::vector<Doc> results = underly->search(query, false, isNaive);
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
+
     if (shouldCleanUpResults) {
         cleanUpResults(allResults);
     }
-
     return allResults;
 }
 
