@@ -9,7 +9,7 @@
 /******************************************************************************/
 
 
-template <IsDbDoc DbDoc = Doc, class DbKw = Kw>
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISse {
     public:
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
@@ -49,7 +49,7 @@ concept IsSse = requires(T t) {
 /******************************************************************************/
 
 
-template <IsDbDoc DbDoc = Doc, class DbKw = Kw>
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class IDsse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
@@ -61,7 +61,7 @@ class IDsse : public virtual ISse<DbDoc, DbKw> {
 /******************************************************************************/
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual Db<DbDoc, DbKw> getDb() const = 0;

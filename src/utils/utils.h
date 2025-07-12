@@ -55,8 +55,9 @@ static std::mt19937 RNG(RAND_DEV());
 // forward declarations
 template <class T>
 class Range;
-template <class T>
+template <class T, class DbKw>
 class IDbDoc;
+template <class DbKw>
 class Doc;
 enum class Op : char {
     INS   = 'I',
@@ -69,23 +70,24 @@ using Id      = long;
 using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 
 // black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
-// i.e. without needing to know what the template param `X` of `IDbDoc` is, unlike `std::derived_from` for example
-// from https://stackoverflow.com/a/71921982
+// i.e. without needing to know what the template param `T2` of `IDbDoc` is, unlike `std::derived_from` for example
+// this also enforces that `T` uses `DbKw` as its second template param, e.g.
+// `IsDbDoc<IDbDoc<A, long>, long>` passes but not `IdDbDoc<IDbDoc<A, char>, long>`
 // (Java generics `extends`: look what they need to mimic a fraction of my power)
 // (and this doesn't even enforce existence of instance methods as clearly as Java, so just pretend that it does)
-template <class T>
-concept IsDbDoc = requires(T t) {
-    []<class X>(IDbDoc<X>&){}(t);
+template <class T, class DbKw>
+concept IsValidDbParams = requires(T t) {
+    []<class T2>(IDbDoc<T2, DbKw>&){}(t);
 };
 
 // allow polymorphic types for DB (since Log-SRC-i exists)
-template <IsDbDoc DbDoc = Doc, class DbKw = Kw> 
+template <IsDbDoc DbDoc = Doc<>, class DbKw = Kw> 
 using DbEntry = std::pair<DbDoc, Range<DbKw>>;
 // technically dbs only need to contain the `DbDoc` part since `Doc` is the full (id,kw,op) tuple
 // but we will also explicitly store keyword ranges (`DbKw`) for convenience in our implementation
-template <IsDbDoc DbDoc = Doc, class DbKw = Kw>
+template <IsDbDoc DbDoc = Doc<>, class DbKw = Kw>
 using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
-template <class IndK, class DbDoc>
+template <class IndK = Kw, class DbDoc = Doc<>>
 using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
 
 
@@ -125,6 +127,8 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 template <class T>
 class Range : public std::pair<T, T> {
     public:
+        static const std::string REGEX_STR;
+
         Range() = default;
         Range(const T& start, const T& end);
 
@@ -136,11 +140,12 @@ class Range : public std::pair<T, T> {
         std::string toStr() const;
         static Range<T> fromStr(const std::string& str);
         ustring toUstr() const;
+
         template <class T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 
     private:
-        static const std::regex FROM_STR_REGEX;
+        static const std::regex REGEX;
 };
 
 
@@ -163,22 +168,27 @@ static Range<T> DUMMY_RANGE() {
 /******************************************************************************/
 
 
-// interface for documents in dataset
-template <class T>
+// interface for documents in dataset; also store the `DbKw` range (e.g. Log-SRC replications) they're stored with
+// in their respective datasets, so that we can easily fetch them in plaintext for things like SDa
+// (otherwise they might be only accessible via the encrypted "label" in the encrypted index, which can be a hash/PRF
+// and hence not easily reversible, unlike `DbDoc`s which are just encrypted and can be easily decrypted)
+template <class T, class DbKw>
 class IDbDoc {
     public:
         IDbDoc() = default;
-        IDbDoc(const T& val);
+        IDbDoc(const T& val, const Range<DbKw>& dbKwRange);
 
         T get() const;
+        Range<DbKw> getDbKwRange() const;
         virtual ustring toUstr() const;
         virtual std::string toStr() const = 0;
 
-        template <class T2>
-        friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2>& iDbDoc);
+        template <class T2, class DbKw2>
+        friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2, DbKw2>& iDbDoc);
 
     protected:
         T val;
+        Range<DbKw> dbKwRange;
 };
 
 
@@ -188,27 +198,33 @@ class IDbDoc {
 
 
 // these are the "database tuples"; accommodate dynamic SSE by also storing the operation
-class Doc : public IDbDoc<std::tuple<Id, Kw, Op>> {
+template <class DbKw = Kw>
+class Doc : public IDbDoc<std::tuple<Id, Kw, Op>, DbKw> {
     public:
-        static const std::regex FROM_STR_REGEX;
-
         Doc() = default;
-        Doc(Id id, Kw kw, Op op);
+        Doc(const std::tuple<Id, Kw, Op>& val, const Range<DbKw>& dbKwRange);
+        Doc(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange);
 
         std::string toStr() const override;
-        static Doc fromUstr(const ustring& ustr);
-        static Doc fromStr(const std::string& str);
+        static Doc<DbKw> fromUstr(const ustring& ustr);
+        static Doc<DbKw> fromStr(const std::string& str);
 
         Id getId() const;
         Kw getKw() const;
         Op getOp() const;
 
-        friend bool operator ==(const Doc& doc1, const Doc& doc2);
+        /**
+         * Only checks equality of `val`, not of `dbKwRange`.
+         */
+        friend bool operator ==(const Doc<DbKw>& doc1, const Doc<DbKw>& doc2);
+
+    private:
+        static const std::regex REGEX;
 };
 
 template <>
-struct std::hash<Doc> {
-    inline std::size_t operator ()(const Doc& doc) const noexcept {
+struct std::hash<Doc<DbKw>> {
+    inline std::size_t operator ()(const Doc<DbKw>& doc) const noexcept {
         return std::hash<std::string>{}(doc.toStr());
     }
 };
@@ -219,12 +235,13 @@ struct std::hash<Doc> {
 /******************************************************************************/
 
 
-class SrcIDb1Doc : public IDbDoc<std::pair<Kw, Range<IdAlias>>> {
+class SrcIDb1Doc : public IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw> {
     public:
-        static const std::regex FROM_STR_REGEX;
+        static const std::regex REGEX;
 
         SrcIDb1Doc() = default;
-        SrcIDb1Doc(Kw kw, const Range<IdAlias>& idAliasRange);
+        SrcIDb1Doc(const std::pair<Kw, Range<IdAlias>>& val, const Range<DbKw>& dbKwRange);
+        SrcIDb1Doc(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange);
 
         std::string toStr() const override;
         static SrcIDb1Doc fromUstr(const ustring& ustr);

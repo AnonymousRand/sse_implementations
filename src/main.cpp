@@ -15,22 +15,25 @@ Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
     Db<> db;
     std::uniform_int_distribution<long> dist(0, dbSize - 1);
 
-    db.push_back(DbEntry {Doc {0, 4, Op::INS}, Range<Kw> {4, 4}});
     Id minId = 1;
     Id maxId = dbSize - 1;
+    Range<Kw> kwRangeDel {4, 4};
+    db.push_back(DbEntry {Doc<> {0, 4, Op::INS, kwRangeDel}, kwRangeDel});
     if (hasDeletions) {
-        // delete the document with keyword 4
-        db.push_back(DbEntry {Doc {0, 4, Op::DEL}, Range<Kw> {4, 4}});
+        // delete the document with keyword 
+        db.push_back(DbEntry {Doc<> {0, 4, Op::DEL, kwRangeDel}, kwRangeDel});
         maxId = dbSize - 2;
     }
 
     // add in debugging experiment docs if we have the space to
     if (maxId - minId >= 1) {
-        db.push_back(DbEntry {Doc {1, 3, Op::INS}, Range<Kw> {3, 3}});
+        Range<Kw> kwRangeDebug1 {3, 3};
+        db.push_back(DbEntry {Doc<> {1, 3, Op::INS, kwRangeDebug1}, kwRangeDebug1});
         minId++;
     }
     if (maxId - minId >= 1) {
-        db.push_back(DbEntry {Doc {2, 5, Op::INS}, Range<Kw> {5, 5}});
+        Range<Kw> kwRangeDebug2 {5, 5};
+        db.push_back(DbEntry {Doc<> {2, 5, Op::INS, kwRangeDebug2}, kwRangeDebug2});
         minId++;
     }
 
@@ -38,14 +41,16 @@ Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
         // fill the rest with random keywords
         for (Id id = minId; id <= maxId; id++) {
             Kw kw = dist(RNG);
-            db.push_back(DbEntry {Doc {id, kw, Op::INS}, Range<Kw> {kw, kw}});
+            Range<Kw> kwRange {kw, kw};
+            db.push_back(DbEntry {Doc<> {id, kw, Op::INS, kwRange}, kwRange});
         }
     } else {
         for (Id id = minId; id <= maxId; id++) {
             // make keywords and ids inversely proportional to test sorting of Log-SRC-i's index 2
             // and make them non-contiguous to test Log-SRC as well
             Kw kw = (dbSize - id) * 2;
-            db.push_back(DbEntry {Doc {id, kw, Op::INS}, Range<Kw> {kw, kw}});
+            Range<Kw> kwRange {kw, kw};
+            db.push_back(DbEntry {Doc<> {id, kw, Op::INS, kwRange}, kwRange});
         }
     }
 
@@ -59,9 +64,9 @@ void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
     sse.setup(KEY_LEN, db);
 
     // search
-    std::vector<Doc> results = sse.search(query);
+    std::vector<Doc<>> results = sse.search(query);
     std::cout << "Results (id,kw,op):" << std::endl;
-    for (Doc result : results) {
+    for (Doc<> result : results) {
         Kw kw = result.getKw();
         if (query.contains(kw)) {
             std::cout << result << " with keyword " << kw << std::endl;
@@ -147,12 +152,14 @@ void exp3(ISse<>& sse, long maxDbSize) {
         // two unique keywords, with all but one being 0 and the other being the max
         // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
         Db<> db;
-        long kw1 = 0;
-        long kw2 = dbSize - 1;
+        Kw kw1 = 0;
+        Kw kw2 = dbSize - 1;
+        Range<Kw> kwRange1 {kw1, kw1};
+        Range<Kw> kwRange2 {kw2, kw2};
         for (long i = 0; i < dbSize - 1; i++) {
-            db.push_back(DbEntry {Doc(i, kw1, Op::INS), Range<Kw> {kw1, kw1}});
+            db.push_back(DbEntry {Doc<>(i, kw1, Op::INS, kwRange1), kwRange1});
         }
-        db.push_back(DbEntry {Doc(dbSize - 1, kw2, Op::INS), Range<Kw> {kw2, kw2}});
+        db.push_back(DbEntry {Doc<>(dbSize - 1, kw2, Op::INS, kwRange2), kwRange2});
 
         // setup
         auto setupStart = std::chrono::high_resolution_clock::now();

@@ -25,11 +25,17 @@ class EncIndBase {
         virtual void init(long size);
         void clear();
 
+        /**
+         * Returns:
+         *     - `true` if the kv pair at `pos` is valid.
+         *     - `false` if the kv pair at `pos` is the null kv pair.
+         */
+        bool readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const;
+
     protected:
         FILE* file = nullptr;
         std::string filename = "";
 
-        void readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const;
         void writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val);
 };
 

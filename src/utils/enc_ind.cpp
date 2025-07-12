@@ -63,7 +63,7 @@ void EncIndBase::clear() {
 }
 
 
-void EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const {
+bool EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const {
     uchar kv[ENC_IND_KV_LEN];
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int itemsRead = std::fread(kv, ENC_IND_KV_LEN, 1, this->file);
@@ -71,8 +71,14 @@ void EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) con
         std::cerr << "EncIndBase::readValFromPos(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
+    if (std::memcmp(currKv, NULL_KV, ENC_IND_KV_LEN) == 0) {
+        // read `NULL_KV` at `pos`
+        return false;
+    }
+
     ret.first = ustring(&kv[ENC_IND_KEY_LEN], ENC_IND_DOC_LEN);
     ret.second = ustring(&kv[ENC_IND_KEY_LEN + ENC_IND_DOC_LEN], IV_LEN);
+    return true;
 }
 
 
@@ -145,8 +151,8 @@ bool EncInd::find(const ustring& label, std::pair<ustring, ustring>& ret) const 
     }
     const uchar* labelCStr = label.c_str();
 
-    // if location based on `label` did not match the target (i.e. another kv pair overflowed to here first), scan
-    // subsequent locations for where the target could've overflowed to
+    // if location based on `label` did not match the target `label` (i.e. another kv pair overflowed to here first),
+    // scan subsequent locations for where the target `label` could've overflowed to
     long numPositionsChecked = 1;
     while (std::memcmp(currKv, labelCStr, ENC_IND_KEY_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;

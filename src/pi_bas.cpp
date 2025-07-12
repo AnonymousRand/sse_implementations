@@ -8,7 +8,7 @@
 /******************************************************************************/
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
     const Range<DbKw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
@@ -33,34 +33,51 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 ustring PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     return prf(this->keyPrf, query.toUstr());
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasBase<DbDoc, DbKw>::clear() {
-    this->db.clear();
     this->size = 0;
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
-    return this->db;
+    Db<DbDoc, DbKw> db;
+
+    std::pair<ustring, ustring> encIndVal;
+    for (ulong i = 0; i < this->size; i++) {
+        bool isValidVal = this->encInd->readValFromPos(i, encIndVal);
+        if (!isValidVal) {
+            continue;
+        }
+        ustring encryptedDbDoc = encIndVal.first;
+        ustring iv = encIndVal.second;
+        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDbDoc, iv);
+        DbDoc dbDoc = DbDoc::fromUstr(decryptedDbDoc);
+        // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
+        // to easily access these `DbKw` ranges in plaintext
+        Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
+        db.push_back(std::pair {dbDoc, dbKwRange});
+    }
+
+    return db;
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 long PiBasBase<DbDoc, DbKw>::getSize() const {
     return this->size;
 }
 
 
-template class PiBasBase<Doc, Kw>;        // PiBas
-template class PiBasBase<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
-//template class PiBasBase<Doc, IdAlias>; // Log-SRC-i index 2
+template class PiBasBase<Doc<>, Kw>;               // PiBas
+template class PiBasBase<SrcIDb1Doc, Kw>;          // Log-SRC-i index 1
+//template class PiBasBase<Doc<IdAlias>, IdAlias>; // Log-SRC-i index 2
 
 
 /******************************************************************************/
@@ -68,13 +85,13 @@ template class PiBasBase<SrcIDb1Doc, Kw>; // Log-SRC-i index 1
 /******************************************************************************/
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 PiBas<DbDoc, DbKw>::~PiBas() {
     this->clear();
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
 
@@ -85,7 +102,6 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
     /////////////////////////////// build index ////////////////////////////////
 
-    this->db = db;
     this->size = db.size();
     if (db.empty()) {
         return;
@@ -135,7 +151,7 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbDoc> results;
     ustring queryToken = this->genQueryToken(query);
@@ -165,7 +181,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
@@ -174,6 +190,6 @@ void PiBas<DbDoc, DbKw>::clear() {
 }
 
 
-template class PiBas<Doc, Kw>;
+template class PiBas<Doc<>, Kw>;
 template class PiBas<SrcIDb1Doc, Kw>;
-//template class PiBas<Doc, IdAlias>;
+//template class PiBas<Doc<IdAlias>, IdAlias>;

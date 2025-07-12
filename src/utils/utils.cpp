@@ -47,7 +47,11 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
 
 
 template <class T>
-const std::regex Range<T>::FROM_STR_REGEX("(-?[0-9]+)-(-?[0-9]+)");
+const std::string Range<T>::REGEX_STR = "(-?[0-9]+)-(-?[0-9]+)";
+
+
+template <class T>
+const std::regex Range<T>::REGEX(Range<T>::REGEX_STR);
 
 
 template <class T>
@@ -89,7 +93,7 @@ std::string Range<T>::toStr() const {
 template <class T>
 Range<T> Range<T>::fromStr(const std::string& str) {
     std::smatch matches;
-    if (!std::regex_search(str, matches, Range<T>::FROM_STR_REGEX) || matches.size() != 3) {
+    if (!std::regex_search(str, matches, Range<T>::REGEX) || matches.size() != 3) {
         std::cerr << "Error: bad string passed to `Range.fromStr()`, the world is going to end" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -126,26 +130,33 @@ template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
 /******************************************************************************/
 
 
-template <class T>
-IDbDoc<T>::IDbDoc(const T& val) {
+template <class T, class DbKw>
+IDbDoc<T, DbKw>::IDbDoc(const T& val, const Range<DbKw>& dbKwRange) {
     this->val = val;
+    this->dbKwRange = dbKwRange;
 }
 
 
-template <class T>
-T IDbDoc<T>::get() const {
+template <class T, class DbKw>
+T IDbDoc<T, DbKw>::get() const {
     return this->val;
 }
 
 
-template <class T>
-ustring IDbDoc<T>::toUstr() const {
+template <class T, class DbKw>
+Range<DbKwRange> IDbDoc<T, DbKw>::getDbKwRange() const {
+    return this->dbKwRange;
+}
+
+
+template <class T, class DbKw>
+ustring IDbDoc<T, DbKw>::toUstr() const {
     return ::toUstr(this->toStr());
 }
 
 
-template <class T>
-std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
+template <class T, class DbKw>
+std::ostream& operator <<(std::ostream& os, const IDbDoc<T, DbKw>& iDbDoc) {
     return os << iDbDoc.toStr();
 }
 
@@ -155,70 +166,82 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T>& iDbDoc) {
 /******************************************************************************/
 
 
-const std::regex Doc::FROM_STR_REGEX("\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\)");
+template <class DbKw>
+const std::regex Doc<DbKw>::REGEX("\\(\\((-?[0-9]+),(-?[0-9]+),([I|D|-]),(" + Range<DbKw>::REGEX_STR + ")\\)");
 
 
-Doc::Doc(Id id, Kw kw, Op op) : IDbDoc<std::tuple<Id, Kw, Op>>(std::tuple {id, kw, op}) {}
+template <class DbKw>
+Doc<DbKw>::Doc(const std::tuple<Id, Kw, Op>& val, const Range<DbKw>& dbKwRange) :
+        IDbDoc<std::tuple<Id, Kw, Op>, DbKw>(val, dbKwRange) {}
 
 
-std::string Doc::toStr() const {
+template <class DbKw>
+Doc<DbKw>::Doc(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) : Doc<DbKw>(std::tuple {id, kw, op}, dbKwRange) {}
+
+
+template <class DbKw>
+std::string Doc<DbKw>::toStr() const {
     std::stringstream ss;
-    ss << "(" << std::get<0>(this->val) << "," << std::get<1>(this->val) << ","
-       << static_cast<char>(std::get<2>(this->val)) << ")";
+    ss << "((" << this->getId() << "," << this->getKw() << "," << static_cast<char>(this->getOp()) << "),"
+       << this->getDbKwRange() << ")";
     return ss.str();
 }
 
 
-Doc Doc::fromUstr(const ustring& ustr) {
+template <class DbKw>
+Doc<DbKw> Doc<DbKw>::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
-    return Doc::fromStr(str);
+    return Doc<DbKw>::fromStr(str);
 }
 
 
-Doc Doc::fromStr(const std::string& str) {
+// TODO is this used anywhere besides fromUstr()? if not just remove this method like SrcIDb1Doc
+template <class DbKw>
+Doc<DbKw> Doc<DbKw>::fromStr(const std::string& str) {
     std::smatch matches;
-    if (!std::regex_search(str, matches, Doc::FROM_STR_REGEX) || matches.size() != 4) {
+    if (!std::regex_search(str, matches, Doc<DbKw>::REGEX) || matches.size() != 5) {
         std::cerr << "Error: bad string passed to `Doc.fromStr()`, the world is going to end now" << std::endl;
         exit(EXIT_FAILURE);
     }
     Id id = std::stoi(matches[1].str());
     Kw kw = std::stoi(matches[2].str());
     Op op = static_cast<Op>(matches[3].str()[0]);
-    return Doc {id, kw, op};
+    Range<DbKw> dbKwRange = Range<DbKw>::fromStr(matches[4].str());
+    return Doc<DbKw> {id, kw, op, dbKwRange};
 }
 
 
-Id Doc::getId() const {
+template <class DbKw>
+Id Doc<DbKw>::getId() const {
     return std::get<0>(this->val);
 }
 
 
-Kw Doc::getKw() const {
+template <class DbKw>
+Kw Doc<DbKw>::getKw() const {
     return std::get<1>(this->val);
 }
 
 
-Op Doc::getOp() const {
+template <class DbKw>
+Op Doc<DbKw>::getOp() const {
     return std::get<2>(this->val);
 }
 
 
-bool operator ==(const Doc& doc1, const Doc& doc2) {
-    if (std::get<0>(doc1.val) != std::get<0>(doc2.val)) {
-        return false;
-    }
-    if (std::get<1>(doc1.val) != std::get<1>(doc2.val)) {
-        return false;
-    }
-    if (std::get<2>(doc1.val) != std::get<2>(doc2.val)) {
-        return false;
-    }
-    return true;
+template <class DbKw>
+bool operator ==(const Doc<DbKw>& doc1, const Doc<DbKw>& doc2) {
+    return doc1.val == doc2.val;
 }
 
 
-template class IDbDoc<std::tuple<Id, Kw, Op>>;
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>>& iDbDoc);
+template class IDbDoc<std::tuple<Id, Kw, Op>, Kw>;
+//template class IDbDoc<std::tuple<Id, Kw, Op>, IdAlias>;
+template class Doc<Kw>;
+//template class Doc<IdAlias>;
+
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, Kw>& iDbDoc);
+//template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, IdAlias>& iDbDoc);
 
 
 /******************************************************************************/
@@ -226,16 +249,20 @@ template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id,
 /******************************************************************************/
 
 
-const std::regex SrcIDb1Doc::FROM_STR_REGEX("\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\)");
+const std::regex SrcIDb1Doc::REGEX("\\(\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(" + Range<Kw>::REGEX_STR + ")\\)");
 
 
-SrcIDb1Doc::SrcIDb1Doc(Kw kw, const Range<IdAlias>& idAliasRange) :
-        IDbDoc<std::pair<Kw, Range<IdAlias>>>(std::pair {kw, idAliasRange}) {}
+SrcIDb1Doc::SrcIDb1Doc(const std::pair<Kw, Range<IdAlias>>& val, const Range<Kw>& kwRange) :
+        IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>(val, kwRange) {}
+
+
+SrcIDb1Doc::SrcIDb1Doc(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange) :
+        SrcIDb1Doc(std::pair {kw, idAliasRange}, kwRange) {}
 
 
 std::string SrcIDb1Doc::toStr() const {
     std::stringstream ss;
-    ss << "(" << this->val.first << "," << this->val.second << ")";
+    ss << "((" << this->val.first << "," << this->val.second << ")," << this->dbKwRange << ")";
     return ss.str();
 }
 
@@ -243,17 +270,19 @@ std::string SrcIDb1Doc::toStr() const {
 SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::smatch matches;
-    if (!std::regex_search(str, matches, SrcIDb1Doc::FROM_STR_REGEX) || matches.size() != 3) {
+    if (!std::regex_search(str, matches, SrcIDb1Doc::REGEX) || matches.size() != 4) {
         std::cerr << "Error: bad string passed to `SrcIDb1Doc.fromUstr()`, the world is going to end now" << std::endl;
         exit(EXIT_FAILURE);
     }
     Kw kw = std::stol(matches[1].str());
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
-    return SrcIDb1Doc {kw, idAliasRange};
+    Range<Kw> kwRange = Range<Kw>::fromStr(matches[3].str());
+    return SrcIDb1Doc {kw, idAliasRange, kwRange};
 }
 
 
 template class IDbDoc<std::pair<Kw, Range<IdAlias>>>;
+
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Kw, Range<IdAlias>>>& iDbDoc);
 
 
@@ -309,12 +338,12 @@ void cleanUpResults(std::vector<DbDoc>& docs) {}
 
 // template specialize just this method for `Doc` instead of all SSE classes that use it
 template <>
-void cleanUpResults(std::vector<Doc>& docs) {
-    std::vector<Doc> newDocs;
+void cleanUpResults(std::vector<Doc<>>& docs) {
+    std::vector<Doc<>> newDocs;
     std::unordered_set<Id> deletedIds;
 
     // find all cancellation tuples
-    for (Doc doc : docs) {
+    for (Doc<> doc : docs) {
         Op op = doc.getOp();
         if (op == Op::DEL) {
             Id id = doc.getId();
@@ -322,7 +351,7 @@ void cleanUpResults(std::vector<Doc>& docs) {
         }
     }
     // copy over vector without deleted (or dummy) docs
-    for (Doc doc : docs) {
+    for (Doc<> doc : docs) {
         Id id = doc.getId();
         Op op = doc.getOp();
         // make sure all dummy docs have `Op::DUMMY` so they are filtered out as well!
@@ -335,19 +364,21 @@ void cleanUpResults(std::vector<Doc>& docs) {
 }
 
 
-template void shuffleInd(Ind<Kw, Doc>& ind);
+template void shuffleInd(Ind<Kw, Doc<>>& ind);
 template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
-//template void shuffleInd(Ind<IdAlias, Doc>& ind);
+//template void shuffleInd(Ind<IdAlias, Doc<IdAlias>>& ind);
 
-template Range<Kw> findDbKwBounds(const Db<Doc, Kw>& db);
+template Range<Kw> findDbKwBounds(const Db<Doc<>, Kw>& db);
 template Range<Kw> findDbKwBounds(const Db<SrcIDb1Doc, Kw>& db);
+//template Range<Kw> findDbKwBounds(const Db<Doc<IdAlias>, IdAlias>& db);
 
-template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc, Kw>& db);
+template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc<>, Kw>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);
-//template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc, IdAlias>& db);
+//template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc<IdAlias>, IdAlias>& db);
 
-template void cleanUpResults(std::vector<Doc>& docs);
+template void cleanUpResults(std::vector<Doc<>>& docs);
 template void cleanUpResults(std::vector<SrcIDb1Doc>& docs);
+//template void cleanUpResults(std::vector<Doc<IdAlias>>& docs);
 
 
 /******************************************************************************/

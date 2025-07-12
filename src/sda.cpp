@@ -13,19 +13,19 @@ Sda<Underly>::~Sda() {
 
 
 template <IsSdaUnderlySse Underly>
-void Sda<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
+void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
     this->secParam = secParam;
-    for (DbEntry<Doc, Kw> entry : db) {
+    for (DbEntry<Doc<>, Kw> entry : db) {
         this->update(entry);
     }
 }
 
 
 template <IsSdaUnderlySse Underly>
-std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
-    std::vector<Doc> allResults;
+std::vector<Doc<>> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
+    std::vector<Doc<>> allResults;
 
     // search through all non-empty indexes
     for (Underly* underly : this->underlys) {
@@ -35,7 +35,7 @@ std::vector<Doc> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUp
         // don't filter out deleted tuples in underlying schemes even if `shouldCleanUpResults` is `true`
         // the cancellation tuple for a document is not guaranteed to be in same index as the inserting tuple
         // so we can't rely on the individual underlying instances to filter out all deleted documents
-        std::vector<Doc> results = underly->search(query, false, isNaive);
+        std::vector<Doc<>> results = underly->search(query, false, isNaive);
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
 
@@ -61,24 +61,25 @@ void Sda<Underly>::clear() {
 
 
 template <IsSdaUnderlySse Underly>
-void Sda<Underly>::update(const DbEntry<Doc, Kw>& newDbEntry) {
+void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
         Underly* newUnderly = new Underly();
-        newUnderly->setup(this->secParam, Db<Doc, Kw> {newDbEntry});
+        newUnderly->setup(this->secParam, Db<Doc<>, Kw> {newDbEntry});
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
         return;
     }
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`; always merge/insert into first index if it's empty
-    Db<Doc, Kw> mergedDb;
+    Db<Doc<>, Kw> mergedDb;
     mergedDb.reserve(std::pow(2, this->firstEmptyInd));
     for (long i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
-        // original paper fetches encrypted index and decrypts instead of `getDb()`
-        // but that could get messy with Log-SRC-i as it has two indexes
-        // instead we just store and get plaintext DB for convenience of implementation
-        Db<Doc, Kw> underlyDb = this->underlys[i]->getDb();
+        // >TODO fetch index still? or getDb doesn't store db but rather just decrypts all from enc ind (and doesn't deduplicate?)
+        // and pass to setup() with like noreplicate or issdaunderly = true or somehting
+        // but how to deal with two dbs for log-src-i??? have to somehow reconstruct original db? surely don't need special sdaunderly log-src-i right
+        // TODO also rename isNaive to isRangeUnderly or something? (in this case, flip true/false)
+        Db<Doc<>, Kw> underlyDb = this->underlys[i]->getDb();
         mergedDb.insert(mergedDb.end(), underlyDb.begin(), underlyDb.end());
     }
     mergedDb.push_back(newDbEntry);

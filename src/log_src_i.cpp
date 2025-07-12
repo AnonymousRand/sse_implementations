@@ -9,11 +9,12 @@
 /******************************************************************************/
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-LogSrcIBase<Underly>::LogSrcIBase() : underly1(new Underly<SrcIDb1Doc, Kw>()), underly2(new Underly<Doc, IdAlias>()) {}
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
+LogSrcIBase<Underly>::LogSrcIBase() :
+        underly1(new Underly<SrcIDb1Doc, Kw>()), underly2(new Underly<Doc<IdAlias>, IdAlias>()) {}
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 LogSrcIBase<Underly>::~LogSrcIBase() {
     this->clear();
     if (this->underly1 != nullptr) {
@@ -27,14 +28,14 @@ LogSrcIBase<Underly>::~LogSrcIBase() {
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-std::vector<Doc> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
+std::vector<Doc<>> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
 
     ///////////////////////////////// query 1 //////////////////////////////////
 
     Range<Kw> src1 = this->tdag1->findSrc(query);
     if (src1 == DUMMY_RANGE<Kw>()) { 
-        return std::vector<Doc> {};
+        return std::vector<Doc<>> {};
     }
     std::vector<SrcIDb1Doc> choices = this->underly1->search(src1, false, false);
 
@@ -59,20 +60,20 @@ std::vector<Doc> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shoul
     }
     // if there are no choices or something went wrong
     if (minIdAlias == DUMMY || maxIdAlias == DUMMY) {
-        return std::vector<Doc> {};
+        return std::vector<Doc<>> {};
     }
 
     // perform query 2
     Range<IdAlias> query2 {minIdAlias, maxIdAlias};
     Range<IdAlias> src2 = this->tdag2->findSrc(query2);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
-        return std::vector<Doc> {};
+        return std::vector<Doc<>> {};
     }
     return this->underly2->search(src2, shouldCleanUpResults, false);
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrcIBase<Underly>::clear() {
     if (this->tdag1 != nullptr) {
         delete this->tdag1;
@@ -89,13 +90,13 @@ void LogSrcIBase<Underly>::clear() {
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-Db<Doc, Kw> LogSrcIBase<Underly>::getDb() const {
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
+Db<Doc<>, Kw> LogSrcIBase<Underly>::getDb() const {
     return this->db;
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 long LogSrcIBase<Underly>::getSize() const {
     return this->size;
 }
@@ -110,12 +111,12 @@ template class LogSrcIBase<underly::PiBasLoc>;
 /******************************************************************************/
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 LogSrcI<Underly>::LogSrcI() : LogSrcIBase<Underly>() {}
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc, Kw>>
-void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
+void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
     this->db = db;
@@ -124,15 +125,15 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     ////////////////////////////// build index 2 ///////////////////////////////
 
     // sort documents by keyword
-    auto sortByKw = [](const DbEntry<Doc, Kw>& dbEntry1, const DbEntry<Doc, Kw>& dbEntry2) {
+    auto sortByKw = [](const DbEntry<Doc<>, Kw>& dbEntry1, const DbEntry<Doc<>, Kw>& dbEntry2) {
         return dbEntry1.first.getKw() < dbEntry2.first.getKw();
     };
-    Db<Doc, Kw> dbSorted = db;
+    Db<Doc<>, Kw> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2` leaves with this information
     Db<SrcIDb1Doc, Kw> db1;
-    Db<Doc, IdAlias> db2;
+    Db<Doc<IdAlias>, IdAlias> db2;
     db1.reserve(dbSorted.size());
     db2.reserve(dbSorted.size());
     Kw prevKw = DUMMY;
@@ -140,18 +141,20 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     IdAlias lastIdAliasWithKw;
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
-        SrcIDb1Doc newDoc1 {prevKw, idAliasRangeWithKw};
-        DbEntry<SrcIDb1Doc, Kw> newDbEntry1 {newDoc1, Range {prevKw, prevKw}};
-        db1.push_back(newDbEntry1);
+        SrcIDb1Doc newDoc {prevKw, idAliasRangeWithKw};
+        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, Range {prevKw, prevKw}};
+        db1.push_back(newDbEntry);
     };
 
     for (long idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
-        DbEntry<Doc, Kw> dbEntry = dbSorted[idAlias];
-        Doc doc = dbEntry.first;
+        DbEntry<Doc<>, Kw> dbEntry = dbSorted[idAlias];
+        Doc<> doc = dbEntry.first;
         Kw kw = dbEntry.second.first; // entries in `db` must have size 1 `Kw` ranges!
         // populate `db2` leaves
-        DbEntry<Doc, IdAlias> newDbEntry2 = DbEntry {doc, Range<IdAlias> {idAlias, idAlias}};
-        db2.push_back(newDbEntry2);
+        Range<IdAlias> newIdAliasRange {idAlias, idAlias};
+        Doc<IdAlias> newDb2Doc(doc.get(), newIdAliasRange);
+        DbEntry<Doc<IdAlias>, IdAlias> newDb2Entry = DbEntry {newDb2Doc, newIdAliasRange};
+        db2.push_back(newDb2Entry);
 
         // populate `db1` leaves
         if (kw != prevKw) {
@@ -172,7 +175,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     // build TDAG 2 over id aliases
     IdAlias maxIdAlias = 0;
-    for (DbEntry<Doc, IdAlias> dbEntry : db2) {
+    for (DbEntry<Doc<IdAlias>, IdAlias> dbEntry : db2) {
         IdAlias idAlias = dbEntry.second.first;
         if (idAlias > maxIdAlias) {
             maxIdAlias = idAlias;
@@ -186,8 +189,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     long newSize = topLevel * (2 * stop) - (1 - std::pow(2, -topLevel)) * std::pow(2, topLevel+1) + stop;
     db2.reserve(newSize);
     for (long i = 0; i < stop; i++) {
-        DbEntry<Doc, IdAlias> dbEntry = db2[i];
-        Doc doc = dbEntry.first;
+        DbEntry<Doc<IdAlias>, IdAlias> dbEntry = db2[i];
+        Doc<IdAlias> doc = dbEntry.first;
         Range<IdAlias> idAliasRange = dbEntry.second;
         std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
         for (Range<IdAlias> ancestor : ancestors) {
@@ -195,7 +198,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
             if (ancestor == idAliasRange) {
                 continue;
             }
-            db2.push_back(std::pair {doc, ancestor});
+            Doc<IdAlias> newDoc(doc.get(), ancestor);
+            db2.push_back(std::pair {newDoc, ancestor});
         }
     }
 
@@ -221,7 +225,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
             if (ancestor == kwRange) {
                 continue;
             }
-            db1.push_back(std::pair {doc, ancestor});
+            SrcIDb1Doc newDoc(doc.get(), ancestor);
+            db1.push_back(std::pair {newDoc, ancestor});
         }
     }
 

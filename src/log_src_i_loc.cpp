@@ -8,12 +8,12 @@
 /******************************************************************************/
 
 
-template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc, Kw>>
+template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc<>, Kw>>
 LogSrcILoc<Underly>::LogSrcILoc() : LogSrcIBase<Underly>() {}
 
 
-template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc, Kw>>
-void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
+template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc<>, Kw>>
+void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
     this->db = db;
@@ -22,15 +22,15 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     ////////////////////////////// build index 2 ///////////////////////////////
 
     // sort documents by keyword
-    auto sortByKw = [](const DbEntry<Doc, Kw>& dbEntry1, const DbEntry<Doc, Kw>& dbEntry2) {
+    auto sortByKw = [](const DbEntry<Doc<>, Kw>& dbEntry1, const DbEntry<Doc<>, Kw>& dbEntry2) {
         return dbEntry1.first.getKw() < dbEntry2.first.getKw();
     };
-    Db<Doc, Kw> dbSorted = db;
+    Db<Doc<>, Kw> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2` leaves with this information
     Db<SrcIDb1Doc, Kw> db1;
-    Db<Doc, IdAlias> db2;
+    Db<Doc<IdAlias>, IdAlias> db2;
     db1.reserve(dbSorted.size());
     db2.reserve(dbSorted.size());
     Kw prevKw = DUMMY;
@@ -38,18 +38,20 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     IdAlias lastIdAliasWithKw;
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
-        SrcIDb1Doc newDoc1 {prevKw, idAliasRangeWithKw};
-        DbEntry<SrcIDb1Doc, Kw> newDbEntry1 {newDoc1, Range {prevKw, prevKw}};
-        db1.push_back(newDbEntry1);
+        SrcIDb1Doc newDoc {prevKw, idAliasRangeWithKw};
+        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc1, Range {prevKw, prevKw}};
+        db1.push_back(newDbEntry);
     };
 
     for (long idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
-        DbEntry<Doc, Kw> dbEntry = dbSorted[idAlias];
-        Doc doc = dbEntry.first;
+        DbEntry<Doc<>, Kw> dbEntry = dbSorted[idAlias];
+        Doc<> doc = dbEntry.first;
         Kw kw = dbEntry.second.first; // entries in `db` must have size 1 `Kw` ranges!
         // populate `db2` leaves
-        DbEntry<Doc, IdAlias> newDbEntry2 = DbEntry {doc, Range<IdAlias> {idAlias, idAlias}};
-        db2.push_back(newDbEntry2);
+        Range<IdAlias> newIdAliasRange {idAlias, idAlias};
+        Doc<IdAlias> newDb2Doc(doc.get(), newIdAliasRange);
+        DbEntry<Doc<IdAlias>, IdAlias> newDb2Entry = DbEntry {newDb2Doc, newIdAliasRange};
+        db2.push_back(newDb2Entry);
 
         // populate `db1` leaves
         if (kw != prevKw) {
@@ -70,7 +72,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
 
     // build TDAG 2 over id aliases
     IdAlias maxIdAlias = 0;
-    for (DbEntry<Doc, IdAlias> dbEntry : db2) {
+    for (DbEntry<Doc<IdAlias>, IdAlias> dbEntry : db2) {
         IdAlias idAlias = dbEntry.second.first;
         if (idAlias > maxIdAlias) {
             maxIdAlias = idAlias;
@@ -83,8 +85,9 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         db2.reserve(db2.size() + amountToPad);
         for (long i = 0; i < amountToPad; i++) {
             maxIdAlias++;
-            Doc dummyDoc {DUMMY, DUMMY, Op::DUMMY};
-            DbEntry<Doc, IdAlias> dummyDbEntry = DbEntry {dummyDoc, Range<IdAlias> {maxIdAlias, maxIdAlias}};
+            Range<IdAlias> idAliasRange {maxIdAlias, maxIdAlias};
+            Doc<IdAlias> dummyDoc {DUMMY, DUMMY, Op::DUMMY, idAliasRange};
+            DbEntry<Doc<IdAlias>, IdAlias> dummyDbEntry = DbEntry {dummyDoc, idAliasRange};
             db2.push_back(dummyDbEntry);
         }
     }
@@ -96,15 +99,16 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     long newSize = topLevel * (2 * stop) - (1 - std::pow(2, -topLevel)) * std::pow(2, topLevel+1) + stop;
     db2.reserve(newSize);
     for (long i = 0; i < stop; i++) {
-        DbEntry<Doc, IdAlias> dbEntry = db2[i];
-        Doc doc = dbEntry.first;
+        DbEntry<Doc<IdAlias>, IdAlias> dbEntry = db2[i];
+        Doc<IdAlias> doc = dbEntry.first;
         Range<IdAlias> idAliasRange = dbEntry.second;
         std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
         for (Range<IdAlias> ancestor : ancestors) {
             if (ancestor == idAliasRange) {
                 continue;
             }
-            db2.push_back(std::pair {doc, ancestor});
+            Doc<IdAlias> newDoc(doc.get(), ancestor);
+            db2.push_back(std::pair {newDoc, ancestor});
         }
     }
 
@@ -117,9 +121,8 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
     // we need to pad `db1` to have (exactly) one doc per `Kw` (we can just leave blanks in the case of non-locality
     // Log-SRC-i since docs are placed pseudorandomly in the index, but here we have to pad to avoid empty buckets
     // in the index that the server knows corresponds to a lack of docs with that keyword)
-    DbEntry<Doc, Kw> dbEntry = dbSorted[0];
+    DbEntry<Doc<>, Kw> dbEntry = dbSorted[0];
     prevKw = dbEntry.second.first;
-    SrcIDb1Doc dummySrcIDb1Doc {DUMMY, DUMMY_RANGE<IdAlias>()};
     for (long i = 1; i < dbSorted.size(); i++) {
         dbEntry = dbSorted[i];
         Kw kw = dbEntry.second.first;
@@ -129,7 +132,9 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         // if non-contiguous `Kw`s detected, fill in the gap with dummies
         if (kw > prevKw + 1) {
             for (Kw paddingKw = prevKw + 1; paddingKw < kw; paddingKw++) {
-                DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummySrcIDb1Doc, Range<Kw> {paddingKw, paddingKw}};
+                Range<Kw> kwRange {paddingKw, paddingKw};
+                SrcIDb1Doc dummyDoc {DUMMY, DUMMY_RANGE<IdAlias>(), kwRange};
+                DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummyDoc, kwRange};
                 db1.push_back(dummyDbEntry);
             }
         }
@@ -144,7 +149,9 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
         db1.reserve(db1.size() + amountToPad);
         for (long i = 0; i < amountToPad; i++) {
             maxDb1Kw++;
-            DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummySrcIDb1Doc, Range<Kw> {maxDb1Kw, maxDb1Kw}};
+            Range<Kw> kwRange {maxDb1Kw, maxDb1Kw};
+            SrcIDb1Doc dummyDoc {DUMMY, DUMMY_RANGE<IdAlias>(), kwRange};
+            DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummyDoc, kwRange};
             db1.push_back(dummyDbEntry);
         }
     }
@@ -164,7 +171,8 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc, Kw>& db) {
             if (ancestor == kwRange) {
                 continue;
             }
-            db1.push_back(std::pair {doc, ancestor});
+            Doc<> newDoc(doc.get(), ancestor);
+            db1.push_back(std::pair {newDoc, ancestor});
         }
     }
 
@@ -182,13 +190,13 @@ template class LogSrcILoc<underly::PiBasLoc>;
 
 namespace underly {
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
     this->clear();
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
     
@@ -246,7 +254,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     auto iter = this->dbKwCounts.find(query);
     if (iter == this->dbKwCounts.end()) {
@@ -272,7 +280,7 @@ std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasLoc<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
@@ -281,8 +289,8 @@ void PiBasLoc<DbDoc, DbKw>::clear() {
 }
 
 
-template class PiBasLoc<Doc, Kw>;       
+template class PiBasLoc<Doc<>, Kw>;       
 template class PiBasLoc<SrcIDb1Doc, Kw>;
-//template class PiBasLoc<Doc, IdAlias>;
+template class PiBasLoc<Doc<IdAlias>, IdAlias>;
 
 } // namespace `underly`

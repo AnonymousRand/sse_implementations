@@ -12,7 +12,7 @@
 
 // common code between `PiBas` and `PiBasLoc`
 // note that we use the result-hiding variant of PiBas from figure 12 of Demertzis'20 (SDa paper) since SDa wants that
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
     public:
         virtual ~PiBasBase() = default;
@@ -30,7 +30,6 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
     protected:
         ustring keyPrf;
         ustring keyEnc;
-        Db<DbDoc, DbKw> db;
         long size;
 
         virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
@@ -43,7 +42,7 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
 /******************************************************************************/
 
 
-template <IsDbDoc DbDoc = Doc, class DbKw = Kw>
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class PiBas : public PiBasBase<DbDoc, DbKw> {
     public:
         ~PiBas();
