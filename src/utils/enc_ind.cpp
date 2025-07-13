@@ -71,7 +71,7 @@ bool EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) con
         std::cerr << "EncIndBase::readValFromPos(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    if (std::memcmp(currKv, NULL_KV, ENC_IND_KV_LEN) == 0) {
+    if (std::memcmp(kv, NULL_KV, ENC_IND_KV_LEN) == 0) {
         // read `NULL_KV` at `pos`
         return false;
     }

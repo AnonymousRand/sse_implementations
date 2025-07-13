@@ -52,12 +52,16 @@ static std::mt19937 RNG(RAND_DEV());
 /******************************************************************************/
 
 
+using Kw      = long;
+using Id      = long;
+using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
+
 // forward declarations
 template <class T>
 class Range;
 template <class T, class DbKw>
 class IDbDoc;
-template <class DbKw>
+template <class DbKw = Kw>
 class Doc;
 enum class Op : char {
     INS   = 'I',
@@ -65,27 +69,28 @@ enum class Op : char {
     DUMMY = '-'
 };
 
-using Kw      = long;
-using Id      = long;
-using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
-
 // black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
 // i.e. without needing to know what the template param `T2` of `IDbDoc` is, unlike `std::derived_from` for example
-// this also enforces that `T` uses `DbKw` as its second template param, e.g.
-// `IsDbDoc<IDbDoc<A, long>, long>` passes but not `IdDbDoc<IDbDoc<A, char>, long>`
 // (Java generics `extends`: look what they need to mimic a fraction of my power)
 // (and this doesn't even enforce existence of instance methods as clearly as Java, so just pretend that it does)
+template <class T>
+concept IsDbDoc = requires(T t) {
+    []<class ... Args>(IDbDoc<Args ...>&){}(t);
+};
+
+// this enforces the above plus that `T` uses `DbKw` as its second template param, e.g.
+// `IsDbDoc<IDbDoc<A, long>, long>` passes but not `IdDbDoc<IDbDoc<A, char>, long>`
 template <class T, class DbKw>
 concept IsValidDbParams = requires(T t) {
     []<class T2>(IDbDoc<T2, DbKw>&){}(t);
 };
 
 // allow polymorphic types for DB (since Log-SRC-i exists)
-template <IsDbDoc DbDoc = Doc<>, class DbKw = Kw> 
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 using DbEntry = std::pair<DbDoc, Range<DbKw>>;
 // technically dbs only need to contain the `DbDoc` part since `Doc` is the full (id,kw,op) tuple
 // but we will also explicitly store keyword ranges (`DbKw`) for convenience in our implementation
-template <IsDbDoc DbDoc = Doc<>, class DbKw = Kw>
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class IndK = Kw, class DbDoc = Doc<>>
 using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
@@ -198,7 +203,7 @@ class IDbDoc {
 
 
 // these are the "database tuples"; accommodate dynamic SSE by also storing the operation
-template <class DbKw = Kw>
+template <class DbKw>
 class Doc : public IDbDoc<std::tuple<Id, Kw, Op>, DbKw> {
     public:
         Doc() = default;
@@ -216,18 +221,29 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>, DbKw> {
         /**
          * Only checks equality of `val`, not of `dbKwRange`.
          */
-        friend bool operator ==(const Doc<DbKw>& doc1, const Doc<DbKw>& doc2);
+        template <class DbKw2>
+        friend bool operator ==(const Doc<DbKw2>& doc1, const Doc<DbKw2>& doc2);
 
     private:
+        static const std::string REGEX_STR;
         static const std::regex REGEX;
 };
 
 template <>
-struct std::hash<Doc<DbKw>> {
-    inline std::size_t operator ()(const Doc<DbKw>& doc) const noexcept {
+struct std::hash<Doc<Kw>> {
+    inline std::size_t operator ()(const Doc<Kw>& doc) const noexcept {
         return std::hash<std::string>{}(doc.toStr());
     }
 };
+
+
+// commented out since currently `Kw` and `IdAlias` are the same type (`long`)
+//template <>
+//struct std::hash<Doc<IdAlias>> {
+//    inline std::size_t operator ()(const Doc<IdAlias>& doc) const noexcept {
+//        return std::hash<std::string>{}(doc.toStr());
+//    }
+//};
 
 
 /******************************************************************************/
@@ -237,14 +253,16 @@ struct std::hash<Doc<DbKw>> {
 
 class SrcIDb1Doc : public IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw> {
     public:
-        static const std::regex REGEX;
-
         SrcIDb1Doc() = default;
-        SrcIDb1Doc(const std::pair<Kw, Range<IdAlias>>& val, const Range<DbKw>& dbKwRange);
+        SrcIDb1Doc(const std::pair<Kw, Range<IdAlias>>& val, const Range<Kw>& kwRange);
         SrcIDb1Doc(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange);
 
         std::string toStr() const override;
         static SrcIDb1Doc fromUstr(const ustring& ustr);
+
+    private:
+        static const std::string REGEX_STR;
+        static const std::regex REGEX;
 };
 
 

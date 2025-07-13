@@ -95,6 +95,10 @@ Range<T> Range<T>::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, Range<T>::REGEX) || matches.size() != 3) {
         std::cerr << "Error: bad string passed to `Range.fromStr()`, the world is going to end" << std::endl;
+        std::cerr << "Regex to match is \"" << Range<T>::REGEX_STR << "\"; matched groups are:" << std::endl;
+        for (auto match : matches) {
+            std::cerr << match.str() << std::endl;
+        }
         exit(EXIT_FAILURE);
     }
 
@@ -118,7 +122,6 @@ std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
 
 
 template class Range<Kw>;
-// commented out since currently `IdAlias` and `Kw` are the same type (`long`)
 //template class Range<IdAlias>;
 
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
@@ -144,7 +147,7 @@ T IDbDoc<T, DbKw>::get() const {
 
 
 template <class T, class DbKw>
-Range<DbKwRange> IDbDoc<T, DbKw>::getDbKwRange() const {
+Range<DbKw> IDbDoc<T, DbKw>::getDbKwRange() const {
     return this->dbKwRange;
 }
 
@@ -167,7 +170,11 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T, DbKw>& iDbDoc) {
 
 
 template <class DbKw>
-const std::regex Doc<DbKw>::REGEX("\\(\\((-?[0-9]+),(-?[0-9]+),([I|D|-]),(" + Range<DbKw>::REGEX_STR + ")\\)");
+const std::string Doc<DbKw>::REGEX_STR = "\\(\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\),(-?[0-9]+--?[0-9]+)\\)";
+
+
+template <class DbKw>
+const std::regex Doc<DbKw>::REGEX(Doc<DbKw>::REGEX_STR);
 
 
 template <class DbKw>
@@ -183,7 +190,7 @@ template <class DbKw>
 std::string Doc<DbKw>::toStr() const {
     std::stringstream ss;
     ss << "((" << this->getId() << "," << this->getKw() << "," << static_cast<char>(this->getOp()) << "),"
-       << this->getDbKwRange() << ")";
+       << this->dbKwRange << ")";
     return ss.str();
 }
 
@@ -200,7 +207,12 @@ template <class DbKw>
 Doc<DbKw> Doc<DbKw>::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, Doc<DbKw>::REGEX) || matches.size() != 5) {
-        std::cerr << "Error: bad string passed to `Doc.fromStr()`, the world is going to end now" << std::endl;
+        std::cerr << "Error: bad string \"" << str << "\" passed to `Doc.fromStr()`, the world is going to end now"
+                  << std::endl;
+        std::cerr << "Regex to match is \"" << Doc<DbKw>::REGEX_STR << "\"; matched groups are:" << std::endl;
+        for (auto match : matches) {
+            std::cerr << match.str() << std::endl;
+        }
         exit(EXIT_FAILURE);
     }
     Id id = std::stoi(matches[1].str());
@@ -243,13 +255,19 @@ template class Doc<Kw>;
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, Kw>& iDbDoc);
 //template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, IdAlias>& iDbDoc);
 
+//template std::ostream& operator ==(std::ostream& os, const DbDoc<Kw>& iDbDoc);
+//template std::ostream& operator ==(std::ostream& os, const DbDoc<IdAlias>& iDbDoc);
+
 
 /******************************************************************************/
 /* `SrcIDb1Doc`                                                               */
 /******************************************************************************/
 
 
-const std::regex SrcIDb1Doc::REGEX("\\(\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(" + Range<Kw>::REGEX_STR + ")\\)");
+const std::string SrcIDb1Doc::REGEX_STR = "\\(\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(-?[0-9]+--?[0-9]+)\\)";
+
+
+const std::regex SrcIDb1Doc::REGEX(SrcIDb1Doc::REGEX_STR);
 
 
 SrcIDb1Doc::SrcIDb1Doc(const std::pair<Kw, Range<IdAlias>>& val, const Range<Kw>& kwRange) :
@@ -271,7 +289,12 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
     std::smatch matches;
     if (!std::regex_search(str, matches, SrcIDb1Doc::REGEX) || matches.size() != 4) {
-        std::cerr << "Error: bad string passed to `SrcIDb1Doc.fromUstr()`, the world is going to end now" << std::endl;
+        std::cerr << "Error: bad string \"" << ustr
+                  << "\" passed to `SrcIDb1Doc.fromUstr()`, the world is going to end now" << std::endl;
+        std::cerr << "Regex to match is \"" << SrcIDb1Doc::REGEX_STR << "\"; matched groups are:" << std::endl;
+        for (auto match : matches) {
+            std::cerr << match.str() << std::endl;
+        }
         exit(EXIT_FAILURE);
     }
     Kw kw = std::stol(matches[1].str());
@@ -281,9 +304,9 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
 }
 
 
-template class IDbDoc<std::pair<Kw, Range<IdAlias>>>;
+template class IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>;
 
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Kw, Range<IdAlias>>>& iDbDoc);
+template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>& iDbDoc);
 
 
 /******************************************************************************/
@@ -336,7 +359,7 @@ template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& docs) {}
 
 
-// template specialize just this method for `Doc` instead of all SSE classes that use it
+// template specialize just this method for `Doc<>` instead of all SSE classes that use it
 template <>
 void cleanUpResults(std::vector<Doc<>>& docs) {
     std::vector<Doc<>> newDocs;
@@ -350,6 +373,7 @@ void cleanUpResults(std::vector<Doc<>>& docs) {
             deletedIds.insert(id);
         }
     }
+    // TODO test if erase() and using iterators and not needing to reassign docs at end is faster
     // copy over vector without deleted (or dummy) docs
     for (Doc<> doc : docs) {
         Id id = doc.getId();

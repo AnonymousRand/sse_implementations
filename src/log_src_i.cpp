@@ -1,7 +1,6 @@
 #include "log_src_i.h"
 
 #include "log_src_i_loc.cpp" // needed to bring in explicit template instatiation of `LogSrcILoc<PiBasLoc>`
-#include "pi_bas.h"
 
 
 /******************************************************************************/
@@ -11,7 +10,9 @@
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 LogSrcIBase<Underly>::LogSrcIBase() :
-        underly1(new Underly<SrcIDb1Doc, Kw>()), underly2(new Underly<Doc<IdAlias>, IdAlias>()) {}
+        underly1(new Underly<SrcIDb1Doc, Kw>()),
+        underly2(new Underly<Doc<IdAlias>, IdAlias>()),
+        origDbUnderly(new PiBas<Doc<>, Kw>()) {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
@@ -24,6 +25,10 @@ LogSrcIBase<Underly>::~LogSrcIBase() {
     if (this->underly2 != nullptr) {
         delete this->underly2;
         this->underly2 = nullptr;
+    }
+    if (this->origDbUnderly != nullptr) {
+        delete this->origDbUnderly;
+        this->origDbUnderly = nullptr;
     }
 }
 
@@ -85,20 +90,14 @@ void LogSrcIBase<Underly>::clear() {
     }
     this->underly1->clear();
     this->underly2->clear();
-    this->db.clear();
+    this->origDbUnderly->clear();
     this->size = 0;
 }
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 Db<Doc<>, Kw> LogSrcIBase<Underly>::getDb() const {
-    return this->db;
-}
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-long LogSrcIBase<Underly>::getSize() const {
-    return this->size;
+    return this->origDbUnderly->getDb();
 }
 
 
@@ -119,8 +118,8 @@ template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
-    this->db = db;
     this->size = db.size();
+    this->origDbUnderly->setup(secParam, db);
 
     ////////////////////////////// build index 2 ///////////////////////////////
 
@@ -141,8 +140,9 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     IdAlias lastIdAliasWithKw;
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
-        SrcIDb1Doc newDoc {prevKw, idAliasRangeWithKw};
-        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, Range {prevKw, prevKw}};
+        Range<Kw> kwRange {prevKw, prevKw};
+        SrcIDb1Doc newDoc {prevKw, idAliasRangeWithKw, kwRange};
+        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
         db1.push_back(newDbEntry);
     };
 
@@ -151,9 +151,9 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
         Doc<> doc = dbEntry.first;
         Kw kw = dbEntry.second.first; // entries in `db` must have size 1 `Kw` ranges!
         // populate `db2` leaves
-        Range<IdAlias> newIdAliasRange {idAlias, idAlias};
-        Doc<IdAlias> newDb2Doc(doc.get(), newIdAliasRange);
-        DbEntry<Doc<IdAlias>, IdAlias> newDb2Entry = DbEntry {newDb2Doc, newIdAliasRange};
+        Range<IdAlias> idAliasRange {idAlias, idAlias};
+        Doc<IdAlias> newDb2Doc(doc.get(), idAliasRange);
+        DbEntry<Doc<IdAlias>, IdAlias> newDb2Entry = DbEntry {newDb2Doc, idAliasRange};
         db2.push_back(newDb2Entry);
 
         // populate `db1` leaves

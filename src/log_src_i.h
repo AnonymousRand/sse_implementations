@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "sse.h"
+#include "pi_bas.h"
 #include "utils/tdag.h"
 
 
@@ -25,15 +25,18 @@ class LogSrcIBase : public ISdaUnderlySse<Doc<>, Kw> {
 
         // `ISdaUnderlySse`
         Db<Doc<>, Kw> getDb() const override;
-        long getSize() const override;
 
     protected:
         Underly<SrcIDb1Doc, Kw>* underly1 = nullptr;
         Underly<Doc<IdAlias>, IdAlias>* underly2 = nullptr;
+        // this is only used to store the original db in `getDb()` so that it is encrypted but easy to recover
+        // instead of reconstructing the original db from `underly1`'s and `underly2`'s indexes/dbs
+        // do NOT search on this one!
+        // also it's specifically PiBas since `LogSrcILoc` may use locality-aware `Underly`,
+        // which doesn't store non-TDAG-structured datasets correctly
+        PiBas<Doc<>, Kw>* origDbUnderly = nullptr;
         TdagNode<Kw>* tdag1 = nullptr;
         TdagNode<IdAlias>* tdag2 = nullptr;
-        Db<Doc<>, Kw> db; // store since neither underlying instance contains the original DB
-        long size;
 };
 
 

@@ -20,7 +20,6 @@ class LogSrc : public ISdaUnderlySse<Doc<>, Kw> {
 
         // `ISdaUnderlySse`
         Db<Doc<>, Kw> getDb() const override;
-        long getSize() const override;
 
     private:
         Underly<Doc<>, Kw>* underly = nullptr;

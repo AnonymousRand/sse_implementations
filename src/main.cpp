@@ -65,14 +65,20 @@ void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
 
     // search
     std::vector<Doc<>> results = sse.search(query);
-    std::cout << "Results (id,kw,op):" << std::endl;
+    std::vector<Doc<>> falsePositives;
+    std::cout << "Results ((id,kw,op),kwrange):" << std::endl;
     for (Doc<> result : results) {
         Kw kw = result.getKw();
         if (query.contains(kw)) {
             std::cout << result << " with keyword " << kw << std::endl;
         } else {
-            std::cout << result << " with keyword " << kw << " (false positive)" << std::endl;
+            falsePositives.push_back(result);
         }
+    }
+    std::cout << std::endl;
+    std::cout << "False positives ((id,kw,op),kwrange):" << std::endl;
+    for (Doc<> result : falsePositives) {
+        std::cout << result << " with keyword " << result.getKw() << std::endl;
     }
     std::cout << std::endl;
 

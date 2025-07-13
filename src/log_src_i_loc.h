@@ -68,6 +68,7 @@ class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> 
         long minDbKw;
 
         std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
+        bool readEncIndValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const override;
 };
 
 } // namespace `underly`

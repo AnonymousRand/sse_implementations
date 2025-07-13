@@ -65,7 +65,13 @@ template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, 
 class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
     public:
         virtual Db<DbDoc, DbKw> getDb() const = 0;
-        virtual long getSize() const = 0;
+        // TODO inline getters/setters everywhere where possible?
+        inline long getSize() const {
+            return this->size;
+        }
+
+    protected:
+        long size;
 };
 
 

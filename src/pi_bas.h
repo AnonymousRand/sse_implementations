@@ -25,15 +25,20 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
 
         // `ISdaUnderlySse`
         Db<DbDoc, DbKw> getDb() const override;
-        long getSize() const override;
 
     protected:
         ustring keyPrf;
         ustring keyEnc;
-        long size;
 
         virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
         ustring genQueryToken(const Range<DbKw>& query) const;
+
+        /**
+         * Returns:
+         *     - `true` if the kv pair at `pos` is valid.
+         *     - `false` if the kv pair at `pos` is the null kv pair.
+         */
+        virtual bool readEncIndValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const = 0;
 };
 
 
@@ -55,4 +60,5 @@ class PiBas : public PiBasBase<DbDoc, DbKw> {
         EncInd* encInd = new EncInd;
 
         std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
+        bool readEncIndValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const override;
 };

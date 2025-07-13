@@ -28,7 +28,6 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
     if (shouldCleanUpResults) {
         cleanUpResults(allResults);
     }
-
     return allResults;
 }
 
@@ -51,27 +50,26 @@ Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
 
     std::pair<ustring, ustring> encIndVal;
     for (ulong i = 0; i < this->size; i++) {
-        bool isValidVal = this->encInd->readValFromPos(i, encIndVal);
+        bool isValidVal = this->readEncIndValFromPos(i, encIndVal);
         if (!isValidVal) {
             continue;
         }
         ustring encryptedDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
+        // TODO rename keyEnc and keyPrf to encKey and prfKey?
         ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDbDoc, iv);
         DbDoc dbDoc = DbDoc::fromUstr(decryptedDbDoc);
         // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
         // to easily access these `DbKw` ranges in plaintext
         Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
+        // de-replicate tuples: assume any tuples with `DbKw` range size >1 is non-leaf and hence a replicated tuple
+        if (dbKwRange.size() > 1) {
+            continue;
+        }
         db.push_back(std::pair {dbDoc, dbKwRange});
     }
 
     return db;
-}
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-long PiBasBase<DbDoc, DbKw>::getSize() const {
-    return this->size;
 }
 
 
@@ -187,6 +185,12 @@ void PiBas<DbDoc, DbKw>::clear() {
     if (this->encInd != nullptr) {
         this->encInd->clear();
     }
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+bool PiBas<DbDoc, DbKw>::readEncIndValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const {
+    return this->encInd->readValFromPos(pos, ret);
 }
 
 
