@@ -79,8 +79,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
             maxIdAlias = idAlias;
         }
     }
-
-    // pad TDAG 2 to power of two # of leaves, as that is required in the case of locality-aware Log-SRC-i*
+    // pad TDAG 2 to a power of two number of leaves, as is required for Log-SRC-i*
     if (!std::has_single_bit(db2.size())) {
         long amountToPad = std::pow(2, std::ceil(std::log2(db2.size()))) - db2.size();
         db2.reserve(db2.size() + amountToPad);
