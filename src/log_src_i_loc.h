@@ -53,6 +53,7 @@ class LogSrcILoc : public LogSrcIBase<Underly> {
 
 namespace underly {
 
+
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> {
     public:
@@ -70,5 +71,6 @@ class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> 
         std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
         bool readEncIndValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const override;
 };
+
 
 } // namespace `underly`

@@ -190,6 +190,7 @@ template class LogSrcILoc<underly::PiBasLoc>;
 
 namespace underly {
 
+
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
     this->clear();
@@ -294,5 +295,6 @@ bool PiBasLoc<DbDoc, DbKw>::readEncIndValFromPos(ulong pos, std::pair<ustring, u
 template class PiBasLoc<Doc<>, Kw>;       
 template class PiBasLoc<SrcIDb1Doc, Kw>;
 //template class PiBasLoc<Doc<IdAlias>, IdAlias>;
+
 
 } // namespace `underly`
