@@ -14,7 +14,7 @@
 template <class DbKw>
 class ILogSrcILocUnderly {
     protected:
-        EncIndLoc<DbKw>* encInd = new EncIndLoc<DbKw>;
+        EncIndLoc<DbKw>* encInd = new EncIndLoc<DbKw>();
 };
 
 

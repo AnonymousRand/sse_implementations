@@ -57,7 +57,7 @@ class PiBas : public PiBasBase<DbDoc, DbKw> {
         void clear() override;
 
     private:
-        EncInd* encInd = new EncInd;
+        EncInd* encInd = new EncInd();
 
         std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
         bool readEncIndValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const override;
