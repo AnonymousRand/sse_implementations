@@ -198,13 +198,13 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
         }
     }
     // if the current node's range is narrower than the target range, it is impossible for
-    // its children to be the SRC, so we only have to test its extra TDAG parent
+    // its children to be the SRC, so its extra TDAG parent is the only possible SRC candidate
     if (this->range.size() < targetRange.size()) {
-        // if the earlier `if` case concluded that `extraParent` is not a valid cover
+        // if the earlier `if` case concluded that `extraParent` is not a valid cover, return nothing
         if (diff == -1) {
             return DUMMY_RANGE<T>();
         }
-        // else if already seen that `extraParent` is valid (just not a perfect cover)
+        // else if already seen that `extraParent` is valid (just not a perfect cover), return it
         return this->extraParent->range;
     }
 

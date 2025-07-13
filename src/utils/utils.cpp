@@ -198,16 +198,9 @@ std::string Doc<DbKw>::toStr() const {
 template <class DbKw>
 Doc<DbKw> Doc<DbKw>::fromUstr(const ustring& ustr) {
     std::string str = ::fromUstr(ustr);
-    return Doc<DbKw>::fromStr(str);
-}
-
-
-// TODO is this used anywhere besides fromUstr()? if not just remove this method like SrcIDb1Doc
-template <class DbKw>
-Doc<DbKw> Doc<DbKw>::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, Doc<DbKw>::REGEX) || matches.size() != 5) {
-        std::cerr << "Error: bad string \"" << str << "\" passed to `Doc.fromStr()`, the world is going to end now"
+        std::cerr << "Error: bad string \"" << str << "\" passed to `Doc.fromUstr()`, the world is going to end now"
                   << std::endl;
         std::cerr << "Regex to match is \"" << Doc<DbKw>::REGEX_STR << "\"; matched groups are:" << std::endl;
         for (auto match : matches) {
@@ -373,7 +366,6 @@ void cleanUpResults(std::vector<Doc<>>& docs) {
             deletedIds.insert(id);
         }
     }
-    // TODO test if erase() and using iterators and not needing to reassign docs at end is faster
     // copy over vector without deleted (or dummy) docs
     for (Doc<> doc : docs) {
         Id id = doc.getId();

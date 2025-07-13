@@ -75,13 +75,11 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
     Db<Doc<>, Kw> mergedDb;
     mergedDb.reserve(std::pow(2, this->firstEmptyInd));
     for (long i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
-        // TODO also rename isNaive to isRangeUnderly or something? (in this case, flip true/false)
         Db<Doc<>, Kw> underlyDb = this->underlys[i]->getDb();
         mergedDb.insert(mergedDb.end(), underlyDb.begin(), underlyDb.end());
     }
     mergedDb.push_back(newDbEntry);
     if (this->firstEmptyInd >= this->underlys.size() - 1) {
-        // TODO change all comments describing case of if statement to have "if" prepended
         // if we need to create a new, larger index
         Underly* newUnderly = new Underly();
         newUnderly->setup(this->secParam, mergedDb);

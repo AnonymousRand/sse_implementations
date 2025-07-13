@@ -17,6 +17,9 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
     this->size = db.size();
+    if (db.empty()) {
+        return;
+    }
     this->origDbUnderly->setup(secParam, db);
 
     ////////////////////////////// build index 2 ///////////////////////////////
@@ -92,8 +95,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
             db2.push_back(dummyDbEntry);
         }
     }
-    // TODO change these back to Range<IdAlias> {0, ...}?
-    this->tdag2 = new TdagNode<IdAlias>(Range {IdAlias(0), maxIdAlias});
+    this->tdag2 = new TdagNode<IdAlias>(Range<IdAlias> {0, maxIdAlias});
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     long stop = db2.size();
@@ -204,8 +206,8 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     
     ////////////////////////////// generate keys ///////////////////////////////
 
-    this->keyPrf = genKey(secParam);
-    this->keyEnc = genKey(secParam);
+    this->prfKey = genKey(secParam);
+    this->encKey = genKey(secParam);
 
     /////////////////////////////// build index ////////////////////////////////
 
@@ -246,7 +248,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             DbDoc dbDoc = dbDocsWithSameDbKw[dbKwCounter];
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
             ustring iv = genIv(IV_LEN);
-            ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->keyEnc, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
+            ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             this->encInd->write(
                 label, std::pair {encryptedDbDoc, iv}, dbKwRange, dbKwCount, dbKwCounter, this->minDbKw, this->leafCount
             );
@@ -272,7 +274,7 @@ std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
         ustring iv = encIndVal.second;
         // technically we decrypt in the client, but since there's no client-server distinction in this implementation
         // we'll just decrypt immediately to make the code cleaner
-        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDbDoc, iv);
+        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encryptedDbDoc, iv);
         DbDoc result = DbDoc::fromUstr(decryptedDbDoc);
         results.push_back(result);
     }

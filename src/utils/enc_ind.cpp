@@ -72,7 +72,7 @@ bool EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) con
         std::exit(EXIT_FAILURE);
     }
     if (std::memcmp(kv, NULL_KV, ENC_IND_KV_LEN) == 0) {
-        // read `NULL_KV` at `pos`
+        // if `pos` contains `NULL_KV`
         return false;
     }
 
@@ -167,7 +167,7 @@ bool EncInd::find(const ustring& label, std::pair<ustring, ustring>& ret) const 
         }
     }
     if (std::memcmp(currKv, labelCStr, ENC_IND_KEY_LEN) != 0) {
-        // not found
+        // if not found
         return false;
     }
 

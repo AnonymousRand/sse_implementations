@@ -34,7 +34,7 @@ std::vector<DbDoc> PiBasBase<DbDoc, DbKw>::search(
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 ustring PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
-    return prf(this->keyPrf, query.toUstr());
+    return prf(this->prfKey, query.toUstr());
 }
 
 
@@ -56,8 +56,7 @@ Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
         }
         ustring encryptedDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
-        // TODO rename keyEnc and keyPrf to encKey and prfKey?
-        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDbDoc, iv);
+        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encryptedDbDoc, iv);
         DbDoc dbDoc = DbDoc::fromUstr(decryptedDbDoc);
         // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
         // to easily access these `DbKw` ranges in plaintext
@@ -95,8 +94,8 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
     ////////////////////////////// generate keys ///////////////////////////////
 
-    this->keyPrf = genKey(secParam);
-    this->keyEnc = genKey(secParam);
+    this->prfKey = genKey(secParam);
+    this->encKey = genKey(secParam);
 
     /////////////////////////////// build index ////////////////////////////////
 
@@ -140,7 +139,7 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             // for some reason padding to exactly n blocks generates n + 1 blocks, so we pad to one less byte
-            ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->keyEnc, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
+            ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             // store (l, d) into key-value store
             // also store IV in plain along with encrypted value
             this->encInd->write(label, std::pair {encryptedDbDoc, iv});
@@ -169,7 +168,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
         ustring iv = encIndVal.second;
         // technically we decrypt in the client, but since there's no client-server distinction in this implementation
         // we'll just decrypt immediately to make the code cleaner
-        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->keyEnc, encryptedDbDoc, iv);
+        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encryptedDbDoc, iv);
         DbDoc result = DbDoc::fromUstr(decryptedDbDoc);
         results.push_back(result);
         dbKwCounter++;

@@ -212,7 +212,6 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>, DbKw> {
 
         std::string toStr() const override;
         static Doc<DbKw> fromUstr(const ustring& ustr);
-        static Doc<DbKw> fromStr(const std::string& str);
 
         Id getId() const;
         Kw getKw() const;

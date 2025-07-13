@@ -21,8 +21,10 @@ template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
-    // TODO can we also return immediately if empty db?
     this->size = db.size();
+    if (db.empty()) {
+        return;
+    }
 
     // build TDAG 1 over `Kw`s
     Range<Kw> kwBounds = findDbKwBounds(db);
