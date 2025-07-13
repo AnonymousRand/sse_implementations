@@ -119,9 +119,6 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
     this->size = db.size();
-    if (db.empty()) {
-        return;
-    }
     this->origDbUnderly->setup(secParam, db);
 
     ////////////////////////////// build index 2 ///////////////////////////////

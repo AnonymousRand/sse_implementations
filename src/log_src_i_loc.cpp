@@ -17,9 +17,6 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
     this->size = db.size();
-    if (db.empty()) {
-        return;
-    }
     this->origDbUnderly->setup(secParam, db);
 
     ////////////////////////////// build index 2 ///////////////////////////////
@@ -203,6 +200,8 @@ PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
+
+    this->size = db.size();
     
     ////////////////////////////// generate keys ///////////////////////////////
 
@@ -210,11 +209,6 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->encKey = genKey(secParam);
 
     /////////////////////////////// build index ////////////////////////////////
-
-    this->size = db.size();
-    if (db.empty()) {
-        return;
-    }
 
     Ind<DbKw, DbDoc> ind;
     for (DbEntry<DbDoc, DbKw> entry : db) {

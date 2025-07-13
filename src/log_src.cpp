@@ -22,9 +22,6 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
     this->size = db.size();
-    if (db.empty()) {
-        return;
-    }
 
     // build TDAG 1 over `Kw`s
     Range<Kw> kwBounds = findDbKwBounds(db);

@@ -41,6 +41,8 @@ ustring PiBasBase<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasBase<DbDoc, DbKw>::clear() {
     this->size = 0;
+    this->prfKey = toUstr("");
+    this->encKey = toUstr("");
 }
 
 
@@ -92,17 +94,14 @@ template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
 
+    this->size = db.size();
+
     ////////////////////////////// generate keys ///////////////////////////////
 
     this->prfKey = genKey(secParam);
     this->encKey = genKey(secParam);
 
     /////////////////////////////// build index ////////////////////////////////
-
-    this->size = db.size();
-    if (db.empty()) {
-        return;
-    }
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     Ind<DbKw, DbDoc> ind;

@@ -30,7 +30,7 @@ static constexpr int IV_LEN          = 128 / 8;
 static constexpr int BLOCK_SIZE      = 128 / 8;
 static constexpr int HASH_OUTPUT_LEN = 512 / 8;
 static constexpr int ENC_IND_KEY_LEN = 512 / 8;        // both PRF (default) and hash (res-hiding) have 512 bit output
-static constexpr int ENC_IND_DOC_LEN = 3 * BLOCK_SIZE; // so max keyword/id size ~10^19 for encoding to fit (starting 0)
+static constexpr int ENC_IND_DOC_LEN = 4 * BLOCK_SIZE; // so max keyword/id size ~10^13 for encoding to fit (starting 0)
 static constexpr int ENC_IND_VAL_LEN = ENC_IND_DOC_LEN + IV_LEN;
 static constexpr int ENC_IND_KV_LEN  = ENC_IND_KEY_LEN + ENC_IND_VAL_LEN;
 static const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
@@ -109,6 +109,8 @@ ustring toUstr(const std::string& s);
 ustring toUstr(uchar* ucstr, int len);
 std::string fromUstr(const ustring& ustr);
 
+std::ostream& operator <<(std::ostream& os, const ustring& ustr);
+
 // provide hash function for `ustring`s to use faster hashmap-based structures, like `unordered_map` instead of `map`
 template <>
 struct std::hash<ustring> {
@@ -116,8 +118,6 @@ struct std::hash<ustring> {
         return std::hash<std::string>{}(fromUstr(ustr));
     }
 };
-
-std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 
 /******************************************************************************/

@@ -27,8 +27,8 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
         Db<DbDoc, DbKw> getDb() const override;
 
     protected:
-        ustring prfKey;
         ustring encKey;
+        ustring prfKey;
 
         virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
         ustring genQueryToken(const Range<DbKw>& query) const;
