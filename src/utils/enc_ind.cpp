@@ -82,7 +82,9 @@ bool EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) con
 }
 
 
-void EncIndBase::writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val) {
+void EncIndBase::writeToPos(
+    ulong pos, const ustring& label, const std::pair<ustring, ustring>& val, bool flushImmediately
+) {
     ustring kv = label + val.first + val.second;
     if (kv.length() != ENC_IND_KV_LEN) {
         std::cerr << "EncIndBase::writeToPos(): wrong length write (want " << ENC_IND_KV_LEN << " bytes, got "
@@ -96,7 +98,9 @@ void EncIndBase::writeToPos(ulong pos, const ustring& label, const std::pair<ust
         std::cerr << "EncIndBase::writeToPos(): error writing to file (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    std::fflush(this->file);
+    if (flushImmediately) {
+        std::fflush(this->file);
+    }
 }
 
 
@@ -142,7 +146,7 @@ void EncInd::write(const ustring& label, const std::pair<ustring, ustring>& val)
     }
 
     // encode kv pair and write
-    this->writeToPos(pos, label, val);
+    this->writeToPos(pos, label, val, true);
 }
 
 
@@ -194,7 +198,7 @@ void EncIndLoc<DbKw>::write(
     const Range<DbKw>& dbKwRange, long dbKwResCount, long rank, DbKw minDbKw, long bottomLevelSize
 ) {
     ulong pos = this->map(dbKwRange, dbKwResCount, rank, minDbKw, bottomLevelSize);
-    this->writeToPos(pos, label, val);
+    this->writeToPos(pos, label, val, false);
 }
 
 

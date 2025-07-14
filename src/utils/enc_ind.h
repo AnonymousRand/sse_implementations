@@ -38,7 +38,7 @@ class EncIndBase {
         FILE* file = nullptr;
         std::string filename = "";
 
-        void writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val);
+        void writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val, bool flushImmediately);
 };
 
 
