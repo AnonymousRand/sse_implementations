@@ -1,16 +1,16 @@
 #include "enc_ind.h"
 
 
+/******************************************************************************/
+/* `EncIndBase`                                                               */
+/******************************************************************************/
+
+
 // this initializes everything to `\0`, i.e. zero bits
 // technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
 // a null kv-pair, but currently `ENC_IND_KV_LEN` is 1024 bits so there's a 2^1024 chance of this happening
 // USENIX'24's implementation also seems to just do this
-static const uchar NULL_KV[ENC_IND_KV_LEN] = {};
-
-
-/******************************************************************************/
-/* `EncIndBase`                                                               */
-/******************************************************************************/
+const uchar EncIndBase::NULL_KV[ENC_IND_KV_LEN] = {};
 
 
 EncIndBase::~EncIndBase() {
@@ -41,7 +41,7 @@ void EncIndBase::init(long size) {
 
     // fill file with zero bits
     for (long i = 0; i < size; i++) {
-        int itemsWritten = std::fwrite(NULL_KV, ENC_IND_KV_LEN, 1, this->file);
+        int itemsWritten = std::fwrite(EncIndBase::NULL_KV, ENC_IND_KV_LEN, 1, this->file);
         if (itemsWritten != 1) {
             std::cerr << "EncIndBase::init(): error initializing file (nothing written)" << std::endl;
             std::exit(EXIT_FAILURE);
@@ -71,7 +71,7 @@ bool EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) con
         std::cerr << "EncIndBase::readValFromPos(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    if (std::memcmp(kv, NULL_KV, ENC_IND_KV_LEN) == 0) {
+    if (std::memcmp(kv, EncIndBase::NULL_KV, ENC_IND_KV_LEN) == 0) {
         // if `pos` contains `NULL_KV`
         return false;
     }
@@ -124,7 +124,7 @@ void EncInd::write(const ustring& label, const std::pair<ustring, ustring>& val)
 
     // if location is already filled (because of modulo), find next available location
     long numPositionsChecked = 1;
-    while (std::memcmp(currKv, NULL_KV, ENC_IND_KV_LEN) != 0 && numPositionsChecked < this->size) {
+    while (std::memcmp(currKv, EncIndBase::NULL_KV, ENC_IND_KV_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
@@ -136,7 +136,7 @@ void EncInd::write(const ustring& label, const std::pair<ustring, ustring>& val)
             std::exit(EXIT_FAILURE);
         }
     }
-    if (std::memcmp(currKv, NULL_KV, ENC_IND_KV_LEN) != 0) {
+    if (std::memcmp(currKv, EncIndBase::NULL_KV, ENC_IND_KV_LEN) != 0) {
         std::cerr << "EncInd::write(): ran out of space writing!" << std::endl;
         std::exit(EXIT_FAILURE);
     }

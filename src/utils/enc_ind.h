@@ -33,6 +33,8 @@ class EncIndBase {
         bool readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const;
 
     protected:
+        static const uchar NULL_KV[ENC_IND_KV_LEN];
+
         FILE* file = nullptr;
         std::string filename = "";
 
