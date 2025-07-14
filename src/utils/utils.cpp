@@ -234,12 +234,6 @@ Op Doc<DbKw>::getOp() const {
 }
 
 
-template <class DbKw>
-bool operator ==(const Doc<DbKw>& doc1, const Doc<DbKw>& doc2) {
-    return doc1.val == doc2.val;
-}
-
-
 template class IDbDoc<std::tuple<Id, Kw, Op>, Kw>;
 //template class IDbDoc<std::tuple<Id, Kw, Op>, IdAlias>;
 template class Doc<Kw>;
@@ -247,9 +241,6 @@ template class Doc<Kw>;
 
 template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, Kw>& iDbDoc);
 //template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, IdAlias>& iDbDoc);
-
-//template std::ostream& operator ==(std::ostream& os, const DbDoc<Kw>& iDbDoc);
-//template std::ostream& operator ==(std::ostream& os, const DbDoc<IdAlias>& iDbDoc);
 
 
 /******************************************************************************/

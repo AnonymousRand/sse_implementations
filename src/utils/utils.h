@@ -217,12 +217,6 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>, DbKw> {
         Kw getKw() const;
         Op getOp() const;
 
-        /**
-         * Only checks equality of `val`, not of `dbKwRange`.
-         */
-        template <class DbKw2>
-        friend bool operator ==(const Doc<DbKw2>& doc1, const Doc<DbKw2>& doc2);
-
     private:
         static const std::string REGEX_STR;
         static const std::regex REGEX;
