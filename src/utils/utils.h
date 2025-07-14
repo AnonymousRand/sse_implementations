@@ -143,8 +143,8 @@ class Range : public std::pair<T, T> {
         bool isDisjointFrom(const Range<T>& target) const;
 
         std::string toStr() const;
-        static Range<T> fromStr(const std::string& str);
         ustring toUstr() const;
+        static Range<T> fromStr(const std::string& str);
 
         template <class T2>
         friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);

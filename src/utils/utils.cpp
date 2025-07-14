@@ -91,6 +91,12 @@ std::string Range<T>::toStr() const {
 
 
 template <class T>
+ustring Range<T>::toUstr() const {
+    return ::toUstr(this->toStr());
+}
+
+
+template <class T>
 Range<T> Range<T>::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, Range<T>::REGEX) || matches.size() != 3) {
@@ -106,12 +112,6 @@ Range<T> Range<T>::fromStr(const std::string& str) {
     range.first = T(std::stoi(matches[1].str()));
     range.second = T(std::stoi(matches[2].str()));
     return range;
-}
-
-
-template <class T>
-ustring Range<T>::toUstr() const {
-    return ::toUstr(this->toStr());
 }
 
 
