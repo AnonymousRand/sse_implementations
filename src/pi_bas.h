@@ -24,7 +24,7 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
         void clear() override;
 
         // `ISdaUnderlySse`
-        Db<DbDoc, DbKw> getDb() const override;
+        void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     protected:
         ustring encKey;

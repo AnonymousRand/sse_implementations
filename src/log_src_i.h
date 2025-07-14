@@ -24,7 +24,7 @@ class LogSrcIBase : public ISdaUnderlySse<Doc<>, Kw> {
         void clear() override;
 
         // `ISdaUnderlySse`
-        Db<Doc<>, Kw> getDb() const override;
+        void getDb(Db<Doc<>, Kw>& ret) const override;
 
     protected:
         Underly<SrcIDb1Doc, Kw>* underly1 = nullptr;

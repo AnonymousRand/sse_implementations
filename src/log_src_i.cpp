@@ -96,8 +96,8 @@ void LogSrcIBase<Underly>::clear() {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-Db<Doc<>, Kw> LogSrcIBase<Underly>::getDb() const {
-    return this->origDbUnderly->getDb();
+void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
+    this->origDbUnderly->getDb(ret);
 }
 
 

@@ -47,9 +47,7 @@ void PiBasBase<DbDoc, DbKw>::clear() {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
-    Db<DbDoc, DbKw> db;
-
+void PiBasBase<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
     std::pair<ustring, ustring> encIndVal;
     for (ulong i = 0; i < this->size; i++) {
         bool isValidVal = this->readEncIndValFromPos(i, encIndVal);
@@ -67,10 +65,8 @@ Db<DbDoc, DbKw> PiBasBase<DbDoc, DbKw>::getDb() const {
         if (dbKwRange.size() > 1) {
             continue;
         }
-        db.push_back(std::pair {dbDoc, dbKwRange});
+        ret.push_back(std::pair {dbDoc, dbKwRange});
     }
-
-    return db;
 }
 
 

@@ -75,8 +75,8 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
     Db<Doc<>, Kw> mergedDb;
     mergedDb.reserve(std::pow(2, this->firstEmptyInd));
     for (long i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
-        Db<Doc<>, Kw> underlyDb = this->underlys[i]->getDb();
-        mergedDb.insert(mergedDb.end(), underlyDb.begin(), underlyDb.end());
+        // `getDb()` appends to the passed-in container
+        this->underlys[i]->getDb(mergedDb);
     }
     mergedDb.push_back(newDbEntry);
     if (this->firstEmptyInd >= this->underlys.size() - 1) {
