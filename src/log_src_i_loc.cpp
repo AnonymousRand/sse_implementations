@@ -43,7 +43,6 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
         DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
         db1.push_back(newDbEntry);
     };
-
     for (long idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
         DbEntry<Doc<>, Kw> dbEntry = dbSorted[idAlias];
         Doc<> doc = dbEntry.first;
@@ -140,7 +139,6 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
         }
         prevKw = kw;
     }
-
     // after guaranteeing contiguous-ness of `Kw`s, pad `db1` to power of 2 as well
     Range<Kw> db1KwBounds = findDbKwBounds(db1);
     Kw maxDb1Kw = db1KwBounds.second;

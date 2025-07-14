@@ -145,7 +145,6 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
         DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
         db1.push_back(newDbEntry);
     };
-
     for (long idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
         DbEntry<Doc<>, Kw> dbEntry = dbSorted[idAlias];
         Doc<> doc = dbEntry.first;
