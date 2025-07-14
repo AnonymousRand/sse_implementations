@@ -27,7 +27,7 @@ ustring toUstr(uchar* ucstr, int len) {
 }
 
 
-std::string fromUstr(const ustring& ustr) {
+std::string toStr(const ustring& ustr) {
     std::string str;
     for (uchar c : ustr) {
         str += static_cast<char>(c);
@@ -37,7 +37,7 @@ std::string fromUstr(const ustring& ustr) {
 
 
 std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
-    return os << fromUstr(ustr);
+    return os << toStr(ustr);
 }
 
 
@@ -197,7 +197,7 @@ std::string Doc<DbKw>::toStr() const {
 
 template <class DbKw>
 Doc<DbKw> Doc<DbKw>::fromUstr(const ustring& ustr) {
-    std::string str = ::fromUstr(ustr);
+    std::string str = ::toStr(ustr);
     std::smatch matches;
     if (!std::regex_search(str, matches, Doc<DbKw>::REGEX) || matches.size() != 5) {
         std::cerr << "Error: bad string \"" << str << "\" passed to `Doc.fromUstr()`, the world is going to end now"
@@ -279,7 +279,7 @@ std::string SrcIDb1Doc::toStr() const {
 
 
 SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
-    std::string str = ::fromUstr(ustr);
+    std::string str = ::toStr(ustr);
     std::smatch matches;
     if (!std::regex_search(str, matches, SrcIDb1Doc::REGEX) || matches.size() != 4) {
         std::cerr << "Error: bad string \"" << ustr

@@ -107,7 +107,7 @@ using ustring = std::basic_string<uchar>;
 ustring toUstr(long n);
 ustring toUstr(const std::string& s);
 ustring toUstr(uchar* ucstr, int len);
-std::string fromUstr(const ustring& ustr);
+std::string toStr(const ustring& ustr);
 
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
@@ -115,7 +115,7 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 template <>
 struct std::hash<ustring> {
     inline std::size_t operator ()(const ustring& ustr) const noexcept {
-        return std::hash<std::string>{}(fromUstr(ustr));
+        return std::hash<std::string>{}(toStr(ustr));
     }
 };
 
