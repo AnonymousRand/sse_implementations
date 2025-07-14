@@ -185,8 +185,8 @@ class IDbDoc {
 
         T get() const;
         Range<DbKw> getDbKwRange() const;
-        virtual ustring toUstr() const;
         virtual std::string toStr() const = 0;
+        ustring toUstr() const;
 
         template <class T2, class DbKw2>
         friend std::ostream& operator <<(std::ostream& os, const IDbDoc<T2, DbKw2>& iDbDoc);
