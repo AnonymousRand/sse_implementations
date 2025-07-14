@@ -64,7 +64,11 @@ class IDsse : public virtual ISse<DbDoc, DbKw> {
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
     public:
+        /**
+         * Get the `db` most recently passed to `setup()` (without any replications/padding/other processing).
+         */
         virtual Db<DbDoc, DbKw> getDb() const = 0;
+
         inline long getSize() const {
             return this->size;
         }
