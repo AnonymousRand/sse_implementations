@@ -236,6 +236,7 @@ Op Doc<DbKw>::getOp() const {
 
 template class IDbDoc<std::tuple<Id, Kw, Op>, Kw>;
 //template class IDbDoc<std::tuple<Id, Kw, Op>, IdAlias>;
+
 template class Doc<Kw>;
 //template class Doc<IdAlias>;
 
