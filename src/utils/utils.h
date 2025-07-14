@@ -228,13 +228,13 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>, DbKw> {
         static const std::regex REGEX;
 };
 
+
 template <>
 struct std::hash<Doc<Kw>> {
     inline std::size_t operator ()(const Doc<Kw>& doc) const noexcept {
         return std::hash<std::string>{}(doc.toStr());
     }
 };
-
 
 // commented out since currently `Kw` and `IdAlias` are the same type (`long`)
 //template <>
