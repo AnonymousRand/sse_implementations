@@ -170,7 +170,7 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T, DbKw>& iDbDoc) {
 
 
 template <class DbKw>
-const std::string Doc<DbKw>::REGEX_STR = "\\(\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\),(-?[0-9]+--?[0-9]+)\\)";
+const std::string Doc<DbKw>::REGEX_STR = "\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\),(-?[0-9]+--?[0-9]+)";
 
 
 template <class DbKw>
@@ -189,8 +189,8 @@ Doc<DbKw>::Doc(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) : Doc<DbKw>(st
 template <class DbKw>
 std::string Doc<DbKw>::toStr() const {
     std::stringstream ss;
-    ss << "((" << this->getId() << "," << this->getKw() << "," << static_cast<char>(this->getOp()) << "),"
-       << this->dbKwRange << ")";
+    ss << "(" << this->getId() << "," << this->getKw() << "," << static_cast<char>(this->getOp()) << "),"
+       << this->dbKwRange;
     return ss.str();
 }
 
@@ -249,7 +249,7 @@ template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id,
 /******************************************************************************/
 
 
-const std::string SrcIDb1Doc::REGEX_STR = "\\(\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(-?[0-9]+--?[0-9]+)\\)";
+const std::string SrcIDb1Doc::REGEX_STR = "\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(-?[0-9]+--?[0-9]+)";
 
 
 const std::regex SrcIDb1Doc::REGEX(SrcIDb1Doc::REGEX_STR);
@@ -265,7 +265,7 @@ SrcIDb1Doc::SrcIDb1Doc(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw
 
 std::string SrcIDb1Doc::toStr() const {
     std::stringstream ss;
-    ss << "((" << this->val.first << "," << this->val.second << ")," << this->dbKwRange << ")";
+    ss << "(" << this->val.first << "," << this->val.second << ")," << this->dbKwRange;
     return ss.str();
 }
 
