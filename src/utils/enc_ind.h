@@ -31,6 +31,7 @@ class EncIndBase {
          *     - `false` if the kv pair at `pos` is the null kv pair.
          */
         bool readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const;
+        void writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val, bool flushImmediately);
 
     protected:
         static const uchar NULL_KV[ENC_IND_KV_LEN];
@@ -38,7 +39,7 @@ class EncIndBase {
         FILE* file = nullptr;
         std::string filename = "";
 
-        void writeToPos(ulong pos, const ustring& label, const std::pair<ustring, ustring>& val, bool flushImmediately);
+        virtual std::string getFilenamePrefix() const;
 };
 
 
