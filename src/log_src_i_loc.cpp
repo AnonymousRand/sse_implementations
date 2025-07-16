@@ -16,6 +16,7 @@ template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Under
 void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
+    this->secParam = secParam;
     this->size = db.size();
     this->origDbUnderly->setup(secParam, db);
 

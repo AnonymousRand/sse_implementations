@@ -90,6 +90,7 @@ template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
 
+    this->secParam = secParam;
     this->size = db.size();
 
     ////////////////////////////// generate keys ///////////////////////////////

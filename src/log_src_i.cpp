@@ -118,6 +118,7 @@ template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
+    this->secParam = secParam;
     this->size = db.size();
     this->origDbUnderly->setup(secParam, db);
 
