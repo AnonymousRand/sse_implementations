@@ -25,12 +25,12 @@ void EncIndBase::init(long size) {
     // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
     // the same file its first index was being stored in...
     std::uniform_int_distribution dist(100000000, 999999999);
-    this->filename = "out/" + this->getFilenamePrefix() + std::to_string(dist(RNG)) + ".dat";
+    this->filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
     FILE* fileTmp = std::fopen(this->filename.c_str(), "r");
     // while file exists (or any other error occurs on open), create new random filename
     while (fileTmp != nullptr) {
         std::fclose(fileTmp);
-        this->filename = "out/" + this->getFilenamePrefix() + std::to_string(dist(RNG)) + ".dat";
+        this->filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
         fileTmp = std::fopen(this->filename.c_str(), "r");
     }
     this->file = std::fopen(this->filename.c_str(), "wb+");
@@ -101,11 +101,6 @@ void EncIndBase::writeToPos(
     if (flushImmediately) {
         std::fflush(this->file);
     }
-}
-
-
-std::string EncIndBase::getFilenamePrefix() {
-    return "enc_ind_";
 }
 
 

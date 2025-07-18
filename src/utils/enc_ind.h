@@ -38,8 +38,6 @@ class EncIndBase {
 
         FILE* file = nullptr;
         std::string filename = "";
-
-        virtual std::string getFilenamePrefix() const;
 };
 
 

@@ -1,6 +1,6 @@
 #include "log_src_i.h"
 
-#include "log_src_i_loc.cpp" // needed to bring in explicit template instatiation of `LogSrcILoc<PiBasLoc>`
+#include "log_src_i_loc.h"
 
 
 /******************************************************************************/
