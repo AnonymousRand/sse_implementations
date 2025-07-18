@@ -26,7 +26,7 @@ See [src/main.cpp](src/main.cpp) for usage examples.
 - A C++ compiler that supports C++20 (ideally g++ version 10 or above; install with `apt install g++-10` if using `apt`)
 - Only tested on Linux systems. To run on Windows, don't.
   
-  (ok wsl exists)
+  (ok fine wsl exists i guess)
 
 # Running
 
