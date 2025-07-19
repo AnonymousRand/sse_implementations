@@ -148,7 +148,7 @@ template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbDoc> results;
     ustring queryToken = this->genQueryToken(query);
-        
+
     // for c = 0 until `Get` returns error
     long dbKwCounter = 0;
     while (true) {
