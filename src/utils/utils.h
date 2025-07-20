@@ -23,7 +23,6 @@
 using uchar = unsigned char;
 using ulong = unsigned long;
 
-
 // lengths are in bytes
 static constexpr int KEY_LEN         = 256 / 8;
 static constexpr int IV_LEN          = 128 / 8;
