@@ -241,9 +241,9 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             DbDoc dbDoc = dbDocsWithSameDbKw[dbKwCounter];
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
             ustring iv = genIv(IV_LEN);
-            ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
+            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             this->encInd->write(
-                label, std::pair {encryptedDbDoc, iv}, dbKwRange, dbKwCount, dbKwCounter, this->minDbKw, this->leafCount
+                label, std::pair {encDbDoc, iv}, dbKwRange, dbKwCount, dbKwCounter, this->minDbKw, this->leafCount
             );
         }
     }
@@ -263,12 +263,12 @@ std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
     for (long dbKwCounter = 0; dbKwCounter < kwCount; dbKwCounter++) {
         std::pair<ustring, ustring> encIndVal;
         this->encInd->find(query, kwCount, dbKwCounter, this->minDbKw, this->leafCount, encIndVal);
-        ustring encryptedDbDoc = encIndVal.first;
+        ustring encDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
         // technically we decrypt in the client, but since there's no client-server distinction in this implementation
         // we'll just decrypt immediately to make the code cleaner
-        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encryptedDbDoc, iv);
-        DbDoc result = DbDoc::fromUstr(decryptedDbDoc);
+        ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
+        DbDoc result = DbDoc::fromUstr(decDbDoc);
         results.push_back(result);
     }
 

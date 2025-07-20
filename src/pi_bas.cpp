@@ -54,10 +54,10 @@ void PiBasBase<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
         if (!isValidVal) {
             continue;
         }
-        ustring encryptedDbDoc = encIndVal.first;
+        ustring encDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
-        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encryptedDbDoc, iv);
-        DbDoc dbDoc = DbDoc::fromUstr(decryptedDbDoc);
+        ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
+        DbDoc dbDoc = DbDoc::fromUstr(decDbDoc);
         // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
         // to easily access these `DbKw` ranges in plaintext
         Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
@@ -135,10 +135,10 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             // for some reason padding to exactly n blocks generates n + 1 blocks, so we pad to one less byte
-            ustring encryptedDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
+            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
             // store (l, d) into key-value store
             // also store IV in plain along with encrypted value
-            this->encInd->write(label, std::pair {encryptedDbDoc, iv});
+            this->encInd->write(label, std::pair {encDbDoc, iv});
         }
     }
 }
@@ -160,12 +160,12 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
         if (!isFound) {
             break;
         }
-        ustring encryptedDbDoc = encIndVal.first;
+        ustring encDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
         // technically we decrypt in the client, but since there's no client-server distinction in this implementation
         // we'll just decrypt immediately to make the code cleaner
-        ustring decryptedDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encryptedDbDoc, iv);
-        DbDoc result = DbDoc::fromUstr(decryptedDbDoc);
+        ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
+        DbDoc result = DbDoc::fromUstr(decDbDoc);
         results.push_back(result);
         dbKwCounter++;
     }
