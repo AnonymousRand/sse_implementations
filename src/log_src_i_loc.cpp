@@ -20,7 +20,8 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->size = db.size();
     this->origDbUnderly->setup(secParam, db);
 
-    ////////////////////////////// build index 2 ///////////////////////////////
+    //--------------------------------------------------------------------------
+    // build index 2
 
     // sort documents by keyword
     auto sortByKw = [](const DbEntry<Doc<>, Kw>& dbEntry1, const DbEntry<Doc<>, Kw>& dbEntry2) {
@@ -114,7 +115,8 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     this->underly2->setup(secParam, db2);
 
-    ////////////////////////////// build index 1 ///////////////////////////////
+    //--------------------------------------------------------------------------
+    // build index 1
 
     // build TDAG 1 over `Kw`s
     // since `Kw`s have no guarantee of being contiguous but the leaves and hence bottom level in the index must be,
@@ -202,12 +204,14 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
     this->size = db.size();
     
-    ////////////////////////////// generate keys ///////////////////////////////
+    //--------------------------------------------------------------------------
+    // generate keys
 
     this->prfKey = genKey(secParam);
     this->encKey = genKey(secParam);
 
-    /////////////////////////////// build index ////////////////////////////////
+    //--------------------------------------------------------------------------
+    // build index
 
     Ind<DbKw, DbDoc> ind;
     for (DbEntry<DbDoc, DbKw> entry : db) {

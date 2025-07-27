@@ -35,8 +35,8 @@ LogSrcIBase<Underly>::~LogSrcIBase() {
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 std::vector<Doc<>> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
-
-    ///////////////////////////////// query 1 //////////////////////////////////
+    //--------------------------------------------------------------------------
+    // query 1
 
     Range<Kw> src1 = this->tdag1->findSrc(query);
     if (src1 == DUMMY_RANGE<Kw>()) { 
@@ -44,7 +44,8 @@ std::vector<Doc<>> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool sho
     }
     std::vector<SrcIDb1Doc> choices = this->underly1->search(src1, false, false);
 
-    ///////////////////////////////// query 2 //////////////////////////////////
+    //--------------------------------------------------------------------------
+    // query 2
 
     // generate query for query 2 based on query 1 results
     // (filter out unnecessary choices and merge remaining ones into a single id range)
@@ -122,7 +123,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->size = db.size();
     this->origDbUnderly->setup(secParam, db);
 
-    ////////////////////////////// build index 2 ///////////////////////////////
+    //--------------------------------------------------------------------------
+    // build index 2
 
     // sort documents by keyword
     auto sortByKw = [](const DbEntry<Doc<>, Kw>& dbEntry1, const DbEntry<Doc<>, Kw>& dbEntry2) {
@@ -205,7 +207,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     this->underly2->setup(secParam, db2);
 
-    ////////////////////////////// build index 1 ///////////////////////////////
+    //--------------------------------------------------------------------------
+    // build index 1
 
     // build TDAG 1 over `Kw`s
     Range<Kw> db1KwBounds = findDbKwBounds(db1);

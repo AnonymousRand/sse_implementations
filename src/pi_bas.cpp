@@ -93,12 +93,14 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     this->size = db.size();
 
-    ////////////////////////////// generate keys ///////////////////////////////
+    //--------------------------------------------------------------------------
+    // generate keys
 
     this->prfKey = genKey(secParam);
     this->encKey = genKey(secParam);
 
-    /////////////////////////////// build index ////////////////////////////////
+    //--------------------------------------------------------------------------
+    // build index
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     Ind<DbKw, DbDoc> ind;

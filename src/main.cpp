@@ -206,7 +206,8 @@ int main() {
     Sda<LogSrcI<PiBas>> sdaLogSrcI;
     Sda<LogSrcILoc<underly::PiBasLoc>> sdaLogSrcILoc;
 
-    /////////////////////////// debugging experiment ///////////////////////////
+    //--------------------------------------------------------------------------
+    // debugging experiment
 
     Range<Kw> query {3, 5};
     Db<> db = createDb(maxDbSize, true, true); // adjust params at will
@@ -251,7 +252,8 @@ int main() {
 
     db.clear();
 
-    /////////////////////////////// experiment 1 ///////////////////////////////
+    //--------------------------------------------------------------------------
+    // experiment 1
 
     std::cout << "--------------------------------- Experiment 1 ---------------------------------" << std::endl;
     std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
@@ -291,7 +293,8 @@ int main() {
     std::cout << std::endl;
     exp1(sdaLogSrcILoc, maxDbSize);
 
-    /////////////////////////////// experiment 2 ///////////////////////////////
+    //--------------------------------------------------------------------------
+    // experiment 2
 
     std::cout << "--------------------------------- Experiment 2 ---------------------------------" << std::endl;
     std::cout << "DB size: varied, up to 2^" << maxDbSizeExp                                        << std::endl;
@@ -331,7 +334,8 @@ int main() {
     std::cout << std::endl;
     exp2(sdaLogSrcILoc, maxDbSize);
     
-    /////////////////////////////// experiment 3 ///////////////////////////////
+    //--------------------------------------------------------------------------
+    // experiment 3
 
     std::cout << "--------------------------------- Experiment 3 ---------------------------------" << std::endl;
     std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
