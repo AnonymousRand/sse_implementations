@@ -85,12 +85,19 @@ bool EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) con
 void EncIndBase::writeToPos(
     ulong pos, const ustring& label, const std::pair<ustring, ustring>& val, bool flushImmediately
 ) {
-    ustring kv = label + val.first + val.second;
-    if (kv.length() != ENC_IND_KV_LEN) {
-        std::cerr << "EncIndBase::writeToPos(): wrong length write (want " << ENC_IND_KV_LEN << " bytes, got "
-                  << kv.length() << " bytes)" << std::endl;
+    if (pos >= this->size) {
+        std::cerr << "EncIndBase::writeToPos(): write to pos " << pos << " is out of bounds! "
+                  << "(size is " << this->size << ")" << std::endl;
         std::exit(EXIT_FAILURE);
     }
+    ustring kv = label + val;
+    if (kv.length() != ENC_IND_KV_LEN) {
+        std::cerr << "EncIndBase::writeToPos(): write of length " << kv.length() << " bytes is too long! "
+                  << "(want " << ENC_IND_KV_LEN << " bytes)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    ustring kv = label + val.first + val.second;
+    if (kv.length() != ENC_IND_KV_LEN) {
 
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int itemsWritten = std::fwrite(kv.c_str(), ENC_IND_KV_LEN, 1, this->file);

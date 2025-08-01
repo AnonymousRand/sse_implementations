@@ -120,8 +120,9 @@ ustring padAndEncrypt(
     const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv, int targetLenBytes
 ) {
     if (targetLenBytes < ptext.length()) {
-        std::cerr << "padAndEncrypt(): plaintext is too long! (want " << targetLenBytes << " bytes, got "
-                  << ptext.length() << " bytes)" << std::endl;
+        std::cerr << "padAndEncrypt(): plaintext of length " << ptext.length() << " bytes is too long! "
+                  << "(want " << targetLenBytes << " bytes)" << std::endl;
+        std::exit(EXIT_FAILURE);
         std::exit(EXIT_FAILURE);
     }
     ustring padding(targetLenBytes - ptext.length(), '\0');
