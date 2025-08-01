@@ -20,6 +20,7 @@ EncIndBase::~EncIndBase() {
 
 void EncIndBase::init(long size) {
     this->clear();
+    this->size = size;
 
     // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
     // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
@@ -60,6 +61,7 @@ void EncIndBase::clear() {
         std::remove(this->filename.c_str());
         this->filename = "";
     }
+    this->size = 0;
 }
 
 
@@ -90,14 +92,12 @@ void EncIndBase::writeToPos(
                   << "(size is " << this->size << ")" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    ustring kv = label + val;
+    ustring kv = label + val.first + val.second;
     if (kv.length() != ENC_IND_KV_LEN) {
         std::cerr << "EncIndBase::writeToPos(): write of length " << kv.length() << " bytes is too long! "
                   << "(want " << ENC_IND_KV_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    ustring kv = label + val.first + val.second;
-    if (kv.length() != ENC_IND_KV_LEN) {
 
     std::fseek(this->file, pos * ENC_IND_KV_LEN, SEEK_SET);
     int itemsWritten = std::fwrite(kv.c_str(), ENC_IND_KV_LEN, 1, this->file);
@@ -114,12 +114,6 @@ void EncIndBase::writeToPos(
 /******************************************************************************/
 /* `EncInd`                                                                   */
 /******************************************************************************/
-
-
-void EncInd::init(long size) {
-    EncIndBase::init(size);
-    this->size = size;
-}
 
 
 void EncInd::write(const ustring& label, const std::pair<ustring, ustring>& val) {

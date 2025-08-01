@@ -38,6 +38,7 @@ class EncIndBase {
 
         FILE* file = nullptr;
         std::string filename = "";
+        long size;
 };
 
 
@@ -48,7 +49,6 @@ class EncIndBase {
 
 class EncInd : public EncIndBase {
     public:
-        void init(long size);
         void write(const ustring& label, const std::pair<ustring, ustring>& val);
 
         /**
@@ -57,9 +57,6 @@ class EncInd : public EncIndBase {
          *     - `false` if `label` not found.
          */
         bool find(const ustring& label, std::pair<ustring, ustring>& ret) const;
-
-    private:
-        long size;
 };
 
 
