@@ -20,8 +20,8 @@
 // common code
 class EncIndBase {
     public:
-        static constexpr int KEY_LEN = 512 / 8;        // both PRF (default) and hash (res-hiding) have 512 bit output
-        static constexpr int DOC_LEN = 4 * BLOCK_SIZE; // so max keyword/id size ~10^13 for encoding to fit (starting 0)
+        static constexpr int KEY_LEN = HASH_OUTPUT_LEN; // both PRF (default) and hash (res-hiding) have 512 bit output
+        static constexpr int DOC_LEN = 4 * BLOCK_SIZE;  // so max keyword/id size ~10^13 for encoding to fit (start 0)
         static constexpr int VAL_LEN = EncIndBase::DOC_LEN + IV_LEN;
         static constexpr int KV_LEN  = EncIndBase::KEY_LEN + EncIndBase::VAL_LEN;
 
