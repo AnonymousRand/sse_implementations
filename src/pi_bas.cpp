@@ -137,7 +137,7 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             // for some reason padding to exactly n blocks generates n + 1 blocks, so we pad to one less byte
-            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
+            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncIndBase::DOC_LEN - 1);
             // store (l, d) into key-value store
             // also store IV in plain along with encrypted value
             this->encInd->write(label, std::pair {encDbDoc, iv});

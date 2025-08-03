@@ -245,7 +245,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             DbDoc dbDoc = dbDocsWithSameDbKw[dbKwCounter];
             ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
             ustring iv = genIv(IV_LEN);
-            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, ENC_IND_DOC_LEN - 1);
+            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncIndBase::DOC_LEN - 1);
             this->encInd->write(
                 label, std::pair {encDbDoc, iv}, dbKwRange, dbKwCount, dbKwCounter, this->minDbKw, this->leafCount
             );
