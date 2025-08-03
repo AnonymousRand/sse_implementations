@@ -73,10 +73,10 @@ class EncIndLoc : public EncIndBase {
     public:
         void write(
             const ustring& label, const std::pair<ustring, ustring>& val,
-            const Range<DbKw>& dbKwRange, long dbKwResCount, long rank, DbKw minDbKw, long bottomLevelSize
+            const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
         );
         void find(
-            const Range<DbKw>& dbKwRange, long dbKwResCount, long rank, DbKw minDbKw, long bottomLevelSize,
+            const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize,
             std::pair<ustring, ustring>& ret
         ) const;
 
@@ -84,10 +84,10 @@ class EncIndLoc : public EncIndBase {
          * Returns the position in the file/index that the given keyword range goes (with Log-SRC-i* locality).
          *
          * Precondition:
-         *     - `dbKwResCount` is a power of 2.
+         *     - `dbKwCount` is a power of 2.
          *     - `bottomLevelSize` is a power of 2.
          */
         ulong map(
-            const Range<DbKw>& dbKwRange, long dbKwResCount, long rank, DbKw minDbKw, long bottomLevelSize
+            const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
         ) const;
 };

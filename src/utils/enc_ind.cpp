@@ -196,29 +196,29 @@ bool EncInd::find(const ustring& label, std::pair<ustring, ustring>& ret) const 
 template <class DbKw>
 void EncIndLoc<DbKw>::write(
     const ustring& label, const std::pair<ustring, ustring>& val,
-    const Range<DbKw>& dbKwRange, long dbKwResCount, long rank, DbKw minDbKw, long bottomLevelSize
+    const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
 ) {
-    ulong pos = this->map(dbKwRange, dbKwResCount, rank, minDbKw, bottomLevelSize);
+    ulong pos = this->map(dbKwRange, dbKwCount, dbKwCounter, minDbKw, bottomLevelSize);
     this->writeToPos(pos, label, val);
 }
 
 
 template <class DbKw>
 void EncIndLoc<DbKw>::find(
-    const Range<DbKw>& dbKwRange, long dbKwResCount, long rank, DbKw minDbKw, long bottomLevelSize,
+    const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize,
     std::pair<ustring, ustring>& ret
 ) const {
-    ulong pos = this->map(dbKwRange, dbKwResCount, rank, minDbKw, bottomLevelSize);
+    ulong pos = this->map(dbKwRange, dbKwCount, dbKwCounter, minDbKw, bottomLevelSize);
     this->readValFromPos(pos, ret);
 }
 
 
 template <class DbKw>
 ulong EncIndLoc<DbKw>::map(
-    const Range<DbKw>& dbKwRange, long dbKwResCount, long rank, DbKw minDbKw, long bottomLevelSize
+    const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
 ) const {
-    // `dbKwResCount` is equivalently the bucket size, which is 2^level
-    long level = std::log2(dbKwResCount);
+    // `dbKwCount` is equivalently the bucket size, which is 2^level
+    long level = std::log2(dbKwCount);
     long bucketStep = level >= 1 ? std::pow(2, level - 1) : 1;
     long bucketWithinLevel = (dbKwRange.first - minDbKw) / bucketStep;
 
@@ -238,9 +238,9 @@ ulong EncIndLoc<DbKw>::map(
     ulong pos = (topLevel - level) * (2 * bottomLevelSize)
               - (1 - std::pow(2, level-topLevel)) * std::pow(2, topLevel+1);
     // add extra items in the same level before our current keyword, which consists of earlier buckets on our level
-    // plus any earlier items in the same bucket (which we will use `rank` to determine)
+    // plus any earlier items in the same bucket (which we will use `dbKwCounter` to determine)
     pos += bucketWithinLevel * std::pow(2, level);
-    pos += rank;
+    pos += dbKwCounter;
     return pos;
 }
 
