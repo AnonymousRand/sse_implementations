@@ -163,7 +163,7 @@ struct std::hash<Range<T>> {
 
 template <class T>
 static Range<T> DUMMY_RANGE() {
-    return Range<T>(T(DUMMY), T(DUMMY));
+    return Range<T> {DUMMY, DUMMY};
 }
 
 
