@@ -20,7 +20,7 @@ Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
     Range<Kw> kwRangeDel {4, 4};
     db.push_back(DbEntry {Doc<> {0, 4, Op::INS, kwRangeDel}, kwRangeDel});
     if (hasDeletions) {
-        // delete the document with keyword 
+        // delete the document with keyword 4
         db.push_back(DbEntry {Doc<> {0, 4, Op::DEL, kwRangeDel}, kwRangeDel});
         maxId = dbSize - 2;
     }

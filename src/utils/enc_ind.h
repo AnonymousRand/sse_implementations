@@ -1,6 +1,6 @@
 /**
  * Indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries,
- * each of which correspond to `std::pair<label, std::pair<encrypted doc, IV>>`.
+ * each of which correspond to `std::pair<key/label, std::pair<encrypted doc, IV>>`.
  */
 
 
@@ -45,7 +45,7 @@ class EncIndBase {
         long size;
 
         void writeToPos(
-            ulong pos, const ustring& label, const std::pair<ustring, ustring>& val, bool flushImmediately = false
+            ulong pos, const ustring& key, const std::pair<ustring, ustring>& val, bool flushImmediately = false
         );
 };
 
@@ -57,14 +57,14 @@ class EncIndBase {
 
 class EncInd : public EncIndBase {
     public:
-        void write(const ustring& label, const std::pair<ustring, ustring>& val);
+        void write(const ustring& key, const std::pair<ustring, ustring>& val);
 
         /**
          * Returns:
-         *     - `true` if `label` found.
-         *     - `false` if `label` not found.
+         *     - `true` if `key` found.
+         *     - `false` if `key` not found.
          */
-        bool find(const ustring& label, std::pair<ustring, ustring>& ret) const;
+        bool find(const ustring& key, std::pair<ustring, ustring>& ret) const;
 };
 
 
@@ -77,7 +77,7 @@ template <class DbKw>
 class EncIndLoc : public EncIndBase {
     public:
         void write(
-            const ustring& label, const std::pair<ustring, ustring>& val,
+            const ustring& key, const std::pair<ustring, ustring>& val,
             const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
         );
         void find(
