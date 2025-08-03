@@ -87,7 +87,7 @@ class EncIndLoc : public EncIndBase {
          *     - `dbKwCount` is a power of 2.
          *     - `bottomLevelSize` is a power of 2.
          */
-        ulong map(
+        static ulong map(
             const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
-        ) const;
+        );
 };

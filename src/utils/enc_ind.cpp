@@ -216,7 +216,7 @@ void EncIndLoc<DbKw>::find(
 template <class DbKw>
 ulong EncIndLoc<DbKw>::map(
     const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
-) const {
+) {
     // `dbKwCount` is equivalently the bucket size, which is 2^level
     long level = std::log2(dbKwCount);
     long bucketStep = level >= 1 ? std::pow(2, level - 1) : 1;
