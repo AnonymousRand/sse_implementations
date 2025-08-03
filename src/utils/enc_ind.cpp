@@ -146,7 +146,7 @@ void EncInd::write(const ustring& label, const std::pair<ustring, ustring>& val)
         std::exit(EXIT_FAILURE);
     }
 
-    // encode kv pair and write
+    // encode kv pair and write (flush immediately to mark space as occupied)
     this->writeToPos(pos, label, val, true);
 }
 
@@ -199,7 +199,7 @@ void EncIndLoc<DbKw>::write(
     const Range<DbKw>& dbKwRange, long dbKwResCount, long rank, DbKw minDbKw, long bottomLevelSize
 ) {
     ulong pos = this->map(dbKwRange, dbKwResCount, rank, minDbKw, bottomLevelSize);
-    this->writeToPos(pos, label, val, false);
+    this->writeToPos(pos, label, val);
 }
 
 
