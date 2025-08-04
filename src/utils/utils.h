@@ -271,6 +271,8 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);
 template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& docs);
 
+long calcTdagItemCount(long leafCount);
+
 
 /******************************************************************************/
 /* Debugging                                                                  */

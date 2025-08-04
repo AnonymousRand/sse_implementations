@@ -217,9 +217,9 @@ template <class DbKw>
 ulong EncIndLoc<DbKw>::map(
     const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
 ) {
-    // `dbKwCount` is equivalently the bucket size, which is 2^level
-    long level = std::log2(dbKwCount);
-    long bucketStep = level >= 1 ? std::pow(2, level - 1) : 1;
+    // `dbKwCount` is equivalently the bucket size, which is `2^levelNum`
+    long levelNum = std::log2(dbKwCount);
+    long bucketStep = levelNum >= 1 ? std::pow(2, levelNum - 1) : 1;
     long bucketWithinLevel = (dbKwRange.first - minDbKw) / bucketStep;
 
     // a formula for the total number of items above level i, where n = leaf count and m = log_2(n) is the level number
@@ -234,12 +234,12 @@ ulong EncIndLoc<DbKw>::map(
     // = (m - i)(2n) - (2^m + 2^(m-1) + ... + 2^(i+1))
     // = (m - i)(2n) - ((1 - 0.5^(m-i)) 2^m / 0.5)                                             (sum of geometric series)
     // = (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1)
-    long topLevel = std::log2(bottomLevelSize);
-    ulong pos = (topLevel - level) * (2 * bottomLevelSize)
-              - (1 - std::pow(2, level-topLevel)) * std::pow(2, topLevel+1);
+    long topLevelNum = std::log2(bottomLevelSize);
+    ulong pos = (topLevelNum - levelNum) * (2 * bottomLevelSize)
+              - (1 - std::pow(2, levelNum - topLevelNum)) * std::pow(2, topLevelNum + 1);
     // add extra items in the same level before our current keyword, which consists of earlier buckets on our level
     // plus any earlier items in the same bucket (which we will use `dbKwCounter` to determine)
-    pos += bucketWithinLevel * std::pow(2, level);
+    pos += bucketWithinLevel * std::pow(2, levelNum);
     pos += dbKwCounter;
     return pos;
 }

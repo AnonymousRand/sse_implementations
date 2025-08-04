@@ -96,9 +96,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     long stop = db2.size();
-    long topLevel = std::log2(stop);
-    long newSize = topLevel * (2 * stop) - (1 - std::pow(2, -topLevel)) * std::pow(2, topLevel+1) + stop;
-    db2.reserve(newSize);
+    db2.reserve(calcTdagItemCount(stop));
     for (long i = 0; i < stop; i++) {
         DbEntry<Doc<IdAlias>, IdAlias> dbEntry = db2[i];
         Doc<IdAlias> doc = dbEntry.first;
@@ -160,9 +158,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     stop = db1.size();
-    topLevel = std::log2(stop);
-    newSize = topLevel * (2 * stop) - (1 - std::pow(2, -topLevel)) * std::pow(2, topLevel+1) + stop;
-    db1.reserve(newSize);
+    db1.reserve(calcTdagItemCount(stop));
     for (long i = 0; i < stop; i++) {
         DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
         SrcIDb1Doc doc = dbEntry.first;

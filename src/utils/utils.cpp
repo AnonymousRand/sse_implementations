@@ -372,6 +372,15 @@ void cleanUpResults(std::vector<Doc<>>& docs) {
 }
 
 
+long calcTdagItemCount(long leafCount) {
+    // see `EncIndLoc::map()` comment in `utils/enc_ind.cpp` for where this formula comes from
+    long topLevelNum = std::log2(leafCount);
+    return topLevelNum * (2 * leafCount)
+            - (1 - std::pow(2, -topLevelNum)) * std::pow(2, topLevelNum + 1)
+            + leafCount;
+}
+
+
 template void shuffleInd(Ind<Kw, Doc<>>& ind);
 template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
 //template void shuffleInd(Ind<IdAlias, Doc<IdAlias>>& ind);
