@@ -260,13 +260,13 @@ std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
     if (iter == this->dbKwCounts.end()) {
         return std::vector<DbDoc> {};
     }
-    long kwCount = iter->second;
+    long dbKwCount = iter->second;
 
     std::vector<DbDoc> results;
     ustring queryToken = this->genQueryToken(query);
-    for (long dbKwCounter = 0; dbKwCounter < kwCount; dbKwCounter++) {
+    for (long dbKwCounter = 0; dbKwCounter < dbKwCount; dbKwCounter++) {
         std::pair<ustring, ustring> encIndVal;
-        this->encInd->find(query, kwCount, dbKwCounter, this->minDbKw, this->leafCount, encIndVal);
+        this->encInd->find(query, dbKwCount, dbKwCounter, this->minDbKw, this->leafCount, encIndVal);
         ustring encDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
         // technically we decrypt in the client, but since there's no client-server distinction in this implementation
