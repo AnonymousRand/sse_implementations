@@ -11,14 +11,18 @@ class Sda : public IDsse<Doc<>, Kw> {
     public:
         ~Sda();
 
+        //----------------------------------------------------------------------
         // `ISse`
+
         void setup(int secParam, const Db<Doc<>, Kw>& db) override;
         std::vector<Doc<>> search(
             const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override;
         void clear() override;
 
+        //----------------------------------------------------------------------
         // `IDsse`
+
         void update(const DbEntry<Doc<>, Kw>& newDbEntry) override;
 
     private:

@@ -36,7 +36,9 @@ class LogSrcILoc : public LogSrcIBase<Underly> {
     public:
         LogSrcILoc();
 
+        //----------------------------------------------------------------------
         // `ISse`
+
         /**
          * Precondition:
          *     - Entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
@@ -59,7 +61,9 @@ class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> 
     public:
         ~PiBasLoc();
 
+        //----------------------------------------------------------------------
         // `ISse`
+
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         void clear() override;
 

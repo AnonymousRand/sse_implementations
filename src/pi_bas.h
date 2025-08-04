@@ -17,13 +17,17 @@ class PiBasBase : public ISdaUnderlySse<DbDoc, DbKw> {
     public:
         virtual ~PiBasBase() = default;
 
+        //----------------------------------------------------------------------
         // `ISse`
+
         std::vector<DbDoc> search(
             const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override;
         void clear() override;
 
+        //----------------------------------------------------------------------
         // `ISdaUnderlySse`
+
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     protected:
@@ -52,7 +56,9 @@ class PiBas : public PiBasBase<DbDoc, DbKw> {
     public:
         ~PiBas();
 
+        //----------------------------------------------------------------------
         // `ISse`
+
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
         void clear() override;
 
