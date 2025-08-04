@@ -222,7 +222,7 @@ ulong EncIndLoc<DbKw>::map(
     long bucketStep = level >= 1 ? std::pow(2, level - 1) : 1;
     long bucketWithinLevel = (dbKwRange.first - minDbKw) / bucketStep;
 
-    // a formula for the total number of items above level i, where n = leaf count and m = log_2 n is the level number
+    // a formula for the total number of items above level i, where n = leaf count and m = log_2(n) is the level number
     // of the top level (where bottom level is 0) is (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1); derivation below
     // the bucket count at level j (for j >= 1) is 2^(1-j)n - 1, and the bucket size at level j is 2^j
     // thus the total number of items above level i is
