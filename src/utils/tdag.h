@@ -33,9 +33,9 @@ class TdagNode {
 
     private:
         Range<T> range;
-        TdagNode<T>* left;
-        TdagNode<T>* right;
-        TdagNode<T>* extraParent;
+        TdagNode<T>* left = nullptr;
+        TdagNode<T>* right = nullptr;
+        TdagNode<T>* extraParent = nullptr;
         bool isExtraParent = false;
 
         /**
