@@ -10,6 +10,10 @@ TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
 
 template <class T>
 TdagNode<T>::TdagNode(const Range<T>& leafValRange) {
+    if (leafValRange.size() < 1) {
+        return;
+    }
+
     // if leaf node
     if (leafValRange.size() == 1) {
         this->range = leafValRange;
