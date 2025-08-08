@@ -223,9 +223,9 @@ ulong EncIndLoc<DbKw>::map(
     long bucketWithinLevel = (dbKwRange.first - minDbKw) / bucketStep;
 
     // a formula for the total number of items above level i, where n = leaf count and m = log_2(n) is the level number
-    // of the top level (where bottom level is 0) is (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1); derivation below
-    // the bucket count at level j (for j >= 1) is 2^(1-j)n - 1, and the bucket size at level j is 2^j
-    // thus the total number of items above level i is
+    // of the top level (where bottom level is 0) is (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1); derivation:
+    // the bucket count at level j (for j >= 1) is 2^(1-j)n - 1, and the bucket size at level j is 2^j,
+    // so the total number of items above level i is
     //   (2^(1-m)n - 1)2^m  +  (2^(1-(m-1))n - 1)2^(m-1)  +  ...  +  (2^(1-(i+1))n - 1)2^(i+1)
     //           ^                         ^                                     ^
     //    items in level m         items in level m-1                    items in level i+1
