@@ -6,7 +6,7 @@ release_output = build_release/
 all: debug release
 
 clean:
-	rm -rf build-*
+	rm -rf build_*
 
 debug:
 	conan install . --output-folder=$(debug_output) --build=missing --profile:build=sse_implementations_debug --profile:host=sse_implementations_debug
