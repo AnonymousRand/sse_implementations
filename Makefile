@@ -1,5 +1,5 @@
-debug_output = build-debug/
-release_output = build-release/
+debug_output = build_debug/
+release_output = build_release/
 
 .PHONY: all clean debug release
 

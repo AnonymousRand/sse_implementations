@@ -3,7 +3,7 @@ out/enc_ind_*
 **/a.out
 
 # CMake
-build-*
+build_*
 CMakeUserPresets.json
 
 # vim
