@@ -94,7 +94,7 @@ void EncIndBase::writeToPos(
     }
     ustring kv = key + val.first + val.second;
     if (kv.length() != EncIndBase::KV_LEN) {
-        std::cerr << "EncIndBase::writeToPos(): write of length " << kv.length() << " bytes is too long! "
+        std::cerr << "EncIndBase::writeToPos(): write of length " << kv.length() << " bytes is not allowed! "
                   << "(want " << EncIndBase::KV_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
