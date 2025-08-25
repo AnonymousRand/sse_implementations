@@ -23,6 +23,7 @@
 using uchar = unsigned char;
 using ulong = unsigned long;
 
+
 // lengths are in bytes
 static constexpr int KEY_LEN         = 256 / 8;
 static constexpr int IV_LEN          = 128 / 8;
@@ -36,7 +37,8 @@ static const EVP_MD* HASH_FUNC       = EVP_sha512();
  *     - Keywords and ids are both nonnegative integral values (storable by `long`)
  *       (as `DUMMY` is used for both).
  */
-static constexpr long DUMMY = -1;
+static constexpr long DUMMY          = -1;
+
 
 static std::random_device RAND_DEV;
 static std::mt19937 RNG(RAND_DEV());
@@ -51,6 +53,7 @@ using Kw      = long;
 using Id      = long;
 using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 
+
 // forward declarations
 template <class T>
 class Range;
@@ -64,6 +67,7 @@ enum class Op : char {
     DUMMY = '-'
 };
 
+
 // black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
 // i.e. without needing to know what the template param `T2` of `IDbDoc` is, unlike `std::derived_from` for example
 // (Java generics `extends`: look what they need to mimic a fraction of my power)
@@ -73,12 +77,14 @@ concept IsDbDoc = requires(T t) {
     []<class ... Args>(IDbDoc<Args ...>&){}(t);
 };
 
+
 // this enforces the above plus that `T` uses `DbKw` as its second template param, e.g.
 // `IsDbDoc<IDbDoc<A, long>, long>` passes but not `IdDbDoc<IDbDoc<A, char>, long>`
 template <class T, class DbKw>
 concept IsValidDbParams = requires(T t) {
     []<class T2>(IDbDoc<T2, DbKw>&){}(t);
 };
+
 
 // allow polymorphic types for DB (since Log-SRC-i exists)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
@@ -99,12 +105,13 @@ using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
 // use `ustring` instead of `uchar*` to avoid hell
 using ustring = std::basic_string<uchar>;
 
+
 ustring toUstr(long n);
 ustring toUstr(const std::string& s);
 ustring toUstr(uchar* ucstr, int len);
 std::string toStr(const ustring& ustr);
-
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
+
 
 // provide hash function for `ustring`s to use faster hashmap-based structures, like `unordered_map` instead of `map`
 template <>
@@ -156,6 +163,7 @@ struct std::hash<Range<T>> {
         return std::hash<std::string>{}(range.toStr());
     }
 };
+
 
 template <class T>
 static Range<T> DUMMY_RANGE() {
@@ -255,14 +263,18 @@ class SrcIDb1Doc : public IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw> {
 template <class IndK, IsDbDoc DbDoc>
 void shuffleInd(Ind<IndK, DbDoc>& ind);
 
+
 template <IsDbDoc DbDoc, class DbKw>
 Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db);
+
 
 template <IsDbDoc DbDoc, class DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);
 
+
 template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& docs);
+
 
 long calcTdagItemCount(long leafCount);
 
@@ -273,5 +285,6 @@ long calcTdagItemCount(long leafCount);
 
 
 std::string strToHex(const uchar* str, int len);
+
 
 std::string strToHex(const ustring& str);
