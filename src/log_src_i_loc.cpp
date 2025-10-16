@@ -126,11 +126,8 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     for (long i = 1; i < dbSorted.size(); i++) {
         dbEntry = dbSorted[i];
         Kw kw = dbEntry.second.first;
-        if (kw == prevKw) {
-            continue;
-        }
         // if non-contiguous `Kw`s detected, fill in the gap with dummies
-        if (kw > prevKw + 1) {
+        if (kw - prevKw > 1) {
             for (Kw paddingKw = prevKw + 1; paddingKw < kw; paddingKw++) {
                 Range<Kw> paddingKwRange {paddingKw, paddingKw};
                 SrcIDb1Doc dummyDoc {DUMMY, DUMMY_RANGE<IdAlias>(), paddingKwRange};
