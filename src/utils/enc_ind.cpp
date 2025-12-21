@@ -116,41 +116,6 @@ void EncIndBase::writeToPos(
 //==============================================================================
 
 
-void EncInd::write(const ustring& key, const std::pair<ustring, ustring>& val) {
-    // this conversion mess is from USENIX'24
-    ulong pos = (*((ulong*)key.c_str())) % this->size;
-    uchar currKv[EncIndBase::KV_LEN];
-    std::fseek(this->file, pos * EncIndBase::KV_LEN, SEEK_SET);
-    int itemsReadOrWritten = std::fread(currKv, EncIndBase::KV_LEN, 1, this->file);
-    if (itemsReadOrWritten != 1) {
-        std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    // if location is already filled (because of modulo), find next available location
-    long numPositionsChecked = 1;
-    while (std::memcmp(currKv, EncIndBase::NULL_KV, EncIndBase::KV_LEN) != 0 && numPositionsChecked < this->size) {
-        numPositionsChecked++;
-        pos = (pos + 1) % this->size;
-        if (pos == 0) {
-            std::fseek(this->file, 0, SEEK_SET);
-        }
-        itemsReadOrWritten = std::fread(currKv, EncIndBase::KV_LEN, 1, this->file); 
-        if (itemsReadOrWritten != 1) {
-            std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    }
-    if (std::memcmp(currKv, EncIndBase::NULL_KV, EncIndBase::KV_LEN) != 0) {
-        std::cerr << "EncInd::write(): ran out of space writing!" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    // encode kv pair and write (flush immediately to mark space as occupied)
-    this->writeToPos(pos, key, val, true);
-}
-
-
 bool EncInd::find(const ustring& key, std::pair<ustring, ustring>& ret) const {
     ulong pos = (*((ulong*)key.c_str())) % this->size;
     uchar currKv[EncIndBase::KV_LEN];
@@ -185,6 +150,41 @@ bool EncInd::find(const ustring& key, std::pair<ustring, ustring>& ret) const {
     // decode kv pair and return it
     this->readValFromPos(pos, ret);
     return true;
+}
+
+
+void EncInd::write(const ustring& key, const std::pair<ustring, ustring>& val) {
+    // this conversion mess is from USENIX'24
+    ulong pos = (*((ulong*)key.c_str())) % this->size;
+    uchar currKv[EncIndBase::KV_LEN];
+    std::fseek(this->file, pos * EncIndBase::KV_LEN, SEEK_SET);
+    int itemsReadOrWritten = std::fread(currKv, EncIndBase::KV_LEN, 1, this->file);
+    if (itemsReadOrWritten != 1) {
+        std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    // if location is already filled (because of modulo), find next available location
+    long numPositionsChecked = 1;
+    while (std::memcmp(currKv, EncIndBase::NULL_KV, EncIndBase::KV_LEN) != 0 && numPositionsChecked < this->size) {
+        numPositionsChecked++;
+        pos = (pos + 1) % this->size;
+        if (pos == 0) {
+            std::fseek(this->file, 0, SEEK_SET);
+        }
+        itemsReadOrWritten = std::fread(currKv, EncIndBase::KV_LEN, 1, this->file); 
+        if (itemsReadOrWritten != 1) {
+            std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    }
+    if (std::memcmp(currKv, EncIndBase::NULL_KV, EncIndBase::KV_LEN) != 0) {
+        std::cerr << "EncInd::write(): ran out of space writing!" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    // encode kv pair and write (flush immediately to mark space as occupied)
+    this->writeToPos(pos, key, val, true);
 }
 
 

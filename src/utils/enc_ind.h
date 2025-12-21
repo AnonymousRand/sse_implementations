@@ -57,14 +57,13 @@ class EncIndBase {
 
 class EncInd : public EncIndBase {
     public:
-        void write(const ustring& key, const std::pair<ustring, ustring>& val);
-
         /**
          * Returns:
          *     - `true` if `key` found.
          *     - `false` if `key` not found.
          */
         bool find(const ustring& key, std::pair<ustring, ustring>& ret) const;
+        void write(const ustring& key, const std::pair<ustring, ustring>& val);
 };
 
 
@@ -76,14 +75,14 @@ class EncInd : public EncIndBase {
 template <class DbKw>
 class EncIndLoc : public EncIndBase {
     public:
-        void write(
-            const ustring& key, const std::pair<ustring, ustring>& val,
-            const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
-        );
         void find(
             const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize,
             std::pair<ustring, ustring>& ret
         ) const;
+        void write(
+            const ustring& key, const std::pair<ustring, ustring>& val,
+            const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
+        );
 
         /**
          * Returns the position in the file/index that the given keyword range goes (with Log-SRC-i* locality).
