@@ -34,8 +34,6 @@ concept IsLogSrcILocUnderly = requires(T t) {
 template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc<>, Kw>>
 class LogSrcILoc : public LogSrcIBase<Underly> {
     public:
-        LogSrcILoc();
-
         //----------------------------------------------------------------------
         // `ISse`
 

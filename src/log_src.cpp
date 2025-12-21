@@ -4,10 +4,6 @@
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-LogSrc<Underly>::LogSrc() : underly(new Underly<Doc<>, Kw>()) {}
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 LogSrc<Underly>::~LogSrc() {
     this->clear();
     if (this->underly != nullptr) {

@@ -9,10 +9,6 @@
 
 
 template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc<>, Kw>>
-LogSrcILoc<Underly>::LogSrcILoc() : LogSrcIBase<Underly>() {}
-
-
-template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc<>, Kw>>
 void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 

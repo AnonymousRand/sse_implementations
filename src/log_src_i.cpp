@@ -9,13 +9,6 @@
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-LogSrcIBase<Underly>::LogSrcIBase() :
-        underly1(new Underly<SrcIDb1Doc, Kw>()),
-        underly2(new Underly<Doc<IdAlias>, IdAlias>()),
-        origDbUnderly(new PiBas<Doc<>, Kw>()) {}
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 LogSrcIBase<Underly>::~LogSrcIBase() {
     this->clear();
     if (this->underly1 != nullptr) {
@@ -109,10 +102,6 @@ template class LogSrcIBase<underly::PiBasLoc>;
 //==============================================================================
 // `LogSrcI`
 //==============================================================================
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-LogSrcI<Underly>::LogSrcI() : LogSrcIBase<Underly>() {}
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
