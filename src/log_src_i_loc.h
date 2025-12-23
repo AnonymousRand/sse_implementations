@@ -13,6 +13,10 @@
 
 template <class DbKw>
 class ILogSrcILocUnderly {
+    public:
+        virtual ~ILogSrcILocUnderly();
+        virtual void clear();
+
     protected:
         EncIndLoc<DbKw>* encInd = new EncIndLoc<DbKw>();
 };

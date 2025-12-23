@@ -83,6 +83,10 @@ template class PiBasBase<SrcIDb1Doc, Kw>;          // Log-SRC-i index 1
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 PiBas<DbDoc, DbKw>::~PiBas() {
     this->clear();
+    if (this->encInd != nullptr) {
+        delete this->encInd;
+        this->encInd = nullptr;
+    }
 }
 
 

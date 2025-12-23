@@ -1,6 +1,33 @@
 #include "log_src_i_loc.h"
 
+
+
+
+
 #include "utils/cryptography.h"
+
+
+//==============================================================================
+// `ILogSrcILocUnderly`
+//==============================================================================
+
+
+template <class DbKw>
+ILogSrcILocUnderly<DbKw>::~ILogSrcILocUnderly() {
+    this->clear();
+    if (this->encInd != nullptr) {
+        delete this->encInd;
+        this->encInd = nullptr;
+    }
+}
+
+
+template <class DbKw>
+void ILogSrcILocUnderly<DbKw>::clear() {
+    if (this->encInd != nullptr) {
+        this->encInd->clear();
+    }
+}
 
 
 //==============================================================================
@@ -272,9 +299,7 @@ std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasLoc<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
-    if (this->encInd != nullptr) {
-        this->encInd->clear();
-    }
+    ILogSrcILocUnderly<DbKw>::clear();
 }
 
 
