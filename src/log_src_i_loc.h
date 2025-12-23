@@ -7,35 +7,13 @@
 
 
 //==============================================================================
-// `ILogSrcILocUnderly`
-//==============================================================================
-
-
-template <class DbKw>
-class ILogSrcILocUnderly {
-    public:
-        virtual ~ILogSrcILocUnderly();
-        virtual void clear();
-
-    protected:
-        EncIndLoc<DbKw>* encInd = new EncIndLoc<DbKw>();
-};
-
-
-template <class T>
-concept IsLogSrcILocUnderly = requires(T t) {
-    []<class ... Args>(ILogSrcILocUnderly<Args ...>&){}(t);
-};
-
-
-//==============================================================================
 // `LogSrcILoc`
 //==============================================================================
 
 
 // this construction is a separate file since it requires rather specific code (e.g. padding) for each underlying scheme
 // and it also doesn't make sense to instantiate `PiBasLoc` by itself since its encrypted index is specific for TDAGs
-template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 class LogSrcILoc : public LogSrcIBase<Underly> {
     public:
         //----------------------------------------------------------------------
@@ -59,7 +37,7 @@ namespace underly {
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> {
+class PiBasLoc : public PiBasBase<DbDoc, DbKw> {
     public:
         ~PiBasLoc();
 
@@ -70,6 +48,7 @@ class PiBasLoc : public ILogSrcILocUnderly<DbKw>, public PiBasBase<DbDoc, DbKw> 
         void clear() override;
 
     private:
+        EncIndLoc<DbKw>* encInd = new EncIndLoc<DbKw>();
         std::unordered_map<Range<DbKw>, long> dbKwCounts;
         long leafCount;
         long minDbKw;

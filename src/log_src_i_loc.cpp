@@ -3,35 +3,13 @@
 #include "utils/cryptography.h"
 
 
-//==============================================================================
-// `ILogSrcILocUnderly`
-//==============================================================================
-
-
-template <class DbKw>
-ILogSrcILocUnderly<DbKw>::~ILogSrcILocUnderly() {
-    this->clear();
-    if (this->encInd != nullptr) {
-        delete this->encInd;
-        this->encInd = nullptr;
-    }
-}
-
-
-template <class DbKw>
-void ILogSrcILocUnderly<DbKw>::clear() {
-    if (this->encInd != nullptr) {
-        this->encInd->clear();
-    }
-}
-
 
 //==============================================================================
 // `LogSrcILoc`
 //==============================================================================
 
 
-template <template <class ...> class Underly> requires IsLogSrcILocUnderly<Underly<Doc<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
@@ -207,6 +185,10 @@ namespace underly {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
     this->clear();
+    if (this->encInd != nullptr) {
+        delete this->encInd;
+        this->encInd = nullptr;
+    }
 }
 
 
@@ -295,7 +277,9 @@ std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasLoc<DbDoc, DbKw>::clear() {
     PiBasBase<DbDoc, DbKw>::clear();
-    ILogSrcILocUnderly<DbKw>::clear();
+    if (this->encInd != nullptr) {
+        this->encInd->clear();
+    }
 }
 
 
