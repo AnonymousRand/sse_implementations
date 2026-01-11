@@ -42,7 +42,7 @@ Only tested on Linux systems. To run on Windows, don't. (ok, fine, WSL works :P)
         [conf]
         tools.build:compiler_executables={"cpp": "<path to compiler executable>"}
         ```
-3. Verify that the compiler executable set for `CMAKE_CXX_COMPILER` is also correct in [CMakeLists.txt](./CMakeLists.txt); this should match the one in the Conan profiles (if using default, you can comment it out: CMake will use the default `/usr/bin/c++`).
+3. Verify that the compiler executable set for `CMAKE_CXX_COMPILER` in [CMakeLists.txt](./CMakeLists.txt) matches the one set in the Conan profiles. If using default, you can comment this line out in CMakeLists.txt (in which case CMake will use the default `/usr/bin/c++`).
 4. In the base directory of this project/repo, run
     ```
     make
