@@ -1,11 +1,11 @@
 # SSE Implementations
 
 Implementations of the following [searchable symmetric encryption](https://en.wikipedia.org/wiki/Searchable_symmetric_encryption) (SSE) schemes:
-- PiBas ([Cash et al. NDSS'14](https://eprint.iacr.org/2014/853.pdf)) (but specifically the result-hiding variant used in [Demertzis et al. NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf) (in figure 12), similar to PiBasRo)
-- Logarithmic-SRC ([Demertzis et al. SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
-- Logarithmic-SRC-i ([Demertzis et al. SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
-- Logarithmic-SRC-i\* ([Demertzis et al. 2018](https://dl.acm.org/doi/pdf/10.1145/3167971))
-- SDa ([Demertzis et al. NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf))
+- PiBas ([Cash et al., NDSS'14](https://eprint.iacr.org/2014/853.pdf)) (but specifically the result-hiding variant used in [Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf) (in figure 12), similar to PiBasRo)
+- Logarithmic-SRC ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
+- Logarithmic-SRC-i ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
+- Logarithmic-SRC-i\* ([Demertzis et al., 2018](https://dl.acm.org/doi/pdf/10.1145/3167971))
+- SDa ([Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf))
 
 Since many of these can be instantiated with various underlying schemes, the following instantiations are possible:
 - PiBas
