@@ -393,9 +393,7 @@ template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc<>, Kw>& db
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);
 //template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc<IdAlias>, IdAlias>& db);
 
-template void cleanUpResults(std::vector<Doc<>>& docs);
 template void cleanUpResults(std::vector<SrcIDb1Doc>& docs);
-//template void cleanUpResults(std::vector<Doc<IdAlias>>& docs);
 
 
 //==============================================================================
