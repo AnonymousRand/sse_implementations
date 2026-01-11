@@ -45,11 +45,11 @@ See [src/main.cpp](src/main.cpp) for usage examples.
     ```
     make
     ```
-    and then run either the non-compiler-optimized (debug) version with
+    and then run either the debug (non-compiler-optimized) version with
     ```
     ./build-debug/main
     ```
-    or the compiler-optimized (release) version with
+    or the release (compiler-optimized) version with
     ```
     ./build-release/main
     ```
