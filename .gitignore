@@ -6,6 +6,9 @@ out/enc_ind_*
 build_*
 CMakeUserPresets.json
 
+# venv
+venv/
+
 # vim
 *.swp
 

@@ -156,7 +156,6 @@ class Range : public std::pair<T, T> {
 };
 
 
-template <>
 template <class T>
 struct std::hash<Range<T>> {
     inline std::size_t operator ()(const Range<T>& range) const noexcept {
@@ -226,7 +225,6 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>, DbKw> {
 };
 
 
-template <>
 template <class DbKw>
 struct std::hash<Doc<DbKw>> {
     inline std::size_t operator ()(const Doc<DbKw>& doc) const noexcept {
