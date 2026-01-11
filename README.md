@@ -41,7 +41,8 @@ See [src/main.cpp](src/main.cpp) for usage examples.
         [conf]
         tools.build:compiler_executables={"cpp": "<path to compiler executable>"}
         ```
-3. In the base directory of this project/repo, run
+3. Verify that the compiler executable set for `CMAKE_CXX_COMPILER` is also correct in [CMakeLists.txt](./CMakeLists.txt); this should match the one in the Conan profiles.
+4. In the base directory of this project/repo, run
     ```
     make
     ```
