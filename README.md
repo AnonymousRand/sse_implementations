@@ -59,7 +59,7 @@ Only tested on Linux systems. To run on Windows, don't. (ok, fine, WSL works :P)
 # Notes
 
 - This is not intended for actual, real-world use; more as a proof of concept or a simulation for running experimental evaluation. There is no client-server functionality: everything runs on one machine.
-- Ids and keywords must be nonnegative integral values. Otherwise, Bad Things may happen.
+- Ids and keywords must be nonnegative integral values. Otherwise, Very Bad Things may happen.
 - While each database tuple possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
 - Currently, [src/main.cpp](src/main.cpp) implements four experiments:
