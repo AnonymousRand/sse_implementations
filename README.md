@@ -28,7 +28,7 @@ See [src/main.cpp](src/main.cpp) for usage examples.
 
 # Running
 
-1. Generate two Conan profiles for debug and release respectively (do not change the names!):
+1. Generate two Conan profiles for debug and release respectively (names must match those in the [Makefile](./Makefile)!):
     ```
     conan profile detect --name=sse_implementations_debug
     conan profile detect --name=sse_implementations_release
