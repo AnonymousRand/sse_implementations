@@ -67,3 +67,4 @@ Only tested on Linux systems. To run on Windows, don't. (ok, fine, WSL works :P)
     - Experiment 1, which times range queries of varying sizes on a fixed-size db.
     - Experiment 2, which times a fixed range query on dbs of varying sizes.
     - Experiment 3, which demonstrates the advantage of Logarithmic-SRC-i over Logarithmic-SRC when a lot of false positives are generated.
+- i have pain
