@@ -24,7 +24,8 @@ See [src/main.cpp](src/main.cpp) for usage examples.
 - CMake
 - [Conan 2](https://docs.conan.io/2/installation.html)
 - A C++ compiler that supports C++20 (ideally g++ version 10 or above; e.g. for `apt`, install with `apt install g++-10`)
-- Only tested on Linux systems. To run on Windows, don't. (ok, fine, WSL works)
+
+Only tested on Linux systems. To run on Windows, don't. (ok, fine, WSL works :P)
 
 # Running
 
@@ -41,7 +42,8 @@ See [src/main.cpp](src/main.cpp) for usage examples.
         [conf]
         tools.build:compiler_executables={"cpp": "<path to compiler executable>"}
         ```
-3. In the base directory of this project/repo, run
+3. Verify that the compiler executable set for `CMAKE_CXX_COMPILER` is also correct in [CMakeLists.txt](./CMakeLists.txt); this should match the one in the Conan profiles.
+4. In the base directory of this project/repo, run
     ```
     make
     ```
@@ -56,7 +58,7 @@ See [src/main.cpp](src/main.cpp) for usage examples.
 
 # Notes
 
-- This is not intended for actual, real-world use, more as a proof of concept or a simulation for running experimental evaluation. There is no client-server functionality; everything runs on one machine.
+- This is not intended for actual, real-world use; more as a proof of concept or a simulation for running experimental evaluation. There is no client-server functionality: everything runs on one machine.
 - Ids and keywords must be nonnegative integral values. Otherwise, Bad Things may happen.
 - While each database tuple possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
