@@ -18,6 +18,7 @@ add_executable(
     src/utils/tdag.cpp
     src/utils/utils.cpp
 )
+
 # base directories for `#include`
 target_include_directories(main PUBLIC ${PROJECT_SOURCE_DIR}/src/ ${OPENSSL_INCLUDE_DIR})
 target_link_libraries(main PUBLIC OpenSSL::Crypto)
