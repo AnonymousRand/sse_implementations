@@ -213,37 +213,5 @@ void EncIndLoc<DbKw>::find(
 }
 
 
-template <class DbKw>
-ulong EncIndLoc<DbKw>::map(
-    const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
-) {
-    // `dbKwCount` is equivalently the bucket size, which is `2^levelNum`
-    long levelNum = std::log2(dbKwCount);
-    long bucketStep = levelNum >= 1 ? std::pow(2, levelNum - 1) : 1;
-    long bucketWithinLevel = (dbKwRange.first - minDbKw) / bucketStep;
-
-    // a formula for the total number of items above level i, where n = leaf count and m = log_2(n) is the level number
-    // of the top level (where bottom level is 0) is (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1):
-    // the bucket count at level j (for j >= 1) is 2^(1-j)n - 1, and the bucket size at level j is 2^j,
-    // so the total number of items above level i is
-    //   (2^(1-m)n - 1)2^m  +  (2^(1-(m-1))n - 1)2^(m-1)  +  ...  +  (2^(1-(i+1))n - 1)2^(i+1)
-    //           ^                         ^                                     ^
-    //    items in level m         items in level m-1                    items in level i+1
-    //
-    // = (2n - 2^m) + (2n - 2^(m-1)) + ... + (2n - 2^(i+1))                                 (note there are m - i terms)
-    // = (m - i)(2n) - (2^m + 2^(m-1) + ... + 2^(i+1))
-    // = (m - i)(2n) - ((1 - 0.5^(m-i)) 2^m / 0.5)                                             (sum of geometric series)
-    // = (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1)
-    long topLevelNum = std::log2(bottomLevelSize);
-    ulong pos = (topLevelNum - levelNum) * (2 * bottomLevelSize)
-              - (1 - std::pow(2, levelNum - topLevelNum)) * std::pow(2, topLevelNum + 1);
-    // add extra items in the same level before our current keyword, which consists of earlier buckets on our level
-    // plus any earlier items in the same bucket (which we will use `dbKwCounter` to determine)
-    pos += bucketWithinLevel * std::pow(2, levelNum);
-    pos += dbKwCounter;
-    return pos;
-}
-
-
 template class EncIndLoc<Kw>;
 //template class EncIndLoc<IdAlias>;

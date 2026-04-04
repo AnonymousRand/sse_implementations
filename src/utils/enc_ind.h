@@ -83,15 +83,4 @@ class EncIndLoc : public EncIndBase {
             const ustring& key, const std::pair<ustring, ustring>& val,
             const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
         );
-
-        /**
-         * Returns the position in the file/index that the given keyword range goes (with Log-SRC-i* locality).
-         *
-         * Precondition:
-         *     - `dbKwCount` is a power of 2.
-         *     - `bottomLevelSize` is a power of 2.
-         */
-        static ulong map(
-            const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
-        );
 };
