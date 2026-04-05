@@ -3,7 +3,7 @@
 
 #include "schemes/log_src.h"
 #include "schemes/log_src_i.h"
-#include "schemes/log_src_i_loc.h"
+#include "schemes/log_src_i_star.h"
 #include "schemes/pibas.h"
 #include "schemes/sda.h"
 
@@ -200,11 +200,11 @@ int main() {
     Pibas<> piBas;
     LogSrc<Pibas> logSrc;
     LogSrcI<Pibas> logSrcI;
-    LogSrcILoc<underly::PibasLoc> logSrcILoc;
+    LogSrcIStar<underly::PibasLoc> logSrcILoc;
     Sda<Pibas<>> sdaPibas;
     Sda<LogSrc<Pibas>> sdaLogSrc;
     Sda<LogSrcI<Pibas>> sdaLogSrcI;
-    Sda<LogSrcILoc<underly::PibasLoc>> sdaLogSrcILoc;
+    Sda<LogSrcIStar<underly::PibasLoc>> sdaLogSrcIStar;
 
     //--------------------------------------------------------------------------
     // debugging experiment
@@ -248,7 +248,7 @@ int main() {
 
     std::cout << "-------- SDa[Log-SRC-i*[Pibas]] --------" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcILoc, db, query);
+    expDebug(sdaLogSrcIStar, db, query);
 
     db.clear();
 
@@ -291,7 +291,7 @@ int main() {
 
     std::cout << "-------- SDa[Log-SRC-i*[Pibas]] --------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrcILoc, maxDbSize);
+    exp1(sdaLogSrcIStar, maxDbSize);
 
     //--------------------------------------------------------------------------
     // experiment 2
@@ -332,7 +332,7 @@ int main() {
 
     std::cout << "-------- SDa[Log-SRC-i*[Pibas]] --------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrcILoc, maxDbSize);
+    exp2(sdaLogSrcIStar, maxDbSize);
     
     //--------------------------------------------------------------------------
     // experiment 3

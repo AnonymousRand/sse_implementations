@@ -10,7 +10,7 @@
 //------------------------------------------------------------------------------
 
 
-// common code between `LogSrcI` and `LogSrcILoc`
+// common code between `LogSrcI` and `LogSrcIStar`
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 class LogSrcIBase : public ISdaUnderlySse<Doc<>, Kw> {
     public:
@@ -35,8 +35,8 @@ class LogSrcIBase : public ISdaUnderlySse<Doc<>, Kw> {
         // this is only used to store the original db in `getDb()` so that it is encrypted but easy to recover
         // instead of reconstructing the original db from `underly1`'s and `underly2`'s indexes/dbs
         // do NOT search on this one!
-        // also it's specifically Pibas since `LogSrcILoc` may use locality-aware `Underly`,
-        // which doesn't store non-TDAG-structured datasets correctly
+        // also it's specifically Pibas since `LogSrcIStar` may use locality-aware `Underly`,
+        // which doesn't store non-TDAG-structured datasets correctly (e.g. it might have padding)
         Pibas<Doc<>, Kw>* origDbUnderly = new Pibas<Doc<>, Kw>();
         TdagNode<Kw>* tdag1 = nullptr;
         TdagNode<IdAlias>* tdag2 = nullptr;

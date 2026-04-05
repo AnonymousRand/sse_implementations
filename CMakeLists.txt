@@ -11,7 +11,7 @@ add_executable(
     src/main.cpp
     src/log_src.cpp
     src/log_src_i.cpp
-    src/log_src_i_loc.cpp
+    src/log_src_i_star.cpp
     src/pibas.cpp
     src/sda.cpp
     src/utils/cryptography.cpp

@@ -1,16 +1,16 @@
-#include "log_src_i_loc.h"
+#include "log_src_i_star.h"
 
 #include "utils/cryptography.h"
 
 
 
 //==============================================================================
-// `LogSrcILoc`
+// `LogSrcIStar`
 //==============================================================================
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
+void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
     this->secParam = secParam;
@@ -92,9 +92,9 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->tdag2 = new TdagNode<IdAlias>(Range<IdAlias> {0, maxIdAlias});
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
-    long stop = db2.size();
-    db2.reserve(calcTdagItemCount(stop));
-    for (long i = 0; i < stop; i++) {
+    long dbSizeBeforeRepl = db2.size();
+    db2.reserve(calcTdagItemCount(dbSizeBeforeRepl));
+    for (long i = 0; i < dbSizeBeforeRepl; i++) {
         DbEntry<Doc<IdAlias>, IdAlias> dbEntry = db2[i];
         Doc<IdAlias> doc = dbEntry.first;
         Range<IdAlias> idAliasRange = dbEntry.second;
@@ -151,9 +151,9 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->tdag1 = new TdagNode<Kw>(Range {db1KwBounds.first, maxDb1Kw});
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
-    stop = db1.size();
-    db1.reserve(calcTdagItemCount(stop));
-    for (long i = 0; i < stop; i++) {
+    dbSizeBeforeRepl = db1.size();
+    db1.reserve(calcTdagItemCount(dbSizeBeforeRepl));
+    for (long i = 0; i < dbSizeBeforeRepl; i++) {
         DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
         SrcIDb1Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
@@ -171,7 +171,7 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 }
 
 
-template class LogSrcILoc<underly::PibasLoc>;
+template class LogSrcIStar<underly::PibasLoc>;
 
 
 //==============================================================================

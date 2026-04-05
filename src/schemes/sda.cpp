@@ -2,7 +2,7 @@
 
 #include "log_src.h"
 #include "log_src_i.h"
-#include "log_src_i_loc.h"
+#include "log_src_i_star.h"
 #include "pibas.h"
 
 
@@ -107,4 +107,4 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
 template class Sda<Pibas<>>;
 template class Sda<LogSrc<Pibas>>;
 template class Sda<LogSrcI<Pibas>>;
-template class Sda<LogSrcILoc<underly::PibasLoc>>;
+template class Sda<LogSrcIStar<underly::PibasLoc>>;

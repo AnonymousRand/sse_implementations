@@ -7,14 +7,14 @@
 
 
 //==============================================================================
-// `LogSrcILoc`
+// `LogSrcIStar`
 //==============================================================================
 
 
 // this construction is a separate file since it requires rather specific code (e.g. padding) for each underlying scheme
 // and it also doesn't make sense to instantiate `PibasLoc` by itself since its encrypted index is specific for TDAGs
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-class LogSrcILoc : public LogSrcIBase<Underly> {
+class LogSrcIStar : public LogSrcIBase<Underly> {
     public:
         //----------------------------------------------------------------------
         // `ISse`
