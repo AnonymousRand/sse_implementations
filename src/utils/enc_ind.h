@@ -1,5 +1,5 @@
 /**
- * Indexes are abstractly a list of `std::pair<ustring, std::pair<ustring, ustring>>` entries,
+ * Indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>` pairs,
  * each of which correspond to `std::pair<key/label, std::pair<encrypted doc, IV>>`.
  */
 
@@ -12,75 +12,46 @@
 #include "utils.h"
 
 
-//==============================================================================
-// `EncIndBase`
-//==============================================================================
-
-
-// common code
-class EncIndBase {
+class EncInd {
     public:
         static constexpr int KEY_LEN = HASH_OUTPUT_LEN; // both PRF (default) and hash (res-hiding) have 512 bit output
         static constexpr int DOC_LEN = 4 * BLOCK_SIZE;  // so max keyword/id size ~10^13 for encoding to fit (start 0)
-        static constexpr int VAL_LEN = EncIndBase::DOC_LEN + IV_LEN;
-        static constexpr int KV_LEN  = EncIndBase::KEY_LEN + EncIndBase::VAL_LEN;
+        static constexpr int VAL_LEN = EncInd::DOC_LEN + IV_LEN;
+        static constexpr int KV_LEN  = EncInd::KEY_LEN + EncInd::VAL_LEN;
 
-        virtual ~EncIndBase();
+        ~EncInd();
 
-        virtual void init(long size);
+        void init(long size);
         void clear();
 
         /**
+         * Tries to find `key` starting at `pos` and iterating linearly if not matching
+         * (i.e. another kv pair overflowed there first).
+         *
+         * Returns:
+         *     - `true` if the kv pair corresponding to `key` was eventually found.
+         *     - `false` if the kv pair corresponding to `key` was never found in the entire index.
+         */
+        bool find(ulong pos, const ustring& key, std::pair<ustring, ustring>& ret) const;
+
+        /**
+         * Reads and decodes the value at `pos` (without checking the for any `queryToken`).
+         *
          * Returns:
          *     - `true` if the kv pair at `pos` is valid.
          *     - `false` if the kv pair at `pos` is the null kv pair.
          */
-        bool readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const;
+        bool read(ulong pos, std::pair<ustring, ustring>& ret) const;
+
+        /**
+         * Write to first empty location starting at `pos` (may not be at `pos` if hash collision).
+         */
+        void write(ulong pos, const EncIndEntry& encIndEntry);
 
     protected:
-        static const uchar NULL_KV[EncIndBase::KV_LEN];
+        static const uchar NULL_KV[EncInd::KV_LEN];
 
         FILE* file = nullptr;
         std::string filename = "";
         long size;
-
-        void writeToPos(
-            ulong pos, const ustring& key, const std::pair<ustring, ustring>& val, bool flushImmediately = false
-        );
-};
-
-
-//==============================================================================
-// `EncInd`
-//==============================================================================
-
-
-class EncInd : public EncIndBase {
-    public:
-        /**
-         * Returns:
-         *     - `true` if `key` found.
-         *     - `false` if `key` not found.
-         */
-        bool find(const ustring& key, std::pair<ustring, ustring>& ret) const;
-        void write(const ustring& key, const std::pair<ustring, ustring>& val);
-};
-
-
-//==============================================================================
-// `EncIndLoc`
-//==============================================================================
-
-
-template <class DbKw>
-class EncIndLoc : public EncIndBase {
-    public:
-        void find(
-            const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize,
-            std::pair<ustring, ustring>& ret
-        ) const;
-        void write(
-            const ustring& key, const std::pair<ustring, ustring>& val,
-            const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
-        );
 };

@@ -1,24 +1,19 @@
 #include "enc_ind.h"
 
 
-//==============================================================================
-// `EncIndBase`
-//==============================================================================
-
-
 // this initializes everything to `\0`, i.e. zero bits
 // technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
-// a null kv-pair, but currently `EncIndBase::KV_LEN` is 1024 bits so there's a 2^1024 chance of this happening
+// a null kv-pair, but currently `EncInd::KV_LEN` is 1024 bits so there's a 2^1024 chance of this happening
 // USENIX'24's implementation also seems to just do this
-const uchar EncIndBase::NULL_KV[EncIndBase::KV_LEN] = {};
+const uchar EncInd::NULL_KV[EncInd::KV_LEN] = {};
 
 
-EncIndBase::~EncIndBase() {
+EncInd::~EncInd() {
     this->clear();
 }
 
 
-void EncIndBase::init(long size) {
+void EncInd::init(long size) {
     this->clear();
     this->size = size;
 
@@ -36,25 +31,25 @@ void EncIndBase::init(long size) {
     }
     this->file = std::fopen(this->filename.c_str(), "wb+");
     if (this->file == nullptr) {
-        std::cerr << "EncIndBase::init(): error opening file" << std::endl;
+        std::cerr << "EncInd::init(): error opening file" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
     // fill file with zero bits
     for (long i = 0; i < size; i++) {
-        int itemsWritten = std::fwrite(EncIndBase::NULL_KV, EncIndBase::KV_LEN, 1, this->file);
+        int itemsWritten = std::fwrite(EncInd::NULL_KV, EncInd::KV_LEN, 1, this->file);
         if (itemsWritten != 1) {
-            std::cerr << "EncIndBase::init(): error initializing file (nothing written)" << std::endl;
+            std::cerr << "EncInd::init(): error initializing file (nothing written)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
 }
 
 
-void EncIndBase::clear() {
+void EncInd::clear() {
     if (this->file != nullptr) {
         std::fclose(this->file);
-        this->file = nullptr; // important for idempotence!
+        this->file = nullptr;
     }
     // delete encrypted index files from disk on `clear()`
     if (this->filename != "") {
@@ -65,106 +60,84 @@ void EncIndBase::clear() {
 }
 
 
-bool EncIndBase::readValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const {
-    uchar kv[EncIndBase::KV_LEN];
-    std::fseek(this->file, pos * EncIndBase::KV_LEN, SEEK_SET);
-    int itemsRead = std::fread(kv, EncIndBase::KV_LEN, 1, this->file);
-    if (itemsRead != 1) {
-        std::cerr << "EncIndBase::readValFromPos(): error reading from file (nothing read)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    if (std::memcmp(kv, EncIndBase::NULL_KV, EncIndBase::KV_LEN) == 0) {
-        // if `pos` contains `NULL_KV`
-        return false;
-    }
+bool EncInd::find(ulong pos, const ustring& key, std::pair<ustring, ustring>& ret) const {
+    pos %= this->size;
 
-    ret.first = ustring(&kv[EncIndBase::KEY_LEN], EncIndBase::DOC_LEN);
-    ret.second = ustring(&kv[EncIndBase::KEY_LEN + EncIndBase::DOC_LEN], IV_LEN);
-    return true;
-}
-
-
-void EncIndBase::writeToPos(
-    ulong pos, const ustring& key, const std::pair<ustring, ustring>& val, bool flushImmediately
-) {
-    if (pos >= this->size) {
-        std::cerr << "EncIndBase::writeToPos(): write to pos " << pos << " is out of bounds! "
-                  << "(size is " << this->size << ")" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    ustring kv = key + val.first + val.second;
-    if (kv.length() != EncIndBase::KV_LEN) {
-        std::cerr << "EncIndBase::writeToPos(): write of length " << kv.length() << " bytes is not allowed! "
-                  << "(want " << EncIndBase::KV_LEN << " bytes)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    std::fseek(this->file, pos * EncIndBase::KV_LEN, SEEK_SET);
-    int itemsWritten = std::fwrite(kv.c_str(), EncIndBase::KV_LEN, 1, this->file);
-    if (itemsWritten != 1) {
-        std::cerr << "EncIndBase::writeToPos(): error writing to file (nothing written)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    if (flushImmediately) {
-        std::fflush(this->file);
-    }
-}
-
-
-//==============================================================================
-// `EncInd`
-//==============================================================================
-
-
-bool EncInd::find(const ustring& key, std::pair<ustring, ustring>& ret) const {
-    ulong pos = (*((ulong*)key.c_str())) % this->size;
-    uchar currKv[EncIndBase::KV_LEN];
-    std::fseek(this->file, pos * EncIndBase::KV_LEN, SEEK_SET);
-    int itemsRead = std::fread(currKv, EncIndBase::KV_LEN, 1, this->file);
+    uchar currKv[EncInd::KV_LEN];
+    std::fseek(this->file, pos * EncInd::KV_LEN, SEEK_SET);
+    int itemsRead = std::fread(currKv, EncInd::KV_LEN, 1, this->file);
     if (itemsRead != 1) {
         std::cerr << "EncInd::find(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    const uchar* keyCStr = key.c_str();
 
-    // if location based on `key` did not match the target `key` (i.e. another kv pair overflowed to here first),
+    // if entry at `pos` did not match the target `key` (i.e. another kv pair overflowed here first),
     // scan subsequent locations for where the target `key` could've overflowed to
+    const uchar* targetKeyCStr = key.c_str();
     long numPositionsChecked = 1;
-    while (std::memcmp(currKv, keyCStr, EncIndBase::KEY_LEN) != 0 && numPositionsChecked < this->size) {
+    while (std::memcmp(currKv, targetKeyCStr, EncInd::KEY_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsRead = std::fread(currKv, EncIndBase::KV_LEN, 1, this->file);
+        itemsRead = std::fread(currKv, EncInd::KV_LEN, 1, this->file);
         if (itemsRead != 1) {
             std::cerr << "EncInd::find(): error reading from file (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
-    if (std::memcmp(currKv, keyCStr, EncIndBase::KEY_LEN) != 0) {
-        // if not found
+    // if not found
+    if (std::memcmp(currKv, targetKeyCStr, EncInd::KEY_LEN) != 0) {
         return false;
     }
 
     // decode kv pair and return it
-    this->readValFromPos(pos, ret);
+    return this->read(pos, ret);
+}
+
+
+bool EncInd::read(ulong pos, std::pair<ustring, ustring>& ret) const {
+    pos %= this->size;
+
+    uchar kv[EncInd::KV_LEN];
+    std::fseek(this->file, pos * EncInd::KV_LEN, SEEK_SET);
+    int itemsRead = std::fread(kv, EncInd::KV_LEN, 1, this->file);
+    if (itemsRead != 1) {
+        std::cerr << "EncInd::read(): error reading from file (nothing read)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    if (std::memcmp(kv, EncInd::NULL_KV, EncInd::KV_LEN) == 0) {
+        // if `pos` contains `NULL_KV`
+        return false;
+    }
+
+    ret.first = ustring(&kv[EncInd::KEY_LEN], EncInd::DOC_LEN);
+    ret.second = ustring(&kv[EncInd::KEY_LEN + EncInd::DOC_LEN], IV_LEN);
     return true;
 }
 
 
-void EncInd::write(const ustring& key, const std::pair<ustring, ustring>& val) {
-    // this conversion mess is from USENIX'24
-    ulong pos = (*((ulong*)key.c_str())) % this->size;
+void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
+    pos %= this->size;
+
+    /*
+    if (pos >= this->size) {
+        std::cerr << "EncInd::write(): write to pos " << pos << " is out of bounds! "
+                  << "(size is " << this->size << ")" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    */
+
+    // if location is already filled (because of modulo), find next available location
     uchar currKv[EncIndBase::KV_LEN];
-    std::fseek(this->file, pos * EncIndBase::KV_LEN, SEEK_SET);
+    std::fseek(this->file, pos * EncInd::KV_LEN, SEEK_SET);
     int itemsReadOrWritten = std::fread(currKv, EncIndBase::KV_LEN, 1, this->file);
     if (itemsReadOrWritten != 1) {
         std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
-    // if location is already filled (because of modulo), find next available location
     long numPositionsChecked = 1;
     while (std::memcmp(currKv, EncIndBase::NULL_KV, EncIndBase::KV_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
@@ -183,35 +156,21 @@ void EncInd::write(const ustring& key, const std::pair<ustring, ustring>& val) {
         std::exit(EXIT_FAILURE);
     }
 
-    // encode kv pair and write (flush immediately to mark space as occupied)
-    this->writeToPos(pos, key, val, true);
+    // once we've found our spot, perform the write
+    ustring key = encIndEntry.first;
+    std::pair<ustring, ustring> val = encIndEntry.second;
+    ustring kv = key + val.first + val.second;
+    if (kv.length() != EncInd::KV_LEN) {
+        std::cerr << "EncInd::write(): write of length " << kv.length() << " bytes is not allowed! "
+                  << "(want " << EncInd::KV_LEN << " bytes)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    int itemsWritten = std::fwrite(kv.c_str(), EncInd::KV_LEN, 1, this->file);
+    if (itemsWritten != 1) {
+        std::cerr << "EncInd::write(): error writing to file (nothing written)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    // flush immediately to mark space as occupied
+    std::fflush(this->file);
 }
-
-
-//==============================================================================
-// `EncIndLoc`
-//==============================================================================
-
-
-template <class DbKw>
-void EncIndLoc<DbKw>::write(
-    const ustring& key, const std::pair<ustring, ustring>& val,
-    const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize
-) {
-    ulong pos = this->map(dbKwRange, dbKwCount, dbKwCounter, minDbKw, bottomLevelSize);
-    this->writeToPos(pos, key, val);
-}
-
-
-template <class DbKw>
-void EncIndLoc<DbKw>::find(
-    const Range<DbKw>& dbKwRange, long dbKwCount, long dbKwCounter, DbKw minDbKw, long bottomLevelSize,
-    std::pair<ustring, ustring>& ret
-) const {
-    ulong pos = this->map(dbKwRange, dbKwCount, dbKwCounter, minDbKw, bottomLevelSize);
-    this->readValFromPos(pos, ret);
-}
-
-
-template class EncIndLoc<Kw>;
-//template class EncIndLoc<IdAlias>;

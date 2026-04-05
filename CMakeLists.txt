@@ -12,7 +12,7 @@ add_executable(
     src/log_src.cpp
     src/log_src_i.cpp
     src/log_src_i_loc.cpp
-    src/pi_bas.cpp
+    src/pibas.cpp
     src/sda.cpp
     src/utils/cryptography.cpp
     src/utils/enc_ind.cpp

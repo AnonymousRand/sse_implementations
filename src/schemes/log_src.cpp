@@ -1,6 +1,6 @@
 #include "log_src.h"
 
-#include "pi_bas.h"
+#include "pibas.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
@@ -70,4 +70,4 @@ void LogSrc<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
 }
 
 
-template class LogSrc<PiBas>;
+template class LogSrc<Pibas>;

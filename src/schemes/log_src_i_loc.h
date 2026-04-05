@@ -2,7 +2,7 @@
 
 
 #include "log_src_i.h" 
-#include "pi_bas.h" 
+#include "pibas.h" 
 #include "utils/enc_ind.h"
 
 
@@ -12,7 +12,7 @@
 
 
 // this construction is a separate file since it requires rather specific code (e.g. padding) for each underlying scheme
-// and it also doesn't make sense to instantiate `PiBasLoc` by itself since its encrypted index is specific for TDAGs
+// and it also doesn't make sense to instantiate `PibasLoc` by itself since its encrypted index is specific for TDAGs
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 class LogSrcILoc : public LogSrcIBase<Underly> {
     public:
@@ -29,7 +29,7 @@ class LogSrcILoc : public LogSrcIBase<Underly> {
 
 
 //==============================================================================
-// `PiBasLoc`
+// `PibasLoc`
 //==============================================================================
 
 
@@ -37,9 +37,9 @@ namespace underly {
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class PiBasLoc : public PiBasBase<DbDoc, DbKw> {
+class PibasLoc : public PibasBase<DbDoc, DbKw> {
     public:
-        ~PiBasLoc();
+        ~PibasLoc();
 
         //----------------------------------------------------------------------
         // `ISse`

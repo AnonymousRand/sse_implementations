@@ -88,13 +88,14 @@ concept IsValidDbParams = requires(T t) {
 
 // allow polymorphic types for DB (since Log-SRC-i exists)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-using DbEntry = std::pair<DbDoc, Range<DbKw>>;
+using DbEntry     = std::pair<DbDoc, Range<DbKw>>;
 // technically dbs only need to contain the `DbDoc` part since `Doc` is the full (id,kw,op) tuple
 // but we will also explicitly store keyword ranges (`DbKw`) for convenience in our implementation
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-using Db      = std::vector<DbEntry<DbDoc, DbKw>>;
+using Db          = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class IndK = Kw, class DbDoc = Doc<>>
-using Ind     = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
+using Ind         = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
+using EncIndEntry = std::pair<ustring, std::pair<ustring, ustring>>;
 
 
 //==============================================================================

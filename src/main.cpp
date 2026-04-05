@@ -1,11 +1,11 @@
 #include <chrono>
 #include <cmath>
 
-#include "log_src.h"
-#include "log_src_i.h"
-#include "log_src_i_loc.h"
-#include "pi_bas.h"
-#include "sda.h"
+#include "schemes/log_src.h"
+#include "schemes/log_src_i.h"
+#include "schemes/log_src_i_loc.h"
+#include "schemes/pibas.h"
+#include "schemes/sda.h"
 
 
 Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
@@ -197,14 +197,14 @@ int main() {
     long maxDbSize = std::pow(2, maxDbSizeExp);
     std::cout << std::endl;
 
-    PiBas<> piBas;
-    LogSrc<PiBas> logSrc;
-    LogSrcI<PiBas> logSrcI;
-    LogSrcILoc<underly::PiBasLoc> logSrcILoc;
-    Sda<PiBas<>> sdaPiBas;
-    Sda<LogSrc<PiBas>> sdaLogSrc;
-    Sda<LogSrcI<PiBas>> sdaLogSrcI;
-    Sda<LogSrcILoc<underly::PiBasLoc>> sdaLogSrcILoc;
+    Pibas<> piBas;
+    LogSrc<Pibas> logSrc;
+    LogSrcI<Pibas> logSrcI;
+    LogSrcILoc<underly::PibasLoc> logSrcILoc;
+    Sda<Pibas<>> sdaPibas;
+    Sda<LogSrc<Pibas>> sdaLogSrc;
+    Sda<LogSrcI<Pibas>> sdaLogSrcI;
+    Sda<LogSrcILoc<underly::PibasLoc>> sdaLogSrcILoc;
 
     //--------------------------------------------------------------------------
     // debugging experiment
@@ -218,35 +218,35 @@ int main() {
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------------- PiBas -----------------" << std::endl;
+    std::cout << "---------------- Pibas -----------------" << std::endl;
     std::cout << std::endl;
     expDebug(piBas, db, query);
 
-    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
+    std::cout << "------------ Log-SRC[Pibas] ------------" << std::endl;
     std::cout << std::endl;
     expDebug(logSrc, db, query);
 
-    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
+    std::cout << "----------- Log-SRC-i[Pibas] -----------" << std::endl;
     std::cout << std::endl;
     expDebug(logSrcI, db, query);
 
-    std::cout << "---------- Log-SRC-i*[PiBas] -----------" << std::endl;
+    std::cout << "---------- Log-SRC-i*[Pibas] -----------" << std::endl;
     std::cout << std::endl;
     expDebug(logSrcILoc, db, query);
 
-    std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
+    std::cout << "-------------- SDa[Pibas] --------------" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaPiBas, db, query);
+    expDebug(sdaPibas, db, query);
 
-    std::cout << "--------- SDa[Log-SRC[PiBas]] ----------" << std::endl;
+    std::cout << "--------- SDa[Log-SRC[Pibas]] ----------" << std::endl;
     std::cout << std::endl;
     expDebug(sdaLogSrc, db, query);
 
-    std::cout << "-------- SDa[Log-SRC-i[PiBas]] ---------" << std::endl;
+    std::cout << "-------- SDa[Log-SRC-i[Pibas]] ---------" << std::endl;
     std::cout << std::endl;
     expDebug(sdaLogSrcI, db, query);
 
-    std::cout << "-------- SDa[Log-SRC-i*[PiBas]] --------" << std::endl;
+    std::cout << "-------- SDa[Log-SRC-i*[Pibas]] --------" << std::endl;
     std::cout << std::endl;
     expDebug(sdaLogSrcILoc, db, query);
 
@@ -261,35 +261,35 @@ int main() {
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------------- PiBas -----------------" << std::endl;
+    std::cout << "---------------- Pibas -----------------" << std::endl;
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
 
-    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
+    std::cout << "------------ Log-SRC[Pibas] ------------" << std::endl;
     std::cout << std::endl;
     exp1(logSrc, maxDbSize);
 
-    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
+    std::cout << "----------- Log-SRC-i[Pibas] -----------" << std::endl;
     std::cout << std::endl;
     exp1(logSrcI, maxDbSize);
 
-    std::cout << "---------- Log-SRC-i*[PiBas] -----------" << std::endl;
+    std::cout << "---------- Log-SRC-i*[Pibas] -----------" << std::endl;
     std::cout << std::endl;
     exp1(logSrcILoc, maxDbSize);
 
-    std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
+    std::cout << "-------------- SDa[Pibas] --------------" << std::endl;
     std::cout << std::endl;
-    exp1(sdaPiBas, maxDbSize);
+    exp1(sdaPibas, maxDbSize);
 
-    std::cout << "--------- SDa[Log-SRC[PiBas]] ----------" << std::endl;
+    std::cout << "--------- SDa[Log-SRC[Pibas]] ----------" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrc, maxDbSize);
 
-    std::cout << "-------- SDa[Log-SRC-i[PiBas]] ---------" << std::endl;
+    std::cout << "-------- SDa[Log-SRC-i[Pibas]] ---------" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrcI, maxDbSize);
 
-    std::cout << "-------- SDa[Log-SRC-i*[PiBas]] --------" << std::endl;
+    std::cout << "-------- SDa[Log-SRC-i*[Pibas]] --------" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrcILoc, maxDbSize);
 
@@ -302,35 +302,35 @@ int main() {
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------------- PiBas -----------------" << std::endl;
+    std::cout << "---------------- Pibas -----------------" << std::endl;
     std::cout << std::endl;
     exp2(piBas, maxDbSize);
 
-    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
+    std::cout << "------------ Log-SRC[Pibas] ------------" << std::endl;
     std::cout << std::endl;
     exp2(logSrc, maxDbSize);
 
-    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
+    std::cout << "----------- Log-SRC-i[Pibas] -----------" << std::endl;
     std::cout << std::endl;
     exp2(logSrcI, maxDbSize);
 
-    std::cout << "---------- Log-SRC-i*[PiBas] -----------" << std::endl;
+    std::cout << "---------- Log-SRC-i*[Pibas] -----------" << std::endl;
     std::cout << std::endl;
     exp2(logSrcILoc, maxDbSize);
 
-    std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
+    std::cout << "-------------- SDa[Pibas] --------------" << std::endl;
     std::cout << std::endl;
-    exp2(sdaPiBas, maxDbSize);
+    exp2(sdaPibas, maxDbSize);
 
-    std::cout << "--------- SDa[Log-SRC[PiBas]] ----------" << std::endl;
+    std::cout << "--------- SDa[Log-SRC[Pibas]] ----------" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrc, maxDbSize);
 
-    std::cout << "-------- SDa[Log-SRC-i[PiBas]] ---------" << std::endl;
+    std::cout << "-------- SDa[Log-SRC-i[Pibas]] ---------" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrcI, maxDbSize);
 
-    std::cout << "-------- SDa[Log-SRC-i*[PiBas]] --------" << std::endl;
+    std::cout << "-------- SDa[Log-SRC-i*[Pibas]] --------" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrcILoc, maxDbSize);
     
@@ -343,11 +343,11 @@ int main() {
     std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
+    std::cout << "------------ Log-SRC[Pibas] ------------" << std::endl;
     std::cout << std::endl;
     exp3(logSrc, maxDbSize);
 
-    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
+    std::cout << "----------- Log-SRC-i[Pibas] -----------" << std::endl;
     std::cout << std::endl;
     exp3(logSrcI, maxDbSize);
 }

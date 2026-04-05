@@ -42,7 +42,7 @@ ustring genIv(int ivLen) {
 }
 
 
-ustring findHash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input) {
+ustring hash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (!ctx) {
         handleErrors();

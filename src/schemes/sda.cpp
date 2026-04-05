@@ -3,7 +3,7 @@
 #include "log_src.h"
 #include "log_src_i.h"
 #include "log_src_i_loc.h"
-#include "pi_bas.h"
+#include "pibas.h"
 
 
 template <IsSdaUnderlySse Underly>
@@ -104,7 +104,7 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
 }
 
 
-template class Sda<PiBas<>>;
-template class Sda<LogSrc<PiBas>>;
-template class Sda<LogSrcI<PiBas>>;
-template class Sda<LogSrcILoc<underly::PiBasLoc>>;
+template class Sda<Pibas<>>;
+template class Sda<LogSrc<Pibas>>;
+template class Sda<LogSrcI<Pibas>>;
+template class Sda<LogSrcILoc<underly::PibasLoc>>;

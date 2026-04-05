@@ -171,11 +171,11 @@ void LogSrcILoc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 }
 
 
-template class LogSrcILoc<underly::PiBasLoc>;
+template class LogSrcILoc<underly::PibasLoc>;
 
 
 //==============================================================================
-// `PiBasLoc`
+// `PibasLoc`
 //==============================================================================
 
 
@@ -183,7 +183,7 @@ namespace underly {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
+PibasLoc<DbDoc, DbKw>::~PibasLoc() {
     this->clear();
     if (this->encInd != nullptr) {
         delete this->encInd;
@@ -193,7 +193,7 @@ PiBasLoc<DbDoc, DbKw>::~PiBasLoc() {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+void PibasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
 
     this->size = db.size();
@@ -237,7 +237,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         this->dbKwCounts[dbKwRange] = dbKwCount;
         for (long dbKwCounter = 0; dbKwCounter < dbKwCount; dbKwCounter++) {
             DbDoc dbDoc = dbDocsWithSameDbKw[dbKwCounter];
-            ustring label = findHash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
+            ustring label = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncIndBase::DOC_LEN - 1);
             this->encInd->write(
@@ -249,7 +249,7 @@ void PiBasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+std::vector<DbDoc> PibasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     auto iter = this->dbKwCounts.find(query);
     if (iter == this->dbKwCounts.end()) {
         return std::vector<DbDoc> {};
@@ -275,8 +275,8 @@ std::vector<DbDoc> PiBasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void PiBasLoc<DbDoc, DbKw>::clear() {
-    PiBasBase<DbDoc, DbKw>::clear();
+void PibasLoc<DbDoc, DbKw>::clear() {
+    PibasBase<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
         this->encInd->clear();
     }
@@ -284,14 +284,14 @@ void PiBasLoc<DbDoc, DbKw>::clear() {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-bool PiBasLoc<DbDoc, DbKw>::readEncIndValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const {
+bool PibasLoc<DbDoc, DbKw>::readEncIndValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const {
     return this->encInd->readValFromPos(pos, ret);
 }
 
 
-template class PiBasLoc<Doc<>, Kw>;       
-template class PiBasLoc<SrcIDb1Doc, Kw>;
-//template class PiBasLoc<Doc<IdAlias>, IdAlias>;
+template class PibasLoc<Doc<>, Kw>;       
+template class PibasLoc<SrcIDb1Doc, Kw>;
+//template class PibasLoc<Doc<IdAlias>, IdAlias>;
 
 
 } // namespace `underly`
