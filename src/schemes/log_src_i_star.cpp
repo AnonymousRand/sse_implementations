@@ -3,7 +3,6 @@
 #include "utils/cryptography.h"
 
 
-
 //==============================================================================
 // `LogSrcIStar`
 //==============================================================================
@@ -177,7 +176,7 @@ template class LogSrcIStar<underly::PibasLoc>;
 
 
 //==============================================================================
-// `PibasLoc`
+// `LogSrcIStarUnderly`
 //==============================================================================
 
 
@@ -185,17 +184,7 @@ namespace underly {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-PibasLoc<DbDoc, DbKw>::~PibasLoc() {
-    this->clear();
-    if (this->encInd != nullptr) {
-        delete this->encInd;
-        this->encInd = nullptr;
-    }
-}
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void PibasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
 
     this->size = db.size();
@@ -250,50 +239,9 @@ void PibasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::vector<DbDoc> PibasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
-    auto iter = this->dbKwListSizes.find(query);
-    if (iter == this->dbKwListSizes.end()) {
-        return std::vector<DbDoc> {};
-    }
-    long dbKwListSize = iter->second;
-
-    std::vector<DbDoc> results;
-    ustring queryToken = this->genQueryToken(query);
-    for (long dbKwListSize = 0; dbKwListSize < dbKwListSize; dbKwListSize++) {
-        EncIndVal encIndVal;
-        this->encInd->find(query, dbKwListSize, dbKwListSize, this->minDbKw, this->leafCount, encIndVal);
-        ustring encDbDoc = encIndVal.first;
-        ustring iv = encIndVal.second;
-        // technically we decrypt in the client, but since there's no client-server distinction in this implementation
-        // we'll just decrypt immediately to make the code cleaner
-        ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
-        DbDoc result = DbDoc::fromUstr(decDbDoc);
-        results.push_back(result);
-    }
-
-    return results;
-}
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void PibasLoc<DbDoc, DbKw>::clear() {
-    PibasBase<DbDoc, DbKw>::clear();
-    if (this->encInd != nullptr) {
-        this->encInd->clear();
-    }
-}
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-bool PibasLoc<DbDoc, DbKw>::readEncIndValFromPos(ulong pos, std::pair<ustring, ustring>& ret) const {
-    return this->encInd->readValFromPos(pos, ret);
-}
-
-
-template class PibasLoc<Doc<>, Kw>;       
-template class PibasLoc<SrcIDb1Doc, Kw>;
-//template class PibasLoc<Doc<IdAlias>, IdAlias>;
+template class LogSrcIStarUnderly<Doc<>, Kw>;       
+template class LogSrcIStarUnderly<SrcIDb1Doc, Kw>;
+//template class LogSrcIStarUnderly<Doc<IdAlias>, IdAlias>;
 
 
 } // namespace `underly`

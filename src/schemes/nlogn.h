@@ -5,13 +5,6 @@
 #include "utils/enc_ind.h"
 
 
-/*
-todo brainstorming: for log-src-i* underly, just subclass this and override setup() & map() with now each level
-storing the custom amount of buckets/entries based on # of tdag nodes on that level 
-and for the size param pass in the number of leaves
-also remove padding right
-change private here to protected
-*/
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 class Nlogn : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, DbKw> {
     public:
@@ -28,7 +21,7 @@ class Nlogn : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
 
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
-    private:
+    protected:
         std::vector<EncInd*> encIndLvls;
         EncInd* dbKwListSizeDict = new EncInd();
 
