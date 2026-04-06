@@ -60,7 +60,7 @@ void EncInd::clear() {
 }
 
 
-bool EncInd::find(ulong pos, const ustring& key, std::pair<ustring, ustring>& ret) const {
+bool EncInd::find(ulong pos, const ustring& key, EncIndVal& ret) const {
     pos %= this->size;
 
     uchar currKv[EncInd::KV_LEN];
@@ -97,7 +97,7 @@ bool EncInd::find(ulong pos, const ustring& key, std::pair<ustring, ustring>& re
 }
 
 
-bool EncInd::read(ulong pos, std::pair<ustring, ustring>& ret) const {
+bool EncInd::read(ulong pos, EncIndVal& ret) const {
     pos %= this->size;
 
     uchar kv[EncInd::KV_LEN];
@@ -158,7 +158,7 @@ void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
 
     // once we've found our spot, perform the write
     ustring key = encIndEntry.first;
-    std::pair<ustring, ustring> val = encIndEntry.second;
+    EncIndVal val = encIndEntry.second;
     ustring kv = key + val.first + val.second;
     if (kv.length() != EncInd::KV_LEN) {
         std::cerr << "EncInd::write(): write of length " << kv.length() << " bytes is not allowed! "

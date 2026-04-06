@@ -33,7 +33,7 @@ static const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
 static const EVP_MD* HASH_FUNC       = EVP_sha512();
 
 /**
- * Precondition:
+ * Preconditions:
  *     - Keywords and ids are both nonnegative integral values (storable by `long`)
  *       (as `DUMMY` is used for both).
  */
@@ -95,7 +95,8 @@ template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, 
 using Db          = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class IndK = Kw, class DbDoc = Doc<>>
 using Ind         = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
-using EncIndEntry = std::pair<ustring, std::pair<ustring, ustring>>;
+using EncIndVal   = std::pair<ustring, ustring>;
+using EncIndEntry = std::pair<ustring, EncIndVal>;
 
 
 //==============================================================================
@@ -111,6 +112,7 @@ ustring toUstr(long n);
 ustring toUstr(const std::string& s);
 ustring toUstr(uchar* ucstr, int len);
 std::string toStr(const ustring& ustr);
+long fromUstr(const ustring& ustr);
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 
@@ -129,7 +131,7 @@ struct std::hash<ustring> {
 
 
 /**
- * Precondition:
+ * Preconditions:
  *     - Range end is greater than or equal to range start.
  */
 template <class T>

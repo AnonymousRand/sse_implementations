@@ -7,7 +7,7 @@
 
 // note that we use the result-hiding variant of Pibas from figure 12 of NDSS'20 (SDa paper) since SDa wants that
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-class Pibas : public ISdaUnderlySse<DbDoc, DbKw> {
+class Pibas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, DbKw> {
     public:
         ~Pibas();
 
@@ -15,9 +15,6 @@ class Pibas : public ISdaUnderlySse<DbDoc, DbKw> {
         // `ISse`
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
-        std::vector<DbDoc> search(
-            const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
-        ) const override;
         void clear() override;
 
         //----------------------------------------------------------------------
@@ -26,11 +23,16 @@ class Pibas : public ISdaUnderlySse<DbDoc, DbKw> {
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     private:
-        ustring encKey;
-        ustring prfKey;
         EncInd* encInd = new EncInd();
 
-        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const;
+        //----------------------------------------------------------------------
+        // `IStaticPointSse`
+
+        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
+
+        //----------------------------------------------------------------------
+        // other
+
         ustring genQueryToken(const Range<DbKw>& query) const;
 
         /**

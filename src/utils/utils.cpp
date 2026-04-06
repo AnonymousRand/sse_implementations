@@ -36,6 +36,11 @@ std::string toStr(const ustring& ustr) {
 }
 
 
+long fromUstr(const ustring& ustr) {
+    return std::stol(toStr(ustr));
+}
+
+
 std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
     return os << toStr(ustr);
 }

@@ -261,7 +261,7 @@ std::vector<DbDoc> PibasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) c
     std::vector<DbDoc> results;
     ustring queryToken = this->genQueryToken(query);
     for (long dbKwListSize = 0; dbKwListSize < dbKwListSize; dbKwListSize++) {
-        std::pair<ustring, ustring> encIndVal;
+        EncIndVal encIndVal;
         this->encInd->find(query, dbKwListSize, dbKwListSize, this->minDbKw, this->leafCount, encIndVal);
         ustring encDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;

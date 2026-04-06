@@ -20,7 +20,7 @@ class LogSrcIStar : public LogSrcIBase<Underly> {
         // `ISse`
 
         /**
-         * Precondition:
+         * Preconditions:
          *     - Entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
          *     - Entries in `db` cannot have keyword equal to `DUMMY`.
          */

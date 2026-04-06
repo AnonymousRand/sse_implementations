@@ -1,6 +1,11 @@
+// definitions of methods (i.e. shared code) are given inline in this file
+// to avoid all the explicit template instantiation needed if using a `.cpp` file
+
+
 #pragma once
 
 
+#include "utils/cryptography.h"
 #include "utils/utils.h"
 
 
@@ -12,6 +17,9 @@
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISse {
     public:
+        //----------------------------------------------------------------------
+        // methods to implement
+
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         
         /**
@@ -45,6 +53,71 @@ concept IsSse = requires(T t) {
 
 
 //==============================================================================
+// `IStaticPointSse`
+//==============================================================================
+
+
+// subclasses of this include `Pibas`, `Nlogn`, and `LogSrcIStarUnderly`
+// provide shared code for `search()` (depending on `searchBase()`)
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
+class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
+    public:
+        //----------------------------------------------------------------------
+        // shared code
+
+        inline std::vector<DbDoc> search(
+            const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
+        ) const override {
+            std::vector<DbDoc> allResults;
+
+            if (isNaive) {
+                // naive, insecure range search: just individually query every point in range
+                for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+                    std::vector<DbDoc> results = this->searchBase(Range {dbKw, dbKw});
+                    allResults.insert(allResults.end(), results.begin(), results.end());
+                }
+            } else {
+                // search entire range in one go (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC
+                allResults = this->searchBase(query);
+            }
+
+            if (shouldCleanUpResults) {
+                cleanUpResults(allResults);
+            }
+            return allResults;
+        }
+
+        // handle clearing of `prfKey` and `encKey` member variables belonging to this interface
+        inline void clear() override {
+            this->prfKey = toUstr("");
+            this->encKey = toUstr("");
+        }
+
+    protected:
+        ustring prfKey;
+        ustring encKey;
+
+        //----------------------------------------------------------------------
+        // methods to implement
+
+        virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
+        
+        //----------------------------------------------------------------------
+        // shared code
+
+        /**
+         * Helper function to decrypt `encIndVal`.
+         */
+        inline DbDoc decryptEncIndVal(const EncIndVal& encIndVal) const {
+            ustring encDbDoc = encIndVal.first;
+            ustring iv = encIndVal.second;
+            ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
+            return DbDoc::fromUstr(decDbDoc);
+        }
+};
+
+
+//==============================================================================
 // `IDsse`
 //==============================================================================
 
@@ -52,6 +125,9 @@ concept IsSse = requires(T t) {
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class IDsse : public virtual ISse<DbDoc, DbKw> {
     public:
+        //----------------------------------------------------------------------
+        // methods to implement
+
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
 };
 
@@ -64,10 +140,21 @@ class IDsse : public virtual ISse<DbDoc, DbKw> {
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
     public:
+        //----------------------------------------------------------------------
+        // methods to implement
+
         /**
          * Append the `db` most recently passed to `setup()` (without any replications/padding/processing) to `ret`.
          */
         virtual void getDb(Db<DbDoc, DbKw>& ret) const = 0;
+
+        //----------------------------------------------------------------------
+        // shared code
+
+        // handle clearing of `size` member variable belonging to this interface
+        inline void clear() override {
+            this->size = 0;
+        }
 
         inline long getSize() const {
             return this->size;

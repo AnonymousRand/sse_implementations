@@ -9,12 +9,12 @@ find_package(OpenSSL REQUIRED CONFIG)
 add_executable(
     main
     src/main.cpp
-    src/log_src.cpp
-    src/log_src_i.cpp
-    src/log_src_i_star.cpp
-    src/nlogn.cpp
-    src/pibas.cpp
-    src/sda.cpp
+    src/schemes/log_src.cpp
+    src/schemes/log_src_i.cpp
+    src/schemes/log_src_i_star.cpp
+    src/schemes/nlogn.cpp
+    src/schemes/pibas.cpp
+    src/schemes/sda.cpp
     src/utils/cryptography.cpp
     src/utils/enc_ind.cpp
     src/utils/tdag.cpp

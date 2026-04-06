@@ -44,8 +44,8 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // randomly permute documents associated with same keyword, required by some schemes on top of Pibas (e.g. Log-SRC)
     shuffleInd(ind);
 
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
@@ -72,34 +72,34 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::vector<DbDoc> Pibas<DbDoc, DbKw>::search(const Range<DbKw>& query, bool shouldCleanUpResults, bool isNaive) const {
-    std::vector<DbDoc> allResults;
-
-    if (isNaive) {
-        // naive, insecure range search: just individually query every point in range
-        for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-            std::vector<DbDoc> results = this->searchBase(Range {dbKw, dbKw});
-            allResults.insert(allResults.end(), results.begin(), results.end());
-        }
-    } else {
-        // search entire range in one go (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC
-        allResults = this->searchBase(query);
-    }
-
-    if (shouldCleanUpResults) {
-        cleanUpResults(allResults);
-    }
-    return allResults;
-}
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Pibas<DbDoc, DbKw>::clear() {
     this->size = 0;
     this->prfKey = toUstr("");
     this->encKey = toUstr("");
     if (this->encInd != nullptr) {
         this->encInd->clear();
+    }
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+void Pibas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
+    for (long i = 0; i < this->size; i++) {
+        EncIndVal encIndVal;
+        bool isValidVal = this->encInd->read(i, encIndVal);
+        if (!isValidVal) {
+            continue;
+        }
+
+        DbDoc dbDoc = this->decryptEncIndVal(encIndVal);
+        // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
+        // to easily access these `DbKw` ranges in plaintext
+        Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
+        // exclude replicated tuples: assume any tuples with `DbKw` range size >1 is non-leaf and hence replicated
+        if (dbKwRange.size() > 1) {
+            continue;
+        }
+        ret.push_back(std::pair {dbDoc, dbKwRange});
     }
 }
 
@@ -117,17 +117,13 @@ std::vector<DbDoc> Pibas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
         ustring label;
         ulong pos = this->map(queryToken, dbKwCounter, label);
         // res <- encInd.get(l)
-        std::pair<ustring, ustring> encIndVal;
+        EncIndVal encIndVal;
         bool isFound = this->encInd->find(pos, label, encIndVal);
         if (!isFound) {
             break;
         }
-        ustring encDbDoc = encIndVal.first;
-        ustring iv = encIndVal.second;
-        // technically we decrypt in the client, but since there's no client-server distinction in this implementation
-        // we'll just decrypt immediately to make the code cleaner
-        ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
-        DbDoc result = DbDoc::fromUstr(decDbDoc);
+
+        DbDoc result = this->decryptEncIndVal(encIndVal);
         results.push_back(result);
         dbKwCounter++;
     }
@@ -151,30 +147,6 @@ ulong Pibas<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCounter, ustri
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Pibas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
-    for (long i = 0; i < this->size; i++) {
-        std::pair<ustring, ustring> encIndVal;
-        bool isValidVal = this->encInd->read(i, encIndVal);
-        if (!isValidVal) {
-            continue;
-        }
-        ustring encDbDoc = encIndVal.first;
-        ustring iv = encIndVal.second;
-        ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
-        DbDoc dbDoc = DbDoc::fromUstr(decDbDoc);
-        // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
-        // to easily access these `DbKw` ranges in plaintext
-        Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
-        // de-replicate tuples: assume any tuples with `DbKw` range size >1 is non-leaf and hence a replicated tuple
-        if (dbKwRange.size() > 1) {
-            continue;
-        }
-        ret.push_back(std::pair {dbDoc, dbKwRange});
-    }
-}
-
-
-template class Pibas<Doc<>, Kw>;               // Pibas
+template class Pibas<Doc<>, Kw>;               // default/standalone
 template class Pibas<SrcIDb1Doc, Kw>;          // Log-SRC-i index 1
 //template class Pibas<Doc<IdAlias>, IdAlias>; // Log-SRC-i index 2

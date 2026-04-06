@@ -1,5 +1,5 @@
 /**
- * Indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>` pairs,
+ * Indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>` (aka `EncIndVal`) pairs,
  * each of which correspond to `std::pair<key/label, std::pair<encrypted doc, IV>>`.
  */
 
@@ -32,7 +32,7 @@ class EncInd {
          *     - `true` if the kv pair corresponding to `key` was eventually found.
          *     - `false` if the kv pair corresponding to `key` was never found in the entire index.
          */
-        bool find(ulong pos, const ustring& key, std::pair<ustring, ustring>& ret) const;
+        bool find(ulong pos, const ustring& key, EncIndVal& ret) const;
 
         /**
          * Reads and decodes the value at `pos` (without checking the for any `queryToken`).
@@ -41,7 +41,7 @@ class EncInd {
          *     - `true` if the kv pair at `pos` is valid.
          *     - `false` if the kv pair at `pos` is the null kv pair.
          */
-        bool read(ulong pos, std::pair<ustring, ustring>& ret) const;
+        bool read(ulong pos, EncIndVal& ret) const;
 
         /**
          * Write to first empty location starting at `pos` (may not be at `pos` if hash collision).
