@@ -170,7 +170,7 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T, DbKw>& iDbDoc) {
 
 
 template <class DbKw>
-const std::string Doc<DbKw>::REGEX_STR = "\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\),(-?[0-9]+--?[0-9]+)";
+const std::string Doc<DbKw>::REGEX_STR = "\\((-?[0-9]+),(-?[0-9]+),([I|D|X])\\),(-?[0-9]+--?[0-9]+)";
 
 
 template <class DbKw>
@@ -358,12 +358,11 @@ void cleanUpResults(std::vector<Doc<>>& docs) {
             deletedIds.insert(id);
         }
     }
-    // copy over vector without deleted (or dummy) docs
+    // copy over vector without deleted (or dummy) docs, as well as no dummy ids
     for (Doc<> doc : docs) {
         Id id = doc.getId();
         Op op = doc.getOp();
-        // make sure all dummy docs have `Op::DUMMY` so they are filtered out as well!
-        if (op == Op::INS && deletedIds.count(id) == 0) {
+        if (id != DUMMY && op == Op::INS && deletedIds.count(id) == 0) {
             newDocs.push_back(doc);
         }
     }
@@ -378,6 +377,12 @@ long calcTdagItemCount(long leafCount) {
     return topLevelNum * (2 * leafCount)
             - (1 - std::pow(2, -topLevelNum)) * std::pow(2, topLevelNum + 1)
             + leafCount;
+}
+
+
+ulong hashToPos(const ustring& hash) {
+    // this conversion mess is from USENIX'24
+    return (*((ulong*)hash.c_str()));
 }
 
 

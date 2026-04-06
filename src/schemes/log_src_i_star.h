@@ -49,7 +49,7 @@ class PibasLoc : public PibasBase<DbDoc, DbKw> {
 
     private:
         EncIndLoc<DbKw>* encInd = new EncIndLoc<DbKw>();
-        std::unordered_map<Range<DbKw>, long> dbKwCounts;
+        std::unordered_map<Range<DbKw>, long> dbKwListSizes;
         long leafCount;
         long minDbKw;
 

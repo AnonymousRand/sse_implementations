@@ -64,7 +64,7 @@ class Doc;
 enum class Op : char {
     INS   = 'I',
     DEL   = 'D',
-    DUMMY = '-'
+    DUMMY = 'X'
 };
 
 
@@ -276,6 +276,9 @@ void cleanUpResults(std::vector<DbDoc>& docs);
 
 
 long calcTdagItemCount(long leafCount);
+
+
+ulong hashToPos(const ustring& hash);
 
 
 //==============================================================================

@@ -25,8 +25,8 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->tdag = new TdagNode<Kw>(kwBounds);
 
     // replicate every document to all keyword ranges/TDAG nodes that cover it
-    Db<Doc<>, Kw> dbWithReplications;
-    dbWithReplications.reserve(calcTdagItemCount(db.size()));
+    Db<Doc<>, Kw> dbWithRepls;
+    dbWithRepls.reserve(calcTdagItemCount(db.size()));
     for (DbEntry<Doc<>, Kw> dbEntry : db) {
         Doc<> doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
@@ -34,11 +34,11 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
         for (Range<Kw> ancestor : ancestors) {
             // make sure to update `DbKw` stored also in `Doc`!
             Doc<> newDoc(doc.get(), ancestor);
-            dbWithReplications.push_back(std::pair {newDoc, ancestor});
+            dbWithRepls.push_back(std::pair {newDoc, ancestor});
         }
     }
 
-    this->underly->setup(secParam, dbWithReplications);
+    this->underly->setup(secParam, dbWithRepls);
 }
 
 
@@ -70,4 +70,4 @@ void LogSrc<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
 }
 
 
-template class LogSrc<Pibas>;
+template class LogSrc<PiBas>;

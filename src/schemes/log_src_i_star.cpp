@@ -77,10 +77,11 @@ void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
             maxIdAlias = idAlias;
         }
     }
-    // pad TDAG 2 to a power of two number of leaves, as is required for Log-SRC-i*
-    if (!std::has_single_bit(db2.size())) {
-        long amountToPad = std::pow(2, std::ceil(std::log2(db2.size()))) - db2.size();
-        db2.reserve(db2.size() + amountToPad);
+    // pad TDAG 2 leaf count to the next power of two, as is required for Log-SRC-i*
+    long db2Size = db2.size();
+    if (!std::has_single_bit(db2Size)) {
+        long amountToPad = std::pow(2, std::ceil(std::log2(db2Size))) - db2Size;
+        db2.reserve(db2Size + amountToPad);
         for (long i = 0; i < amountToPad; i++) {
             maxIdAlias++;
             Range<IdAlias> idAliasRange {maxIdAlias, maxIdAlias};
@@ -92,9 +93,9 @@ void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->tdag2 = new TdagNode<IdAlias>(Range<IdAlias> {0, maxIdAlias});
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
-    long dbSizeBeforeRepl = db2.size();
-    db2.reserve(calcTdagItemCount(dbSizeBeforeRepl));
-    for (long i = 0; i < dbSizeBeforeRepl; i++) {
+    db2Size = db2.size();
+    db2.reserve(calcTdagItemCount(db2Size));
+    for (long i = 0; i < db2Size; i++) {
         DbEntry<Doc<IdAlias>, IdAlias> dbEntry = db2[i];
         Doc<IdAlias> doc = dbEntry.first;
         Range<IdAlias> idAliasRange = dbEntry.second;
@@ -135,11 +136,12 @@ void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
         prevKw = kw;
     }
     // after guaranteeing contiguous-ness of `Kw`s, pad `db1` to power of 2 as well
+    long db1Size = db1.size();
     Range<Kw> db1KwBounds = findDbKwBounds(db1);
     Kw maxDb1Kw = db1KwBounds.second;
-    if (!std::has_single_bit((ulong)db1.size())) {
-        long amountToPad = std::pow(2, std::ceil(std::log2(db1.size()))) - db1.size();
-        db1.reserve(db1.size() + amountToPad);
+    if (!std::has_single_bit((ulong)db1Size)) {
+        long amountToPad = std::pow(2, std::ceil(std::log2(db1Size))) - db1Size;
+        db1.reserve(db1Size + amountToPad);
         for (long i = 0; i < amountToPad; i++) {
             maxDb1Kw++;
             Range<Kw> paddingKwRange {maxDb1Kw, maxDb1Kw};
@@ -151,9 +153,9 @@ void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->tdag1 = new TdagNode<Kw>(Range {db1KwBounds.first, maxDb1Kw});
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
-    dbSizeBeforeRepl = db1.size();
-    db1.reserve(calcTdagItemCount(dbSizeBeforeRepl));
-    for (long i = 0; i < dbSizeBeforeRepl; i++) {
+    db1Size = db1.size();
+    db1.reserve(calcTdagItemCount(db1Size));
+    for (long i = 0; i < db1Size; i++) {
         DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
         SrcIDb1Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;
@@ -232,16 +234,16 @@ void PibasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         if (iter == ind.end()) {
             continue;
         }
-        std::vector<DbDoc> dbDocsWithSameDbKw = iter->second;
-        long dbKwCount = dbDocsWithSameDbKw.size();
-        this->dbKwCounts[dbKwRange] = dbKwCount;
-        for (long dbKwCounter = 0; dbKwCounter < dbKwCount; dbKwCounter++) {
-            DbDoc dbDoc = dbDocsWithSameDbKw[dbKwCounter];
-            ustring label = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
+        std::vector<DbDoc> dbKwList = iter->second;
+        long dbKwListSize = dbKwList.size();
+        this->dbKwListSizes[dbKwRange] = dbKwListSize;
+        for (long dbKwListSize = 0; dbKwListSize < dbKwListSize; dbKwListSize++) {
+            DbDoc dbDoc = dbKwList[dbKwListSize];
+            ustring label = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwListSize));
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncIndBase::DOC_LEN - 1);
             this->encInd->write(
-                label, std::pair {encDbDoc, iv}, dbKwRange, dbKwCount, dbKwCounter, this->minDbKw, this->leafCount
+                label, std::pair {encDbDoc, iv}, dbKwRange, dbKwListSize, dbKwListSize, this->minDbKw, this->leafCount
             );
         }
     }
@@ -250,17 +252,17 @@ void PibasLoc<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::vector<DbDoc> PibasLoc<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
-    auto iter = this->dbKwCounts.find(query);
-    if (iter == this->dbKwCounts.end()) {
+    auto iter = this->dbKwListSizes.find(query);
+    if (iter == this->dbKwListSizes.end()) {
         return std::vector<DbDoc> {};
     }
-    long dbKwCount = iter->second;
+    long dbKwListSize = iter->second;
 
     std::vector<DbDoc> results;
     ustring queryToken = this->genQueryToken(query);
-    for (long dbKwCounter = 0; dbKwCounter < dbKwCount; dbKwCounter++) {
+    for (long dbKwListSize = 0; dbKwListSize < dbKwListSize; dbKwListSize++) {
         std::pair<ustring, ustring> encIndVal;
-        this->encInd->find(query, dbKwCount, dbKwCounter, this->minDbKw, this->leafCount, encIndVal);
+        this->encInd->find(query, dbKwListSize, dbKwListSize, this->minDbKw, this->leafCount, encIndVal);
         ustring encDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
         // technically we decrypt in the client, but since there's no client-server distinction in this implementation

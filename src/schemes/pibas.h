@@ -37,5 +37,5 @@ class Pibas : public ISdaUnderlySse<DbDoc, DbKw> {
          * Generate encrypted label to store in encrypted index, and also return
          * numerical position at which to place it in the index (pseudorandomly).
          */
-        ulong map(const ustring& queryToken, long dbKwCounter, ustring& retLabel) const;
+        ulong map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const;
 };

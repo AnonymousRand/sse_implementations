@@ -19,6 +19,7 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
     this->secParam = secParam;
     this->size = db.size();
+    this->encInd->init(this->size);
 
     //--------------------------------------------------------------------------
     // generate keys
@@ -34,7 +35,6 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     for (DbEntry<DbDoc, DbKw> entry : db) {
         DbDoc dbDoc = entry.first;
         Range<DbKw> dbKwRange = entry.second;
-
         if (ind.count(dbKwRange) == 0) {
             ind[dbKwRange] = std::vector {dbDoc};
         } else {
@@ -44,22 +44,21 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // randomly permute documents associated with same keyword, required by some schemes on top of Pibas (e.g. Log-SRC)
     shuffleInd(ind);
 
-    this->encInd->init(db.size());
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     // for each w in W
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
-        // this is PRF(K_1, w)
-        ustring queryToken = this->genQueryToken(dbKwRange);
-
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
             continue;
         }
-        std::vector<DbDoc> dbDocsWithSameDbKw = iter->second;
+
+        // PRF(K_1, w)
+        ustring queryToken = this->genQueryToken(dbKwRange);
+        std::vector<DbDoc> dbKwList = iter->second;
         // for each id in DB(w)
-        for (long dbKwCounter = 0; dbKwCounter < dbDocsWithSameDbKw.size(); dbKwCounter++) {
-            DbDoc dbDoc = dbDocsWithSameDbKw[dbKwCounter];
-            // generate `l` and associated `pos`
+        for (long dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
+            DbDoc dbDoc = dbKwList[dbKwCounter];
+            // l <- Hash(PRF(K_1, w) || c) and also generate associated `pos`
             ustring label;
             ulong pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
@@ -79,12 +78,12 @@ std::vector<DbDoc> Pibas<DbDoc, DbKw>::search(const Range<DbKw>& query, bool sho
     if (isNaive) {
         // naive, insecure range search: just individually query every point in range
         for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-            std::vector<DbDoc> results = this->search(Range {dbKw, dbKw});
+            std::vector<DbDoc> results = this->searchBase(Range {dbKw, dbKw});
             allResults.insert(allResults.end(), results.begin(), results.end());
         }
     } else {
         // search entire range in one go (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC
-        allResults = this->search(query);
+        allResults = this->searchBase(query);
     }
 
     if (shouldCleanUpResults) {
@@ -108,12 +107,13 @@ void Pibas<DbDoc, DbKw>::clear() {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::vector<DbDoc> Pibas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbDoc> results;
-    ustring queryToken = this->genQueryToken(query);
 
+    // PRF(K_1, w)
+    ustring queryToken = this->genQueryToken(query);
     // for c = 0 until `Get` returns error
     long dbKwCounter = 0;
     while (true) {
-        // generate `l` and associated `pos` (same as in `setup()`!)
+        // l <- Hash(PRF(K_1, w) || c) and also generate associated `pos` (same as in `setup()`!)
         ustring label;
         ulong pos = this->map(queryToken, dbKwCounter, label);
         // res <- encInd.get(l)
@@ -138,6 +138,7 @@ std::vector<DbDoc> Pibas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 ustring Pibas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
+    // PRF(K_1, w)
     return prf(this->prfKey, query.toUstr());
 }
 
@@ -146,8 +147,7 @@ template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 ulong Pibas<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCounter, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w) || c)
     retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
-    // this conversion mess is from USENIX'24
-    return (*((ulong*)retLabel.c_str()));
+    return hashToPos(retLabel);
 }
 
 
