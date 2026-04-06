@@ -4,12 +4,120 @@
 
 
 //==============================================================================
+// `LogSrcIStarUnderly`
+//==============================================================================
+
+
+namespace underly {
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+    this->clear();
+    
+    //--------------------------------------------------------------------------
+    // init things
+
+    this->secParam = secParam;
+    this->size = db.size();
+    Range<DbKw> dbKwBounds = findDbKwBounds(db);
+    long leafCount = dbKwBounds.size();
+    // the key to avoiding the blowup of using NlogN as a black box is by using `leafCount` instead of `db.size()` here,
+    // since `db.size()` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
+    long numLvls = std::ceil(std::log2(leafCount)) + 1;
+    std::cout << "db size is " << this->size << " and leaf count is " << leafCount << std::endl; // todo
+    for (long i = 0; i < numLvls; i++) {
+        EncInd* lvl = new EncInd();
+        long lvlSize;
+        if (i == 0) {
+            lvlSize = leafCount;
+        } else {
+            // TDAG node/bucket count at level i (for i >= 1) is 2^(1-i)n - 1
+            lvlSize = std::pow(2, (1 - i) * leafCount) - 1;
+        }
+        lvl->init(lvlSize);
+        this->encIndLvls.push_back(lvl);
+    }
+    this->dbKwListSizeDict->init(this->size);
+    
+    //--------------------------------------------------------------------------
+    // generate keys
+
+    this->prfKey = genKey(secParam);
+    this->encKey = genKey(secParam);
+
+    //--------------------------------------------------------------------------
+    // build index
+
+    // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
+    Ind<DbKw, DbDoc> ind;
+    for (DbEntry<DbDoc, DbKw> entry : db) {
+        DbDoc dbDoc = entry.first;
+        Range<DbKw> dbKwRange = entry.second;
+        if (ind.count(dbKwRange) == 0) {
+            ind[dbKwRange] = std::vector {dbDoc};
+        } else {
+            ind[dbKwRange].push_back(dbDoc);
+        }
+    }
+    //// randomly permute documents associated with same keyword, i.e. shuffle within bucket
+    //shuffleInd(ind);
+
+    // for each w in W
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
+    for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
+        auto iter = ind.find(dbKwRange);
+        if (iter == ind.end()) {
+            continue;
+        }
+
+        // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
+        // note that there's no need to pad keyword lists to powers of two here
+        // since that's guaranteed by upstream TDAG padding
+        std::vector<DbDoc> dbKwList = iter->second;
+        long dbKwListSize = dbKwList.size();
+        // PRF(K_1, w)
+        ustring queryToken = this->genQueryToken(dbKwRange);
+        // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
+        ustring label;
+        std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
+        ulong lvl = lvlAndPos.first;
+        ulong pos = lvlAndPos.second;
+
+        // add `(w, dbKwListSize)` (non-padded size) to dict to compute what level to search
+        ustring ivDict = genIv(IV_LEN);
+        ustring encDbKwListSize = padAndEncrypt(
+            ENC_CIPHER, this->encKey, toUstr(dbKwListSize), ivDict, EncInd::DOC_LEN - 1
+        );
+        this->dbKwListSizeDict->write(pos, std::pair {label, std::pair {ivDict, encDbKwListSize}});
+
+        // for each id in DB(w) (write into same bucket consecutively)
+        for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
+            DbDoc dbDoc = dbKwList[dbKwCounter];
+            // d <- Enc(K_2, w, id)
+            ustring iv = genIv(IV_LEN);
+            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
+            // store `(l, d)` into key-value store, and also store IV in plain along with `d`
+            this->encIndLvls[lvl]->write(pos + dbKwCounter, std::pair {label, std::pair {iv, encDbDoc}});
+        }
+    }
+}
+
+
+template class LogSrcIStarUnderly<Doc<>, Kw>;       
+template class LogSrcIStarUnderly<SrcIDb1Doc, Kw>;
+//template class LogSrcIStarUnderly<Doc<IdAlias>, IdAlias>;
+
+
+} // namespace `underly`
+
+
+//==============================================================================
 // `LogSrcIStar`
 //==============================================================================
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
+void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
     this->secParam = secParam;
@@ -29,8 +137,9 @@ void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2` leaves with this information
     Db<SrcIDb1Doc, Kw> db1;
     Db<Doc<IdAlias>, IdAlias> db2;
-    db1.reserve(dbSorted.size());
-    db2.reserve(dbSorted.size());
+    long dbSortedSize = dbSorted.size();
+    db1.reserve(dbSortedSize);
+    db2.reserve(dbSortedSize);
     Kw prevKw = DUMMY;
     IdAlias firstIdAliasWithKw;
     IdAlias lastIdAliasWithKw;
@@ -41,7 +150,7 @@ void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
         DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
         db1.push_back(newDbEntry);
     };
-    for (long idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
+    for (long idAlias = 0; idAlias < dbSortedSize; idAlias++) {
         DbEntry<Doc<>, Kw> dbEntry = dbSorted[idAlias];
         Doc<> doc = dbEntry.first;
         Kw kw = dbEntry.second.first; // entries in `db` must have size 1 `Kw` ranges!
@@ -120,7 +229,7 @@ void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // in the index that the server knows corresponds to a lack of docs with that keyword)
     DbEntry<Doc<>, Kw> dbEntry = dbSorted[0];
     prevKw = dbEntry.second.first;
-    for (long i = 1; i < dbSorted.size(); i++) {
+    for (long i = 1; i < dbSortedSize; i++) {
         dbEntry = dbSorted[i];
         Kw kw = dbEntry.second.first;
         // if non-contiguous `Kw`s detected, fill in the gap with dummies
@@ -138,7 +247,7 @@ void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     long db1Size = db1.size();
     Range<Kw> db1KwBounds = findDbKwBounds(db1);
     Kw maxDb1Kw = db1KwBounds.second;
-    if (!std::has_single_bit((ulong)db1Size)) {
+    if (!std::has_single_bit(db1Size)) {
         long amountToPad = std::pow(2, std::ceil(std::log2(db1Size))) - db1Size;
         db1.reserve(db1Size + amountToPad);
         for (long i = 0; i < amountToPad; i++) {
@@ -170,78 +279,3 @@ void LogSrcIStar<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     this->underly1->setup(secParam, db1);
 }
-
-
-template class LogSrcIStar<underly::PibasLoc>;
-
-
-//==============================================================================
-// `LogSrcIStarUnderly`
-//==============================================================================
-
-
-namespace underly {
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
-    this->clear();
-
-    this->size = db.size();
-    
-    //--------------------------------------------------------------------------
-    // generate keys
-
-    this->prfKey = genKey(secParam);
-    this->encKey = genKey(secParam);
-
-    //--------------------------------------------------------------------------
-    // build index
-
-    Ind<DbKw, DbDoc> ind;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
-        DbDoc dbDoc = entry.first;
-        Range<DbKw> dbKwRange = entry.second;
-
-        if (ind.count(dbKwRange) == 0) {
-            ind[dbKwRange] = std::vector {dbDoc};
-        } else {
-            ind[dbKwRange].push_back(dbDoc);
-        }
-    }
-
-    this->encInd->init(db.size());
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
-    Range<DbKw> dbKwBounds = findDbKwBounds(db);
-    // note that `leafCount` isn't necessarily `db.size()`, since leaves must be contiguous but `db` might not be
-    this->leafCount = dbKwBounds.size();
-    this->minDbKw = dbKwBounds.first;
-    for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
-        ustring queryToken = this->genQueryToken(dbKwRange);
-        
-        auto iter = ind.find(dbKwRange);
-        if (iter == ind.end()) {
-            continue;
-        }
-        std::vector<DbDoc> dbKwList = iter->second;
-        long dbKwListSize = dbKwList.size();
-        this->dbKwListSizes[dbKwRange] = dbKwListSize;
-        for (long dbKwListSize = 0; dbKwListSize < dbKwListSize; dbKwListSize++) {
-            DbDoc dbDoc = dbKwList[dbKwListSize];
-            ustring label = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwListSize));
-            ustring iv = genIv(IV_LEN);
-            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncIndBase::DOC_LEN - 1);
-            this->encInd->write(
-                label, std::pair {encDbDoc, iv}, dbKwRange, dbKwListSize, dbKwListSize, this->minDbKw, this->leafCount
-            );
-        }
-    }
-}
-
-
-template class LogSrcIStarUnderly<Doc<>, Kw>;       
-template class LogSrcIStarUnderly<SrcIDb1Doc, Kw>;
-//template class LogSrcIStarUnderly<Doc<IdAlias>, IdAlias>;
-
-
-} // namespace `underly`

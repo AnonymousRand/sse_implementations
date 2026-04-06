@@ -306,9 +306,9 @@ template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Kw, 
 
 template <class IndK, IsDbDoc DbDoc>
 void shuffleInd(Ind<IndK, DbDoc>& ind) {
-    for (std::pair pair : ind) {
-        std::vector<DbDoc> dbDocs = pair.second;
-        std::shuffle(dbDocs.begin(), dbDocs.end(), RNG);
+    for (std::pair entry : ind) {
+        std::vector<DbDoc> dbKwList = entry.second;
+        std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
     }
 }
 

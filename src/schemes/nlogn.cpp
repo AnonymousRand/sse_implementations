@@ -16,6 +16,9 @@ Nlogn<DbDoc, DbKw>::~Nlogn() {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
+    
+    //--------------------------------------------------------------------------
+    // init things
 
     this->secParam = secParam;
     this->size = db.size();
@@ -72,13 +75,13 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             }
         }
         //// randomly permute documents associated with same keyword, i.e. shuffle within bucket
-        //shuffleInd(ind);
+        //std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         long dbKwListPaddedSize = dbKwList.size();
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
-        // l <- Hash(PRF(K_1, w) || c) and also generate associated `lvl` and `pos`
+        // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
         ustring label;
         std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
         ulong lvl = lvlAndPos.first;
@@ -106,9 +109,8 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Nlogn<DbDoc, DbKw>::clear() {
-    this->size = 0;
-    this->prfKey = toUstr("");
-    this->encKey = toUstr("");
+    IStaticPointSse::clear();
+    ISdaUnderlySse::clear();
 
     for (EncInd* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
@@ -168,7 +170,7 @@ std::vector<DbDoc> Nlogn<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     long dbKwListSize = fromUstr(decDbKwListSize);
     long dbKwListPaddedSize = std::pow(2, std::ceil(std::log2(dbKwListSize))); // this is bucket size
 
-    // compute `lvl` and `pos` of correct bucket
+    // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
     std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
     ulong lvl = lvlAndPos.first;

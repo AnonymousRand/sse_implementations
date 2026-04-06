@@ -16,6 +16,9 @@ Pibas<DbDoc, DbKw>::~Pibas() {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
+    
+    //--------------------------------------------------------------------------
+    // init things
 
     this->secParam = secParam;
     this->size = db.size();
@@ -55,10 +58,11 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
         std::vector<DbDoc> dbKwList = iter->second;
+
         // for each id in DB(w)
         for (long dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
-            // l <- Hash(PRF(K_1, w) || c) and also generate associated `pos`
+            // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
             ustring label;
             ulong pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
@@ -73,9 +77,8 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Pibas<DbDoc, DbKw>::clear() {
-    this->size = 0;
-    this->prfKey = toUstr("");
-    this->encKey = toUstr("");
+    IStaticPointSse::clear();
+    ISdaUnderlySse::clear();
     if (this->encInd != nullptr) {
         this->encInd->clear();
     }
@@ -113,7 +116,7 @@ std::vector<DbDoc> Pibas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     // for c = 0 until `Get` returns error
     long dbKwCounter = 0;
     while (true) {
-        // l <- Hash(PRF(K_1, w) || c) and also generate associated `pos` (same as in `setup()`!)
+        // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos` (same as in `setup()`)
         ustring label;
         ulong pos = this->map(queryToken, dbKwCounter, label);
         // res <- encInd.get(l)
