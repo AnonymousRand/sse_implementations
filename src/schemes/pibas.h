@@ -6,7 +6,7 @@
 
 
 // note that we use the result-hiding variant of Pibas from figure 12 of NDSS'20 (SDa paper) since SDa wants that
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class Pibas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, DbKw> {
     public:
         ~Pibas();

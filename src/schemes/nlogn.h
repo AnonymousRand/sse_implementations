@@ -5,7 +5,7 @@
 #include "utils/enc_ind.h"
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class Nlogn : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, DbKw> {
     public:
         ~Nlogn();
