@@ -213,7 +213,6 @@ int main() {
     Sda<LogSrcI<Pibas>> sdaLogSrcINlogn;
     Sda<LogSrcIStar> sdaLogSrcIStar;
 
-    /*
     //--------------------------------------------------------------------------
     // debugging experiment
 
@@ -283,7 +282,6 @@ int main() {
     expDebug(sdaLogSrcIStar, db, query);
 
     db.clear();
-    */
 
     //--------------------------------------------------------------------------
     // experiment 1
