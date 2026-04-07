@@ -253,6 +253,7 @@ int main() {
 
     db.clear();
 
+    /*
     //--------------------------------------------------------------------------
     // experiment 1
 
@@ -351,4 +352,5 @@ int main() {
     std::cout << "----------- Log-SRC-i[Pibas] -----------" << std::endl;
     std::cout << std::endl;
     exp3(logSrcI, maxDbSize);
+    */
 }

@@ -63,6 +63,7 @@ void EncInd::clear() {
 bool EncInd::find(ulong pos, const ustring& key, EncIndVal& ret) const {
     pos %= this->size;
 
+    // get entry at `pos`
     uchar currKv[EncInd::KV_LEN];
     std::fseek(this->file, pos * EncInd::KV_LEN, SEEK_SET);
     int itemsRead = std::fread(currKv, EncInd::KV_LEN, 1, this->file);
@@ -129,7 +130,7 @@ void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
     }
     */
 
-    // if location is already filled (because of modulo), find next available location
+    // check if location at `pos` is already filled
     uchar currKv[EncInd::KV_LEN];
     std::fseek(this->file, pos * EncInd::KV_LEN, SEEK_SET);
     int itemsReadOrWritten = std::fread(currKv, EncInd::KV_LEN, 1, this->file);
@@ -138,6 +139,7 @@ void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
         std::exit(EXIT_FAILURE);
     }
 
+    // if location is already filled (because of modulo), find next available location
     long numPositionsChecked = 1;
     while (std::memcmp(currKv, EncInd::NULL_KV, EncInd::KV_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
@@ -166,6 +168,7 @@ void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
         std::exit(EXIT_FAILURE);
     }
 
+    std::fseek(this->file, pos * EncInd::KV_LEN, SEEK_SET); // go back to the correct spot, e.g. undoing last `fread`
     int itemsWritten = std::fwrite(kv.c_str(), EncInd::KV_LEN, 1, this->file);
     if (itemsWritten != 1) {
         std::cerr << "EncInd::write(): error writing to file (nothing written)" << std::endl;
