@@ -77,8 +77,8 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Pibas<DbDoc, DbKw>::clear() {
-    IStaticPointSse::clear();
-    ISdaUnderlySse::clear();
+    IStaticPointSse<DbDoc, DbKw>::clear();
+    ISdaUnderlySse<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
         this->encInd->clear();
     }
@@ -87,7 +87,7 @@ void Pibas<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Pibas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
-    for (long i = 0; i < this->size; i++) {
+    for (long i = 0; i < this->encInd->getSize(); i++) {
         EncIndVal encIndVal;
         bool isValidVal = this->encInd->read(i, encIndVal);
         if (!isValidVal) {

@@ -62,16 +62,15 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         // pad keyword list to the next power of two
         std::vector<DbDoc> dbKwList = iter->second;
         long dbKwListSize = dbKwList.size();
-        if (!std::has_single_bit(dbKwListSize)) {
+        if (!std::has_single_bit((ulong)dbKwListSize)) {
             long amountToPad = std::pow(2, std::ceil(std::log2(dbKwListSize))) - dbKwListSize;
             dbKwList.reserve(dbKwListSize + amountToPad);
+            // notice we even use dummy range for the db keyword (i.e. `Range<DbKw>`)
+            // to differentiate from dummies originating upstream in Log-SRC-i* padding etc. (needed for `getDb()`)
+            // (also since doing this doesn't affect the correctness of NlogN or the purpose of the dummies)
+            DbDoc dummyDbDoc = DbDoc::genDummy(DUMMY_RANGE<DbKw>());
             for (long i = 0; i < amountToPad; i++) {
-                // notice we even use dummy range for the db keyword (i.e. `Range<dbKw>`)
-                // to differentiate from dummies originating upstream in Log-SRC-i* padding etc. (needed for `getDb()`)
-                // (also since doing this doesn't affect the correctness of NlogN or the purpose of the dummies)
-                DbDoc dummyDbDoc {DUMMY, DUMMY, Op::DUMMY, DUMMY_RANGE<DbKw>()};
-                DbEntry<DbDoc, DbKw> dummyDbEntry = DbEntry {dummyDbDoc, dbKwRange};
-                dbKwList.push_back(dummyDbEntry);
+                dbKwList.push_back(dummyDbDoc);
             }
         }
         //// randomly permute documents associated with same keyword, i.e. shuffle within bucket
@@ -109,8 +108,8 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Nlogn<DbDoc, DbKw>::clear() {
-    IStaticPointSse::clear();
-    ISdaUnderlySse::clear();
+    IStaticPointSse<DbDoc, DbKw>::clear();
+    ISdaUnderlySse<DbDoc, DbKw>::clear();
 
     for (EncInd* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
@@ -128,23 +127,25 @@ void Nlogn<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Nlogn<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
-    for (long i = 0; i < this->size; i++) {
-        EncIndVal encIndVal;
-        bool isValidVal = this->encInd->read(i, encIndVal);
-        if (!isValidVal) {
-            continue;
-        }
+    for (EncInd* lvl : this->encIndLvls) {
+        for (long i = 0; i < lvl->getSize(); i++) {
+            EncIndVal encIndVal;
+            bool isValidVal = lvl->read(i, encIndVal);
+            if (!isValidVal) {
+                continue;
+            }
 
-        DbDoc dbDoc = this->decryptEncIndVal(encIndVal);
-        // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
-        // to easily access these `DbKw` ranges in plaintext
-        Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
-        // exclude replicated tuples: assume any tuples with `DbKw` range size >1 is non-leaf and hence replicated
-        // also exclude dummies/padding (from NlogN, but not from upstream SSE using NlogN as underly, for example)
-        if (dbKwRange.size() > 1 || dbKwRange == DUMMY_RANGE<DbKw>()) {
-            continue;
+            DbDoc dbDoc = this->decryptEncIndVal(encIndVal);
+            // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
+            // to easily access these `DbKw` ranges in plaintext
+            Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
+            // exclude replicated tuples: assume any tuples with `DbKw` range size >1 is non-leaf and hence replicated
+            // also exclude dummies/padding (from NlogN, but not from upstream SSE using NlogN as underly, for example)
+            if (dbKwRange.size() > 1 || dbKwRange == DUMMY_RANGE<DbKw>()) {
+                continue;
+            }
+            ret.push_back(std::pair {dbDoc, dbKwRange});
         }
-        ret.push_back(std::pair {dbDoc, dbKwRange});
     }
 }
 
@@ -157,15 +158,17 @@ std::vector<DbDoc> Nlogn<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     ustring queryToken = this->genQueryToken(query);
 
     // first retrieve the number of results/`dbKwListSize` to know what level to search (and how many dummies there are)
+    // todo if client-server, client should query first for size and calculate lvl etc. locally,
+    // so server only sees padded size? (which the server will see anyway when returning results)
     ustring labelDict;
     ulong posDict = this->mapForDict(queryToken, labelDict);
     EncIndVal encIndValDict;
-    bool isFoundDict = this->dbKwListSizeDict->find(pos, labelDict, encIndValDict);
+    bool isFoundDict = this->dbKwListSizeDict->find(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
         return std::vector<DbDoc> {};
     }
-    ustring encDbKwListSize = encIndVal.first;
-    ustring ivDict = encIndVal.second;
+    ustring encDbKwListSize = encIndValDict.first;
+    ustring ivDict = encIndValDict.second;
     ustring decDbKwListSize = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbKwListSize, ivDict);
     long dbKwListSize = fromUstr(decDbKwListSize);
     long dbKwListPaddedSize = std::pow(2, std::ceil(std::log2(dbKwListSize))); // this is bucket size
@@ -178,7 +181,7 @@ std::vector<DbDoc> Nlogn<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     // always return entire bucket (`dbKwListPaddedSize` instead of `dbKwListSize`) from server to hide result size
     for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
         EncIndVal encIndVal;
-        bool isFound = this->encInd->find(pos + dbKwCounter, label, encIndVal);
+        bool isFound = this->encIndLvls[lvl]->find(pos + dbKwCounter, label, encIndVal);
         if (!isFound) {
             break;
         }
@@ -203,7 +206,7 @@ std::pair<ulong, ulong> Nlogn<DbDoc, DbKw>::map(const ustring& queryToken, long 
     ulong lvl = std::log2(dbKwListSize); // require `dbKwListSize` to already be padded (also bottom level is 0)
     // l <- Hash(PRF(K_1, w))
     retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken);
-    ulong pos = hashToPos(retLabel)
+    ulong pos = hashToPos(retLabel);
     // round `pos` down to make sure it is aligned to the start of a bucket
     pos = std::floor(pos / dbKwListSize) * dbKwListSize;
     return std::pair {lvl, pos};

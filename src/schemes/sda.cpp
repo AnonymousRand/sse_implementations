@@ -107,4 +107,4 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
 template class Sda<Pibas<>>;
 template class Sda<LogSrc<Pibas>>;
 template class Sda<LogSrcI<Pibas>>;
-template class Sda<LogSrcIStar<underly::PibasLoc>>;
+template class Sda<LogSrcIStar>;

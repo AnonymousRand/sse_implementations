@@ -96,7 +96,7 @@ void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
 
 
 template class LogSrcIBase<Pibas>;
-template class LogSrcIBase<underly::PibasLoc>;
+template class LogSrcIBase<underly::LogSrcIStarUnderly>;
 
 
 //==============================================================================

@@ -92,7 +92,7 @@ void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
         this->dbKwListSizeDict->write(pos, std::pair {label, std::pair {ivDict, encDbKwListSize}});
 
         // for each id in DB(w) (write into same bucket consecutively)
-        for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
+        for (long dbKwCounter = 0; dbKwCounter < dbKwListSize; dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
@@ -187,13 +187,13 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     }
     // pad TDAG 2 leaf count to the next power of two, as is required for Log-SRC-i*
     long db2Size = db2.size();
-    if (!std::has_single_bit(db2Size)) {
+    if (!std::has_single_bit((ulong)db2Size)) {
         long amountToPad = std::pow(2, std::ceil(std::log2(db2Size))) - db2Size;
         db2.reserve(db2Size + amountToPad);
         for (long i = 0; i < amountToPad; i++) {
             maxIdAlias++;
             Range<IdAlias> idAliasRange {maxIdAlias, maxIdAlias};
-            Doc<IdAlias> dummyDoc {DUMMY, DUMMY, Op::DUMMY, idAliasRange};
+            Doc<IdAlias> dummyDoc = Doc<IdAlias>::genDummy(idAliasRange);
             DbEntry<Doc<IdAlias>, IdAlias> dummyDbEntry = DbEntry {dummyDoc, idAliasRange};
             db2.push_back(dummyDbEntry);
         }
@@ -236,7 +236,7 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
         if (kw - prevKw > 1) {
             for (Kw paddingKw = prevKw + 1; paddingKw < kw; paddingKw++) {
                 Range<Kw> paddingKwRange {paddingKw, paddingKw};
-                SrcIDb1Doc dummyDoc {DUMMY, DUMMY_RANGE<IdAlias>(), paddingKwRange};
+                SrcIDb1Doc dummyDoc = SrcIDb1Doc::genDummy(paddingKwRange);
                 DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummyDoc, paddingKwRange};
                 db1.push_back(dummyDbEntry);
             }
@@ -247,13 +247,13 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     long db1Size = db1.size();
     Range<Kw> db1KwBounds = findDbKwBounds(db1);
     Kw maxDb1Kw = db1KwBounds.second;
-    if (!std::has_single_bit(db1Size)) {
+    if (!std::has_single_bit((ulong)db1Size)) {
         long amountToPad = std::pow(2, std::ceil(std::log2(db1Size))) - db1Size;
         db1.reserve(db1Size + amountToPad);
         for (long i = 0; i < amountToPad; i++) {
             maxDb1Kw++;
             Range<Kw> paddingKwRange {maxDb1Kw, maxDb1Kw};
-            SrcIDb1Doc dummyDoc {DUMMY, DUMMY_RANGE<IdAlias>(), paddingKwRange};
+            SrcIDb1Doc dummyDoc = SrcIDb1Doc::genDummy(paddingKwRange);
             DbEntry<SrcIDb1Doc, Kw> dummyDbEntry = DbEntry {dummyDoc, paddingKwRange};
             db1.push_back(dummyDbEntry);
         }

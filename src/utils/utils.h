@@ -20,10 +20,6 @@
 //==============================================================================
 
 
-using uchar = unsigned char;
-using ulong = unsigned long;
-
-
 // lengths are in bytes
 static constexpr int KEY_LEN         = 256 / 8;
 static constexpr int IV_LEN          = 128 / 8;
@@ -52,6 +48,10 @@ static std::mt19937 RNG(RAND_DEV());
 using Kw      = long;
 using Id      = long;
 using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
+using uchar   = unsigned char;
+using ulong   = unsigned long;
+// use `ustring` instead of `uchar*` to avoid hell
+using ustring = std::basic_string<uchar>;
 
 
 // forward declarations
@@ -102,10 +102,6 @@ using EncIndEntry = std::pair<ustring, EncIndVal>;
 //==============================================================================
 // `ustring`
 //==============================================================================
-
-
-// use `ustring` instead of `uchar*` to avoid hell
-using ustring = std::basic_string<uchar>;
 
 
 ustring toUstr(long n);
@@ -217,6 +213,7 @@ class Doc : public IDbDoc<std::tuple<Id, Kw, Op>, DbKw> {
 
         std::string toStr() const override;
         static Doc<DbKw> fromUstr(const ustring& ustr);
+        static Doc<DbKw> genDummy(const Range<DbKw>& dbKwRange);
 
         Id getId() const;
         Kw getKw() const;
@@ -249,6 +246,7 @@ class SrcIDb1Doc : public IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw> {
 
         std::string toStr() const override;
         static SrcIDb1Doc fromUstr(const ustring& ustr);
+        static SrcIDb1Doc genDummy(const Range<Kw>& kwRange);
 
     private:
         static const std::string REGEX_STR;

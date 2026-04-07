@@ -130,28 +130,28 @@ void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
     */
 
     // if location is already filled (because of modulo), find next available location
-    uchar currKv[EncIndBase::KV_LEN];
+    uchar currKv[EncInd::KV_LEN];
     std::fseek(this->file, pos * EncInd::KV_LEN, SEEK_SET);
-    int itemsReadOrWritten = std::fread(currKv, EncIndBase::KV_LEN, 1, this->file);
+    int itemsReadOrWritten = std::fread(currKv, EncInd::KV_LEN, 1, this->file);
     if (itemsReadOrWritten != 1) {
         std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
     long numPositionsChecked = 1;
-    while (std::memcmp(currKv, EncIndBase::NULL_KV, EncIndBase::KV_LEN) != 0 && numPositionsChecked < this->size) {
+    while (std::memcmp(currKv, EncInd::NULL_KV, EncInd::KV_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsReadOrWritten = std::fread(currKv, EncIndBase::KV_LEN, 1, this->file); 
+        itemsReadOrWritten = std::fread(currKv, EncInd::KV_LEN, 1, this->file); 
         if (itemsReadOrWritten != 1) {
             std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
-    if (std::memcmp(currKv, EncIndBase::NULL_KV, EncIndBase::KV_LEN) != 0) {
+    if (std::memcmp(currKv, EncInd::NULL_KV, EncInd::KV_LEN) != 0) {
         std::cerr << "EncInd::write(): ran out of space writing!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -173,4 +173,9 @@ void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
     }
     // flush immediately to mark space as occupied
     std::fflush(this->file);
+}
+
+
+long EncInd::getSize() const {
+    return this->size;
 }

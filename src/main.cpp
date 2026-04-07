@@ -201,11 +201,11 @@ int main() {
     Pibas<> piBas;
     LogSrc<Pibas> logSrc;
     LogSrcI<Pibas> logSrcI;
-    LogSrcIStar<underly::PibasLoc> logSrcILoc;
+    LogSrcIStar logSrcILoc;
     Sda<Pibas<>> sdaPibas;
     Sda<LogSrc<Pibas>> sdaLogSrc;
     Sda<LogSrcI<Pibas>> sdaLogSrcI;
-    Sda<LogSrcIStar<underly::PibasLoc>> sdaLogSrcIStar;
+    Sda<LogSrcIStar> sdaLogSrcIStar;
 
     //--------------------------------------------------------------------------
     // debugging experiment

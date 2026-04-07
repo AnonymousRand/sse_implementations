@@ -47,6 +47,7 @@ class EncInd {
          * Write to first empty location starting at `pos` (may not be at `pos` if hash collision).
          */
         void write(ulong pos, const EncIndEntry& encIndEntry);
+        long getSize() const;
 
     protected:
         static const uchar NULL_KV[EncInd::KV_LEN];

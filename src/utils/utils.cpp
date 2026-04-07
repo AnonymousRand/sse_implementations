@@ -222,6 +222,12 @@ Doc<DbKw> Doc<DbKw>::fromUstr(const ustring& ustr) {
 
 
 template <class DbKw>
+Doc<DbKw> genDummy(const Range<DbKw>& dbKwRange) {
+    return Doc<DbKw> {DUMMY, DUMMY, Op::DUMMY, dbKwRange};
+}
+
+
+template <class DbKw>
 Id Doc<DbKw>::getId() const {
     return std::get<0>(this->val);
 }
@@ -291,6 +297,11 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
     Range<Kw> kwRange = Range<Kw>::fromStr(matches[3].str());
     return SrcIDb1Doc {kw, idAliasRange, kwRange};
+}
+
+
+SrcIDb1Doc genDummy(const Range<Kw>& kwRange) {
+    return SrcIDb1Doc {DUMMY, DUMMY_RANGE<IdAlias>(), kwRange};
 }
 
 

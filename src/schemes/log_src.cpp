@@ -70,4 +70,4 @@ void LogSrc<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
 }
 
 
-template class LogSrc<PiBas>;
+template class LogSrc<Pibas>;
