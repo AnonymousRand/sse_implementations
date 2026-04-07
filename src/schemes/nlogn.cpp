@@ -158,8 +158,6 @@ std::vector<DbDoc> Nlogn<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     ustring queryToken = this->genQueryToken(query);
 
     // first retrieve the number of results/`dbKwListSize` to know what level to search (and how many dummies there are)
-    // todo if client-server, client should query first for size and calculate lvl etc. locally,
-    // so server only sees padded size? (which the server will see anyway when returning results)
     ustring labelDict;
     ulong posDict = this->mapForDict(queryToken, labelDict);
     EncIndVal encIndValDict;
