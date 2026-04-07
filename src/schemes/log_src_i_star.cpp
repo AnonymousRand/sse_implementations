@@ -89,7 +89,7 @@ void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
         ustring encDbKwListSize = padAndEncrypt(
             ENC_CIPHER, this->encKey, toUstr(dbKwListSize), ivDict, EncInd::DOC_LEN - 1
         );
-        this->dbKwListSizeDict->write(pos, std::pair {label, std::pair {ivDict, encDbKwListSize}});
+        this->dbKwListSizeDict->write(pos, std::pair {label, std::pair {encDbKwListSize, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
         for (long dbKwCounter = 0; dbKwCounter < dbKwListSize; dbKwCounter++) {
@@ -98,7 +98,7 @@ void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            this->encIndLvls[lvl]->write(pos + dbKwCounter, std::pair {label, std::pair {iv, encDbDoc}});
+            this->encIndLvls[lvl]->write(pos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }
 }
