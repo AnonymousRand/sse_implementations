@@ -44,11 +44,13 @@ Only tested on Ubuntu. To run on Windows, don't. (ok, fine, WSL works :p)
 2. Edit both Conan profiles (by default at `~/.conan2/profiles/`):
     - Set `build_type=Debug` for the debugging profile and `build_type=Release` for the release profile.
     - Make sure `compiler.cppstd=20` is set (`gnu20` is fine too if using `compiler=gcc`).
-    - If your "default" compiler (usually `/usr/bin/c++`, which is usually symlinked to `/usr/bin/g++`) is not the correct version and something like `g++-10` was separately installed (e.g. to `/usr/bin/g++-10`), add the following to the bottom of both profiles to specify the compiler executable (make sure to use the C++, not C compiler! e.g. `g++` instead of `gcc` or `clang++` instead of `clang`):
+    - If your "default" compiler (usually `/usr/bin/c++`, which is usually symlinked to `/usr/bin/g++`) is not the correct version and something like `g++-10` was separately installed (e.g. to `/usr/bin/g++-10`), add the following to the bottom of both profiles to specify the compiler executable:
         ```
         [conf]
         tools.build:compiler_executables={"cpp": "<path to compiler executable>"}
         ```
+
+        Make sure to use the C++, not C compiler! (E.g. `g++` instead of `gcc` or `clang++` instead of `clang`.)
 3. Verify that the compiler executable set for `CMAKE_CXX_COMPILER` in [CMakeLists.txt](./CMakeLists.txt) matches the one set in the Conan profiles. If using default, you can comment this line out in CMakeLists.txt (in which case CMake will use the default `/usr/bin/c++`).
 4. In the base directory of this project/repo, run
     ```
