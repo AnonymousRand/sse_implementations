@@ -32,7 +32,7 @@ See [src/main.cpp](src/main.cpp) for usage examples.
 - [Conan 2](https://docs.conan.io/2/installation.html)
 - A C++ compiler that supports C++20 (ideally g++ version 10 or above; e.g. for `apt`, install with `apt install g++-10`)
 
-Only tested on Linux systems. To run on Windows, don't. (ok, fine, WSL works :p)
+Only tested on Ubuntu. To run on Windows, don't. (ok, fine, WSL works :p)
 
 # Running
 
