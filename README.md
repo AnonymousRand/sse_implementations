@@ -2,20 +2,27 @@
 
 Implementations of the following [searchable symmetric encryption](https://en.wikipedia.org/wiki/Searchable_symmetric_encryption) (SSE) schemes:
 - Pibas ([Cash et al., NDSS'14](https://eprint.iacr.org/2014/853.pdf)) (but specifically the result-hiding variant used in [Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf) (in figure 12), similar to PibasRo)
+- NlogN ([Asharov et al., STOC'16](https://eprint.iacr.org/2016/251.pdf), approach #3 "Improving the Cash–Tessaro Scheme")
 - Logarithmic-SRC ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
 - Logarithmic-SRC-i ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
-- Logarithmic-SRC-i\* ([Demertzis et al., 2018](https://dl.acm.org/doi/pdf/10.1145/3167971))
+- Logarithmic-SRC-i\* ([Demertzis et al., TODS'18](https://dl.acm.org/doi/pdf/10.1145/3167971))
 - SDa ([Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf))
 
 Since many of these can be instantiated with various underlying schemes, the following instantiations are possible:
 - Pibas
+- NlogN
 - Logarithmic-SRC[Pibas]
+- Logarithmic-SRC[NlogN]
 - Logarithmic-SRC-i[Pibas]
-- Logarithmic-SRC-i\*[Pibas]
+- Logarithmic-SRC-i[NlogN]
+- Logarithmic-SRC-i\*
 - SDa[Pibas]
+- SDa[NlogN]
 - SDa[Logarithmic-SRC[Pibas]]
+- SDa[Logarithmic-SRC[NlogN]]
 - SDa[Logarithmic-SRC-i[Pibas]]
-- SDa[Logarithmic-SRC-i\*[Pibas]]
+- SDa[Logarithmic-SRC-i[NlogN]]
+- SDa[Logarithmic-SRC-i\*]
 
 See [src/main.cpp](src/main.cpp) for usage examples.
 
@@ -25,7 +32,7 @@ See [src/main.cpp](src/main.cpp) for usage examples.
 - [Conan 2](https://docs.conan.io/2/installation.html)
 - A C++ compiler that supports C++20 (ideally g++ version 10 or above; e.g. for `apt`, install with `apt install g++-10`)
 
-Only tested on Linux systems. To run on Windows, don't. (ok, fine, WSL works :P)
+Only tested on Linux systems. To run on Windows, don't. (ok, fine, WSL works :p)
 
 # Running
 
@@ -58,7 +65,7 @@ Only tested on Linux systems. To run on Windows, don't. (ok, fine, WSL works :P)
 
 # Notes
 
-- This is not intended for actual, real-world use; more as a proof of concept or a simulation for running experimental evaluation. There is no client-server functionality: everything runs on one machine.
+- This is not intended for actual, real-world use; more as a proof of concept or a simulation for running experimental evaluation. There is no client-server distinction or functionality: everything runs on one machine.
 - Ids and keywords must be nonnegative integral values. Otherwise, Very Bad Things may happen.
 - While each database tuple possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
