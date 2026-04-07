@@ -1,8 +1,10 @@
 #include "sda.h"
 
+// for explicit template instantiation
 #include "log_src.h"
 #include "log_src_i.h"
 #include "log_src_i_star.h"
+#include "nlogn.h"
 #include "pibas.h"
 
 
@@ -105,6 +107,9 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
 
 
 template class Sda<Pibas<>>;
+template class Sda<Nlogn<>>;
 template class Sda<LogSrc<Pibas>>;
+template class Sda<LogSrc<Nlogn>>;
 template class Sda<LogSrcI<Pibas>>;
+template class Sda<LogSrcI<Nlogn>>;
 template class Sda<LogSrcIStar>;

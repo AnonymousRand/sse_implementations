@@ -1,6 +1,9 @@
 #include "log_src_i.h"
 
+// for explicit template instantiation
 #include "log_src_i_star.h"
+#include "nlogn.h"
+#include "pibas.h"
 
 
 //==============================================================================

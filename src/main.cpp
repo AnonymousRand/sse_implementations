@@ -199,13 +199,14 @@ int main() {
     std::cout << std::endl;
 
     Pibas<> pibas;
-    NlogN<> nlogn;
+    Nlogn<> nlogn;
     LogSrc<Pibas> logSrcPibas;
     LogSrc<Nlogn> logSrcNlogn;
     LogSrcI<Pibas> logSrcIPibas;
     LogSrcI<Nlogn> logSrcINlogn;
     LogSrcIStar logSrcIStar;
     Sda<Pibas<>> sdaPibas;
+    Sda<Nlogn<>> sdaNlogn;
     Sda<LogSrc<Pibas>> sdaLogSrcPibas;
     Sda<LogSrc<Pibas>> sdaLogSrcNlogn;
     Sda<LogSrcI<Pibas>> sdaLogSrcIPibas;
