@@ -283,7 +283,6 @@ int main() {
 
     db.clear();
 
-    /*
     //--------------------------------------------------------------------------
     // experiment 1
 
@@ -438,5 +437,4 @@ int main() {
     std::cout << "----------- Log-SRC-i[NlogN] -----------" << std::endl;
     std::cout << std::endl;
     exp3(logSrcINlogn, maxDbSize);
-    */
 }
