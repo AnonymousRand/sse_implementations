@@ -222,7 +222,7 @@ Doc<DbKw> Doc<DbKw>::fromUstr(const ustring& ustr) {
 
 
 template <class DbKw>
-Doc<DbKw> genDummy(const Range<DbKw>& dbKwRange) {
+Doc<DbKw> Doc<DbKw>::genDummy(const Range<DbKw>& dbKwRange) {
     return Doc<DbKw> {DUMMY, DUMMY, Op::DUMMY, dbKwRange};
 }
 
@@ -300,7 +300,7 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
 }
 
 
-SrcIDb1Doc genDummy(const Range<Kw>& kwRange) {
+SrcIDb1Doc SrcIDb1Doc::genDummy(const Range<Kw>& kwRange) {
     return SrcIDb1Doc {DUMMY, DUMMY_RANGE<IdAlias>(), kwRange};
 }
 
