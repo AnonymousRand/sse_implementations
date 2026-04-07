@@ -96,6 +96,7 @@ void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
 
 
 template class LogSrcIBase<Pibas>;
+template class LogSrcIBase<Nlogn>;
 template class LogSrcIBase<underly::LogSrcIStarUnderly>;
 
 
@@ -223,3 +224,4 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
 
 template class LogSrcI<Pibas>;
+template class LogSrcI<Nlogn>;
