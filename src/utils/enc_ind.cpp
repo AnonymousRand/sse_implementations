@@ -60,7 +60,7 @@ void EncInd::clear() {
 }
 
 
-bool EncInd::find(ulong pos, const ustring& key, EncIndVal& ret) const {
+bool EncInd::find(ulong pos, const ustring& key, EncIndVal& ret, ulong* posFoundAt) const {
     pos %= this->size;
 
     // get entry at `pos`
@@ -94,6 +94,9 @@ bool EncInd::find(ulong pos, const ustring& key, EncIndVal& ret) const {
     }
 
     // decode kv pair and return it
+    if (posFoundAt != nullptr) {
+        *posFoundAt = pos;
+    }
     return this->read(pos, ret);
 }
 

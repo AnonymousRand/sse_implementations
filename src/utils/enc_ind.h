@@ -28,14 +28,18 @@ class EncInd {
          * Tries to find `key` starting at `pos` and iterating linearly if not matching
          * (i.e. another kv pair overflowed there first).
          *
+         * Params:
+         *     - `posFoundAt`: pointer whose value is replaced by the `pos` at which `key` was eventually found
+         *       (if it was found; otherwise it is left unchanged). Set to `nullptr` to not receive this value.
+         *
          * Returns:
          *     - `true` if the kv pair corresponding to `key` was eventually found.
          *     - `false` if the kv pair corresponding to `key` was never found in the entire index.
          */
-        bool find(ulong pos, const ustring& key, EncIndVal& ret) const;
+        bool find(ulong pos, const ustring& key, EncIndVal& ret, ulong* posFoundAt = nullptr) const;
 
         /**
-         * Reads and decodes the value at `pos` (without checking the for any `queryToken`).
+         * Reads and decodes the value at `pos` (without checking the "key`).
          *
          * Returns:
          *     - `true` if the kv pair at `pos` is valid.
