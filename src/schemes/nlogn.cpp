@@ -54,7 +54,6 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
-        //std::cout << "++++++++++ nlogn setup: iterating db kw " << dbKwRange << std::endl;
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
             continue;
@@ -63,7 +62,6 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         // pad keyword list to the next power of two
         std::vector<DbDoc> dbKwList = iter->second;
         long dbKwListSize = dbKwList.size();
-        //std::cout << "kw list before padding has size " << dbKwListSize << std::endl;
         if (!std::has_single_bit((ulong)dbKwListSize)) {
             long amountToPad = std::pow(2, std::ceil(std::log2(dbKwListSize))) - dbKwListSize;
             dbKwList.reserve(dbKwListSize + amountToPad);
@@ -80,7 +78,6 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         long dbKwListPaddedSize = dbKwList.size();
-        //std::cout << "kw list after padding has size " << dbKwListPaddedSize << std::endl;
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
@@ -88,7 +85,6 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
         ulong lvl = lvlAndPos.first;
         ulong pos = lvlAndPos.second;
-        //std::cout << "(lvl,pos) is (" << lvl << "," << pos << ")" << std::endl;
 
         // add `(w, dbKwListSize)` (non-padded size) to dict to compute what level to search
         ustring ivDict = genIv(IV_LEN);
@@ -100,14 +96,12 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         // for each id in DB(w) (write into same bucket consecutively)
         for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
-            //std::cout << "inserting " << dbDoc << ", ";
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             this->encIndLvls[lvl]->write(pos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
-        //std::cout << std::endl;
     }
 }
 
@@ -184,7 +178,6 @@ std::vector<DbDoc> Nlogn<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
     ulong lvl = lvlAndPos.first;
     ulong pos = lvlAndPos.second;
-    //std::cout << "---------- nlogn search: (lvl,pos) is (" << lvl << "," << pos << ")" << "; number of results " << dbKwListSize << ", bucket size " << dbKwListPaddedSize << std::endl;
     // return entire bucket (`dbKwListPaddedSize` instead of `dbKwListSize`) from server to hide true result size
     ulong bucketStartPos;
     for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {

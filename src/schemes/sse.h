@@ -81,11 +81,6 @@ class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
                 allResults = this->searchBase(query);
             }
 
-            std::cout << "results before clean up: " << std::endl;
-            for (auto result : allResults) {
-                std::cout << result << std::endl;
-            }
-            std::cout << std::endl;
             if (shouldCleanUpResults) {
                 cleanUpResults(allResults);
             }

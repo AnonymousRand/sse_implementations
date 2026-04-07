@@ -233,7 +233,6 @@ int main() {
     std::cout << std::endl;
     expDebug(nlogn, db, query);
 
-    /*
     std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
     std::cout << std::endl;
     expDebug(logSrcPibas, db, query);

@@ -68,7 +68,6 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
-            //std::cout << "++++++++++ pibas setup: adding " << dbDoc << ", label " << strToHex(label) << ", pos " << pos << std::endl;
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             this->encInd->write(pos, std::pair {label, std::pair {encDbDoc, iv}});
         }
@@ -122,7 +121,6 @@ std::vector<DbDoc> Pibas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
         ulong pos = this->map(queryToken, dbKwCounter, label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;
-        //std::cout << "---------- pibas search: finding label " << strToHex(label) << ", pos " << pos << std::endl;
         bool isFound = this->encInd->find(pos, label, encIndVal);
         if (!isFound) {
             break;
