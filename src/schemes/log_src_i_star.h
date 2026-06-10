@@ -22,6 +22,12 @@ class LogSrcIStarUnderly : public Nlogn<DbDoc, DbKw> {
         // `ISse`
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
+
+    protected:
+        //----------------------------------------------------------------------
+        // `IStaticPointSse`
+
+        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
 };
 
 

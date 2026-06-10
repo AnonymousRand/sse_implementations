@@ -24,7 +24,6 @@ class Nlogn : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
     protected:
         std::vector<EncInd*> encIndLvls;
         long numLvls;
-        EncInd* dbKwListSizeDict = new EncInd();
 
         //----------------------------------------------------------------------
         // `IStaticPointSse`
@@ -45,6 +44,9 @@ class Nlogn : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
          *     - `dbKwListSize` is a power of 2.
          */
         std::pair<ulong, ulong> map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const;
+
+    private: // stuff to not share with Log-SRC-i*
+        EncInd* dbKwListSizeDict = new EncInd();
 
         /**
          * Generate encrypted label to store in encrypted index, and also return

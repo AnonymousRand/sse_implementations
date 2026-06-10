@@ -39,7 +39,6 @@ void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
         lvl->init(lvlSize);
         this->encIndLvls.push_back(lvl);
     }
-    this->dbKwListSizeDict->init(this->size);
     
     //--------------------------------------------------------------------------
     // generate keys
@@ -85,13 +84,6 @@ void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
         ulong lvl = lvlAndPos.first;
         ulong pos = lvlAndPos.second;
 
-        // add `(w, dbKwListSize)` (non-padded size) to dict to compute what level to search
-        ustring ivDict = genIv(IV_LEN);
-        ustring encDbKwListSize = padAndEncrypt(
-            ENC_CIPHER, this->encKey, toUstr(dbKwListSize), ivDict, EncInd::DOC_LEN - 1
-        );
-        this->dbKwListSizeDict->write(pos, std::pair {label, std::pair {encDbKwListSize, ivDict}});
-
         // for each id in DB(w) (write into same bucket consecutively)
         for (long dbKwCounter = 0; dbKwCounter < dbKwListSize; dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
@@ -102,6 +94,49 @@ void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
             this->encIndLvls[lvl]->write(pos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+    std::vector<DbDoc> results;
+
+    // PRF(K_1, w)
+    ustring queryToken = this->genQueryToken(query);
+
+    // for Log-SRC-i*, the TDAG structure means we can determine the number of results and hence the level to search
+    // based on the size of the queried range/node, so we don't have to store an encrypted map
+    // (and result size is leaked to server anyway)
+    long dbKwListSize = query.size();
+    long dbKwListPaddedSize = std::pow(2, std::ceil(std::log2(dbKwListSize))); // this is bucket size
+
+    // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
+    ustring label;
+    std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
+    ulong lvl = lvlAndPos.first;
+    ulong pos = lvlAndPos.second;
+    // return entire bucket (`dbKwListPaddedSize` instead of `dbKwListSize`) from server to hide true result size
+    ulong bucketStartPos;
+    for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
+        EncIndVal encIndVal;
+        bool isFound;
+        if (dbKwCounter == 0) {
+            // if first read, get the right bucket start pos (e.g. in case of hash/modulo collision in encrypted index)
+            // note: dummies must also use the correct (not dummy) `label` so they are still found by `find()`
+            isFound = this->encIndLvls[lvl]->find(pos, label, encIndVal, &bucketStartPos);
+        } else {
+            // after first read, just read from the bucket consecutively as we are now guaranteed consecutivity
+            isFound = this->encIndLvls[lvl]->read(bucketStartPos + dbKwCounter, encIndVal);
+        }
+        if (!isFound) {
+            break;
+        }
+
+        DbDoc result = this->decryptEncIndVal(encIndVal);
+        results.push_back(result);
+    }
+
+    return results;
 }
 
 
