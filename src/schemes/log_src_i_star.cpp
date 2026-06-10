@@ -24,15 +24,15 @@ void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
     long leafCount = dbKwBounds.size();
     // the key to avoiding the blowup of using NlogN as a black box is by using `leafCount` instead of `db.size()` here,
     // since `db.size()` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
-    long numLvls = std::ceil(std::log2(leafCount)) + 1;
-    for (long i = 0; i < numLvls; i++) {
+    this->numLvls = std::ceil(std::log2(leafCount)) + 1;
+    for (long i = 0; i < this->numLvls; i++) {
         EncInd* lvl = new EncInd();
         long lvlSize;
         if (i == 0) {
             lvlSize = leafCount;
         } else {
             // this gives the TDAG node/bucket count at level `i` (for `i` >= 1)
-            lvlSize = std::pow(2, numLvls - i) - 1;
+            lvlSize = std::pow(2, this->numLvls - i) - 1;
             // then multiply by bucket size at level `i`
             lvlSize *= std::pow(2, i);
         }

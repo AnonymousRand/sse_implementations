@@ -23,6 +23,7 @@ class Nlogn : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
 
     protected:
         std::vector<EncInd*> encIndLvls;
+        long numLvls;
         EncInd* dbKwListSizeDict = new EncInd();
 
         //----------------------------------------------------------------------

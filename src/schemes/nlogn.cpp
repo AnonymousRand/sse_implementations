@@ -22,8 +22,8 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
     this->secParam = secParam;
     this->size = db.size();
-    long numLvls = std::ceil(std::log2(this->size)) + 1;
-    for (long i = 0; i < numLvls; i++) {
+    this->numLvls = std::ceil(std::log2(this->size)) + 1;
+    for (long i = 0; i < this->numLvls; i++) {
         EncInd* lvl = new EncInd();
         lvl->init(this->size);
         this->encIndLvls.push_back(lvl);
@@ -214,8 +214,8 @@ std::pair<ulong, ulong> Nlogn<DbDoc, DbKw>::map(const ustring& queryToken, long 
     // l <- Hash(PRF(K_1, w))
     retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken);
     ulong pos = hashToPos(retLabel);
-    // round `pos` down to make sure it is aligned to the start of a bucket
-    pos = std::floor(pos / dbKwListSize) * dbKwListSize;
+    // 2^{lvlCount - lvl} is number of buckets on level `lvl`
+    pos %= (long)std::pow(2, this->numLvls - lvl);
     return std::pair {lvl, pos};
 }
 
