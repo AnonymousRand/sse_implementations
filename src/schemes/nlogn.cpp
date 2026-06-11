@@ -22,12 +22,8 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
     this->secParam = secParam;
     this->size = db.size();
-    this->numLvls = std::ceil(std::log2(this->size)) + 1;
-    for (long i = 0; i < this->numLvls; i++) {
-        EncInd* lvl = new EncInd();
-        lvl->init(this->size);
-        this->encIndLvls.push_back(lvl);
-    }
+    this->numLvls = this->computeNumLvls();
+    this->setupEncIndLvls();
     this->dbKwListSizeDict->init(this->size);
 
     //--------------------------------------------------------------------------
@@ -87,20 +83,23 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         ulong pos = lvlAndPos.second;
 
         // add `(w, dbKwListSize)` (non-padded size) to dict to compute what level to search
+        ustring labelDict;
         ustring ivDict = genIv(IV_LEN);
-        ustring encDbKwListSize = padAndEncrypt(
+        ustring encDbKwCount = padAndEncrypt(
             ENC_CIPHER, this->encKey, toUstr(dbKwListSize), ivDict, EncInd::DOC_LEN - 1
         );
-        this->dbKwListSizeDict->write(pos, std::pair {label, std::pair {encDbKwListSize, ivDict}});
+        ulong posDict = this->mapNoMod(queryToken, labelDict);
+        this->dbKwListSizeDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
+        ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
         for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            this->encIndLvls[lvl]->write(pos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
+            this->encIndLvls[lvl]->write(startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }
 }
@@ -159,16 +158,16 @@ std::vector<DbDoc> Nlogn<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 
     // first retrieve the number of results/`dbKwListSize` to know what level to search (and how many dummies there are)
     ustring labelDict;
-    ulong posDict = this->mapForDict(queryToken, labelDict);
+    ulong posDict = this->mapNoMod(queryToken, labelDict);
     EncIndVal encIndValDict;
     bool isFoundDict = this->dbKwListSizeDict->find(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
         return std::vector<DbDoc> {};
     }
-    ustring encDbKwListSize = encIndValDict.first;
+    ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
-    ustring decDbKwListSize = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbKwListSize, ivDict);
-    long dbKwListSize = fromUstr(decDbKwListSize);
+    ustring decDbKwCount = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbKwCount, ivDict);
+    long dbKwListSize = fromUstr(decDbKwCount);
     long dbKwListPaddedSize = std::pow(2, std::ceil(std::log2(dbKwListSize))); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
@@ -177,17 +176,17 @@ std::vector<DbDoc> Nlogn<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     ulong lvl = lvlAndPos.first;
     ulong pos = lvlAndPos.second;
     // return entire bucket (`dbKwListPaddedSize` instead of `dbKwListSize`) from server to hide true result size
-    ulong bucketStartPos;
+    ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
     for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
         EncIndVal encIndVal;
         bool isFound;
         if (dbKwCounter == 0) {
             // if first read, get the right bucket start pos (e.g. in case of hash/modulo collision in encrypted index)
             // note: dummies must also use the correct (not dummy) `label` so they are still found by `find()`
-            isFound = this->encIndLvls[lvl]->find(pos, label, encIndVal, &bucketStartPos);
+            isFound = this->encIndLvls[lvl]->find(startPos, label, encIndVal, &startPos);
         } else {
             // after first read, just read from the bucket consecutively as we are now guaranteed consecutivity
-            isFound = this->encIndLvls[lvl]->read(bucketStartPos + dbKwCounter, encIndVal);
+            isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal);
         }
         if (!isFound) {
             break;
@@ -209,22 +208,51 @@ ustring Nlogn<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::pair<ulong, ulong> Nlogn<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const {
-    ulong lvl = std::log2(dbKwListSize); // require `dbKwListSize` to already be padded (also bottom level is 0)
+void Nlogn<DbDoc, DbKw>::setupEncIndLvls() {
+    for (long lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
+        EncInd* lvl = new EncInd();
+        long bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
+        long bcktSizeOnLvl = this->computeBcktSizeOnLvl(lvlNum);
+        lvl->init(bcktCountOnLvl * bcktSizeOnLvl);
+        this->encIndLvls.push_back(lvl);
+    }
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+ulong Nlogn<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
     retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken);
-    ulong pos = hashToPos(retLabel);
-    // 2^{lvlCount - lvl} is number of buckets on level `lvl`
-    pos %= (long)std::pow(2, this->numLvls - lvl);
+    return hashToPos(retLabel); // no modulus
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+std::pair<ulong, ulong> Nlogn<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const {
+    // l <- Hash(PRF(K_1, w))
+    ulong pos = this->mapNoMod(queryToken, retLabel);
+    ulong lvl = std::log2(dbKwListSize); // require `dbKwListSize` to already be padded (also bottom level is 0)
+    pos %= (ulong)this->computeBcktCountOnLvl(lvl);
     return std::pair {lvl, pos};
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ulong Nlogn<DbDoc, DbKw>::mapForDict(const ustring& queryToken, ustring& retLabel) const {
-    // l <- Hash(PRF(K_1, w))
-    retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken);
-    return hashToPos(retLabel); // not rounded
+long Nlogn<DbDoc, DbKw>::computeNumLvls() const {
+    return std::ceil(std::log2(this->size)) + 1;
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+long Nlogn<DbDoc, DbKw>::computeBcktCountOnLvl(long lvl) const {
+    // 2^{lvlCount - lvl + 1} is number of bckts on level `lvl`
+    return std::pow(2, this->numLvls - lvl - 1);
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+long Nlogn<DbDoc, DbKw>::computeBcktSizeOnLvl(long lvl) const {
+    return std::pow(2, lvl);
 }
 
 

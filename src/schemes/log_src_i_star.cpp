@@ -13,87 +13,9 @@ namespace underly {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
-    this->clear();
-    
-    //--------------------------------------------------------------------------
-    // init things
-
-    this->secParam = secParam;
-    this->size = db.size();
     Range<DbKw> dbKwBounds = findDbKwBounds(db);
-    long leafCount = dbKwBounds.size();
-    // the key to avoiding the blowup of using NlogN as a black box is by using `leafCount` instead of `db.size()` here,
-    // since `db.size()` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
-    this->numLvls = std::ceil(std::log2(leafCount)) + 1;
-    for (long i = 0; i < this->numLvls; i++) {
-        EncInd* lvl = new EncInd();
-        long lvlSize;
-        if (i == 0) {
-            lvlSize = leafCount;
-        } else {
-            // this gives the TDAG node/bucket count at level `i` (for `i` >= 1)
-            lvlSize = std::pow(2, this->numLvls - i) - 1;
-            // then multiply by bucket size at level `i`
-            lvlSize *= std::pow(2, i);
-        }
-        lvl->init(lvlSize);
-        this->encIndLvls.push_back(lvl);
-    }
-    
-    //--------------------------------------------------------------------------
-    // generate keys
-
-    this->prfKey = genKey(secParam);
-    this->encKey = genKey(secParam);
-
-    //--------------------------------------------------------------------------
-    // build index
-
-    // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    Ind<DbKw, DbDoc> ind;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
-        DbDoc dbDoc = entry.first;
-        Range<DbKw> dbKwRange = entry.second;
-        if (ind.count(dbKwRange) == 0) {
-            ind[dbKwRange] = std::vector {dbDoc};
-        } else {
-            ind[dbKwRange].push_back(dbDoc);
-        }
-    }
-    //// randomly permute documents associated with same keyword, i.e. shuffle within bucket
-    //shuffleInd(ind);
-
-    // for each w in W
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
-    for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
-        auto iter = ind.find(dbKwRange);
-        if (iter == ind.end()) {
-            continue;
-        }
-
-        // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
-        // note that there's no need to pad keyword lists to powers of two here
-        // since that's guaranteed by upstream TDAG padding
-        std::vector<DbDoc> dbKwList = iter->second;
-        long dbKwListSize = dbKwList.size();
-        // PRF(K_1, w)
-        ustring queryToken = this->genQueryToken(dbKwRange);
-        // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
-        ustring label;
-        std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
-        ulong lvl = lvlAndPos.first;
-        ulong pos = lvlAndPos.second;
-
-        // for each id in DB(w) (write into same bucket consecutively)
-        for (long dbKwCounter = 0; dbKwCounter < dbKwListSize; dbKwCounter++) {
-            DbDoc dbDoc = dbKwList[dbKwCounter];
-            // d <- Enc(K_2, w, id)
-            ustring iv = genIv(IV_LEN);
-            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
-            // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            this->encIndLvls[lvl]->write(pos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
-        }
-    }
+    this->leafCount = dbKwBounds.size();
+    Nlogn<DbDoc, DbKw>::setup(secParam, db);
 }
 
 
@@ -116,17 +38,17 @@ std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>
     ulong lvl = lvlAndPos.first;
     ulong pos = lvlAndPos.second;
     // return entire bucket (`dbKwListPaddedSize` instead of `dbKwListSize`) from server to hide true result size
-    ulong bucketStartPos;
+    ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
     for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
         EncIndVal encIndVal;
         bool isFound;
         if (dbKwCounter == 0) {
             // if first read, get the right bucket start pos (e.g. in case of hash/modulo collision in encrypted index)
             // note: dummies must also use the correct (not dummy) `label` so they are still found by `find()`
-            isFound = this->encIndLvls[lvl]->find(pos, label, encIndVal, &bucketStartPos);
+            isFound = this->encIndLvls[lvl]->find(startPos, label, encIndVal, &startPos);
         } else {
             // after first read, just read from the bucket consecutively as we are now guaranteed consecutivity
-            isFound = this->encIndLvls[lvl]->read(bucketStartPos + dbKwCounter, encIndVal);
+            isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal);
         }
         if (!isFound) {
             break;
@@ -137,6 +59,25 @@ std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>
     }
 
     return results;
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+long LogSrcIStarUnderly<DbDoc, DbKw>::computeNumLvls() const {
+    // the key to avoiding the blowup of using NlogN as a black box is by using `leafCount` instead of `db.size()` here,
+    // since `db.size()` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
+    return std::ceil(std::log2(this->leafCount)) + 1;
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+long LogSrcIStarUnderly<DbDoc, DbKw>::computeBcktCountOnLvl(long lvlNum) const {
+    if (lvlNum == 0) {
+        return this->leafCount;
+    } else {
+        // this gives the TDAG node/bucket count at level `lvlNum` (for `lvlNum` >= 1)
+        return std::pow(2, this->numLvls - lvlNum) - 1;
+    }
 }
 
 

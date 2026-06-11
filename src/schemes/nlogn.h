@@ -34,24 +34,28 @@ class Nlogn : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         // other
 
         ustring genQueryToken(const Range<DbKw>& query) const;
+        void setupEncIndLvls();
 
         /**
          * Generate encrypted label to store in encrypted index, and also return
-         * numerical level & position at which to place it in the index (in a locality-preserving matter:
-         * only randomness is which bucket to choose in the level, and also `pos` will be aligned to buckets).
+         * numerical position only at which to place it in the index with no modulus for bucket count.
+         */
+        ulong mapNoMod(const ustring& queryToken, ustring& retLabel) const;
+
+        /**
+         * Generate encrypted label to store in encrypted index, and also return
+         * numerical level and position at which to place it in the index.
+         * (Position is a bucket count, not entry count, so it is the raw position modulo bucket count on that level.)
          *
          * Preconditions:
          *     - `dbKwListSize` is a power of 2.
          */
         std::pair<ulong, ulong> map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const;
 
+        virtual long computeNumLvls() const;
+        virtual long computeBcktCountOnLvl(long lvlNum) const;
+        virtual long computeBcktSizeOnLvl(long lvlNum) const;
+
     private: // stuff to not share with Log-SRC-i*
         EncInd* dbKwListSizeDict = new EncInd();
-
-        /**
-         * Generate encrypted label to store in encrypted index, and also return
-         * numerical position only at which to place it in the index.
-         * Use for looking up `dbKwListSizeDict`; no rounding.
-         */
-        ulong mapForDict(const ustring& queryToken, ustring& retLabel) const;
 };

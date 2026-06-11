@@ -23,11 +23,19 @@ class LogSrcIStarUnderly : public Nlogn<DbDoc, DbKw> {
 
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
-    protected:
+    private:
+        long leafCount;
+
         //----------------------------------------------------------------------
         // `IStaticPointSse`
 
         std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
+
+        //----------------------------------------------------------------------
+        // other
+
+        long computeNumLvls() const override;
+        long computeBcktCountOnLvl(long lvlNum) const override;
 };
 
 
