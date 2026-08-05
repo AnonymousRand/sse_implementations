@@ -2,7 +2,7 @@
 
 
 #include "log_src_i.h" 
-#include "nlogn.h" 
+#include "n_log_n.h" 
 
 
 //==============================================================================
@@ -13,10 +13,10 @@
 namespace underly {
 
 
-// this is specifcally designed to avoid using NlogN as a black box for Log-SRC-i* (the same way one may use Pibas)
+// this is specifcally designed to avoid using NLogN as a black box for Log-SRC-i* (the same way one may use PiBas)
 // which blows up the storage unnecessarily, as observed in the TODS'18 paper (Section 7.1)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class LogSrcIStarUnderly : public Nlogn<DbDoc, DbKw> {
+class LogSrcIStarUnderly : public NLogN<DbDoc, DbKw> {
     public:
         //----------------------------------------------------------------------
         // `ISse`

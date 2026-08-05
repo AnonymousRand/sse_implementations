@@ -5,11 +5,11 @@
 #include "utils/enc_ind.h"
 
 
-// note that we use the result-hiding variant of Pibas from figure 12 of NDSS'20 (SDa paper) since SDa wants that
+// note that we use the result-hiding variant of PiBas from figure 12 of NDSS'20 (SDa paper) since SDa wants that
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class Pibas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, DbKw> {
+class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, DbKw> {
     public:
-        ~Pibas();
+        ~PiBas();
 
         //----------------------------------------------------------------------
         // `ISse`

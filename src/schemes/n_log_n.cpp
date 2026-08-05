@@ -1,10 +1,10 @@
-#include "nlogn.h"
+#include "n_log_n.h"
 
 #include "utils/cryptography.h"
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-Nlogn<DbDoc, DbKw>::~Nlogn() {
+NLogN<DbDoc, DbKw>::~NLogN() {
     this->clear();
     if (this->dbKwListSizeDict != nullptr) {
         delete this->dbKwListSizeDict;
@@ -14,7 +14,7 @@ Nlogn<DbDoc, DbKw>::~Nlogn() {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -63,7 +63,7 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             dbKwList.reserve(dbKwListSize + amountToPad);
             // notice we even use dummy range for the db keyword (i.e. `Range<DbKw>`)
             // to differentiate from dummies originating upstream in Log-SRC-i* padding etc. (needed for `getDb()`)
-            // (also since doing this doesn't affect the correctness of NlogN or the purpose of the dummies)
+            // (also since doing this doesn't affect the correctness of NLogN or the purpose of the dummies)
             DbDoc dummyDbDoc = DbDoc::genDummy(DUMMY_RANGE<DbKw>());
             for (long i = 0; i < amountToPad; i++) {
                 dbKwList.push_back(dummyDbDoc);
@@ -106,7 +106,7 @@ void Nlogn<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Nlogn<DbDoc, DbKw>::clear() {
+void NLogN<DbDoc, DbKw>::clear() {
     IStaticPointSse<DbDoc, DbKw>::clear();
     ISdaUnderlySse<DbDoc, DbKw>::clear();
 
@@ -125,7 +125,7 @@ void Nlogn<DbDoc, DbKw>::clear() {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Nlogn<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
+void NLogN<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
     for (EncInd* lvl : this->encIndLvls) {
         for (long i = 0; i < lvl->getSize(); i++) {
             EncIndVal encIndVal;
@@ -139,7 +139,7 @@ void Nlogn<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
             // to easily access these `DbKw` ranges in plaintext
             Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
             // exclude replicated tuples: assume any tuples with `DbKw` range size >1 is non-leaf and hence replicated
-            // also exclude dummies/padding (from NlogN, but not from upstream SSE using NlogN as underly, for example)
+            // also exclude dummies/padding (from NLogN, but not from upstream SSE using NLogN as underly, for example)
             if (dbKwRange.size() > 1 || dbKwRange == DUMMY_RANGE<DbKw>()) {
                 continue;
             }
@@ -150,7 +150,7 @@ void Nlogn<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::vector<DbDoc> Nlogn<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbDoc> results;
 
     // PRF(K_1, w)
@@ -201,14 +201,14 @@ std::vector<DbDoc> Nlogn<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ustring Nlogn<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
+ustring NLogN<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
     return prf(this->prfKey, query.toUstr());
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Nlogn<DbDoc, DbKw>::setupEncIndLvls() {
+void NLogN<DbDoc, DbKw>::setupEncIndLvls() {
     for (long lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
         EncInd* lvl = new EncInd();
         long bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
@@ -220,7 +220,7 @@ void Nlogn<DbDoc, DbKw>::setupEncIndLvls() {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ulong Nlogn<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
+ulong NLogN<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
     retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken);
     return hashToPos(retLabel); // no modulus
@@ -228,7 +228,7 @@ ulong Nlogn<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel)
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::pair<ulong, ulong> Nlogn<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const {
+std::pair<ulong, ulong> NLogN<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
     ulong pos = this->mapNoMod(queryToken, retLabel);
     ulong lvl = std::log2(dbKwListSize); // require `dbKwListSize` to already be padded (also bottom level is 0)
@@ -238,24 +238,24 @@ std::pair<ulong, ulong> Nlogn<DbDoc, DbKw>::map(const ustring& queryToken, long 
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-long Nlogn<DbDoc, DbKw>::computeNumLvls() const {
+long NLogN<DbDoc, DbKw>::computeNumLvls() const {
     return std::ceil(std::log2(this->size)) + 1;
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-long Nlogn<DbDoc, DbKw>::computeBcktCountOnLvl(long lvl) const {
+long NLogN<DbDoc, DbKw>::computeBcktCountOnLvl(long lvl) const {
     // 2^{lvlCount - lvl + 1} is number of bckts on level `lvl`
     return std::pow(2, this->numLvls - lvl - 1);
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-long Nlogn<DbDoc, DbKw>::computeBcktSizeOnLvl(long lvl) const {
+long NLogN<DbDoc, DbKw>::computeBcktSizeOnLvl(long lvl) const {
     return std::pow(2, lvl);
 }
 
 
-template class Nlogn<Doc<>, Kw>;
-template class Nlogn<SrcIDb1Doc, Kw>;
-//template class Nlogn<Doc<IdAlias>, IdAlias>;
+template class NLogN<Doc<>, Kw>;
+template class NLogN<SrcIDb1Doc, Kw>;
+//template class NLogN<Doc<IdAlias>, IdAlias>;

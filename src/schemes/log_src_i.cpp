@@ -2,8 +2,8 @@
 
 // for explicit template instantiation
 #include "log_src_i_star.h"
-#include "nlogn.h"
-#include "pibas.h"
+#include "n_log_n.h"
+#include "pi_bas.h"
 
 
 //==============================================================================
@@ -98,8 +98,8 @@ void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
 }
 
 
-template class LogSrcIBase<Pibas>;
-template class LogSrcIBase<Nlogn>;
+template class LogSrcIBase<PiBas>;
+template class LogSrcIBase<NLogN>;
 template class LogSrcIBase<underly::LogSrcIStarUnderly>;
 
 
@@ -226,5 +226,5 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 }
 
 
-template class LogSrcI<Pibas>;
-template class LogSrcI<Nlogn>;
+template class LogSrcI<PiBas>;
+template class LogSrcI<NLogN>;

@@ -1,10 +1,10 @@
-#include "pibas.h"
+#include "pi_bas.h"
 
 #include "utils/cryptography.h"
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-Pibas<DbDoc, DbKw>::~Pibas() {
+PiBas<DbDoc, DbKw>::~PiBas() {
     this->clear();
     if (this->encInd != nullptr) {
         delete this->encInd;
@@ -14,7 +14,7 @@ Pibas<DbDoc, DbKw>::~Pibas() {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -44,7 +44,7 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ind[dbKwRange].push_back(dbDoc);
         }
     }
-    // randomly permute documents associated with same keyword, required by some schemes on top of Pibas (e.g. Log-SRC)
+    // randomly permute documents associated with same keyword, required by some schemes on top of PiBas (e.g. Log-SRC)
     shuffleInd(ind);
 
     // for each w in W
@@ -76,7 +76,7 @@ void Pibas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Pibas<DbDoc, DbKw>::clear() {
+void PiBas<DbDoc, DbKw>::clear() {
     IStaticPointSse<DbDoc, DbKw>::clear();
     ISdaUnderlySse<DbDoc, DbKw>::clear();
     if (this->encInd != nullptr) {
@@ -86,7 +86,7 @@ void Pibas<DbDoc, DbKw>::clear() {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Pibas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
+void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
     for (long i = 0; i < this->encInd->getSize(); i++) {
         EncIndVal encIndVal;
         bool isValidVal = this->encInd->read(i, encIndVal);
@@ -108,7 +108,7 @@ void Pibas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::vector<DbDoc> Pibas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbDoc> results;
 
     // PRF(K_1, w)
@@ -136,20 +136,20 @@ std::vector<DbDoc> Pibas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ustring Pibas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
+ustring PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
     return prf(this->prfKey, query.toUstr());
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ulong Pibas<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCounter, ustring& retLabel) const {
+ulong PiBas<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCounter, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w) || c)
     retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
     return hashToPos(retLabel);
 }
 
 
-template class Pibas<Doc<>, Kw>;               // default/standalone
-template class Pibas<SrcIDb1Doc, Kw>;          // Log-SRC-i index 1
-//template class Pibas<Doc<IdAlias>, IdAlias>; // Log-SRC-i index 2
+template class PiBas<Doc<>, Kw>;               // default/standalone
+template class PiBas<SrcIDb1Doc, Kw>;          // Log-SRC-i index 1
+//template class PiBas<Doc<IdAlias>, IdAlias>; // Log-SRC-i index 2

@@ -15,7 +15,7 @@ template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     Range<DbKw> dbKwBounds = findDbKwBounds(db);
     this->leafCount = dbKwBounds.size();
-    Nlogn<DbDoc, DbKw>::setup(secParam, db);
+    NLogN<DbDoc, DbKw>::setup(secParam, db);
 }
 
 
@@ -64,7 +64,7 @@ std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 long LogSrcIStarUnderly<DbDoc, DbKw>::computeNumLvls() const {
-    // the key to avoiding the blowup of using NlogN as a black box is by using `leafCount` instead of `db.size()` here,
+    // the key to avoiding the blowup of using NLogN as a black box is by using `leafCount` instead of `db.size()` here,
     // since `db.size()` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
     return std::ceil(std::log2(this->leafCount)) + 1;
 }

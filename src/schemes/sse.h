@@ -57,7 +57,7 @@ concept IsSse = requires(T t) {
 //==============================================================================
 
 
-// subclasses of this include `Pibas`, `Nlogn`, and `LogSrcIStarUnderly`
+// subclasses of this include `PiBas`, `NLogN`, and `LogSrcIStarUnderly`
 // provide shared code for `search()` (depending on `searchBase()`)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {

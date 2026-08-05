@@ -2,7 +2,7 @@
 
 Implementations of the following [searchable symmetric encryption](https://en.wikipedia.org/wiki/Searchable_symmetric_encryption) (SSE) schemes:
 - PiBas ([Cash et al., NDSS'14](https://eprint.iacr.org/2014/853.pdf)) (but specifically the result-hiding variant used in [Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf) (in figure 12), similar to PiBasRo)
-- NlogN ([Asharov et al., STOC'16](https://eprint.iacr.org/2016/251.pdf), approach #3 "Improving the Cash–Tessaro Scheme")
+- NLogN ([Asharov et al., STOC'16](https://eprint.iacr.org/2016/251.pdf), approach #3 "Improving the Cash–Tessaro Scheme")
 - Logarithmic-SRC ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
 - Logarithmic-SRC-i ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
 - Logarithmic-SRC-i\* ([Demertzis et al., TODS'18](https://dl.acm.org/doi/pdf/10.1145/3167971))
@@ -10,18 +10,18 @@ Implementations of the following [searchable symmetric encryption](https://en.wi
 
 Since many of these can be instantiated with various underlying schemes, the following instantiations are possible:
 - PiBas
-- NlogN
+- NLogN
 - Logarithmic-SRC[PiBas]
-- Logarithmic-SRC[NlogN]
+- Logarithmic-SRC[NLogN]
 - Logarithmic-SRC-i[PiBas]
-- Logarithmic-SRC-i[NlogN]
+- Logarithmic-SRC-i[NLogN]
 - Logarithmic-SRC-i\*
 - SDa[PiBas]
-- SDa[NlogN]
+- SDa[NLogN]
 - SDa[Logarithmic-SRC[PiBas]]
-- SDa[Logarithmic-SRC[NlogN]]
+- SDa[Logarithmic-SRC[NLogN]]
 - SDa[Logarithmic-SRC-i[PiBas]]
-- SDa[Logarithmic-SRC-i[NlogN]]
+- SDa[Logarithmic-SRC-i[NLogN]]
 - SDa[Logarithmic-SRC-i\*]
 
 See [src/main.cpp](src/main.cpp) for usage examples.
