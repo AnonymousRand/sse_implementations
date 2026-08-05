@@ -4,10 +4,8 @@ out/enc_ind_*
 
 # build
 build_*
+conan2/
 CMakeUserPresets.json
-
-# venv
-venv/
 
 # vim
 *.swp

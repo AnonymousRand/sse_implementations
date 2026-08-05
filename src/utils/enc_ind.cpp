@@ -1,5 +1,7 @@
 #include "enc_ind.h"
 
+#include <cstring>
+
 
 // this initializes everything to `\0`, i.e. zero bits
 // technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
