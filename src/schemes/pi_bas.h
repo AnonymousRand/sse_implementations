@@ -2,7 +2,7 @@
 
 #include "pi_bas_server.h"
 #include "sse.h"
-#include "utils/benchmark.h"
+#include "utils/benchmark.h" // since this was only forward declared in `sse.h`
 #include "utils/enc_ind.h"
 
 
@@ -10,6 +10,8 @@
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, DbKw> {
     public:
+        using IStaticPointSse<DbDoc, DbKw>::IStaticPointSse;
+
         ~PiBas();
 
         //----------------------------------------------------------------------

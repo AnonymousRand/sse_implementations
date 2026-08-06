@@ -17,6 +17,8 @@ namespace underly {
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class LogSrcIStarUnderly : public NLogN<DbDoc, DbKw> {
     public:
+        using NLogN<DbDoc, DbKw>::NLogN;
+
         //----------------------------------------------------------------------
         // `ISse`
 
@@ -48,6 +50,8 @@ class LogSrcIStarUnderly : public NLogN<DbDoc, DbKw> {
 
 class LogSrcIStar : public LogSrcIBase<underly::LogSrcIStarUnderly> {
     public:
+        using LogSrcIBase<underly::LogSrcIStarUnderly>::LogSrcIBase;
+
         //----------------------------------------------------------------------
         // `ISse`
 

@@ -8,6 +8,8 @@
 template <IsSdaUnderlySse Underly>
 class Sda : public IDsse<Doc<>, Kw> {
     public:
+        using IDsse<Doc<>, Kw>::IDsse;
+
         ~Sda();
 
         //----------------------------------------------------------------------

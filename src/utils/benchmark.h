@@ -29,15 +29,17 @@ struct Benchmark {
 template <template <class ...> class Sse> requires IsSse<Sse<Doc<>, Kw>>
 class Benchmarked : public Sse<Doc<>, Kw> {
     public:
+        using Sse<Doc<>, Kw>::Sse;
+
         void setup(int secParam, const Db<Doc<>, Kw>& db) override {
             this->benchmark.reset();
-            ISse::setup(secParam, db);
+            Sse<Doc<>, Kw>::setup(secParam, db);
         }
 
         std::vector<Doc<>> search(
             const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override {
             this->benchmark.reset();
-            ISse::search(query, shouldCleanUpResults, isNaive);
+            Sse<Doc<>, Kw>::search(query, shouldCleanUpResults, isNaive);
         }
 };

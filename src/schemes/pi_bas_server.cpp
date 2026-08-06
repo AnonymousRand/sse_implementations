@@ -27,7 +27,7 @@ void PiBasServer<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void PiBasServer<DbDoc, DbKw>::setEncInd(EncInd* encInd) {
-    this->benchmark.totalComm += encInd->size() * EncInd::ENTRY_LEN;
+    this->benchmark.totalComm += encInd->getSize() * EncInd::ENTRY_LEN;
     this->encInd = encInd;
 }
 

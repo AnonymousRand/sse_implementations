@@ -8,6 +8,7 @@
 #include "schemes/pi_bas.h"
 #include "schemes/sda.h"
 #include "schemes/sse.h"
+#include "utils/benchmark.h"
 
 
 Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
@@ -207,20 +208,21 @@ int main() {
     long maxDbSize = std::pow(2, maxDbSizeExp);
     std::cout << std::endl;
 
-    PiBas<> piBas;
-    NLogN<> nLogN;
-    LogSrc<PiBas> logSrcPiBas;
-    LogSrc<NLogN> logSrcNLogN;
-    LogSrcI<PiBas> logSrcIPiBas;
-    LogSrcI<NLogN> logSrcINLogN;
-    LogSrcIStar logSrcIStar;
-    Sda<PiBas<>> sdaPiBas;
-    Sda<NLogN<>> sdaNLogN;
-    Sda<LogSrc<PiBas>> sdaLogSrcPiBas;
-    Sda<LogSrc<PiBas>> sdaLogSrcNLogN;
-    Sda<LogSrcI<PiBas>> sdaLogSrcIPiBas;
-    Sda<LogSrcI<PiBas>> sdaLogSrcINLogN;
-    Sda<LogSrcIStar> sdaLogSrcIStar;
+    Benchmark benchmark;
+    PiBas<> piBas {benchmark};
+    NLogN<> nLogN {benchmark};
+    LogSrc<PiBas> logSrcPiBas {benchmark};
+    LogSrc<NLogN> logSrcNLogN {benchmark};
+    LogSrcI<PiBas> logSrcIPiBas {benchmark};
+    LogSrcI<NLogN> logSrcINLogN {benchmark};
+    LogSrcIStar logSrcIStar {benchmark};
+    Sda<PiBas<>> sdaPiBas {benchmark};
+    Sda<NLogN<>> sdaNLogN {benchmark};
+    Sda<LogSrc<PiBas>> sdaLogSrcPiBas {benchmark};
+    Sda<LogSrc<PiBas>> sdaLogSrcNLogN {benchmark};
+    Sda<LogSrcI<PiBas>> sdaLogSrcIPiBas {benchmark};
+    Sda<LogSrcI<PiBas>> sdaLogSrcINLogN {benchmark};
+    Sda<LogSrcIStar> sdaLogSrcIStar {benchmark};
 
     //--------------------------------------------------------------------------
     // debugging experiment

@@ -33,7 +33,7 @@ void NLogNServer<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::addEncIndLvl(EncInd* encIndLvl) {
-    this->benchmark.totalComm += encIndLvl->size() * EncInd::ENTRY_LEN;
+    this->benchmark.totalComm += encIndLvl->getSize() * EncInd::ENTRY_LEN;
     this->encIndLvls.push_back(encIndLvl);
 }
 

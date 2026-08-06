@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils/benchmark.h"
 #include "utils/enc_ind.h"
 #include "utils/utils.h"
 

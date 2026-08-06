@@ -68,6 +68,8 @@ concept IsSse = requires(T t) {
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
     public:
+        using ISse<DbDoc, DbKw>::ISse;
+
         //----------------------------------------------------------------------
         // shared code
 
@@ -131,6 +133,8 @@ class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class IDsse : public virtual ISse<DbDoc, DbKw> {
     public:
+        using ISse<DbDoc, DbKw>::ISse;
+
         //----------------------------------------------------------------------
         // methods to implement
 
@@ -146,6 +150,8 @@ class IDsse : public virtual ISse<DbDoc, DbKw> {
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
     public:
+        using ISse<DbDoc, DbKw>::ISse;
+
         //----------------------------------------------------------------------
         // methods to implement
 

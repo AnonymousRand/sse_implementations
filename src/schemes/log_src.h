@@ -7,6 +7,8 @@
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 class LogSrc : public ISdaUnderlySse<Doc<>, Kw> {
     public:
+        using ISdaUnderlySse<Doc<>, Kw>::ISdaUnderlySse;
+
         ~LogSrc();
 
         //----------------------------------------------------------------------
@@ -24,6 +26,6 @@ class LogSrc : public ISdaUnderlySse<Doc<>, Kw> {
         void getDb(Db<Doc<>, Kw>& ret) const override;
 
     private:
-        Underly<Doc<>, Kw>* underly = new Underly<Doc<>, Kw>();
+        Underly<Doc<>, Kw>* underly = new Underly<Doc<>, Kw> {this->benchmark};
         TdagNode<Kw>* tdag = nullptr;
 };
