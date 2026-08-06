@@ -1,10 +1,9 @@
 #pragma once
 
-
 #include <iostream>
 
 // TODO: make all imports prepend `schemes/` or `utils/`? or is that bad practice?
-#include "schemes/sse.h"
+#include "schemes/sse_concepts.h"
 #include "utils.h"
 
 
@@ -16,7 +15,7 @@ struct Benchmark {
     };
 
     friend std::ostream& operator <<(std::ostream& os, const Benchmark& benchmark) {
-        os << "Benchmark: total communication " << benchmark.totalComm << " bytes";
+        return os << "Benchmark: total communication " << benchmark.totalComm << " bytes";
     };
 };
 
@@ -27,17 +26,17 @@ struct Benchmark {
  * `Benchmark` member variable; unfortunately there doesn't seem to be an easy way to make one
  * automatically enforce the other).
  */
-template <template <class ...> Sse> requires IsSse<Sse<Doc<>, Kw>>
+template <template <class ...> class Sse> requires IsSse<Sse<Doc<>, Kw>>
 class Benchmarked : public Sse {
     public:
-        inline void setup(int secParam, const Db<DbDoc, DbKw>& db) = {
+        void setup(int secParam, const Db<DbDoc, DbKw>& db) override = {
             this->benchmark.reset();
             Sse::setup(secParam, db);
         };
 
-        inline std::vector<DbDoc> search(
+        std::vector<DbDoc> search(
             const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
-        ) const {
+        ) const override {
             this->benchmark.reset();
             Sse::search(query, shouldCleanUpResults, isNaive);
         };

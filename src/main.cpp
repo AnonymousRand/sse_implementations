@@ -7,6 +7,7 @@
 #include "schemes/n_log_n.h"
 #include "schemes/pi_bas.h"
 #include "schemes/sda.h"
+#include "schemes/sse.h"
 
 
 Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
