@@ -6,9 +6,8 @@
 #include <iostream>
 #include <string>
 
-// TODO: make all imports prepend `schemes/` or `utils/`? or is that bad practice?
 #include "schemes/sse.h"
-#include "utils.h"
+#include "utils/utils.h"
 
 
 struct Benchmark {

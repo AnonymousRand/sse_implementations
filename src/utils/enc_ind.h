@@ -7,7 +7,7 @@
 
 #include <cstdio>
 
-#include "utils.h"
+#include "utils/utils.h"
 
 
 class EncInd {

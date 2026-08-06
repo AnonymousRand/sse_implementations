@@ -1,7 +1,7 @@
 #pragma once
 
-#include "log_src_i.h" 
-#include "n_log_n.h" 
+#include "schemes/log_src_i.h" 
+#include "schemes/n_log_n.h" 
 
 
 //------------------------------------------------------------------------------

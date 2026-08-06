@@ -1,6 +1,6 @@
-#include "pi_bas.h"
+#include "schemes/pi_bas.h"
 
-#include "pi_bas_server.h"
+#include "schemes/pi_bas_server.h"
 #include "utils/cryptography.h"
 
 

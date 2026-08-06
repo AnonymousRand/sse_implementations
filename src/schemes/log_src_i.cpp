@@ -1,9 +1,9 @@
-#include "log_src_i.h"
+#include "schemes/log_src_i.h"
 
 // for explicit template instantiation
-#include "log_src_i_star.h"
-#include "n_log_n.h"
-#include "pi_bas.h"
+#include "schemes/log_src_i_star.h"
+#include "schemes/n_log_n.h"
+#include "schemes/pi_bas.h"
 
 
 //------------------------------------------------------------------------------

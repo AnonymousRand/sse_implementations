@@ -1,4 +1,4 @@
-#include "log_src_i_star.h"
+#include "schemes/log_src_i_star.h"
 
 #include "utils/cryptography.h"
 

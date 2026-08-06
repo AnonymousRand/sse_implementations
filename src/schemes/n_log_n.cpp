@@ -1,4 +1,4 @@
-#include "n_log_n.h"
+#include "schemes/n_log_n.h"
 
 #include "utils/cryptography.h"
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "pi_bas_server.h"
-#include "sse.h"
+#include "schemes/pi_bas_server.h"
+#include "schemes/sse.h"
 #include "utils/benchmark.h" // since this was only forward declared in `sse.h`
 #include "utils/enc_ind.h"
 

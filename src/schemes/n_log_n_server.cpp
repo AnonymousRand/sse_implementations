@@ -1,4 +1,4 @@
-#include "n_log_n_server.h"
+#include "schemes/n_log_n_server.h"
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
