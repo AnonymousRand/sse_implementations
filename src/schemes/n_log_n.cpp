@@ -6,9 +6,9 @@
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 NLogN<DbDoc, DbKw>::~NLogN() {
     this->clear();
-    if (this->dbKwListSizeDict != nullptr) {
-        delete this->dbKwListSizeDict;
-        this->dbKwListSizeDict = nullptr;
+    if (this->server != nullptr) {
+        delete this->server;
+        this->server = nullptr;
     }
 }
 
@@ -23,8 +23,16 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     this->size = db.size();
     this->numLvls = this->computeNumLvls();
-    this->setupEncIndLvls();
-    this->dbKwListSizeDict->init(this->size);
+
+    for (long lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
+        EncInd* lvl = new EncInd();
+        long bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
+        long bcktSizeOnLvl = this->computeBcktSizeOnLvl(lvlNum);
+        lvl->init(bcktCountOnLvl * bcktSizeOnLvl);
+        this->server->addEncIndLvl(lvl);
+    }
+
+    this->server->initDbKwListSizeDict(this->size);
 
     //--------------------------------------------------------------------------
     // generate keys
@@ -99,7 +107,7 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            this->encIndLvls[lvl]->write(startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
+            this->server->writeToEncInd(startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }
 }
@@ -110,16 +118,8 @@ void NLogN<DbDoc, DbKw>::clear() {
     IStaticPointSse<DbDoc, DbKw>::clear();
     ISdaUnderlySse<DbDoc, DbKw>::clear();
 
-    for (EncInd* lvl : this->encIndLvls) {
-        if (lvl != nullptr) {
-            delete lvl;
-            lvl = nullptr;
-        }
-    }
-    this->encIndLvls.clear();
-
-    if (this->dbKwListSizeDict != nullptr) {
-        this->dbKwListSizeDict->clear();
+    if (this->server != nullptr) {
+        this->server->clear();
     }
 }
 
@@ -177,22 +177,9 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     ulong pos = lvlAndPos.second;
     // return entire bucket (`dbKwListPaddedSize` instead of `dbKwListSize`) from server to hide true result size
     ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
-    for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
-        EncIndVal encIndVal;
-        bool isFound;
-        if (dbKwCounter == 0) {
-            // if first read, get the right bucket start pos (e.g. in case of hash/modulo collision in encrypted index)
-            // note: dummies must also use the correct (not dummy) `label` so they are still found by `find()`
-            isFound = this->encIndLvls[lvl]->find(startPos, label, encIndVal, &startPos);
-        } else {
-            // after first read, just read from the bucket consecutively as we are now guaranteed consecutivity
-            isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal);
-        }
-        if (!isFound) {
-            break;
-        }
-
-        DbDoc result = this->decryptEncIndVal(encIndVal);
+    std::vector<EncIndVal> encResults = this->server->getBucket(lvl, startPos, label);
+    for (EncIndVal encResult : encResults) {
+        DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);
     }
 
@@ -204,18 +191,6 @@ template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 ustring NLogN<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
     return prf(this->prfKey, query.toUstr());
-}
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void NLogN<DbDoc, DbKw>::setupEncIndLvls() {
-    for (long lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
-        EncInd* lvl = new EncInd();
-        long bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
-        long bcktSizeOnLvl = this->computeBcktSizeOnLvl(lvlNum);
-        lvl->init(bcktCountOnLvl * bcktSizeOnLvl);
-        this->encIndLvls.push_back(lvl);
-    }
 }
 
 

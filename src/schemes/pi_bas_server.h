@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <vector>
 
 #include "utils/enc_ind.h"
@@ -13,7 +12,7 @@ class PiBasServer {
         ~PiBasServer();
 
         void clear();
-        void setup(EncInd* encInd);
+        void setEncInd(EncInd* encInd);
         std::vector<EncIndVal> search(const ustring& queryToken) const;
 
         EncInd* getEncInd() const;

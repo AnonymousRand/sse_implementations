@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "log_src_i.h" 
 #include "n_log_n.h" 
 
@@ -10,6 +9,7 @@
 //------------------------------------------------------------------------------
 
 
+// TODO: change namespace to LogSrcIStar and class name to Underly?
 namespace underly {
 
 

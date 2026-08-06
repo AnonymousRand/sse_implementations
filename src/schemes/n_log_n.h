@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "n_log_n_server.h"
 #include "sse.h"
 #include "utils/enc_ind.h"
 
@@ -22,7 +22,6 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     protected:
-        std::vector<EncInd*> encIndLvls;
         long numLvls;
 
         //----------------------------------------------------------------------
@@ -34,7 +33,6 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         // other
 
         ustring genQueryToken(const Range<DbKw>& query) const;
-        void setupEncIndLvls();
 
         /**
          * Generate encrypted label to store in encrypted index, and also return
@@ -56,6 +54,7 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         virtual long computeBcktCountOnLvl(long lvlNum) const;
         virtual long computeBcktSizeOnLvl(long lvlNum) const;
 
-    private: // stuff to not share with Log-SRC-i*
-        EncInd* dbKwListSizeDict = new EncInd();
+    private:
+        // stuff to not share with Log-SRC-i*
+        NLogNServer* server = new NLogNServer();
 };

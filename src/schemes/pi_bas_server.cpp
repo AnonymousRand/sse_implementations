@@ -20,7 +20,7 @@ void PiBasServer<DbDoc, DbKw>::clear() {
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams <DbDoc, DbKw>
-void setup(EncInd* encInd) {
+void PiBasServer<DbDoc, DbKw>::setEncInd(EncInd* encInd) {
     this->encInd = encInd;
 }
 

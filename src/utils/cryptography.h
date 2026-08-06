@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <openssl/evp.h>
 
 #include "utils.h"

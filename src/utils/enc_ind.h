@@ -3,9 +3,7 @@
  * each of which correspond to `std::pair<key/label, std::pair<encrypted doc, IV>>`.
  */
 
-
 #pragma once
-
 
 #include <cstdio>
 

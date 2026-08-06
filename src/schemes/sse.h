@@ -1,9 +1,7 @@
 // definitions of methods (i.e. shared code) are given inline in this file
 // to avoid all the explicit template instantiation needed if using a `.cpp` file
 
-
 #pragma once
-
 
 #include "utils/cryptography.h"
 #include "utils/utils.h"

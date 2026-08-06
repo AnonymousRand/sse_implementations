@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "sse.h"
 #include "utils/tdag.h"
 

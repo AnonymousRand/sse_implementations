@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <list>
 
 #include "utils.h"

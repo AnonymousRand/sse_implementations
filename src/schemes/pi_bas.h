@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "sse.h"
 #include "utils/enc_ind.h"
 
@@ -34,4 +33,10 @@ class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         // other
 
         ustring genQueryToken(const Range<DbKw>& query) const;
+
+        /**
+         * Generate encrypted label to store in encrypted index, and also return
+         * numerical position at which to place it in the index (pseudorandomly).
+         */
+        ulong map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const;
 };
