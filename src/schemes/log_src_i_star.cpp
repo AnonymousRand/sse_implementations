@@ -29,32 +29,19 @@ std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>
     // for Log-SRC-i*, the TDAG structure means we can determine the number of results and hence the level to search
     // based on the size of the queried range/node, so we don't have to store an encrypted map
     // (and result size is leaked to server anyway)
-    long dbKwListSize = query.size();
-    long dbKwListPaddedSize = std::pow(2, std::ceil(std::log2(dbKwListSize))); // this is bucket size
+    long dbKwCount = query.size();
+    long dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
-    std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
+    std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwCount, label);
     ulong lvl = lvlAndPos.first;
     ulong pos = lvlAndPos.second;
-    // return entire bucket (`dbKwListPaddedSize` instead of `dbKwListSize`) from server to hide true result size
+    // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
     ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
-    for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
-        EncIndVal encIndVal;
-        bool isFound;
-        if (dbKwCounter == 0) {
-            // if first read, get the right bucket start pos (e.g. in case of hash/modulo collision in encrypted index)
-            // note: dummies must also use the correct (not dummy) `label` so they are still found by `find()`
-            isFound = this->encIndLvls[lvl]->find(startPos, label, encIndVal, &startPos);
-        } else {
-            // after first read, just read from the bucket consecutively as we are now guaranteed consecutivity
-            isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal);
-        }
-        if (!isFound) {
-            break;
-        }
-
-        DbDoc result = this->decryptEncIndVal(encIndVal);
+    std::vector<EncIndVal> encResults = this->server->findEncIndBucket(lvl, startPos, dbKwPaddedCount, label);
+    for (EncIndVal encResult : encResults) {
+        DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);
     }
 

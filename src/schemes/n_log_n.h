@@ -22,6 +22,7 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     protected:
+        NLogNServer<DbDoc, DbKw>* server = new NLogNServer<DbDoc, DbKw>();
         long numLvls;
 
         //----------------------------------------------------------------------
@@ -53,8 +54,4 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         virtual long computeNumLvls() const;
         virtual long computeBcktCountOnLvl(long lvlNum) const;
         virtual long computeBcktSizeOnLvl(long lvlNum) const;
-
-    private:
-        // stuff to not share with Log-SRC-i*
-        NLogNServer* server = new NLogNServer();
 };

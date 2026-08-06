@@ -4,14 +4,14 @@
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 NLogNServer<DbDoc, DbKw>::~NLogNServer() {
     this->clear();
-    if (this->dbKwListSizeDict != nullptr) {
-        delete this->dbKwListSizeDict;
-        this->dbKwListSizeDict = nullptr;
+    if (this->dbKwCountsDict != nullptr) {
+        delete this->dbKwCountsDict;
+        this->dbKwCountsDict = nullptr;
     }
 }
 
 
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::clear() {
     for (EncInd* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
@@ -21,44 +21,38 @@ void NLogNServer<DbDoc, DbKw>::clear() {
     }
     this->encIndLvls.clear();
 
-    if (this->dbKwListSizeDict != nullptr) {
-        this->dbKwListSizeDict->clear();
+    if (this->dbKwCountsDict != nullptr) {
+        this->dbKwCountsDict->clear();
     }
 }
 
 
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::addEncIndLvl(EncInd* encIndLvl) {
     this->encIndLvls.push_back(encIndLvl);
 }
 
 
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams <DbDoc, DbKw>
-void NLogNServer<DbDoc, DbKw>::initDbKwListSizeDict(long size) {
-    this->dbKwListSizeDict->init(size);
-}
-
-
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams <DbDoc, DbKw>
-void NLogNServer<DbDoc, DBKw>::writeToEncInd(long lvl, ulong pos, const EncIndEntry& entry) {
+template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+void NLogNServer<DbDoc, DbKw>::writeToEncInd(long lvl, ulong pos, const EncIndEntry& entry) {
     this->encIndLvls[lvl]->write(pos, entry);
 }
 
 
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams <DbDoc, DbKw>
-std::vector<EncIndVal> getBucket(long lvl, ulong pos, const ustring& label) const {
+template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+std::vector<EncIndVal> NLogNServer<DbDoc, DbKw>::findEncIndBucket(long lvl, ulong startPos, long bucketSize, const ustring& label) const {
     std::vector<EncIndVal> encResults;
 
-    for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
+    for (long dbKwCounter = 0; dbKwCounter < bucketSize; dbKwCounter++) {
         EncIndVal encIndVal;
         bool isFound;
         if (dbKwCounter == 0) {
             // if first read, get the right bucket start pos (e.g. in case of hash/modulo collision in encrypted index)
             // note: dummies must also use the correct (not dummy) `label` so they are still found by `find()`
-            isFound = this->encIndLvls[lvl]->find(pos, label, encIndVal, &pos);
+            isFound = this->encIndLvls[lvl]->find(startPos, label, encIndVal, &startPos);
         } else {
             // after first read, just read from the bucket consecutively as we are now guaranteed consecutivity
-            isFound = this->encIndLvls[lvl]->read(pos + dbKwCounter, encIndVal);
+            isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal);
         }
         if (!isFound) {
             break;
@@ -69,3 +63,32 @@ std::vector<EncIndVal> getBucket(long lvl, ulong pos, const ustring& label) cons
 
     return encResults;
 }
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+bool NLogNServer<DbDoc, DbKw>::getEncIndVal(long lvl, ulong pos, EncIndVal& ret) const {
+    return this->encIndLvls[lvl]->read(pos, ret);
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+void NLogNServer<DbDoc, DbKw>::initDbKwCountsDict(long size) {
+    this->dbKwCountsDict->init(size);
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+void NLogNServer<DbDoc, DbKw>::writeToDbKwCountsDict(ulong pos, const EncIndEntry& entry) {
+    this->dbKwCountsDict->write(pos, entry);
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+bool NLogNServer<DbDoc, DbKw>::getDbKwCount(ulong pos, const ustring& label, EncIndVal& ret) {
+    return this->dbKwCountsDict->find(pos, label, ret);
+}
+
+
+template class NLogNServer<Doc<>, Kw>;
+template class NLogNServer<SrcIDb1Doc, Kw>;
+//template class NLogNServer<Doc<IdAlias>, IdAlias>;

@@ -87,7 +87,7 @@ void PiBas<DbDoc, DbKw>::clear() {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Pibas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
+void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
     EncInd* encInd = this->server->getEncInd();
 
     for (long i = 0; i < encInd->getSize(); i++) {
@@ -134,7 +134,7 @@ ustring PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ulong Pibas<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCounter, ustring& retLabel) const {
+ulong PiBas<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCounter, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w) || c)
     retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
     return hashToPos(retLabel);

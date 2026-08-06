@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pi_bas_server.h"
 #include "sse.h"
 #include "utils/enc_ind.h"
 
@@ -22,7 +23,7 @@ class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     private:
-        PiBasServer<DbDoc, DbKw>* server = new PiBasServer();
+        PiBasServer<DbDoc, DbKw>* server = new PiBasServer<DbDoc, DbKw>();
 
         //----------------------------------------------------------------------
         // `IStaticPointSse`

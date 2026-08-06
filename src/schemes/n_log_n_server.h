@@ -1,25 +1,29 @@
 #pragma once
 
+#include "utils/enc_ind.h"
 #include "utils/utils.h"
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class NLogNServer = {
+class NLogNServer {
     public:
         ~NLogNServer();
 
         void clear();
-        void addEncIndLvl(EncInd* encIndLvl);
-        void initDbKwListSizeDict(long size);
-        void writeToEncInd(long lvl, ulong pos, const EncIndEntry& entry);
-        std::vector<EncIndVal> getBucket(long lvl, ulong pos, const ustring& label) const;
 
-        EncInd* getEncIndLvl(long lvl) const;
+        void addEncIndLvl(EncInd* encIndLvl);
+        void writeToEncInd(long lvl, ulong pos, const EncIndEntry& entry);
+        std::vector<EncIndVal> findEncIndBucket(long lvl, ulong startPos, long bucketSize, const ustring& label) const;
+        bool getEncIndVal(long lvl, ulong pos, EncIndVal& ret) const;
+
+        void initDbKwCountsDict(long size);
+        void writeToDbKwCountsDict(ulong pos, const EncIndEntry& entry);
+        bool getDbKwCount(ulong pos, const ustring& label, EncIndVal& ret);
 
     protected:
         std::vector<EncInd*> encIndLvls;
 
     private:
         // stuff to not share with Log-SRC-i*
-        EncInd* dbKwListSizeDict = new EncInd();
+        EncInd* dbKwCountsDict = new EncInd();
 };

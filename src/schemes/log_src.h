@@ -21,7 +21,7 @@ class LogSrc : public ISdaUnderlySse<Doc<>, Kw> {
         //----------------------------------------------------------------------
         // `ISdaUnderlySse`
 
-        void getDb(Db<DbDoc, DbKw>& ret) const override;
+        void getDb(Db<Doc<>, Kw>& ret) const override;
 
     private:
         Underly<Doc<>, Kw>* underly = new Underly<Doc<>, Kw>();

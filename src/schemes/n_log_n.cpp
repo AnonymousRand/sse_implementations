@@ -32,7 +32,7 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         this->server->addEncIndLvl(lvl);
     }
 
-    this->server->initDbKwListSizeDict(this->size);
+    this->server->initDbKwCountsDict(this->size);
 
     //--------------------------------------------------------------------------
     // generate keys
@@ -65,10 +65,10 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
         // pad keyword list to the next power of two
         std::vector<DbDoc> dbKwList = iter->second;
-        long dbKwListSize = dbKwList.size();
-        if (!std::has_single_bit((ulong)dbKwListSize)) {
-            long amountToPad = std::pow(2, std::ceil(std::log2(dbKwListSize))) - dbKwListSize;
-            dbKwList.reserve(dbKwListSize + amountToPad);
+        long dbKwCount = dbKwList.size();
+        if (!std::has_single_bit((ulong)dbKwCount)) {
+            long amountToPad = std::pow(2, std::ceil(std::log2(dbKwCount))) - dbKwCount;
+            dbKwList.reserve(dbKwCount + amountToPad);
             // notice we even use dummy range for the db keyword (i.e. `Range<DbKw>`)
             // to differentiate from dummies originating upstream in Log-SRC-i* padding etc. (needed for `getDb()`)
             // (also since doing this doesn't affect the correctness of NLogN or the purpose of the dummies)
@@ -86,18 +86,18 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         ustring queryToken = this->genQueryToken(dbKwRange);
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
         ustring label;
-        std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
+        std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwCount, label);
         ulong lvl = lvlAndPos.first;
         ulong pos = lvlAndPos.second;
 
-        // add `(w, dbKwListSize)` (non-padded size) to dict to compute what level to search
+        // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
         ustring ivDict = genIv(IV_LEN);
         ustring encDbKwCount = padAndEncrypt(
-            ENC_CIPHER, this->encKey, toUstr(dbKwListSize), ivDict, EncInd::DOC_LEN - 1
+            ENC_CIPHER, this->encKey, toUstr(dbKwCount), ivDict, EncInd::DOC_LEN - 1
         );
         ulong posDict = this->mapNoMod(queryToken, labelDict);
-        this->dbKwListSizeDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
+        this->server->writeToDbKwCountsDict(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
         ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
@@ -107,7 +107,7 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            this->server->writeToEncInd(startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
+            this->server->writeToEncInd(startPos + dbKwCounter, lvl, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }
 }
@@ -126,10 +126,10 @@ void NLogN<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void NLogN<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
-    for (EncInd* lvl : this->encIndLvls) {
-        for (long i = 0; i < lvl->getSize(); i++) {
+    for (long lvl = 0; lvl < this->numLvls; lvl++) {
+        for (long pos = 0; pos < this->size; pos++) {
             EncIndVal encIndVal;
-            bool isValidVal = lvl->read(i, encIndVal);
+            bool isValidVal = this->server->getEncIndVal(lvl, pos, encIndVal);
             if (!isValidVal) {
                 continue;
             }
@@ -156,28 +156,28 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
 
-    // first retrieve the number of results/`dbKwListSize` to know what level to search (and how many dummies there are)
+    // first retrieve the number of results/`dbKwCount` to know what level to search (and how many dummies there are)
     ustring labelDict;
     ulong posDict = this->mapNoMod(queryToken, labelDict);
     EncIndVal encIndValDict;
-    bool isFoundDict = this->dbKwListSizeDict->find(posDict, labelDict, encIndValDict);
+    bool isFoundDict = this->server->getDbKwCount(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
         return std::vector<DbDoc> {};
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
     ustring decDbKwCount = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbKwCount, ivDict);
-    long dbKwListSize = fromUstr(decDbKwCount);
-    long dbKwListPaddedSize = std::pow(2, std::ceil(std::log2(dbKwListSize))); // this is bucket size
+    long dbKwCount = fromUstr(decDbKwCount);
+    long dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
-    std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwListSize, label);
+    std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwCount, label);
     ulong lvl = lvlAndPos.first;
     ulong pos = lvlAndPos.second;
-    // return entire bucket (`dbKwListPaddedSize` instead of `dbKwListSize`) from server to hide true result size
+    // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
     ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResults = this->server->getBucket(lvl, startPos, label);
+    std::vector<EncIndVal> encResults = this->server->findEncIndBucket(lvl, startPos, dbKwPaddedCount, label);
     for (EncIndVal encResult : encResults) {
         DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);
@@ -203,10 +203,10 @@ ulong NLogN<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel)
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::pair<ulong, ulong> NLogN<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const {
+std::pair<ulong, ulong> NLogN<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCount, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
     ulong pos = this->mapNoMod(queryToken, retLabel);
-    ulong lvl = std::log2(dbKwListSize); // require `dbKwListSize` to already be padded (also bottom level is 0)
+    ulong lvl = std::log2(dbKwCount); // require `dbKwCount` to already be padded (also bottom level is 0)
     pos %= (ulong)this->computeBcktCountOnLvl(lvl);
     return std::pair {lvl, pos};
 }
