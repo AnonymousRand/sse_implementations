@@ -1,5 +1,5 @@
-#include <chrono>
 #include <cmath>
+#include <format>
 
 #include "schemes/log_src.h"
 #include "schemes/log_src_i.h"
@@ -62,7 +62,9 @@ Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
 
 
 // experiment for debugging with fixed query and printed results
-void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
+void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
+    Db<> db = createDb(dbSize, true, true); // adjust params at will
+
     // setup
     sse.setup(KEY_LEN, db);
 
@@ -89,37 +91,23 @@ void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
 }
 
 
-// >>TODO: after compiling without errors, declare all SSEs in main() as Benchmarked<> instead?
-// and then print benchmarking results w/ overloaded <<
 void exp1(ISse<>& sse, long dbSize) {
     if (dbSize == 0) {
         return;
     }
     Db<> db = createDb(dbSize, true, true);
+    Benchmark::printHeader();
 
     // setup
-    // >TODO: make timing this also a benchmark thing? add a timer variable and start at beginning
-    // and end of setup and search? but hmm wouldn't that be neater as a "decorator" using templates?
-    // whereas communication benchmarking doesn't work as a "decorator"? maybe keep existing struct
-    // but add timer variable, and add a template "decorator" like Timed<T> or something which sets
-    // timer variable appropriately at the start and end of each ISse function, and use Timed<scheme>
-    // here in main?
-    auto setupStart = std::chrono::high_resolution_clock::now();
     sse.setup(KEY_LEN, db);
-    auto setupEnd = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-    std::cout << "Setup time: " << setupElapsed.count() * 1000 << " ms" << std::endl;
+    sse.benchmark.print("Setup");
     std::cout << std::endl;
 
     // search
     for (long i = 0; i <= std::log2(dbSize); i++) {
         Range<Kw> query {0, (long)std::pow(2, i) - 1};
-        auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
-        auto searchEndTime = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << std::log2(query.size()) << "): " << searchElapsed.count() * 1000
-                  << " ms" << std::endl;
+        sse.benchmark.print("Search", std::format("(size 2^{})", std::log2(query.size())));
     }
     std::cout << std::endl;
 
@@ -132,26 +120,19 @@ void exp2(ISse<>& sse, long maxDbSize) {
         return;
     }
     Range<Kw> query {0, 3};
+    Benchmark::printHeader();
 
     for (long i = 2; i <= std::log2(maxDbSize); i++) {
         long dbSize = std::pow(2, i);
         Db<> db = createDb(dbSize, true, true);
 
         // setup
-        auto setupStart = std::chrono::high_resolution_clock::now();
         sse.setup(KEY_LEN, db);
-        auto setupEnd = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size 2^" << std::log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
-                  << std::endl;
+        sse.benchmark.print("Setup", std::format("(size 2^{})", std::log2(dbSize)));
 
         // search
-        auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
-        auto searchEndTime = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << std::log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
-                  << std::endl;
+        sse.benchmark.print("Search", std::format("(size 2^{})", std::log2(dbSize)));
     }
     std::cout << std::endl;
 
@@ -163,6 +144,7 @@ void exp3(ISse<>& sse, long maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
+    Benchmark::printHeader();
 
     for (long i = 2; i <= std::log2(maxDbSize); i++) {
         long dbSize = std::pow(2, i);
@@ -179,21 +161,13 @@ void exp3(ISse<>& sse, long maxDbSize) {
         db.push_back(DbEntry {Doc<>(dbSize - 1, kw2, Op::INS, kwRange2), kwRange2});
 
         // setup
-        auto setupStart = std::chrono::high_resolution_clock::now();
         sse.setup(KEY_LEN, db);
-        auto setupEnd = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> setupElapsed = setupEnd - setupStart;
-        std::cout << "Setup time (size 2^" << std::log2(dbSize) << "): " << setupElapsed.count() * 1000 << " ms"
-                  << std::endl;
+        sse.benchmark.print("Setup", std::format("(size 2^{})", std::log2(dbSize)));
 
         // search
         Range<Kw> query {1, dbSize - 1};
-        auto searchStartTime = std::chrono::high_resolution_clock::now();
         sse.search(query);
-        auto searchEndTime = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> searchElapsed = searchEndTime - searchStartTime;
-        std::cout << "Search time (size 2^" << std::log2(dbSize) << "): " << searchElapsed.count() * 1000 << " ms"
-                  << std::endl;
+        sse.benchmark.print("Search", std::format("(size 2^{})", std::log2(dbSize)));
     }
     std::cout << std::endl;
 
@@ -228,224 +202,221 @@ int main() {
     // debugging experiment
 
     Range<Kw> query {3, 5};
-    Db<> db = createDb(maxDbSize, true, true); // adjust params at will
 
-    std::cout << "----------------------------- Debugging Experiment -----------------------------" << std::endl;
+    std::cout << "============================= Debugging Experiment =============================" << std::endl;
     std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
     std::cout << "Query  : "   << query                                                             << std::endl;
-    std::cout << "--------------------------------------------------------------------------------" << std::endl;
+    std::cout << "================================================================================" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------------- PiBas -----------------" << std::endl;
+    std::cout << "================ PiBas =================" << std::endl;
     std::cout << std::endl;
-    expDebug(piBas, db, query);
+    expDebug(piBas, maxDbSize, query);
 
-    std::cout << "---------------- NLogN -----------------" << std::endl;
+    std::cout << "================ NLogN =================" << std::endl;
     std::cout << std::endl;
-    expDebug(nLogN, db, query);
+    expDebug(nLogN, maxDbSize, query);
 
-    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
+    std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcPiBas, db, query);
+    expDebug(logSrcPiBas, maxDbSize, query);
 
-    std::cout << "------------ Log-SRC[NLogN] ------------" << std::endl;
+    std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcNLogN, db, query);
+    expDebug(logSrcNLogN, maxDbSize, query);
 
-    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
+    std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcIPiBas, db, query);
+    expDebug(logSrcIPiBas, maxDbSize, query);
 
-    std::cout << "----------- Log-SRC-i[NLogN] -----------" << std::endl;
+    std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcINLogN, db, query);
+    expDebug(logSrcINLogN, maxDbSize, query);
 
-    std::cout << "-------------- Log-SRC-i* --------------" << std::endl;
+    std::cout << "============== Log-SRC-i* ==============" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcIStar, db, query);
+    expDebug(logSrcIStar, maxDbSize, query);
 
-    std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
+    std::cout << "============== SDa[PiBas] ==============" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaPiBas, db, query);
+    expDebug(sdaPiBas, maxDbSize, query);
 
-    std::cout << "-------------- SDa[NLogN] --------------" << std::endl;
+    std::cout << "============== SDa[NLogN] ==============" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaNLogN, db, query);
+    expDebug(sdaNLogN, maxDbSize, query);
 
-    std::cout << "--------- SDa[Log-SRC[PiBas]] ----------" << std::endl;
+    std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcPiBas, db, query);
+    expDebug(sdaLogSrcPiBas, maxDbSize, query);
 
-    std::cout << "--------- SDa[Log-SRC[NLogN]] ----------" << std::endl;
+    std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcNLogN, db, query);
+    expDebug(sdaLogSrcNLogN, maxDbSize, query);
 
-    std::cout << "-------- SDa[Log-SRC-i[PiBas]] ---------" << std::endl;
+    std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcIPiBas, db, query);
+    expDebug(sdaLogSrcIPiBas, maxDbSize, query);
 
-    std::cout << "-------- SDa[Log-SRC-i[NLogN]] ---------" << std::endl;
+    std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcINLogN, db, query);
+    expDebug(sdaLogSrcINLogN, maxDbSize, query);
 
-    std::cout << "----------- SDa[Log-SRC-i*] ------------" << std::endl;
+    std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcIStar, db, query);
-
-    db.clear();
+    expDebug(sdaLogSrcIStar, maxDbSize, query);
 
     //--------------------------------------------------------------------------
     // experiment 1
 
-    std::cout << "--------------------------------- Experiment 1 ---------------------------------" << std::endl;
+    std::cout << "================================= Experiment 1 =================================" << std::endl;
     std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
     std::cout << "Query  : varied"                                                                  << std::endl;
-    std::cout << "--------------------------------------------------------------------------------" << std::endl;
+    std::cout << "================================================================================" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------------- PiBas -----------------" << std::endl;
+    std::cout << "================ PiBas =================" << std::endl;
     std::cout << std::endl;
     exp1(piBas, maxDbSize);
 
-    std::cout << "---------------- NLogN -----------------" << std::endl;
+    std::cout << "================ NLogN =================" << std::endl;
     std::cout << std::endl;
     exp1(nLogN, maxDbSize);
 
-    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
+    std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
     std::cout << std::endl;
     exp1(logSrcPiBas, maxDbSize);
 
-    std::cout << "------------ Log-SRC[NLogN] ------------" << std::endl;
+    std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
     std::cout << std::endl;
     exp1(logSrcNLogN, maxDbSize);
 
-    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
+    std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
     exp1(logSrcIPiBas, maxDbSize);
 
-    std::cout << "----------- Log-SRC-i[NLogN] -----------" << std::endl;
+    std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
     exp1(logSrcINLogN, maxDbSize);
 
-    std::cout << "-------------- Log-SRC-i* --------------" << std::endl;
+    std::cout << "============== Log-SRC-i* ==============" << std::endl;
     std::cout << std::endl;
     exp1(logSrcIStar, maxDbSize);
 
-    std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
+    std::cout << "============== SDa[PiBas] ==============" << std::endl;
     std::cout << std::endl;
     exp1(sdaPiBas, maxDbSize);
 
-    std::cout << "-------------- SDa[NLogN] --------------" << std::endl;
+    std::cout << "============== SDa[NLogN] ==============" << std::endl;
     std::cout << std::endl;
     exp1(sdaNLogN, maxDbSize);
 
-    std::cout << "--------- SDa[Log-SRC[PiBas]] ----------" << std::endl;
+    std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrcPiBas, maxDbSize);
 
-    std::cout << "--------- SDa[Log-SRC[NLogN]] ----------" << std::endl;
+    std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrcNLogN, maxDbSize);
 
-    std::cout << "-------- SDa[Log-SRC-i[PiBas]] ---------" << std::endl;
+    std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrcIPiBas, maxDbSize);
 
-    std::cout << "-------- SDa[Log-SRC-i[NLogN]] ---------" << std::endl;
+    std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrcINLogN, maxDbSize);
 
-    std::cout << "----------- SDa[Log-SRC-i*] ------------" << std::endl;
+    std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
     std::cout << std::endl;
     exp1(sdaLogSrcIStar, maxDbSize);
 
     //--------------------------------------------------------------------------
     // experiment 2
 
-    std::cout << "--------------------------------- Experiment 2 ---------------------------------" << std::endl;
+    std::cout << "================================= Experiment 2 =================================" << std::endl;
     std::cout << "DB size: varied, up to 2^" << maxDbSizeExp                                        << std::endl;
     std::cout << "Query  : 0-3"                                                                     << std::endl;
-    std::cout << "--------------------------------------------------------------------------------" << std::endl;
+    std::cout << "================================================================================" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "---------------- PiBas -----------------" << std::endl;
+    std::cout << "================ PiBas =================" << std::endl;
     std::cout << std::endl;
     exp2(piBas, maxDbSize);
 
-    std::cout << "---------------- NLogN -----------------" << std::endl;
+    std::cout << "================ NLogN =================" << std::endl;
     std::cout << std::endl;
     exp2(nLogN, maxDbSize);
 
-    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
+    std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
     std::cout << std::endl;
     exp2(logSrcPiBas, maxDbSize);
 
-    std::cout << "------------ Log-SRC[NLogN] ------------" << std::endl;
+    std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
     std::cout << std::endl;
     exp2(logSrcNLogN, maxDbSize);
 
-    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
+    std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
     exp2(logSrcIPiBas, maxDbSize);
 
-    std::cout << "----------- Log-SRC-i[NLogN] -----------" << std::endl;
+    std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
     exp2(logSrcINLogN, maxDbSize);
 
-    std::cout << "-------------- Log-SRC-i* --------------" << std::endl;
+    std::cout << "============== Log-SRC-i* ==============" << std::endl;
     std::cout << std::endl;
     exp2(logSrcIStar, maxDbSize);
 
-    std::cout << "-------------- SDa[PiBas] --------------" << std::endl;
+    std::cout << "============== SDa[PiBas] ==============" << std::endl;
     std::cout << std::endl;
     exp2(sdaPiBas, maxDbSize);
 
-    std::cout << "-------------- SDa[NLogN] --------------" << std::endl;
+    std::cout << "============== SDa[NLogN] ==============" << std::endl;
     std::cout << std::endl;
     exp2(sdaNLogN, maxDbSize);
 
-    std::cout << "--------- SDa[Log-SRC[PiBas]] ----------" << std::endl;
+    std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrcPiBas, maxDbSize);
 
-    std::cout << "--------- SDa[Log-SRC[NLogN]] ----------" << std::endl;
+    std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrcNLogN, maxDbSize);
 
-    std::cout << "-------- SDa[Log-SRC-i[PiBas]] ---------" << std::endl;
+    std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrcIPiBas, maxDbSize);
 
-    std::cout << "-------- SDa[Log-SRC-i[NLogN]] ---------" << std::endl;
+    std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrcINLogN, maxDbSize);
 
-    std::cout << "----------- SDa[Log-SRC-i*] ------------" << std::endl;
+    std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
     std::cout << std::endl;
     exp2(sdaLogSrcIStar, maxDbSize);
     
     //--------------------------------------------------------------------------
     // experiment 3
 
-    std::cout << "--------------------------------- Experiment 3 ---------------------------------" << std::endl;
+    std::cout << "================================= Experiment 3 =================================" << std::endl;
     std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
     std::cout << "Query  : high false positives"                                                    << std::endl;
-    std::cout << "--------------------------------------------------------------------------------" << std::endl;
+    std::cout << "================================================================================" << std::endl;
     std::cout << std::endl;
 
-    std::cout << "------------ Log-SRC[PiBas] ------------" << std::endl;
+    std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
     std::cout << std::endl;
     exp3(logSrcPiBas, maxDbSize);
 
-    std::cout << "------------ Log-SRC[NLogN] ------------" << std::endl;
+    std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
     std::cout << std::endl;
     exp3(logSrcNLogN, maxDbSize);
 
-    std::cout << "----------- Log-SRC-i[PiBas] -----------" << std::endl;
+    std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
     exp3(logSrcIPiBas, maxDbSize);
 
-    std::cout << "----------- Log-SRC-i[NLogN] -----------" << std::endl;
+    std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
     exp3(logSrcINLogN, maxDbSize);
 }

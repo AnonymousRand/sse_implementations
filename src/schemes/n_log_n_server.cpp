@@ -33,14 +33,14 @@ void NLogNServer<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::addEncIndLvl(EncInd* encIndLvl) {
-    this->benchmark.totalComm += encIndLvl->getSize() * EncInd::ENTRY_LEN;
+    this->benchmark.communication += encIndLvl->getSize() * EncInd::ENTRY_LEN;
     this->encIndLvls.push_back(encIndLvl);
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::writeToEncInd(long lvl, ulong pos, const EncIndEntry& entry) {
-    this->benchmark.totalComm += EncInd::VAL_LEN;
+    this->benchmark.communication += EncInd::VAL_LEN;
     this->encIndLvls[lvl]->write(pos, entry);
 }
 
@@ -67,7 +67,7 @@ std::vector<EncIndVal> NLogNServer<DbDoc, DbKw>::findEncIndBucket(
         }
 
         encResults.push_back(encIndVal);
-        this->benchmark.totalComm += EncInd::VAL_LEN;
+        this->benchmark.communication += EncInd::VAL_LEN;
     }
 
     return encResults;
@@ -76,7 +76,7 @@ std::vector<EncIndVal> NLogNServer<DbDoc, DbKw>::findEncIndBucket(
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 bool NLogNServer<DbDoc, DbKw>::getEncIndVal(long lvl, ulong pos, EncIndVal& ret) const {
-    this->benchmark.totalComm += EncInd::VAL_LEN;
+    this->benchmark.communication += EncInd::VAL_LEN;
     return this->encIndLvls[lvl]->read(pos, ret);
 }
 
@@ -89,14 +89,14 @@ void NLogNServer<DbDoc, DbKw>::initDbKwCountsDict(long size) {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::writeToDbKwCountsDict(ulong pos, const EncIndEntry& entry) {
-    this->benchmark.totalComm += EncInd::ENTRY_LEN;
+    this->benchmark.communication += EncInd::ENTRY_LEN;
     this->dbKwCountsDict->write(pos, entry);
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 bool NLogNServer<DbDoc, DbKw>::getDbKwCount(ulong pos, const ustring& label, EncIndVal& ret) {
-    this->benchmark.totalComm += label.length() + EncInd::VAL_LEN;
+    this->benchmark.communication += label.length() + EncInd::VAL_LEN;
     return this->dbKwCountsDict->find(pos, label, ret);
 }
 

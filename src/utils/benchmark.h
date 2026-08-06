@@ -1,6 +1,9 @@
 #pragma once
 
+#include <chrono>
+#include <format>
 #include <iostream>
+#include <string>
 
 // TODO: make all imports prepend `schemes/` or `utils/`? or is that bad practice?
 #include "schemes/sse.h"
@@ -8,15 +11,37 @@
 
 
 struct Benchmark {
-    long totalComm = 0;
+    double time = 0;
+    long communication = 0;
 
     void reset() {
-        this->totalComm = 0;
-    };
+        this->communication = 0;
+    }
 
-    friend std::ostream& operator <<(std::ostream& os, const Benchmark& benchmark) {
-        return os << "Benchmark: total communication " << benchmark.totalComm << " bytes";
-    };
+    static void printHeader() {
+        std::cout << std::format("| {:<18} ", "Params")
+                  << std::format("| {:<18} ", "Time (ms)")
+                  << std::format("| {:<18} |", "Communication (B)")
+                  << std::endl
+                  << std::format("--------------------")
+                  << std::format("---------------------")
+                  << std::format("-----------------------")
+                  << std::endl;
+    }
+
+    void print(const std::string& label) {
+        std::cout << std::format("| {:<18} ", label)
+                  << std::format("| {:<18} ", this->time)
+                  << std::format("| {:<18} |", this->communication)
+                  << std::endl;
+    }
+
+    void print(const std::string& label1, const std::string& label2) {
+        std::cout << std::format("| {:<6} ", label1) << std::format("{:<11} ", label2)
+                  << std::format("| {:<18} ", this->time)
+                  << std::format("| {:<18} |", this->communication)
+                  << std::endl;
+    }
 };
 
 
@@ -26,6 +51,7 @@ struct Benchmark {
  * `Benchmark` member variable; unfortunately there doesn't seem to be an easy way to make one
  * automatically enforce the other).
  */
+// TODO: add for update() function too? using `requires IsDsse` inline at the function declaration
 template <class Sse> requires IsSse<Sse>
 class Benchmarked : public Sse {
     public:
@@ -33,13 +59,24 @@ class Benchmarked : public Sse {
 
         void setup(int secParam, const Db<Doc<>, Kw>& db) override {
             this->benchmark.reset();
+
+            auto start = std::chrono::high_resolution_clock::now();
             Sse::setup(secParam, db);
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> elapsed = end - start;
+            this->benchmark.time = elapsed.count();
         }
 
         std::vector<Doc<>> search(
             const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override {
             this->benchmark.reset();
-            return Sse::search(query, shouldCleanUpResults, isNaive);
+
+            auto start = std::chrono::high_resolution_clock::now();
+            std::vector<Doc<>> results = Sse::search(query, shouldCleanUpResults, isNaive);
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> elapsed = end - start;
+            this->benchmark.time = elapsed.count();
+            return results;
         }
 };
