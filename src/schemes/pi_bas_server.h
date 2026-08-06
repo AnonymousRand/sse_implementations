@@ -15,7 +15,7 @@ class PiBasServer {
         void setEncInd(EncInd* encInd);
         std::vector<EncIndVal> search(const ustring& queryToken) const;
 
-        EncInd* getEncInd() const;
+        bool getEncIndVal(ulong pos, EncIndVal& ret) const;
 
     private:
         EncInd* encInd;

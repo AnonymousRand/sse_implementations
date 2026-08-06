@@ -88,11 +88,9 @@ void PiBas<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
-    EncInd* encInd = this->server->getEncInd();
-
-    for (long i = 0; i < encInd->getSize(); i++) {
+    for (long pos = 0; pos < this->size; pos++) {
         EncIndVal encIndVal;
-        bool isValidVal = encInd->read(i, encIndVal);
+        bool isValidVal = this->server->getEncIndVal(pos, encIndVal);
         if (!isValidVal) {
             continue;
         }
@@ -101,7 +99,8 @@ void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
         // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
         // to easily access these `DbKw` ranges in plaintext
         Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
-        // exclude replicated tuples: assume any tuples with `DbKw` range size >1 is non-leaf and hence replicated
+        // exclude replicated tuples: assume any tuples with `DbKw` range size >1 is non-leaf
+        // and hence replicated (e.g. when this is used as the underlying scheme for Log-SRC)
         if (dbKwRange.size() > 1) {
             continue;
         }

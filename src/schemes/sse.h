@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "utils/benchmark.h"
 #include "utils/cryptography.h"
 #include "utils/utils.h"
 
@@ -13,7 +14,7 @@
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class ISse {
+class ISse : public Benchmark {
     public:
         //----------------------------------------------------------------------
         // methods to implement

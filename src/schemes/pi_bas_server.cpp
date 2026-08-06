@@ -53,8 +53,8 @@ std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::search(const ustring& queryToke
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
-EncInd* PiBasServer<DbDoc, DbKw>::getEncInd() const {
-    return this->encInd;
+bool PiBasServer<DbDoc, DbKw>::getEncIndVal(ulong pos, EncIndVal& ret) const {
+    return this->encInd->read(pos, ret);
 };
 
 
