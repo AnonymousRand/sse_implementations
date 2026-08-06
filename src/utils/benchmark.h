@@ -26,20 +26,20 @@ struct Benchmark {
  * `Benchmark` member variable; unfortunately there doesn't seem to be an easy way to make one
  * automatically enforce the other).
  */
-template <template <class ...> class Sse> requires IsSse<Sse<Doc<>, Kw>>
-class Benchmarked : public Sse<Doc<>, Kw> {
+template <class Sse> requires IsSse<Sse>
+class Benchmarked : public Sse {
     public:
-        using Sse<Doc<>, Kw>::Sse;
+        using Sse::Sse;
 
         void setup(int secParam, const Db<Doc<>, Kw>& db) override {
             this->benchmark.reset();
-            Sse<Doc<>, Kw>::setup(secParam, db);
+            Sse::setup(secParam, db);
         }
 
         std::vector<Doc<>> search(
             const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override {
             this->benchmark.reset();
-            Sse<Doc<>, Kw>::search(query, shouldCleanUpResults, isNaive);
+            return Sse::search(query, shouldCleanUpResults, isNaive);
         }
 };

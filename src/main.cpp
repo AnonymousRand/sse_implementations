@@ -89,8 +89,8 @@ void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
 }
 
 
-// >>TODO: after compiling without errors, try making this ISse<> into a Benchmarked<> and declare
-// all SSEs in main() as Benchmarked<> instead? and then print benchmarking results w/ overloaded <<
+// >>TODO: after compiling without errors, declare all SSEs in main() as Benchmarked<> instead?
+// and then print benchmarking results w/ overloaded <<
 void exp1(ISse<>& sse, long dbSize) {
     if (dbSize == 0) {
         return;
@@ -209,20 +209,20 @@ int main() {
     std::cout << std::endl;
 
     Benchmark benchmark;
-    PiBas<> piBas {benchmark};
-    NLogN<> nLogN {benchmark};
-    LogSrc<PiBas> logSrcPiBas {benchmark};
-    LogSrc<NLogN> logSrcNLogN {benchmark};
-    LogSrcI<PiBas> logSrcIPiBas {benchmark};
-    LogSrcI<NLogN> logSrcINLogN {benchmark};
-    LogSrcIStar logSrcIStar {benchmark};
-    Sda<PiBas<>> sdaPiBas {benchmark};
-    Sda<NLogN<>> sdaNLogN {benchmark};
-    Sda<LogSrc<PiBas>> sdaLogSrcPiBas {benchmark};
-    Sda<LogSrc<PiBas>> sdaLogSrcNLogN {benchmark};
-    Sda<LogSrcI<PiBas>> sdaLogSrcIPiBas {benchmark};
-    Sda<LogSrcI<PiBas>> sdaLogSrcINLogN {benchmark};
-    Sda<LogSrcIStar> sdaLogSrcIStar {benchmark};
+    Benchmarked<PiBas<>> piBas {benchmark};
+    Benchmarked<NLogN<>> nLogN {benchmark};
+    Benchmarked<LogSrc<PiBas>> logSrcPiBas {benchmark};
+    Benchmarked<LogSrc<NLogN>> logSrcNLogN {benchmark};
+    Benchmarked<LogSrcI<PiBas>> logSrcIPiBas {benchmark};
+    Benchmarked<LogSrcI<NLogN>> logSrcINLogN {benchmark};
+    Benchmarked<LogSrcIStar> logSrcIStar {benchmark};
+    Benchmarked<Sda<PiBas<>>> sdaPiBas {benchmark};
+    Benchmarked<Sda<NLogN<>>> sdaNLogN {benchmark};
+    Benchmarked<Sda<LogSrc<PiBas>>> sdaLogSrcPiBas {benchmark};
+    Benchmarked<Sda<LogSrc<PiBas>>> sdaLogSrcNLogN {benchmark};
+    Benchmarked<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas {benchmark};
+    Benchmarked<Sda<LogSrcI<PiBas>>> sdaLogSrcINLogN {benchmark};
+    Benchmarked<Sda<LogSrcIStar>> sdaLogSrcIStar {benchmark};
 
     //--------------------------------------------------------------------------
     // debugging experiment
