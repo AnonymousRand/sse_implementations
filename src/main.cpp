@@ -101,7 +101,6 @@ void exp1(ISse<>& sse, long dbSize) {
     // setup
     sse.setup(KEY_LEN, db);
     sse.benchmark.print("Setup");
-    std::cout << std::endl;
 
     // search
     for (long i = 0; i <= std::log2(dbSize); i++) {
