@@ -49,11 +49,12 @@ void EncInd::init(long size) {
 
 
 void EncInd::clear() {
+    // close encrypted index file descriptors
     if (this->file != nullptr) {
         std::fclose(this->file);
         this->file = nullptr;
     }
-    // delete encrypted index files from disk on `clear()`
+    // delete encrypted index files
     if (this->filename != "") {
         std::remove(this->filename.c_str());
         this->filename = "";

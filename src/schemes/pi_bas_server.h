@@ -24,5 +24,5 @@ class PiBasServer {
         bool getEncIndVal(ulong pos, EncIndVal& ret) const;
 
     private:
-        EncInd* encInd;
+        EncInd* encInd = nullptr;
 };
