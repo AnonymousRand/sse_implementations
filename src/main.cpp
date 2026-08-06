@@ -87,6 +87,8 @@ void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
 }
 
 
+// >>TODO: after compiling without errors, try making this ISse<> into a Benchmarked<> and declare
+// all SSEs in main() as Benchmarked<> instead? and then print benchmarking results w/ overloaded <<
 void exp1(ISse<>& sse, long dbSize) {
     if (dbSize == 0) {
         return;
@@ -94,6 +96,12 @@ void exp1(ISse<>& sse, long dbSize) {
     Db<> db = createDb(dbSize, true, true);
 
     // setup
+    // >TODO: make timing this also a benchmark thing? add a timer variable and start at beginning
+    // and end of setup and search? but hmm wouldn't that be neater as a "decorator" using templates?
+    // whereas communication benchmarking doesn't work as a "decorator"? maybe keep existing struct
+    // but add timer variable, and add a template "decorator" like Timed<T> or something which sets
+    // timer variable appropriately at the start and end of each ISse function, and use Timed<scheme>
+    // here in main?
     auto setupStart = std::chrono::high_resolution_clock::now();
     sse.setup(KEY_LEN, db);
     auto setupEnd = std::chrono::high_resolution_clock::now();

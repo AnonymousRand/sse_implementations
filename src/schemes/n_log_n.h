@@ -22,7 +22,7 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     protected:
-        NLogNServer<DbDoc, DbKw>* server = new NLogNServer<DbDoc, DbKw>();
+        NLogNServer<DbDoc, DbKw>* server = new NLogNServer<DbDoc, DbKw> {this->benchmark};
         long numLvls;
 
         //----------------------------------------------------------------------

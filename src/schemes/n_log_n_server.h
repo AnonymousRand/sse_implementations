@@ -7,6 +7,10 @@
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class NLogNServer {
     public:
+        // this should be the client/controller's benchmarking struct
+        Benchmark& benchmark;
+
+        NLogNServer(Benchmark& benchmark);
         ~NLogNServer();
 
         void clear();

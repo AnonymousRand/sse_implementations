@@ -14,8 +14,10 @@
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class ISse : public Benchmark {
+class ISse {
     public:
+        Benchmark benchmark;
+
         //----------------------------------------------------------------------
         // methods to implement
 
@@ -64,7 +66,7 @@ class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
         //----------------------------------------------------------------------
         // shared code
 
-        inline std::vector<DbDoc> search(
+        std::vector<DbDoc> search(
             const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override {
             std::vector<DbDoc> allResults;
@@ -87,7 +89,7 @@ class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
         }
 
         // handle clearing of `prfKey` and `encKey` member variables belonging to this interface
-        inline void clear() override {
+        void clear() override {
             this->prfKey = toUstr("");
             this->encKey = toUstr("");
         }
@@ -107,7 +109,7 @@ class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
         /**
          * Helper function to decrypt `encIndVal`.
          */
-        inline DbDoc decryptEncIndVal(const EncIndVal& encIndVal) const {
+        DbDoc decryptEncIndVal(const EncIndVal& encIndVal) const {
             ustring encDbDoc = encIndVal.first;
             ustring iv = encIndVal.second;
             ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
@@ -151,11 +153,11 @@ class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
         // shared code
 
         // handle clearing of `size` member variable belonging to this interface
-        inline void clear() override {
+        void clear() override {
             this->size = 0;
         }
 
-        inline long getSize() const {
+        long getSize() const {
             return this->size;
         }
 

@@ -15,7 +15,7 @@ class EncInd {
         static constexpr int KEY_LEN = HASH_OUTPUT_LEN; // both PRF (default) and hash (res-hiding) have 512 bit output
         static constexpr int DOC_LEN = 4 * BLOCK_SIZE;  // so max keyword/id size ~10^13 for encoding to fit (start 0)
         static constexpr int VAL_LEN = EncInd::DOC_LEN + IV_LEN;
-        static constexpr int KV_LEN  = EncInd::KEY_LEN + EncInd::VAL_LEN;
+        static constexpr int ENTRY_LEN  = EncInd::KEY_LEN + EncInd::VAL_LEN;
 
         ~EncInd();
 
@@ -52,7 +52,7 @@ class EncInd {
         long getSize() const;
 
     protected:
-        static const uchar NULL_KV[EncInd::KV_LEN];
+        static const uchar NULL_ENTRY[EncInd::ENTRY_LEN];
 
         FILE* file = nullptr;
         std::string filename = "";

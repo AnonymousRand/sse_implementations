@@ -9,6 +9,10 @@
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams <DbDoc, DbKw>
 class PiBasServer {
     public:
+        // this should be the client/controller's benchmarking struct
+        Benchmark& benchmark;
+
+        PiBasServer(Benchmark& benchmark);
         ~PiBasServer();
 
         void clear();
