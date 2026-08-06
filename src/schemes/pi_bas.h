@@ -23,7 +23,7 @@ class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     private:
-        EncInd* encInd = new EncInd();
+        PiBasServer<DbDoc, DbKw>* server = new PiBasServer();
 
         //----------------------------------------------------------------------
         // `IStaticPointSse`
@@ -34,10 +34,4 @@ class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         // other
 
         ustring genQueryToken(const Range<DbKw>& query) const;
-
-        /**
-         * Generate encrypted label to store in encrypted index, and also return
-         * numerical position at which to place it in the index (pseudorandomly).
-         */
-        ulong map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const;
 };

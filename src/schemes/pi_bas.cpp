@@ -1,14 +1,15 @@
 #include "pi_bas.h"
 
+#include "pi_bas_server.h"
 #include "utils/cryptography.h"
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 PiBas<DbDoc, DbKw>::~PiBas() {
     this->clear();
-    if (this->encInd != nullptr) {
-        delete this->encInd;
-        this->encInd = nullptr;
+    if (this->server != nullptr) {
+        delete this->server;
+        this->server = nullptr;
     }
 }
 
@@ -22,10 +23,8 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
     this->secParam = secParam;
     this->size = db.size();
-    this->encInd->init(this->size);
-
-    //--------------------------------------------------------------------------
-    // generate keys
+    EncInd* encInd = new EncInd();
+    encInd->init(this->size);
 
     this->prfKey = genKey(secParam);
     this->encKey = genKey(secParam);
@@ -62,16 +61,18 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         // for each id in DB(w)
         for (long dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
-            // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
-            ustring label;
-            ulong pos = this->map(queryToken, dbKwCounter, label);
+            // l <- Hash(PRF(K_1, w) || c), and generate associated `pos`
+            ustring label = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
+            ulong pos = hashToPos(retLabel);
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            this->encInd->write(pos, std::pair {label, std::pair {encDbDoc, iv}});
+            encInd->write(pos, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }
+
+    this->server->setup(encInd);
 }
 
 
@@ -79,17 +80,19 @@ template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::clear() {
     IStaticPointSse<DbDoc, DbKw>::clear();
     ISdaUnderlySse<DbDoc, DbKw>::clear();
-    if (this->encInd != nullptr) {
-        this->encInd->clear();
+    if (this->server != nullptr) {
+        this->server->clear();
     }
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
-    for (long i = 0; i < this->encInd->getSize(); i++) {
+void Pibas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
+    EncInd* encInd = this->server->getEncInd();
+
+    for (long i = 0; i < encInd->getSize(); i++) {
         EncIndVal encIndVal;
-        bool isValidVal = this->encInd->read(i, encIndVal);
+        bool isValidVal = encInd->read(i, encIndVal);
         if (!isValidVal) {
             continue;
         }
@@ -113,22 +116,10 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
-    // for c = 0 until `Get` returns error
-    long dbKwCounter = 0;
-    while (true) {
-        // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos` (same as in `setup()`)
-        ustring label;
-        ulong pos = this->map(queryToken, dbKwCounter, label);
-        // res <- encInd.get(l)
-        EncIndVal encIndVal;
-        bool isFound = this->encInd->find(pos, label, encIndVal);
-        if (!isFound) {
-            break;
-        }
-
-        DbDoc result = this->decryptEncIndVal(encIndVal);
+    std::vector<EncIndVal> encResults = this->server->search(queryToken);
+    for (EncIndVal encResult : encResults) {
+        DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);
-        dbKwCounter++;
     }
 
     return results;
@@ -139,14 +130,6 @@ template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 ustring PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
     return prf(this->prfKey, query.toUstr());
-}
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ulong PiBas<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCounter, ustring& retLabel) const {
-    // l <- Hash(PRF(K_1, w) || c)
-    retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
-    return hashToPos(retLabel);
 }
 
 

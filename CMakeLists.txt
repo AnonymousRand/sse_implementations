@@ -14,6 +14,7 @@ add_executable(
     src/schemes/log_src_i_star.cpp
     src/schemes/n_log_n.cpp
     src/schemes/pi_bas.cpp
+    src/schemes/pi_bas_server.cpp
     src/schemes/sda.cpp
     src/utils/cryptography.cpp
     src/utils/enc_ind.cpp
