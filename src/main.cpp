@@ -62,9 +62,7 @@ Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
 
 
 // experiment for debugging with fixed query and printed results
-void expDebug(ISse<>& sse, long dbSize, Range<Kw> query) {
-    Db<> db = createDb(dbSize, true, true); // adjust params at will
-
+void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
     // setup
     sse.setup(KEY_LEN, db);
 
@@ -200,7 +198,9 @@ int main() {
     //--------------------------------------------------------------------------
     // debugging experiment
 
+    // (this is out here so all the schemes get the same DB (if it was randomized))
     Range<Kw> query {3, 5};
+    Db<> db = createDb(maxDbSize, true, true); // adjust params at will
 
     std::cout << "============================= Debugging Experiment =============================" << std::endl;
     std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
@@ -210,61 +210,60 @@ int main() {
 
     std::cout << "================ PiBas =================" << std::endl;
     std::cout << std::endl;
-    expDebug(piBas, maxDbSize, query);
+    expDebug(piBas, db, query);
 
     std::cout << "================ NLogN =================" << std::endl;
     std::cout << std::endl;
-    expDebug(nLogN, maxDbSize, query);
+    expDebug(nLogN, db, query);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcPiBas, maxDbSize, query);
+    expDebug(logSrcPiBas, db, query);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcNLogN, maxDbSize, query);
+    expDebug(logSrcNLogN, db, query);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcIPiBas, maxDbSize, query);
+    expDebug(logSrcIPiBas, db, query);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcINLogN, maxDbSize, query);
+    expDebug(logSrcINLogN, db, query);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcIStar, maxDbSize, query);
+    expDebug(logSrcIStar, db, query);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaPiBas, maxDbSize, query);
+    expDebug(sdaPiBas, db, query);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaNLogN, maxDbSize, query);
+    expDebug(sdaNLogN, db, query);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcPiBas, maxDbSize, query);
+    expDebug(sdaLogSrcPiBas, db, query);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcNLogN, maxDbSize, query);
+    expDebug(sdaLogSrcNLogN, db, query);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcIPiBas, maxDbSize, query);
+    expDebug(sdaLogSrcIPiBas, db, query);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcINLogN, maxDbSize, query);
+    expDebug(sdaLogSrcINLogN, db, query);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcIStar, maxDbSize, query);
+    expDebug(sdaLogSrcIStar, db, query);
 
-    /*
     //--------------------------------------------------------------------------
     // experiment 1
 
@@ -419,5 +418,4 @@ int main() {
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
     exp3(logSrcINLogN, maxDbSize);
-    */
 }

@@ -34,9 +34,6 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
     this->server->initDbKwCountsDict(this->size);
 
-    //--------------------------------------------------------------------------
-    // generate keys
-
     this->prfKey = genKey(secParam);
     this->encKey = genKey(secParam);
 
