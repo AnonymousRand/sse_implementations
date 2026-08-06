@@ -2,6 +2,7 @@
 
 #include "n_log_n_server.h"
 #include "sse.h"
+#include "utils/benchmark.h"
 #include "utils/enc_ind.h"
 
 

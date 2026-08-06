@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "sse_concepts.h"
-#include "utils/benchmark.h"
 #include "utils/cryptography.h"
 #include "utils/utils.h"
 
@@ -14,14 +12,19 @@
 //------------------------------------------------------------------------------
 
 
+struct Benchmark;
+
+
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISse {
     public:
         // TODO this might not work with log-src etc underlyings!
-        Benchmark benchmark;
+        Benchmark& benchmark;
 
         //----------------------------------------------------------------------
         // methods to implement
+
+        ISse(Benchmark& benchmark) : benchmark(benchmark) {}
 
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         
@@ -46,6 +49,12 @@ class ISse {
 
     protected:
         int secParam;
+};
+
+
+template <class T>
+concept IsSse = requires(T t) {
+    []<class ... Args>(ISse<Args ...>&){}(t);
 };
 
 
@@ -159,4 +168,10 @@ class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
 
     protected:
         long size;
+};
+
+
+template <class T>
+concept IsSdaUnderlySse = requires(T t) {
+    []<class ... Args>(ISdaUnderlySse<Args ...>&){}(t);
 };

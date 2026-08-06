@@ -3,7 +3,7 @@
 #include <iostream>
 
 // TODO: make all imports prepend `schemes/` or `utils/`? or is that bad practice?
-#include "schemes/sse_concepts.h"
+#include "schemes/sse.h"
 #include "utils.h"
 
 
@@ -27,17 +27,17 @@ struct Benchmark {
  * automatically enforce the other).
  */
 template <template <class ...> class Sse> requires IsSse<Sse<Doc<>, Kw>>
-class Benchmarked : public Sse {
+class Benchmarked : public Sse<Doc<>, Kw> {
     public:
-        void setup(int secParam, const Db<DbDoc, DbKw>& db) override = {
+        void setup(int secParam, const Db<Doc<>, Kw>& db) override {
             this->benchmark.reset();
-            Sse::setup(secParam, db);
-        };
+            ISse::setup(secParam, db);
+        }
 
-        std::vector<DbDoc> search(
-            const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
+        std::vector<Doc<>> search(
+            const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override {
             this->benchmark.reset();
-            Sse::search(query, shouldCleanUpResults, isNaive);
-        };
+            ISse::search(query, shouldCleanUpResults, isNaive);
+        }
 };
