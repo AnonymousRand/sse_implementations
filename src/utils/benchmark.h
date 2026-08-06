@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <concepts>
 #include <format>
 #include <iostream>
 #include <string>
@@ -51,7 +52,6 @@ struct Benchmark {
  * `Benchmark` member variable; unfortunately there doesn't seem to be an easy way to make one
  * automatically enforce the other).
  */
-// TODO: add for update() function too? using `requires IsDsse` inline at the function declaration
 template <class Sse> requires IsSse<Sse>
 class Benchmarked : public Sse {
     public:
@@ -79,4 +79,17 @@ class Benchmarked : public Sse {
             this->benchmark.time = elapsed.count();
             return results;
         }
+
+        // (uncomment if you want to benchmark DSSE schemes per update instead of per setup)
+        /*
+        void update(const DbEntry<Doc<>, Kw>& newEntry) requires IsDsse<Sse> {
+            this->benchmark.reset();
+
+            auto start = std::chrono::high_resolution_clock::now();
+            Sse::update(newEntry);
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> elapsed = end - start;
+            this->benchmark.time = elapsed.count();
+        }
+        */
 };

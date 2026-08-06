@@ -4,10 +4,6 @@
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
-PiBasServer<DbDoc, DbKw>::PiBasServer(Benchmark& benchmark) : benchmark(benchmark) {}
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 PiBasServer<DbDoc, DbKw>::~PiBasServer() {
     this->clear();
     if (this->encInd != nullptr) {

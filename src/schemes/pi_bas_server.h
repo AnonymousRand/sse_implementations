@@ -1,23 +1,26 @@
 #pragma once
 
-#include <vector>
-
-#include "utils/benchmark.h"
+#include "schemes/sse_server.h"
+#include "utils/benchmark.h" // since this was only forward declared in `sse_server.h`
 #include "utils/enc_ind.h"
 #include "utils/utils.h"
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams <DbDoc, DbKw>
-class PiBasServer {
+class PiBasServer : public ISseServer<DbDoc, DbKw> {
     public:
-        // TODO: maybe move just benchmarking stuff to a server interface? along with a clear()?
-        // this should be the client/controller's benchmarking struct
-        Benchmark& benchmark;
+        using ISseServer<DbDoc, DbKw>::ISseServer;
 
-        PiBasServer(Benchmark& benchmark);
         ~PiBasServer();
 
-        void clear();
+        //----------------------------------------------------------------------
+        // `ISseServer`
+
+        void clear() override;
+
+        //----------------------------------------------------------------------
+        // other
+
         void setEncInd(EncInd* encInd);
         std::vector<EncIndVal> search(const ustring& queryToken) const;
 

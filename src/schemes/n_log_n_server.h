@@ -1,20 +1,25 @@
 #pragma once
 
-#include "utils/benchmark.h"
+#include "schemes/sse_server.h"
+#include "utils/benchmark.h" // since this was only forward declared in `sse_server.h`
 #include "utils/enc_ind.h"
 #include "utils/utils.h"
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class NLogNServer {
+class NLogNServer : public ISseServer<DbDoc, DbKw> {
     public:
-        // this should be the client/controller's benchmarking struct
-        Benchmark& benchmark;
+        using ISseServer<DbDoc, DbKw>::ISseServer;
 
-        NLogNServer(Benchmark& benchmark);
         ~NLogNServer();
 
-        void clear();
+        //----------------------------------------------------------------------
+        // `ISseServer`
+
+        void clear() override;
+
+        //----------------------------------------------------------------------
+        // other
 
         void addEncIndLvl(EncInd* encIndLvl);
         void writeToEncInd(long lvl, ulong pos, const EncIndEntry& entry);

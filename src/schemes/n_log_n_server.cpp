@@ -1,10 +1,6 @@
 #include "n_log_n_server.h"
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
-NLogNServer<DbDoc, DbKw>::NLogNServer(Benchmark& benchmark) : benchmark(benchmark) {}
-
-
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 NLogNServer<DbDoc, DbKw>::~NLogNServer() {
     this->clear();

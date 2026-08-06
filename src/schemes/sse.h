@@ -12,6 +12,7 @@
 //------------------------------------------------------------------------------
 
 
+// forward declare instead of include as otherwise we would get a circular include with `benchmark.h`
 struct Benchmark;
 
 
@@ -138,6 +139,12 @@ class IDsse : public virtual ISse<DbDoc, DbKw> {
         // methods to implement
 
         virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
+};
+
+
+template <class T>
+concept IsDsse = requires(T t) {
+    []<class ... Args>(IDsse<Args ...>&){}(t);
 };
 
 
