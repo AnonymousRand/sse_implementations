@@ -18,7 +18,6 @@ struct Benchmark;
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISse {
     public:
-        // TODO this might not work with log-src etc underlyings!
         Benchmark& benchmark;
 
         //----------------------------------------------------------------------

@@ -264,6 +264,7 @@ int main() {
     std::cout << std::endl;
     expDebug(sdaLogSrcIStar, maxDbSize, query);
 
+    /*
     //--------------------------------------------------------------------------
     // experiment 1
 
@@ -418,4 +419,5 @@ int main() {
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
     exp3(logSrcINLogN, maxDbSize);
+    */
 }
