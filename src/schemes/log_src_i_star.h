@@ -9,7 +9,6 @@
 //------------------------------------------------------------------------------
 
 
-// TODO: change namespace to LogSrcIStar and class name to Underly?
 namespace underly {
 
 

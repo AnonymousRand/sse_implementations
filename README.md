@@ -67,13 +67,13 @@ Only tested on Linux (NixOS, Ubuntu). To run on Windows, don't. (ok, fine, WSL w
 
 ## NixOS
 
-If using NixOS, there is a `flake.nix` provided that installs the packages listed in the "Requirements" section above. Run `nix develop` in this project's base directory to install them and then proceed with the steps above (I have chosen to not make the flake replace conan as dependency management).
+If you're using NixOS, there is a `flake.nix` provided that installs the packages listed in the "Requirements" section above. Run `nix develop` in this project's base directory to install them and then proceed with the steps above (I have chosen to not make the flake replace conan as dependency management).
 
 # Notes
 
 - This is NOT intended for actual, real-world use! It's more as a proof of concept or a simulation for running experimental evaluation.
-- There is no client-server distinction or functionality: everything runs on one machine.
-- Ids and keywords must be nonnegative integral values. Otherwise, Very Bad Things may happen.
+- The client-server distinction is very minimal and is only sufficient for benchmarking the network communication size. It does not actually run on two separate machines or have a well-defined client/server program.
+- Ids and keywords must be nonnegative integral values. Otherwise, Bad Things may happen.
 - While each database tuple possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
 - Currently, [src/main.cpp](src/main.cpp) implements four experiments:
