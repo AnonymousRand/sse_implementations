@@ -29,6 +29,10 @@ LogSrcIBase<Underly>::~LogSrcIBase() {
 }
 
 
+//------------------------------------------------------------------------------
+// `ISse`
+
+
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 std::vector<Doc<>> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
     //--------------------------------------------------------------------------
@@ -92,6 +96,10 @@ void LogSrcIBase<Underly>::clear() {
 }
 
 
+//------------------------------------------------------------------------------
+// `ISdaUnderly`
+
+
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
     this->origDbUnderly->getDb(ret);
@@ -106,6 +114,10 @@ template class LogSrcIBase<underly::LogSrcIStarUnderly>;
 //------------------------------------------------------------------------------
 // `LogSrcI`
 //------------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------------------
+// `ISse`
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>

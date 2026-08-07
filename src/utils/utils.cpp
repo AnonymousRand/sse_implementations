@@ -309,7 +309,7 @@ template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Kw, 
 
 
 //------------------------------------------------------------------------------
-// SSE Utils
+// SSE utils
 //------------------------------------------------------------------------------
 
 
@@ -416,11 +416,11 @@ template void cleanUpResults(std::vector<SrcIDb1Doc>& docs);
 
 
 //------------------------------------------------------------------------------
-// Debugging
+// debugging
 //------------------------------------------------------------------------------
 
 
-std::string strToHex(const uchar* str, int len) {
+std::string ustrToHex(const uchar* str, int len) {
     std::stringstream ss;
     for (int i = 0; i < len; i++) {
         ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(str[i]) << " ";
@@ -429,6 +429,6 @@ std::string strToHex(const uchar* str, int len) {
 }
 
 
-std::string strToHex(const ustring& str) {
-    return strToHex(str.c_str(), str.length());
+std::string ustrToHex(const ustring& str) {
+    return ustrToHex(str.c_str(), str.length());
 }

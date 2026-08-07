@@ -6,7 +6,7 @@
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, DbKw> {
+class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbKw> {
     public:
         using IStaticPointSse<DbDoc, DbKw>::IStaticPointSse;
 
@@ -19,7 +19,7 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
         void clear() override;
 
         //----------------------------------------------------------------------
-        // `ISdaUnderlySse`
+        // `ISdaUnderly`
 
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 

@@ -4,7 +4,7 @@
 
 
 //------------------------------------------------------------------------------
-// Utils
+// utils
 //------------------------------------------------------------------------------
 
 
@@ -199,7 +199,6 @@ int64_t EncInd::getSize() const {
 }
 
 
-// TODO: add these separators to all .cpp files!
 //------------------------------------------------------------------------------
 // debugging
 
@@ -225,6 +224,6 @@ EncIndEntry EncInd::get(uint64_t pos) const {
 void EncInd::print() const {
     for (int64_t pos = 0; pos < this->size; pos++) {
         EncIndEntry entry = this->get(pos);
-        std::cerr << pos << ": " << strToHex(toUstr(entry)) << std::endl << std::endl;
+        std::cerr << pos << ": " << ustrToHex(toUstr(entry)) << std::endl << std::endl;
     }
 }

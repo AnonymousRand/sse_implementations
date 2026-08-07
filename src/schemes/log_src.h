@@ -5,9 +5,9 @@
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-class LogSrc : public ISdaUnderlySse<Doc<>, Kw> {
+class LogSrc : public ISdaUnderly<Doc<>, Kw> {
     public:
-        using ISdaUnderlySse<Doc<>, Kw>::ISdaUnderlySse;
+        using ISdaUnderly<Doc<>, Kw>::ISdaUnderly;
 
         ~LogSrc();
 
@@ -21,7 +21,7 @@ class LogSrc : public ISdaUnderlySse<Doc<>, Kw> {
         void clear() override;
 
         //----------------------------------------------------------------------
-        // `ISdaUnderlySse`
+        // `ISdaUnderly`
 
         void getDb(Db<Doc<>, Kw>& ret) const override;
 

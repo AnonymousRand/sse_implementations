@@ -11,6 +11,10 @@ NLogNServer<DbDoc, DbKw>::~NLogNServer() {
 }
 
 
+//------------------------------------------------------------------------------
+// `ISseServer`
+
+
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::clear() {
     for (EncInd* lvl : this->encIndLvls) {
@@ -25,6 +29,10 @@ void NLogNServer<DbDoc, DbKw>::clear() {
         this->dbKwCountsDict->clear();
     }
 }
+
+
+//------------------------------------------------------------------------------
+// other
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>

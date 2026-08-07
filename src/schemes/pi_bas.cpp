@@ -14,6 +14,10 @@ PiBas<DbDoc, DbKw>::~PiBas() {
 }
 
 
+//------------------------------------------------------------------------------
+// `ISse`
+
+
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->clear();
@@ -79,11 +83,15 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::clear() {
     IStaticPointSse<DbDoc, DbKw>::clear();
-    ISdaUnderlySse<DbDoc, DbKw>::clear();
+    ISdaUnderly<DbDoc, DbKw>::clear();
     if (this->server != nullptr) {
         this->server->clear();
     }
 }
+
+
+//------------------------------------------------------------------------------
+// `ISdaUnderly`
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
@@ -109,6 +117,10 @@ void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
 }
 
 
+//------------------------------------------------------------------------------
+// `IStaticPointSse`
+
+
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbDoc> results;
@@ -123,6 +135,10 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 
     return results;
 }
+
+
+//------------------------------------------------------------------------------
+// other
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>

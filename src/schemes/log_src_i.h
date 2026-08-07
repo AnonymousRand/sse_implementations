@@ -11,9 +11,9 @@
 
 // common code between `LogSrcI` and `LogSrcIStar`
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-class LogSrcIBase : public ISdaUnderlySse<Doc<>, Kw> {
+class LogSrcIBase : public ISdaUnderly<Doc<>, Kw> {
     public:
-        using ISdaUnderlySse<Doc<>, Kw>::ISdaUnderlySse;
+        using ISdaUnderly<Doc<>, Kw>::ISdaUnderly;
 
         virtual ~LogSrcIBase();
 
@@ -26,7 +26,7 @@ class LogSrcIBase : public ISdaUnderlySse<Doc<>, Kw> {
         void clear() override;
 
         //----------------------------------------------------------------------
-        // `ISdaUnderlySse`
+        // `ISdaUnderly`
 
         void getDb(Db<Doc<>, Kw>& ret) const override;
 

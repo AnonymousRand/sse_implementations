@@ -407,13 +407,13 @@ int main() {
     std::cout << std::endl;
     exp3(logSrcPiBas, maxDbSize);
 
-    std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
-    std::cout << std::endl;
-    exp3(logSrcNLogN, maxDbSize);
-
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
     exp3(logSrcIPiBas, maxDbSize);
+
+    std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
+    std::cout << std::endl;
+    exp3(logSrcNLogN, maxDbSize);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;

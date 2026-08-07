@@ -11,12 +11,20 @@
 namespace underly {
 
 
+//------------------------------------------------------------------------------
+// `ISse`
+
+
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     Range<DbKw> dbKwBounds = findDbKwBounds(db);
     this->leafCount = dbKwBounds.size();
     NLogN<DbDoc, DbKw>::setup(secParam, db);
 }
+
+
+//------------------------------------------------------------------------------
+// `IStaticPointSse`
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
@@ -49,6 +57,10 @@ std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>
 }
 
 
+//------------------------------------------------------------------------------
+// other
+
+
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 int64_t LogSrcIStarUnderly<DbDoc, DbKw>::computeNumLvls() const {
     // the key to avoiding the blowup of using NLogN as a black box is by using `leafCount` instead of `db.size()` here,
@@ -79,6 +91,10 @@ template class LogSrcIStarUnderly<SrcIDb1Doc, Kw>;
 //------------------------------------------------------------------------------
 // `LogSrcIStar`
 //------------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------------------
+// `ISse`
 
 
 void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {

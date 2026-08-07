@@ -150,12 +150,12 @@ concept IsDsse = requires(T t) {
 
 
 //------------------------------------------------------------------------------
-// `ISdaUnderlySse`
+// `ISdaUnderly`
 //------------------------------------------------------------------------------
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
+class ISdaUnderly : public virtual ISse<DbDoc, DbKw> {
     public:
         using ISse<DbDoc, DbKw>::ISse;
 
@@ -185,6 +185,6 @@ class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
 
 
 template <class T>
-concept IsSdaUnderlySse = requires(T t) {
-    []<class ... Args>(ISdaUnderlySse<Args ...>&){}(t);
+concept IsSdaUnderly = requires(T t) {
+    []<class ... Args>(ISdaUnderly<Args ...>&){}(t);
 };

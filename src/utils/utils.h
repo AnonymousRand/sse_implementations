@@ -15,9 +15,8 @@
 #include <openssl/evp.h>
 
 
-// TODO: make these lowercase?
 //------------------------------------------------------------------------------
-// Constants/Configs
+// constants
 //------------------------------------------------------------------------------
 
 
@@ -30,11 +29,11 @@ static const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
 static const EVP_MD* HASH_FUNC       = EVP_sha512();
 
 /**
- * Preconditions:
- *     - Keywords and ids are both nonnegative integral values (storable by `int64_t`)
+ * preconditions:
+ *     - keywords and ids are both nonnegative integral values (storable by `int64_t`)
  *       (as `DUMMY` is used for both).
  */
-static constexpr int64_t DUMMY       = -1;
+static constexpr int64_t DUMMY = -1;
 
 
 static std::random_device RAND_DEV;
@@ -42,7 +41,7 @@ static std::mt19937 RNG(RAND_DEV());
 
 
 //------------------------------------------------------------------------------
-// Basic Declarations
+// basic declarations
 //------------------------------------------------------------------------------
 
 
@@ -253,7 +252,7 @@ class SrcIDb1Doc : public IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw> {
 
 
 //------------------------------------------------------------------------------
-// SSE Utils
+// SSE utils
 //------------------------------------------------------------------------------
 
 
@@ -280,12 +279,11 @@ uint64_t hashToPos(const ustring& hash);
 
 
 //------------------------------------------------------------------------------
-// Debugging
+// debugging
 //------------------------------------------------------------------------------
 
 
-// TODO: rename these to `ustrToHex`?
-std::string strToHex(const uchar* str, int len);
+std::string ustrToHex(const uchar* str, int len);
 
 
-std::string strToHex(const ustring& str);
+std::string ustrToHex(const ustring& str);

@@ -13,12 +13,20 @@ PiBasServer<DbDoc, DbKw>::~PiBasServer() {
 }
 
 
+//------------------------------------------------------------------------------
+// `ISseServer`
+
+
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void PiBasServer<DbDoc, DbKw>::clear() {
     if (this->encInd != nullptr) {
         this->encInd->clear();
     };
 }
+
+
+//------------------------------------------------------------------------------
+// other
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>

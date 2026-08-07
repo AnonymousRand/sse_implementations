@@ -15,6 +15,10 @@ LogSrc<Underly>::~LogSrc() {
 }
 
 
+//------------------------------------------------------------------------------
+// `ISse`
+
+
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
@@ -64,6 +68,10 @@ void LogSrc<Underly>::clear() {
     this->underly->clear();
     this->size = 0;
 }
+
+
+//------------------------------------------------------------------------------
+// `ISdaUnderly`
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>

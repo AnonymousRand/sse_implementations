@@ -8,13 +8,17 @@
 #include "schemes/pi_bas.h"
 
 
-template <IsSdaUnderlySse Underly>
+template <IsSdaUnderly Underly>
 Sda<Underly>::~Sda() {
     this->clear();
 }
 
 
-template <IsSdaUnderlySse Underly>
+//------------------------------------------------------------------------------
+// `ISse`
+
+
+template <IsSdaUnderly Underly>
 void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
@@ -25,7 +29,7 @@ void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 }
 
 
-template <IsSdaUnderlySse Underly>
+template <IsSdaUnderly Underly>
 std::vector<Doc<>> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
     std::vector<Doc<>> allResults;
 
@@ -48,7 +52,7 @@ std::vector<Doc<>> Sda<Underly>::search(const Range<Kw>& query, bool shouldClean
 }
 
 
-template <IsSdaUnderlySse Underly>
+template <IsSdaUnderly Underly>
 void Sda<Underly>::clear() {
     // apparently vector `clear()` automatically calls the destructor for each element *unless* it is a pointer
     for (Underly* underly : this->underlys) {
@@ -62,7 +66,11 @@ void Sda<Underly>::clear() {
 }
 
 
-template <IsSdaUnderlySse Underly>
+//------------------------------------------------------------------------------
+// `IDsse`
+
+
+template <IsSdaUnderly Underly>
 void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
