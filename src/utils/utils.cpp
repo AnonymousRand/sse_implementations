@@ -110,7 +110,7 @@ Range<T> Range<T>::fromStr(const std::string& str) {
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
         }
-        exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 
     Range<T> range;
@@ -210,7 +210,7 @@ Doc<DbKw> Doc<DbKw>::fromUstr(const ustring& ustr) {
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
         }
-        exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
     Id id = std::stoi(matches[1].str());
     Kw kw = std::stoi(matches[2].str());
@@ -289,7 +289,7 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
         }
-        exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
     Kw kw = std::stol(matches[1].str());
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());

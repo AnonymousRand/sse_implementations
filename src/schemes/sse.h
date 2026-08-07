@@ -4,6 +4,7 @@
 #pragma once
 
 #include "utils/cryptography.h"
+#include "utils/enc_ind.h"
 #include "utils/utils.h"
 
 

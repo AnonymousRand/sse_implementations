@@ -15,6 +15,7 @@
 #include <openssl/evp.h>
 
 
+// TODO: make these lowercase?
 //------------------------------------------------------------------------------
 // Constants/Configs
 //------------------------------------------------------------------------------
@@ -94,8 +95,6 @@ template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, 
 using Db          = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class IndK = Kw, class DbDoc = Doc<>>
 using Ind         = std::unordered_map<Range<IndK>, std::vector<DbDoc>>;
-using EncIndVal   = std::pair<ustring, ustring>;
-using EncIndEntry = std::pair<ustring, EncIndVal>;
 
 
 //------------------------------------------------------------------------------

@@ -10,6 +10,22 @@
 #include "utils/utils.h"
 
 
+//------------------------------------------------------------------------------
+// Utils
+//------------------------------------------------------------------------------
+
+
+using EncIndVal   = std::pair<ustring, ustring>;
+using EncIndEntry = std::pair<ustring, EncIndVal>;
+
+ustring toUstr(const EncIndEntry& encIndEntry);
+
+
+//------------------------------------------------------------------------------
+// `EncInd`
+//------------------------------------------------------------------------------
+
+
 class EncInd {
     public:
         static constexpr int KEY_LEN = HASH_OUTPUT_LEN; // both PRF (default) and hash (res-hiding) have 512 bit output
@@ -49,12 +65,19 @@ class EncInd {
          * Write to first empty location starting at `pos` (may not be at `pos` if hash collision).
          */
         void write(uint64_t pos, const EncIndEntry& encIndEntry);
+
         int64_t getSize() const;
 
-    protected:
+    private:
         static const uchar NULL_ENTRY[EncInd::ENTRY_LEN];
 
         FILE* file = nullptr;
         std::string filename = "";
         int64_t size;
+
+        //----------------------------------------------------------------------
+        // debugging
+
+        EncIndEntry get(uint64_t pos) const;
+        void print() const; // warning: this can be, like, a LOT of stuff!!
 };

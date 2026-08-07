@@ -29,14 +29,14 @@ struct Benchmark {
                   << std::endl;
     }
 
-    void print(const std::string& label) {
+    void print(const std::string& label) const {
         std::cout << std::format("| {:<18} ", label)
                   << std::format("| {:<18} ", this->time)
                   << std::format("| {:<18} |", this->communication)
                   << std::endl;
     }
 
-    void print(const std::string& label1, const std::string& label2) {
+    void print(const std::string& label1, const std::string& label2) const {
         std::cout << std::format("| {:<6} ", label1) << std::format("{:<11} ", label2)
                   << std::format("| {:<18} ", this->time)
                   << std::format("| {:<18} |", this->communication)

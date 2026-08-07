@@ -3,10 +3,27 @@
 #include <cstring>
 
 
-// this initializes everything to `\0`, i.e. zero bits
-// technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
-// a null kv pair, but currently `EncInd::ENTRY_LEN` is 1024 bits so there's a 2^1024 chance of this happening
-// USENIX'24's implementation also seems to just do this
+//------------------------------------------------------------------------------
+// Utils
+//------------------------------------------------------------------------------
+
+
+ustring toUstr(const EncIndEntry& encIndEntry) {
+    ustring key = encIndEntry.first;
+    EncIndVal val = encIndEntry.second;
+    return key + val.first + val.second;
+}
+
+
+//------------------------------------------------------------------------------
+// `EncInd`
+//------------------------------------------------------------------------------
+
+
+// this initializes `NULL_ENTRY` to a contiguous block of zero bits
+// (technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
+// a null kv pair, but currently `EncInd::ENTRY_LEN` is 1536 bits so there's a 2^1536 chance of this happening...
+// and USENIX'24's implementation seems to just do this too)
 const uchar EncInd::NULL_ENTRY[EncInd::ENTRY_LEN] = {};
 
 
@@ -128,14 +145,6 @@ bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
 void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     pos %= this->size;
 
-    /*
-    if (pos >= this->size) {
-        std::cerr << "Error: EncInd::write(): write to pos " << pos << " is out of bounds! "
-                  << "(size is " << this->size << ")" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    */
-
     // check if location at `pos` is already filled
     uchar currEntry[EncInd::ENTRY_LEN];
     std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
@@ -161,6 +170,8 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     }
     if (std::memcmp(currEntry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0) {
         std::cerr << "Error: EncInd::write(): ran out of space writing!" << std::endl;
+        std::cerr << "size: " << this->size << std::endl;
+        this->print();
         std::exit(EXIT_FAILURE);
     }
 
@@ -187,4 +198,35 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
 
 int64_t EncInd::getSize() const {
     return this->size;
+}
+
+
+// TODO: add these separators to all .cpp files!
+//------------------------------------------------------------------------------
+// debugging
+
+
+EncIndEntry EncInd::get(uint64_t pos) const {
+    pos %= this->size;
+
+    uchar entry[EncInd::ENTRY_LEN];
+    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
+    int itemsRead = std::fread(entry, EncInd::ENTRY_LEN, 1, this->file);
+    if (itemsRead != 1) {
+        std::cerr << "Error: EncInd::get(): error reading from file (nothing read)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    ustring key = ustring(&entry[0], EncInd::KEY_LEN);
+    ustring doc = ustring(&entry[EncInd::KEY_LEN], EncInd::DOC_LEN);
+    ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], IV_LEN);
+    return EncIndEntry {key, EncIndVal {doc, iv}};
+};
+
+
+void EncInd::print() const {
+    for (int64_t pos = 0; pos < this->size; pos++) {
+        EncIndEntry entry = this->get(pos);
+        std::cerr << pos << ": " << strToHex(toUstr(entry)) << std::endl;
+    }
 }

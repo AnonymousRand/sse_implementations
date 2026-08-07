@@ -23,6 +23,7 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
 ustring padAndEncrypt(
     const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv, int targetLenBytes
 );
+
 ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv = ustring());
 
 /**

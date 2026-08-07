@@ -13,6 +13,7 @@ class TdagNode {
          * leaf value, with consecutive size 1 ranges as leaves.
          */
         TdagNode(const Range<T>& leafValRange);
+
         ~TdagNode();
 
         /**
@@ -48,5 +49,6 @@ class TdagNode {
          */
         std::list<TdagNode<T>*> traverse();
         std::list<TdagNode<T>*> traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents);
+
         Range<T> findSrcHelper(const Range<T>& targetRange);
 };

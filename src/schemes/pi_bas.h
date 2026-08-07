@@ -3,7 +3,6 @@
 #include "schemes/pi_bas_server.h"
 #include "schemes/sse.h"
 #include "utils/benchmark.h" // since this was only forward declared in `sse.h`
-#include "utils/enc_ind.h"
 
 
 // note that we use the result-hiding variant of PiBas from figure 12 of NDSS'20 (SDa paper) since SDa wants that
