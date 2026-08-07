@@ -72,7 +72,7 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 # Notes
 
 - This is NOT intended for actual, real-world use! It's more as a proof of concept or a simulation for running experimental evaluation.
-- The client-server distinction is very minimal and is only meant for benchmarking the network communication size. It does not actually run on two separate machines or have a well-defined client/server program. (At the moment, only the most "underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep many instances of these underlying schemes.)
+- The client-server distinction is very minimal and is only meant for benchmarking the network communication size. It does not actually run on two separate machines or have a well-defined client/server program. (At the moment, only the "most underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep many instances of these underlying schemes, client and server together.)
 - Ids and keywords must be nonnegative integral values. Otherwise, Bad Things may happen.
 - While each database tuple possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
@@ -82,3 +82,7 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
     - Experiment 2, which times a fixed range query on dbs of varying sizes.
     - Experiment 3, which demonstrates the advantage of Logarithmic-SRC-i over Logarithmic-SRC when a lot of false positives are generated.
 - i have pain
+
+# Todo
+
+- faster way to do `setup()` for dynamic schemes instead of calling `update()` (for ease of experimental evaluation)
