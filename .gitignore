@@ -1,6 +1,6 @@
 # generated program files
 out/enc_ind_*
-**/a.out
+*.out
 
 # build
 build_*
@@ -9,6 +9,7 @@ CMakeUserPresets.json
 
 # vim
 *.swp
+*.swo
 
 # shell testing
 *.sh
@@ -16,4 +17,4 @@ CMakeUserPresets.json
 *.zsh
 
 # other temp files
-src/tmp*
+*.tmp
