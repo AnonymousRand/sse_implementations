@@ -64,7 +64,7 @@ class Doc;
 enum class Op : char {
     INS   = 'I',
     DEL   = 'D',
-    DUMMY = 'X'
+    DUMMY = '-'
 };
 
 
@@ -284,6 +284,7 @@ uint64_t hashToPos(const ustring& hash);
 //------------------------------------------------------------------------------
 
 
+// TODO: rename these to `ustrToHex`?
 std::string strToHex(const uchar* str, int len);
 
 

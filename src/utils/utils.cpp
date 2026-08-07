@@ -175,7 +175,7 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T, DbKw>& iDbDoc) {
 
 
 template <class DbKw>
-const std::string Doc<DbKw>::REGEX_STR = "\\((-?[0-9]+),(-?[0-9]+),([I|D|X])\\),(-?[0-9]+--?[0-9]+)";
+const std::string Doc<DbKw>::REGEX_STR = "\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\),(-?[0-9]+--?[0-9]+)";
 
 
 template <class DbKw>

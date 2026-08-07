@@ -78,32 +78,33 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         //std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
-        int64_t dbKwListPaddedSize = dbKwList.size();
+        int64_t dbKwPaddedCount = dbKwList.size();
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
         ustring label;
-        std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwCount, label);
+        std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
         uint64_t lvl = lvlAndPos.first;
         uint64_t pos = lvlAndPos.second;
 
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
         ustring ivDict = genIv(IV_LEN);
-        ustring encDbKwCount = padAndEncrypt(
-            ENC_CIPHER, this->encKey, toUstr(dbKwCount), ivDict, EncInd::DOC_LEN - 1
+        ustring encDbKwPaddedCount = padAndEncrypt(
+            ENC_CIPHER, this->encKey, toUstr(dbKwPaddedCount), ivDict, EncInd::DOC_LEN - 1
         );
         uint64_t posDict = this->mapNoMod(queryToken, labelDict);
-        this->server->writeToDbKwCountsDict(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
+        this->server->writeToDbKwCountsDict(posDict, std::pair {labelDict, std::pair {encDbKwPaddedCount, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
         uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
-        for (int64_t dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
+        for (int64_t dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
+            //std::cerr << "writing: " << dbDoc << ", level " << lvl << " start pos " << startPos << " actual pos " << startPos + dbKwCounter << ". total" << this->numLvls << " lvls, curr kw list size " << dbKwPaddedCount << std::endl;
             this->server->writeToEncInd(lvl, startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }

@@ -154,6 +154,8 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
         std::exit(EXIT_FAILURE);
     }
 
+    //std::cerr << "write:" << std::endl << pos << ": " << strToHex(toUstr(encIndEntry)) << std::endl;
+
     // if location is already filled (because of modulo), find next available location
     int64_t numPositionsChecked = 1;
     while (std::memcmp(currEntry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0 && numPositionsChecked < this->size) {
@@ -168,9 +170,18 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
             std::exit(EXIT_FAILURE);
         }
     }
+    //std::cerr << "ended up writing to pos " << pos << std::endl << std::endl;
     if (std::memcmp(currEntry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0) {
         std::cerr << "Error: EncInd::write(): ran out of space writing!" << std::endl;
-        std::cerr << "size: " << this->size << std::endl;
+        std::cerr << "size: " << this->size << ", tried to write to " << pos << std::endl;
+        // >TODO: bug: when this happens, all entries are duplicated in two positions each
+        // and this only seems to happen with NLogN! actually it's always writing repeated entries?
+        // these aren't dummies right?
+        // OHH each time with write, there is one write from n_log_n.cpp but also one bypassing that!
+        // oh that's just the dbKwCountsDict...
+        // >TODO next steps: print out this->filename every time here as well to only look at writes
+        // to the actual enc inds. actually first don't print here and only in n_log_n.cpp to see if
+        // there's anything obviously wrong in there
         this->print();
         std::exit(EXIT_FAILURE);
     }
@@ -225,8 +236,8 @@ EncIndEntry EncInd::get(uint64_t pos) const {
 
 
 void EncInd::print() const {
-    for (int64_t pos = 0; pos < this->size; pos++) {
-        EncIndEntry entry = this->get(pos);
-        std::cerr << pos << ": " << strToHex(toUstr(entry)) << std::endl;
-    }
+    //for (int64_t pos = 0; pos < this->size; pos++) {
+    //    EncIndEntry entry = this->get(pos);
+    //    std::cerr << pos << ": " << strToHex(toUstr(entry)) << std::endl << std::endl;
+    //}
 }
