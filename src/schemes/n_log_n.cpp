@@ -1,5 +1,7 @@
 #include "schemes/n_log_n.h"
 
+#include <cmath>
+
 #include "utils/cryptography.h"
 
 

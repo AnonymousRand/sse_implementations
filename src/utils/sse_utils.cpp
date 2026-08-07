@@ -1,6 +1,7 @@
 #include "sse_utils.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "utils/doc.h"
 #include "utils/range.h"

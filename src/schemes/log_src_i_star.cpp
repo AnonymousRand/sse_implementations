@@ -1,5 +1,7 @@
 #include "schemes/log_src_i_star.h"
 
+#include <cmath>
+
 #include "utils/cryptography.h"
 
 
