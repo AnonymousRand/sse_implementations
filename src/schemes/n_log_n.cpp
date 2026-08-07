@@ -96,11 +96,11 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
         ustring ivDict = genIv(IV_LEN);
-        ustring encDbKwPaddedCount = padAndEncrypt(
-            ENC_CIPHER, this->encKey, toUstr(dbKwPaddedCount), ivDict, EncInd::DOC_LEN - 1
+        ustring encDbKwCount = padAndEncrypt(
+            ENC_CIPHER, this->encKey, toUstr(dbKwCount), ivDict, EncInd::DOC_LEN - 1
         );
         uint64_t posDict = this->mapNoMod(queryToken, labelDict);
-        this->server->writeToDbKwCountsDict(posDict, std::pair {labelDict, std::pair {encDbKwPaddedCount, ivDict}});
+        this->server->writeToDbKwCountsDict(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
         uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
@@ -110,6 +110,7 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
+            // TODO only send one bucket at a time to server
             this->server->writeToEncInd(lvl, startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }
@@ -183,7 +184,7 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
-    std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwCount, label);
+    std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
     uint64_t lvl = lvlAndPos.first;
     uint64_t pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
@@ -219,11 +220,12 @@ uint64_t NLogN<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLab
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::pair<uint64_t, uint64_t> NLogN<DbDoc, DbKw>::map(
-    const ustring& queryToken, int64_t dbKwCount, ustring& retLabel
+    const ustring& queryToken, int64_t dbKwPaddedCount, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w))
     uint64_t pos = this->mapNoMod(queryToken, retLabel);
-    uint64_t lvl = std::log2(dbKwCount); // require `dbKwCount` to already be padded (also bottom level is 0)
+    // (note bottommost level is level 0)
+    uint64_t lvl = std::log2(dbKwPaddedCount);
     pos %= (uint64_t)this->computeBcktCountOnLvl(lvl);
     return std::pair {lvl, pos};
 }

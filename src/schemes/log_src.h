@@ -26,6 +26,6 @@ class LogSrc : public ISdaUnderly<Doc<>, Kw> {
         void getDb(Db<Doc<>, Kw>& ret) const override;
 
     private:
-        Underly<Doc<>, Kw>* underly = new Underly<Doc<>, Kw> {this->benchmark};
+        Underly<Doc<>, Kw>* underly = new Underly<Doc<>, Kw>(this->benchmark);
         TdagNode<Kw>* tdag = nullptr;
 };

@@ -25,7 +25,7 @@ class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbK
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     private:
-        PiBasServer<DbDoc, DbKw>* server = new PiBasServer<DbDoc, DbKw> {this->benchmark};
+        PiBasServer<DbDoc, DbKw>* server = new PiBasServer<DbDoc, DbKw>(this->benchmark);
 
         //----------------------------------------------------------------------
         // `IStaticPointSse`

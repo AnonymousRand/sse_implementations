@@ -26,7 +26,7 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbK
         void getDb(Db<DbDoc, DbKw>& ret) const override;
 
     protected:
-        NLogNServer<DbDoc, DbKw>* server = new NLogNServer<DbDoc, DbKw> {this->benchmark};
+        NLogNServer<DbDoc, DbKw>* server = new NLogNServer<DbDoc, DbKw>(this->benchmark);
         int64_t numLvls;
 
         //----------------------------------------------------------------------
@@ -53,7 +53,7 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbK
          * preconditions:
          *     - `dbKwListSize` is a power of 2.
          */
-        std::pair<uint64_t, uint64_t> map(const ustring& queryToken, int64_t dbKwListSize, ustring& retLabel) const;
+        std::pair<uint64_t, uint64_t> map(const ustring& queryToken, int64_t dbKwPaddedCount, ustring& retLabel) const;
 
         virtual int64_t computeNumLvls() const;
         virtual int64_t computeBcktCountOnLvl(int64_t lvlNum) const;
