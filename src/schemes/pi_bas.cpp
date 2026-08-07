@@ -27,11 +27,12 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
     this->secParam = secParam;
     this->size = db.size();
-    EncInd* encInd = new EncInd();
-    encInd->init(this->size);
 
     this->prfKey = genKey(secParam);
     this->encKey = genKey(secParam);
+
+    EncInd* encInd = new EncInd();
+    encInd->init(this->size);
 
     //--------------------------------------------------------------------------
     // build index
@@ -96,9 +97,10 @@ void PiBas<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
+    EncInd* encInd = this->server->getEncInd();
     for (int64_t pos = 0; pos < this->size; pos++) {
         EncIndVal encIndVal;
-        bool isValidVal = this->server->getEncIndVal(pos, encIndVal);
+        bool isValidVal = encInd->read(pos, encIndVal);
         if (!isValidVal) {
             continue;
         }
@@ -127,7 +129,7 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
-    std::vector<EncIndVal> encResults = this->server->search(queryToken);
+    std::vector<EncIndVal> encResults = this->server->searchEncInd(queryToken);
     for (EncIndVal encResult : encResults) {
         DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);

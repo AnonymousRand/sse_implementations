@@ -30,18 +30,19 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->size = db.size();
     this->numLvls = this->computeNumLvls();
 
+    this->prfKey = genKey(secParam);
+    this->encKey = genKey(secParam);
+    
+    std::vector<EncInd*> encIndLvls;
     for (int64_t lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
         EncInd* lvl = new EncInd();
         int64_t bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
         int64_t bcktSizeOnLvl = this->computeBcktSizeOnLvl(lvlNum);
         lvl->init(bcktCountOnLvl * bcktSizeOnLvl);
-        this->server->addEncIndLvl(lvl);
+        encIndLvls.push_back(lvl);
     }
-
-    this->server->initDbKwCountsDict(this->size);
-
-    this->prfKey = genKey(secParam);
-    this->encKey = genKey(secParam);
+    EncInd* dbKwCountsDict = new EncInd();
+    dbKwCountsDict->init(this->size);
 
     //--------------------------------------------------------------------------
     // build index
@@ -100,7 +101,7 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ENC_CIPHER, this->encKey, toUstr(dbKwCount), ivDict, EncInd::DOC_LEN - 1
         );
         uint64_t posDict = this->mapNoMod(queryToken, labelDict);
-        this->server->writeToDbKwCountsDict(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
+        dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
         uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
@@ -110,10 +111,12 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            // TODO only send one bucket at a time to server
-            this->server->writeToEncInd(lvl, startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
+            encIndLvls[lvl]->write(startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }
+
+    this->server->setEncIndLvls(encIndLvls);
+    this->server->setDbKwCountsDict(dbKwCountsDict);
 }
 
 
@@ -134,10 +137,12 @@ void NLogN<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void NLogN<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
+    std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
+
     for (int64_t lvl = 0; lvl < this->numLvls; lvl++) {
         for (int64_t pos = 0; pos < this->size; pos++) {
             EncIndVal encIndVal;
-            bool isValidVal = this->server->getEncIndVal(lvl, pos, encIndVal);
+            bool isValidVal = encIndLvls[lvl]->read(pos, encIndVal);
             if (!isValidVal) {
                 continue;
             }
@@ -189,7 +194,7 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     uint64_t pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
     uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResults = this->server->findEncIndBucket(lvl, startPos, dbKwPaddedCount, label);
+    std::vector<EncIndVal> encResults = this->server->findEncIndBckt(lvl, startPos, dbKwPaddedCount, label);
     for (EncIndVal encResult : encResults) {
         DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);

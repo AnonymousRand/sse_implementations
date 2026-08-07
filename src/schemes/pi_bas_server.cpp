@@ -37,7 +37,14 @@ void PiBasServer<DbDoc, DbKw>::setEncInd(EncInd* encInd) {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::search(const ustring& queryToken) const {
+EncInd* PiBasServer<DbDoc, DbKw>::getEncInd() const {
+    this->benchmark.communication += this->encInd->getSize() * EncInd::ENTRY_LEN;
+    return this->encInd;
+}
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::searchEncInd(const ustring& queryToken) const {
     this->benchmark.communication += queryToken.length();
     std::vector<EncIndVal> encResults;
 
@@ -55,19 +62,12 @@ std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::search(const ustring& queryToke
         }
 
         encResults.push_back(encIndVal);
-        this->benchmark.communication += EncInd::VAL_LEN;
         dbKwCounter++;
     }
 
+    this->benchmark.communication += encResults.size() * EncInd::VAL_LEN;
     return encResults;
 }
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-bool PiBasServer<DbDoc, DbKw>::getEncIndVal(uint64_t pos, EncIndVal& ret) const {
-    this->benchmark.communication += EncInd::VAL_LEN;
-    return this->encInd->read(pos, ret);
-};
 
 
 template class PiBasServer<Doc<>, Kw>;
