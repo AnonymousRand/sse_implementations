@@ -104,7 +104,6 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            //std::cerr << "writing: " << dbDoc << ", level " << lvl << " start pos " << startPos << " actual pos " << startPos + dbKwCounter << ". total" << this->numLvls << " lvls, curr kw list size " << dbKwPaddedCount << std::endl;
             this->server->writeToEncInd(lvl, startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }

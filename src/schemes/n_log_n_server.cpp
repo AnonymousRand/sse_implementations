@@ -37,7 +37,6 @@ void NLogNServer<DbDoc, DbKw>::addEncIndLvl(EncInd* encIndLvl) {
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::writeToEncInd(int64_t lvl, uint64_t pos, const EncIndEntry& entry) {
     this->benchmark.communication += EncInd::VAL_LEN;
-    //std::cerr << pos << ": " << strToHex(toUstr(entry)) << std::endl;
     this->encIndLvls[lvl]->write(pos, entry);
 }
 
