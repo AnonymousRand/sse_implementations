@@ -24,10 +24,10 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->size = db.size();
     this->numLvls = this->computeNumLvls();
 
-    for (long lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
+    for (int64_t lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
         EncInd* lvl = new EncInd();
-        long bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
-        long bcktSizeOnLvl = this->computeBcktSizeOnLvl(lvlNum);
+        int64_t bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
+        int64_t bcktSizeOnLvl = this->computeBcktSizeOnLvl(lvlNum);
         lvl->init(bcktCountOnLvl * bcktSizeOnLvl);
         this->server->addEncIndLvl(lvl);
     }
@@ -62,15 +62,15 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
         // pad keyword list to the next power of two
         std::vector<DbDoc> dbKwList = iter->second;
-        long dbKwCount = dbKwList.size();
-        if (!std::has_single_bit((ulong)dbKwCount)) {
-            long amountToPad = std::pow(2, std::ceil(std::log2(dbKwCount))) - dbKwCount;
+        int64_t dbKwCount = dbKwList.size();
+        if (!std::has_single_bit((uint64_t)dbKwCount)) {
+            int64_t amountToPad = std::pow(2, std::ceil(std::log2(dbKwCount))) - dbKwCount;
             dbKwList.reserve(dbKwCount + amountToPad);
             // notice we even use dummy range for the db keyword (i.e. `Range<DbKw>`)
             // to differentiate from dummies originating upstream in Log-SRC-i* padding etc. (needed for `getDb()`)
             // (also since doing this doesn't affect the correctness of NLogN or the purpose of the dummies)
             DbDoc dummyDbDoc = DbDoc::genDummy(DUMMY_RANGE<DbKw>());
-            for (long i = 0; i < amountToPad; i++) {
+            for (int64_t i = 0; i < amountToPad; i++) {
                 dbKwList.push_back(dummyDbDoc);
             }
         }
@@ -78,14 +78,14 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         //std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
-        long dbKwListPaddedSize = dbKwList.size();
+        int64_t dbKwListPaddedSize = dbKwList.size();
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
         ustring label;
-        std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwCount, label);
-        ulong lvl = lvlAndPos.first;
-        ulong pos = lvlAndPos.second;
+        std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwCount, label);
+        uint64_t lvl = lvlAndPos.first;
+        uint64_t pos = lvlAndPos.second;
 
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
@@ -93,12 +93,12 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         ustring encDbKwCount = padAndEncrypt(
             ENC_CIPHER, this->encKey, toUstr(dbKwCount), ivDict, EncInd::DOC_LEN - 1
         );
-        ulong posDict = this->mapNoMod(queryToken, labelDict);
+        uint64_t posDict = this->mapNoMod(queryToken, labelDict);
         this->server->writeToDbKwCountsDict(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
-        ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
-        for (long dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
+        uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
+        for (int64_t dbKwCounter = 0; dbKwCounter < dbKwListPaddedSize; dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
@@ -123,8 +123,8 @@ void NLogN<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void NLogN<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
-    for (long lvl = 0; lvl < this->numLvls; lvl++) {
-        for (long pos = 0; pos < this->size; pos++) {
+    for (int64_t lvl = 0; lvl < this->numLvls; lvl++) {
+        for (int64_t pos = 0; pos < this->size; pos++) {
             EncIndVal encIndVal;
             bool isValidVal = this->server->getEncIndVal(lvl, pos, encIndVal);
             if (!isValidVal) {
@@ -155,7 +155,7 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 
     // first retrieve the number of results/`dbKwCount` to know what level to search (and how many dummies there are)
     ustring labelDict;
-    ulong posDict = this->mapNoMod(queryToken, labelDict);
+    uint64_t posDict = this->mapNoMod(queryToken, labelDict);
     EncIndVal encIndValDict;
     bool isFoundDict = this->server->getDbKwCount(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
@@ -164,16 +164,16 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
     ustring decDbKwCount = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbKwCount, ivDict);
-    long dbKwCount = fromUstr(decDbKwCount);
-    long dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
+    int64_t dbKwCount = fromUstr(decDbKwCount);
+    int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
-    std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwCount, label);
-    ulong lvl = lvlAndPos.first;
-    ulong pos = lvlAndPos.second;
+    std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwCount, label);
+    uint64_t lvl = lvlAndPos.first;
+    uint64_t pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
-    ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
+    uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
     std::vector<EncIndVal> encResults = this->server->findEncIndBucket(lvl, startPos, dbKwPaddedCount, label);
     for (EncIndVal encResult : encResults) {
         DbDoc result = this->decryptEncIndVal(encResult);
@@ -192,7 +192,7 @@ ustring NLogN<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ulong NLogN<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
+uint64_t NLogN<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
     retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken);
     return hashToPos(retLabel); // no modulus
@@ -200,30 +200,32 @@ ulong NLogN<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel)
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::pair<ulong, ulong> NLogN<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCount, ustring& retLabel) const {
+std::pair<uint64_t, uint64_t> NLogN<DbDoc, DbKw>::map(
+    const ustring& queryToken, int64_t dbKwCount, ustring& retLabel
+) const {
     // l <- Hash(PRF(K_1, w))
-    ulong pos = this->mapNoMod(queryToken, retLabel);
-    ulong lvl = std::log2(dbKwCount); // require `dbKwCount` to already be padded (also bottom level is 0)
-    pos %= (ulong)this->computeBcktCountOnLvl(lvl);
+    uint64_t pos = this->mapNoMod(queryToken, retLabel);
+    uint64_t lvl = std::log2(dbKwCount); // require `dbKwCount` to already be padded (also bottom level is 0)
+    pos %= (uint64_t)this->computeBcktCountOnLvl(lvl);
     return std::pair {lvl, pos};
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-long NLogN<DbDoc, DbKw>::computeNumLvls() const {
+int64_t NLogN<DbDoc, DbKw>::computeNumLvls() const {
     return std::ceil(std::log2(this->size)) + 1;
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-long NLogN<DbDoc, DbKw>::computeBcktCountOnLvl(long lvl) const {
+int64_t NLogN<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvl) const {
     // 2^{lvlCount - lvl + 1} is number of bckts on level `lvl`
     return std::pow(2, this->numLvls - lvl - 1);
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-long NLogN<DbDoc, DbKw>::computeBcktSizeOnLvl(long lvl) const {
+int64_t NLogN<DbDoc, DbKw>::computeBcktSizeOnLvl(int64_t lvl) const {
     return std::pow(2, lvl);
 }
 

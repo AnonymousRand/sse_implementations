@@ -26,7 +26,7 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
 
     protected:
         NLogNServer<DbDoc, DbKw>* server = new NLogNServer<DbDoc, DbKw> {this->benchmark};
-        long numLvls;
+        int64_t numLvls;
 
         //----------------------------------------------------------------------
         // `IStaticPointSse`
@@ -42,7 +42,7 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
          * Generate encrypted label to store in encrypted index, and also return
          * numerical position only at which to place it in the index with no modulus for bucket count.
          */
-        ulong mapNoMod(const ustring& queryToken, ustring& retLabel) const;
+        uint64_t mapNoMod(const ustring& queryToken, ustring& retLabel) const;
 
         /**
          * Generate encrypted label to store in encrypted index, and also return
@@ -52,9 +52,9 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
          * Preconditions:
          *     - `dbKwListSize` is a power of 2.
          */
-        std::pair<ulong, ulong> map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const;
+        std::pair<uint64_t, uint64_t> map(const ustring& queryToken, int64_t dbKwListSize, ustring& retLabel) const;
 
-        virtual long computeNumLvls() const;
-        virtual long computeBcktCountOnLvl(long lvlNum) const;
-        virtual long computeBcktSizeOnLvl(long lvlNum) const;
+        virtual int64_t computeNumLvls() const;
+        virtual int64_t computeBcktCountOnLvl(int64_t lvlNum) const;
+        virtual int64_t computeBcktSizeOnLvl(int64_t lvlNum) const;
 };

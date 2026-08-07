@@ -25,7 +25,7 @@ class LogSrcIStarUnderly : public NLogN<DbDoc, DbKw> {
         void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
     private:
-        long leafCount;
+        int64_t leafCount;
 
         //----------------------------------------------------------------------
         // `IStaticPointSse`
@@ -35,8 +35,8 @@ class LogSrcIStarUnderly : public NLogN<DbDoc, DbKw> {
         //----------------------------------------------------------------------
         // other
 
-        long computeNumLvls() const override;
-        long computeBcktCountOnLvl(long lvlNum) const override;
+        int64_t computeNumLvls() const override;
+        int64_t computeBcktCountOnLvl(int64_t lvlNum) const override;
 };
 
 

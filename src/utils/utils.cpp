@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------------
 
 
-ustring toUstr(long n) {
+ustring toUstr(int64_t n) {
     std::string str = std::to_string(n);
     return ustring(str.begin(), str.end());
 }
@@ -36,7 +36,7 @@ std::string toStr(const ustring& ustr) {
 }
 
 
-long fromUstr(const ustring& ustr) {
+int64_t fromUstr(const ustring& ustr) {
     return std::stol(toStr(ustr));
 }
 
@@ -387,18 +387,18 @@ void cleanUpResults(std::vector<Doc<>>& docs) {
 }
 
 
-long calcTdagItemCount(long leafCount) {
+int64_t calcTdagItemCount(int64_t leafCount) {
     // see `EncIndLoc::map()` comment in `utils/enc_ind.cpp` for where this formula comes from
-    long topLevelNum = std::log2(leafCount);
+    int64_t topLevelNum = std::log2(leafCount);
     return topLevelNum * (2 * leafCount)
             - (1 - std::pow(2, -topLevelNum)) * std::pow(2, topLevelNum + 1)
             + leafCount;
 }
 
 
-ulong hashToPos(const ustring& hash) {
+uint64_t hashToPos(const ustring& hash) {
     // this conversion mess is from USENIX'24
-    return (*((ulong*)hash.c_str()));
+    return (*((uint64_t*)hash.c_str()));
 }
 
 

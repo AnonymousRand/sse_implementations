@@ -28,5 +28,5 @@ class Sda : public IDsse<Doc<>, Kw> {
 
     private:
         std::vector<Underly*> underlys;
-        long firstEmptyInd;
+        int64_t firstEmptyInd;
 };

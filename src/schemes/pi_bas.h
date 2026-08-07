@@ -42,5 +42,5 @@ class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderlySse<DbDoc, 
          * Generate encrypted label to store in encrypted index, and also return
          * numerical position at which to place it in the index (pseudorandomly).
          */
-        ulong map(const ustring& queryToken, long dbKwListSize, ustring& retLabel) const;
+        uint64_t map(const ustring& queryToken, int64_t dbKwListSize, ustring& retLabel) const;
 };

@@ -24,7 +24,7 @@ class PiBasServer : public ISseServer<DbDoc, DbKw> {
         void setEncInd(EncInd* encInd);
         std::vector<EncIndVal> search(const ustring& queryToken) const;
 
-        bool getEncIndVal(ulong pos, EncIndVal& ret) const;
+        bool getEncIndVal(uint64_t pos, EncIndVal& ret) const;
 
     private:
         EncInd* encInd = nullptr;

@@ -59,11 +59,11 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         std::vector<DbDoc> dbKwList = iter->second;
 
         // for each id in DB(w)
-        for (long dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
+        for (int64_t dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
             // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
             ustring label;
-            ulong pos = this->map(queryToken, dbKwCounter, label);
+            uint64_t pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
@@ -88,7 +88,7 @@ void PiBas<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
-    for (long pos = 0; pos < this->size; pos++) {
+    for (int64_t pos = 0; pos < this->size; pos++) {
         EncIndVal encIndVal;
         bool isValidVal = this->server->getEncIndVal(pos, encIndVal);
         if (!isValidVal) {
@@ -133,7 +133,7 @@ ustring PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ulong PiBas<DbDoc, DbKw>::map(const ustring& queryToken, long dbKwCounter, ustring& retLabel) const {
+uint64_t PiBas<DbDoc, DbKw>::map(const ustring& queryToken, int64_t dbKwCounter, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w) || c)
     retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
     return hashToPos(retLabel);

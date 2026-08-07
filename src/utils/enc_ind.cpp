@@ -15,7 +15,7 @@ EncInd::~EncInd() {
 }
 
 
-void EncInd::init(long size) {
+void EncInd::init(int64_t size) {
     this->clear();
     this->size = size;
 
@@ -38,7 +38,7 @@ void EncInd::init(long size) {
     }
 
     // fill file with zero bits
-    for (long i = 0; i < size; i++) {
+    for (int64_t i = 0; i < size; i++) {
         int itemsWritten = std::fwrite(EncInd::NULL_ENTRY, EncInd::ENTRY_LEN, 1, this->file);
         if (itemsWritten != 1) {
             std::cerr << "EncInd::init(): error initializing file (nothing written)" << std::endl;
@@ -63,13 +63,13 @@ void EncInd::clear() {
 }
 
 
-bool EncInd::find(ulong pos, const ustring& key, EncIndVal& ret, ulong* posFoundAt) const {
+bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* posFoundAt) const {
     pos %= this->size;
 
     // get entry at `pos`
-    uchar currentry[EncInd::ENTRY_LEN];
+    uchar currEntry[EncInd::ENTRY_LEN];
     std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
-    int itemsRead = std::fread(currentry, EncInd::ENTRY_LEN, 1, this->file);
+    int itemsRead = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
         std::cerr << "EncInd::find(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -78,21 +78,21 @@ bool EncInd::find(ulong pos, const ustring& key, EncIndVal& ret, ulong* posFound
     // if entry at `pos` did not match the target `key` (i.e. another kv pair overflowed here first),
     // scan subsequent locations for where the target `key` could've overflowed to
     const uchar* targetKeyCStr = key.c_str();
-    long numPositionsChecked = 1;
-    while (std::memcmp(currentry, targetKeyCStr, EncInd::KEY_LEN) != 0 && numPositionsChecked < this->size) {
+    int64_t numPositionsChecked = 1;
+    while (std::memcmp(currEntry, targetKeyCStr, EncInd::KEY_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsRead = std::fread(currentry, EncInd::ENTRY_LEN, 1, this->file);
+        itemsRead = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file);
         if (itemsRead != 1) {
             std::cerr << "EncInd::find(): error reading from file (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
     // if not found
-    if (std::memcmp(currentry, targetKeyCStr, EncInd::KEY_LEN) != 0) {
+    if (std::memcmp(currEntry, targetKeyCStr, EncInd::KEY_LEN) != 0) {
         return false;
     }
 
@@ -104,7 +104,7 @@ bool EncInd::find(ulong pos, const ustring& key, EncIndVal& ret, ulong* posFound
 }
 
 
-bool EncInd::read(ulong pos, EncIndVal& ret) const {
+bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
     pos %= this->size;
 
     uchar entry[EncInd::ENTRY_LEN];
@@ -125,7 +125,7 @@ bool EncInd::read(ulong pos, EncIndVal& ret) const {
 }
 
 
-void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
+void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     pos %= this->size;
 
     /*
@@ -137,29 +137,29 @@ void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
     */
 
     // check if location at `pos` is already filled
-    uchar currentry[EncInd::ENTRY_LEN];
+    uchar currEntry[EncInd::ENTRY_LEN];
     std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
-    int itemsReadOrWritten = std::fread(currentry, EncInd::ENTRY_LEN, 1, this->file);
+    int itemsReadOrWritten = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file);
     if (itemsReadOrWritten != 1) {
         std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
     // if location is already filled (because of modulo), find next available location
-    long numPositionsChecked = 1;
-    while (std::memcmp(currentry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0 && numPositionsChecked < this->size) {
+    int64_t numPositionsChecked = 1;
+    while (std::memcmp(currEntry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0 && numPositionsChecked < this->size) {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsReadOrWritten = std::fread(currentry, EncInd::ENTRY_LEN, 1, this->file); 
+        itemsReadOrWritten = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file); 
         if (itemsReadOrWritten != 1) {
             std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
-    if (std::memcmp(currentry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0) {
+    if (std::memcmp(currEntry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0) {
         std::cerr << "EncInd::write(): ran out of space writing!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -174,7 +174,7 @@ void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
         std::exit(EXIT_FAILURE);
     }
 
-    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET); // go back to the correct spot, e.g. undoing last `fread`
+    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET); // go back to the correct spot, undoing last `fread`
     int itemsWritten = std::fwrite(entry.c_str(), EncInd::ENTRY_LEN, 1, this->file);
     if (itemsWritten != 1) {
         std::cerr << "EncInd::write(): error writing to file (nothing written)" << std::endl;
@@ -185,6 +185,6 @@ void EncInd::write(ulong pos, const EncIndEntry& encIndEntry) {
 }
 
 
-long EncInd::getSize() const {
+int64_t EncInd::getSize() const {
     return this->size;
 }

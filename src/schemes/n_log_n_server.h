@@ -22,13 +22,15 @@ class NLogNServer : public ISseServer<DbDoc, DbKw> {
         // other
 
         void addEncIndLvl(EncInd* encIndLvl);
-        void writeToEncInd(long lvl, ulong pos, const EncIndEntry& entry);
-        std::vector<EncIndVal> findEncIndBucket(long lvl, ulong startPos, long bucketSize, const ustring& label) const;
-        bool getEncIndVal(long lvl, ulong pos, EncIndVal& ret) const;
+        void writeToEncInd(int64_t lvl, uint64_t pos, const EncIndEntry& entry);
+        std::vector<EncIndVal> findEncIndBucket(
+            int64_t lvl, uint64_t startPos, int64_t bucketSize, const ustring& label
+        ) const;
+        bool getEncIndVal(int64_t lvl, uint64_t pos, EncIndVal& ret) const;
 
-        void initDbKwCountsDict(long size);
-        void writeToDbKwCountsDict(ulong pos, const EncIndEntry& entry);
-        bool getDbKwCount(ulong pos, const ustring& label, EncIndVal& ret);
+        void initDbKwCountsDict(int64_t size);
+        void writeToDbKwCountsDict(uint64_t pos, const EncIndEntry& entry);
+        bool getDbKwCount(uint64_t pos, const ustring& label, EncIndVal& ret);
 
     protected:
         std::vector<EncInd*> encIndLvls;

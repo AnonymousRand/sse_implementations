@@ -34,11 +34,11 @@ std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::search(const ustring& queryToke
     std::vector<EncIndVal> encResults;
 
     // for c = 0 until `Get` returns error
-    long dbKwCounter = 0;
+    int64_t dbKwCounter = 0;
     while (true) {
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos` (same as client's `setup()`)
         ustring label = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
-        ulong pos = hashToPos(label);
+        uint64_t pos = hashToPos(label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;
         bool isFound = this->encInd->find(pos, label, encIndVal);
@@ -56,7 +56,7 @@ std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::search(const ustring& queryToke
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
-bool PiBasServer<DbDoc, DbKw>::getEncIndVal(ulong pos, EncIndVal& ret) const {
+bool PiBasServer<DbDoc, DbKw>::getEncIndVal(uint64_t pos, EncIndVal& ret) const {
     this->benchmark.communication += EncInd::VAL_LEN;
     return this->encInd->read(pos, ret);
 };

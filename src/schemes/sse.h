@@ -174,12 +174,12 @@ class ISdaUnderlySse : public virtual ISse<DbDoc, DbKw> {
             this->size = 0;
         }
 
-        long getSize() const {
+        int64_t getSize() const {
             return this->size;
         }
 
     protected:
-        long size;
+        int64_t size;
 };
 
 

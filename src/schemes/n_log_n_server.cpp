@@ -35,7 +35,7 @@ void NLogNServer<DbDoc, DbKw>::addEncIndLvl(EncInd* encIndLvl) {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
-void NLogNServer<DbDoc, DbKw>::writeToEncInd(long lvl, ulong pos, const EncIndEntry& entry) {
+void NLogNServer<DbDoc, DbKw>::writeToEncInd(int64_t lvl, uint64_t pos, const EncIndEntry& entry) {
     this->benchmark.communication += EncInd::VAL_LEN;
     this->encIndLvls[lvl]->write(pos, entry);
 }
@@ -43,11 +43,11 @@ void NLogNServer<DbDoc, DbKw>::writeToEncInd(long lvl, ulong pos, const EncIndEn
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
 std::vector<EncIndVal> NLogNServer<DbDoc, DbKw>::findEncIndBucket(
-    long lvl, ulong startPos, long bucketSize, const ustring& label
+    int64_t lvl, uint64_t startPos, int64_t bucketSize, const ustring& label
 ) const {
     std::vector<EncIndVal> encResults;
 
-    for (long dbKwCounter = 0; dbKwCounter < bucketSize; dbKwCounter++) {
+    for (int64_t dbKwCounter = 0; dbKwCounter < bucketSize; dbKwCounter++) {
         EncIndVal encIndVal;
         bool isFound;
         if (dbKwCounter == 0) {
@@ -71,27 +71,27 @@ std::vector<EncIndVal> NLogNServer<DbDoc, DbKw>::findEncIndBucket(
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
-bool NLogNServer<DbDoc, DbKw>::getEncIndVal(long lvl, ulong pos, EncIndVal& ret) const {
+bool NLogNServer<DbDoc, DbKw>::getEncIndVal(int64_t lvl, uint64_t pos, EncIndVal& ret) const {
     this->benchmark.communication += EncInd::VAL_LEN;
     return this->encIndLvls[lvl]->read(pos, ret);
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
-void NLogNServer<DbDoc, DbKw>::initDbKwCountsDict(long size) {
+void NLogNServer<DbDoc, DbKw>::initDbKwCountsDict(int64_t size) {
     this->dbKwCountsDict->init(size);
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
-void NLogNServer<DbDoc, DbKw>::writeToDbKwCountsDict(ulong pos, const EncIndEntry& entry) {
+void NLogNServer<DbDoc, DbKw>::writeToDbKwCountsDict(uint64_t pos, const EncIndEntry& entry) {
     this->benchmark.communication += EncInd::ENTRY_LEN;
     this->dbKwCountsDict->write(pos, entry);
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
-bool NLogNServer<DbDoc, DbKw>::getDbKwCount(ulong pos, const ustring& label, EncIndVal& ret) {
+bool NLogNServer<DbDoc, DbKw>::getDbKwCount(uint64_t pos, const ustring& label, EncIndVal& ret) {
     this->benchmark.communication += label.length() + EncInd::VAL_LEN;
     return this->dbKwCountsDict->find(pos, label, ret);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <cstdint>
 #include <iostream>
 #include <random>
 #include <regex>
@@ -29,10 +30,10 @@ static const EVP_MD* HASH_FUNC       = EVP_sha512();
 
 /**
  * Preconditions:
- *     - Keywords and ids are both nonnegative integral values (storable by `long`)
+ *     - Keywords and ids are both nonnegative integral values (storable by `int64_t`)
  *       (as `DUMMY` is used for both).
  */
-static constexpr long DUMMY          = -1;
+static constexpr int64_t DUMMY       = -1;
 
 
 static std::random_device RAND_DEV;
@@ -44,11 +45,10 @@ static std::mt19937 RNG(RAND_DEV());
 //------------------------------------------------------------------------------
 
 
-using Kw      = long;
-using Id      = long;
-using IdAlias = long; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
+using Kw      = int64_t;
+using Id      = int64_t;
+using IdAlias = int64_t; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 using uchar   = unsigned char;
-using ulong   = unsigned long;
 // use `ustring` instead of `uchar*` to avoid hell
 using ustring = std::basic_string<uchar>;
 
@@ -78,7 +78,7 @@ concept IsDbDoc = requires(T t) {
 
 
 // this enforces the above plus that `T` uses `DbKw` as its second template param, e.g.
-// `IsDbDoc<IDbDoc<A, long>, long>` passes but not `IdDbDoc<IDbDoc<A, char>, long>`
+// `IsDbDoc<IDbDoc<A, int64_t>, int64_t>` passes but not `IdDbDoc<IDbDoc<A, char>, int64_t>`
 template <class T, class DbKw>
 concept IsValidDbParams = requires(T t) {
     []<class T2>(IDbDoc<T2, DbKw>&){}(t);
@@ -103,11 +103,11 @@ using EncIndEntry = std::pair<ustring, EncIndVal>;
 //------------------------------------------------------------------------------
 
 
-ustring toUstr(long n);
+ustring toUstr(int64_t n);
 ustring toUstr(const std::string& s);
 ustring toUstr(uchar* ucstr, int len);
 std::string toStr(const ustring& ustr);
-long fromUstr(const ustring& ustr);
+int64_t fromUstr(const ustring& ustr);
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 
@@ -274,10 +274,10 @@ template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& docs);
 
 
-long calcTdagItemCount(long leafCount);
+int64_t calcTdagItemCount(int64_t leafCount);
 
 
-ulong hashToPos(const ustring& hash);
+uint64_t hashToPos(const ustring& hash);
 
 
 //------------------------------------------------------------------------------

@@ -11,12 +11,12 @@
 #include "utils/benchmark.h"
 
 
-Db<> createDb(long dbSize, bool isRandom, bool hasDeletions) {
+Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
     if (dbSize == 0) {
         return Db<> {};
     }
     Db<> db;
-    std::uniform_int_distribution<long> dist(0, dbSize - 1);
+    std::uniform_int_distribution<int64_t> dist(0, dbSize - 1);
 
     Id minId = 1;
     Id maxId = dbSize - 1;
@@ -89,7 +89,7 @@ void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
 }
 
 
-void exp1(ISse<>& sse, long dbSize) {
+void exp1(ISse<>& sse, int64_t dbSize) {
     if (dbSize == 0) {
         return;
     }
@@ -101,8 +101,8 @@ void exp1(ISse<>& sse, long dbSize) {
     sse.benchmark.print("Setup");
 
     // search
-    for (long i = 0; i <= std::log2(dbSize); i++) {
-        Range<Kw> query {0, (long)std::pow(2, i) - 1};
+    for (int64_t i = 0; i <= std::log2(dbSize); i++) {
+        Range<Kw> query {0, (int64_t)std::pow(2, i) - 1};
         sse.search(query);
         sse.benchmark.print("Search", std::format("(size 2^{})", std::log2(query.size())));
     }
@@ -112,15 +112,15 @@ void exp1(ISse<>& sse, long dbSize) {
 }
 
 
-void exp2(ISse<>& sse, long maxDbSize) {
+void exp2(ISse<>& sse, int64_t maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
     Range<Kw> query {0, 3};
     Benchmark::printHeader();
 
-    for (long i = 2; i <= std::log2(maxDbSize); i++) {
-        long dbSize = std::pow(2, i);
+    for (int64_t i = 2; i <= std::log2(maxDbSize); i++) {
+        int64_t dbSize = std::pow(2, i);
         Db<> db = createDb(dbSize, true, true);
 
         // setup
@@ -137,14 +137,14 @@ void exp2(ISse<>& sse, long maxDbSize) {
 }
 
 
-void exp3(ISse<>& sse, long maxDbSize) {
+void exp3(ISse<>& sse, int64_t maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
     Benchmark::printHeader();
 
-    for (long i = 2; i <= std::log2(maxDbSize); i++) {
-        long dbSize = std::pow(2, i);
+    for (int64_t i = 2; i <= std::log2(maxDbSize); i++) {
+        int64_t dbSize = std::pow(2, i);
         // two unique keywords, with all but one being 0 and the other being the max
         // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
         Db<> db;
@@ -152,7 +152,7 @@ void exp3(ISse<>& sse, long maxDbSize) {
         Kw kw2 = dbSize - 1;
         Range<Kw> kwRange1 {kw1, kw1};
         Range<Kw> kwRange2 {kw2, kw2};
-        for (long i = 0; i < dbSize - 1; i++) {
+        for (int64_t i = 0; i < dbSize - 1; i++) {
             db.push_back(DbEntry {Doc<>(i, kw1, Op::INS, kwRange1), kwRange1});
         }
         db.push_back(DbEntry {Doc<>(dbSize - 1, kw2, Op::INS, kwRange2), kwRange2});
@@ -173,10 +173,10 @@ void exp3(ISse<>& sse, long maxDbSize) {
 
 
 int main() {
-    long maxDbSizeExp;
+    int64_t maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
-    long maxDbSize = std::pow(2, maxDbSizeExp);
+    int64_t maxDbSize = std::pow(2, maxDbSizeExp);
     std::cout << std::endl;
 
     Benchmark benchmark;

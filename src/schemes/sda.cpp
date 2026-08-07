@@ -76,7 +76,7 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`; always merge/insert into first index if it's empty
     Db<Doc<>, Kw> mergedDb;
     mergedDb.reserve(std::pow(2, this->firstEmptyInd));
-    for (long i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
+    for (int64_t i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
         // `getDb()` appends to the passed-in container
         this->underlys[i]->getDb(mergedDb);
     }
@@ -91,12 +91,12 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
     }
 
     // clear all EDB_<j
-    for (long i = 0; i < this->firstEmptyInd; i++) {
+    for (int64_t i = 0; i < this->firstEmptyInd; i++) {
         this->underlys[i]->clear();
     }
 
     // update the pointer to the first empty index
-    long firstEmpty;
+    int64_t firstEmpty;
     for (firstEmpty = 0; firstEmpty < this->underlys.size(); firstEmpty++) {
         if (this->underlys[firstEmpty]->getSize() == 0) {
             break;

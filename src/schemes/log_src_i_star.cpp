@@ -29,16 +29,16 @@ std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>
     // for Log-SRC-i*, the TDAG structure means we can determine the number of results and hence the level to search
     // based on the size of the queried range/node, so we don't have to store an encrypted map
     // (and result size is leaked to server anyway)
-    long dbKwCount = query.size();
-    long dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
+    int64_t dbKwCount = query.size();
+    int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
-    std::pair<ulong, ulong> lvlAndPos = this->map(queryToken, dbKwCount, label);
-    ulong lvl = lvlAndPos.first;
-    ulong pos = lvlAndPos.second;
+    std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwCount, label);
+    uint64_t lvl = lvlAndPos.first;
+    uint64_t pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
-    ulong startPos = pos * this->computeBcktSizeOnLvl(lvl);
+    uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
     std::vector<EncIndVal> encResults = this->server->findEncIndBucket(lvl, startPos, dbKwPaddedCount, label);
     for (EncIndVal encResult : encResults) {
         DbDoc result = this->decryptEncIndVal(encResult);
@@ -50,7 +50,7 @@ std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-long LogSrcIStarUnderly<DbDoc, DbKw>::computeNumLvls() const {
+int64_t LogSrcIStarUnderly<DbDoc, DbKw>::computeNumLvls() const {
     // the key to avoiding the blowup of using NLogN as a black box is by using `leafCount` instead of `db.size()` here,
     // since `db.size()` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
     return std::ceil(std::log2(this->leafCount)) + 1;
@@ -58,7 +58,7 @@ long LogSrcIStarUnderly<DbDoc, DbKw>::computeNumLvls() const {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-long LogSrcIStarUnderly<DbDoc, DbKw>::computeBcktCountOnLvl(long lvlNum) const {
+int64_t LogSrcIStarUnderly<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
     if (lvlNum == 0) {
         return this->leafCount;
     } else {
@@ -101,7 +101,7 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2` leaves with this information
     Db<SrcIDb1Doc, Kw> db1;
     Db<Doc<IdAlias>, IdAlias> db2;
-    long dbSortedSize = dbSorted.size();
+    int64_t dbSortedSize = dbSorted.size();
     db1.reserve(dbSortedSize);
     db2.reserve(dbSortedSize);
     Kw prevKw = DUMMY;
@@ -114,7 +114,7 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
         DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
         db1.push_back(newDbEntry);
     };
-    for (long idAlias = 0; idAlias < dbSortedSize; idAlias++) {
+    for (int64_t idAlias = 0; idAlias < dbSortedSize; idAlias++) {
         DbEntry<Doc<>, Kw> dbEntry = dbSorted[idAlias];
         Doc<> doc = dbEntry.first;
         Kw kw = dbEntry.second.first; // entries in `db` must have size 1 `Kw` ranges!
@@ -150,11 +150,11 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
         }
     }
     // pad TDAG 2 leaf count to the next power of two, as is required for Log-SRC-i*
-    long db2Size = db2.size();
-    if (!std::has_single_bit((ulong)db2Size)) {
-        long amountToPad = std::pow(2, std::ceil(std::log2(db2Size))) - db2Size;
+    int64_t db2Size = db2.size();
+    if (!std::has_single_bit((uint64_t)db2Size)) {
+        int64_t amountToPad = std::pow(2, std::ceil(std::log2(db2Size))) - db2Size;
         db2.reserve(db2Size + amountToPad);
-        for (long i = 0; i < amountToPad; i++) {
+        for (int64_t i = 0; i < amountToPad; i++) {
             maxIdAlias++;
             Range<IdAlias> idAliasRange {maxIdAlias, maxIdAlias};
             Doc<IdAlias> dummyDoc = Doc<IdAlias>::genDummy(idAliasRange);
@@ -167,7 +167,7 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     db2Size = db2.size();
     db2.reserve(calcTdagItemCount(db2Size));
-    for (long i = 0; i < db2Size; i++) {
+    for (int64_t i = 0; i < db2Size; i++) {
         DbEntry<Doc<IdAlias>, IdAlias> dbEntry = db2[i];
         Doc<IdAlias> doc = dbEntry.first;
         Range<IdAlias> idAliasRange = dbEntry.second;
@@ -193,7 +193,7 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // in the index that the server knows corresponds to a lack of docs with that keyword)
     DbEntry<Doc<>, Kw> dbEntry = dbSorted[0];
     prevKw = dbEntry.second.first;
-    for (long i = 1; i < dbSortedSize; i++) {
+    for (int64_t i = 1; i < dbSortedSize; i++) {
         dbEntry = dbSorted[i];
         Kw kw = dbEntry.second.first;
         // if non-contiguous `Kw`s detected, fill in the gap with dummies
@@ -208,13 +208,13 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
         prevKw = kw;
     }
     // after guaranteeing contiguous-ness of `Kw`s, pad `db1` to power of 2 as well
-    long db1Size = db1.size();
+    int64_t db1Size = db1.size();
     Range<Kw> db1KwBounds = findDbKwBounds(db1);
     Kw maxDb1Kw = db1KwBounds.second;
-    if (!std::has_single_bit((ulong)db1Size)) {
-        long amountToPad = std::pow(2, std::ceil(std::log2(db1Size))) - db1Size;
+    if (!std::has_single_bit((uint64_t)db1Size)) {
+        int64_t amountToPad = std::pow(2, std::ceil(std::log2(db1Size))) - db1Size;
         db1.reserve(db1Size + amountToPad);
-        for (long i = 0; i < amountToPad; i++) {
+        for (int64_t i = 0; i < amountToPad; i++) {
             maxDb1Kw++;
             Range<Kw> paddingKwRange {maxDb1Kw, maxDb1Kw};
             SrcIDb1Doc dummyDoc = SrcIDb1Doc::genDummy(paddingKwRange);
@@ -227,7 +227,7 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     db1Size = db1.size();
     db1.reserve(calcTdagItemCount(db1Size));
-    for (long i = 0; i < db1Size; i++) {
+    for (int64_t i = 0; i < db1Size; i++) {
         DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
         SrcIDb1Doc doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;

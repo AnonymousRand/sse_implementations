@@ -12,7 +12,7 @@
 
 struct Benchmark {
     double time = 0;
-    long communication = 0;
+    int64_t communication = 0;
 
     void reset() {
         this->communication = 0;
