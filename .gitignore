@@ -10,5 +10,10 @@ CMakeUserPresets.json
 # vim
 *.swp
 
+# shell testing
+*.sh
+*.fish
+*.zsh
+
 # other temp files
 src/tmp*
