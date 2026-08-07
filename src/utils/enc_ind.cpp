@@ -33,7 +33,7 @@ void EncInd::init(int64_t size) {
     }
     this->file = std::fopen(this->filename.c_str(), "wb+");
     if (this->file == nullptr) {
-        std::cerr << "EncInd::init(): error opening file" << std::endl;
+        std::cerr << "Error: EncInd::init(): error opening file" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -41,7 +41,7 @@ void EncInd::init(int64_t size) {
     for (int64_t i = 0; i < size; i++) {
         int itemsWritten = std::fwrite(EncInd::NULL_ENTRY, EncInd::ENTRY_LEN, 1, this->file);
         if (itemsWritten != 1) {
-            std::cerr << "EncInd::init(): error initializing file (nothing written)" << std::endl;
+            std::cerr << "Error: EncInd::init(): error initializing file (nothing written)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -71,7 +71,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
     std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
     int itemsRead = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
-        std::cerr << "EncInd::find(): error reading from file (nothing read)" << std::endl;
+        std::cerr << "Error: EncInd::find(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -87,7 +87,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         }
         itemsRead = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file);
         if (itemsRead != 1) {
-            std::cerr << "EncInd::find(): error reading from file (nothing read)" << std::endl;
+            std::cerr << "Error: EncInd::find(): error reading from file (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -111,7 +111,7 @@ bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
     std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
     int itemsRead = std::fread(entry, EncInd::ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
-        std::cerr << "EncInd::read(): error reading from file (nothing read)" << std::endl;
+        std::cerr << "Error: EncInd::read(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
     if (std::memcmp(entry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) == 0) {
@@ -130,7 +130,7 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
 
     /*
     if (pos >= this->size) {
-        std::cerr << "EncInd::write(): write to pos " << pos << " is out of bounds! "
+        std::cerr << "Error: EncInd::write(): write to pos " << pos << " is out of bounds! "
                   << "(size is " << this->size << ")" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -141,7 +141,7 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
     int itemsReadOrWritten = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file);
     if (itemsReadOrWritten != 1) {
-        std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
+        std::cerr << "Error: EncInd::write(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -155,12 +155,12 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
         }
         itemsReadOrWritten = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file); 
         if (itemsReadOrWritten != 1) {
-            std::cerr << "EncInd::write(): error reading from file (nothing read)" << std::endl;
+            std::cerr << "Error: EncInd::write(): error reading from file (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
     if (std::memcmp(currEntry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0) {
-        std::cerr << "EncInd::write(): ran out of space writing!" << std::endl;
+        std::cerr << "Error: EncInd::write(): ran out of space writing!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -169,7 +169,7 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     EncIndVal val = encIndEntry.second;
     ustring entry = key + val.first + val.second;
     if (entry.length() != EncInd::ENTRY_LEN) {
-        std::cerr << "EncInd::write(): write of length " << entry.length() << " bytes is not allowed! "
+        std::cerr << "Error: EncInd::write(): write of length " << entry.length() << " bytes is not allowed! "
                   << "(want " << EncInd::ENTRY_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -177,7 +177,7 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET); // go back to the correct spot, undoing last `fread`
     int itemsWritten = std::fwrite(entry.c_str(), EncInd::ENTRY_LEN, 1, this->file);
     if (itemsWritten != 1) {
-        std::cerr << "EncInd::write(): error writing to file (nothing written)" << std::endl;
+        std::cerr << "Error: EncInd::write(): error writing to file (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
     // flush immediately to mark space as occupied

@@ -105,8 +105,8 @@ template <class T>
 Range<T> Range<T>::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, Range<T>::REGEX) || matches.size() != 3) {
-        std::cerr << "Error: bad string passed to `Range.fromStr()`, the world is going to end" << std::endl;
-        std::cerr << "Regex to match is \"" << Range<T>::REGEX_STR << "\"; matched groups are:" << std::endl;
+        std::cerr << "Error: Range::fromStr(): bad string \"" << str << "\" passed" << std::endl
+                  << "Regex to match is \"" << Range<T>::REGEX_STR << "\"; matched groups are:" << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
         }
@@ -205,9 +205,8 @@ Doc<DbKw> Doc<DbKw>::fromUstr(const ustring& ustr) {
     std::string str = ::toStr(ustr);
     std::smatch matches;
     if (!std::regex_search(str, matches, Doc<DbKw>::REGEX) || matches.size() != 5) {
-        std::cerr << "Error: bad string \"" << str << "\" passed to `Doc.fromUstr()`, the world is going to end now"
-                  << std::endl;
-        std::cerr << "Regex to match is \"" << Doc<DbKw>::REGEX_STR << "\"; matched groups are:" << std::endl;
+        std::cerr << "Error: Doc::fromUstr(): bad string \"" << str << "\" passed" << std::endl
+                  << "Regex to match is \"" << Doc<DbKw>::REGEX_STR << "\"; matched groups are:" << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
         }
@@ -285,9 +284,8 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     std::string str = ::toStr(ustr);
     std::smatch matches;
     if (!std::regex_search(str, matches, SrcIDb1Doc::REGEX) || matches.size() != 4) {
-        std::cerr << "Error: bad string \"" << ustr
-                  << "\" passed to `SrcIDb1Doc.fromUstr()`, the world is going to end now" << std::endl;
-        std::cerr << "Regex to match is \"" << SrcIDb1Doc::REGEX_STR << "\"; matched groups are:" << std::endl;
+        std::cerr << "Error: SrcIDb1Doc::fromUstr(): bad string \"" << ustr << "\" passed" << std::endl
+                  << "Regex to match is \"" << SrcIDb1Doc::REGEX_STR << "\"; matched groups are:" << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
         }

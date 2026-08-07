@@ -120,7 +120,7 @@ ustring padAndEncrypt(
     const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv, int targetLenBytes
 ) {
     if (targetLenBytes < ptext.length()) {
-        std::cerr << "padAndEncrypt(): plaintext of length " << ptext.length() << " bytes is too long! "
+        std::cerr << "Error: padAndEncrypt(): plaintext of length " << ptext.length() << " bytes is too long! "
                   << "(want " << targetLenBytes << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
         std::exit(EXIT_FAILURE);

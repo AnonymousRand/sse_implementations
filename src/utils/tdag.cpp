@@ -66,7 +66,7 @@ TdagNode<T>::TdagNode(const Range<T>& leafValRange) {
             continue;
         } 
         if (!joinNodes(node1, l.end() - 1)) {
-            std::cerr << "im sorry what" << std::endl;
+            std::cerr << "Error: TdagNode::TdagNode(): im sorry what" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
