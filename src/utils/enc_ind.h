@@ -1,5 +1,5 @@
 /**
- * Indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>` (aka `EncIndVal`) pairs,
+ * indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>` (aka `EncIndVal`) pairs,
  * each of which correspond to `std::pair<key/label, std::pair<encrypted doc, IV>>`.
  */
 
@@ -43,30 +43,30 @@ class EncInd {
         void clear();
 
         /**
-         * Tries to find `key` starting at `pos` and iterating linearly if not matching
+         * tries to find `key` starting at `pos` and iterating linearly if not matching
          * (i.e. another kv pair overflowed there first).
          *
-         * Params:
+         * params:
          *     - `posFoundAt`: pointer whose value is replaced by the `pos` at which `key` was eventually found
-         *       (if it was found; otherwise it is left unchanged). Set to `nullptr` to not receive this value.
+         *       (if it was found; otherwise it is left unchanged). set to `nullptr` to not receive this value.
          *
-         * Returns:
+         * returns:
          *     - `true` if the kv pair corresponding to `key` was eventually found.
          *     - `false` if the kv pair corresponding to `key` was never found in the entire index.
          */
         bool find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* posFoundAt = nullptr) const;
 
         /**
-         * Reads and decodes the value at `pos` (without checking the "key`).
+         * reads and decodes the value at `pos` (without checking the "key`).
          *
-         * Returns:
+         * returns:
          *     - `true` if the kv pair at `pos` is valid.
          *     - `false` if the kv pair at `pos` is the null kv pair.
          */
         bool read(uint64_t pos, EncIndVal& ret) const;
 
         /**
-         * Write to first empty location starting at `pos` (may not be at `pos` if hash collision).
+         * write to first empty location starting at `pos` (may not be at `pos` if hash collision).
          */
         void write(uint64_t pos, const EncIndEntry& encIndEntry);
 

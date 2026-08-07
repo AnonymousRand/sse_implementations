@@ -40,17 +40,17 @@ class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbK
         ustring genQueryToken(const Range<DbKw>& query) const;
 
         /**
-         * Generate encrypted label to store in encrypted index, and also return
-         * numerical position only at which to place it in the index with no modulus for bucket count.
+         * generate encrypted label to store in encrypted index, and also return numerical
+         * position only at which to place it in the index with no modulo for bucket count.
          */
         uint64_t mapNoMod(const ustring& queryToken, ustring& retLabel) const;
 
         /**
-         * Generate encrypted label to store in encrypted index, and also return
+         * generate encrypted label to store in encrypted index, and also return
          * numerical level and position at which to place it in the index.
-         * (Position is a bucket count, not entry count, so it is the raw position modulo bucket count on that level.)
+         * (position is a bucket count, not entry count, so it is the raw position mod bucket count on that level.)
          *
-         * Preconditions:
+         * preconditions:
          *     - `dbKwListSize` is a power of 2.
          */
         std::pair<uint64_t, uint64_t> map(const ustring& queryToken, int64_t dbKwListSize, ustring& retLabel) const;

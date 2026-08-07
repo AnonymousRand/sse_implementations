@@ -38,7 +38,7 @@ class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbK
         ustring genQueryToken(const Range<DbKw>& query) const;
 
         /**
-         * Generate encrypted label to store in encrypted index, and also return
+         * generate encrypted label to store in encrypted index, and also return
          * numerical position at which to place it in the index (pseudorandomly).
          */
         uint64_t map(const ustring& queryToken, int64_t dbKwListSize, ustring& retLabel) const;

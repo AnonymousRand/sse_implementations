@@ -37,7 +37,7 @@ class ISse {
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         
         /**
-         * Params:
+         * params:
          *     - `shouldCleanUpResults`: whether to filter out deleted docs or not
          *     - `isNaive`: whether to search each point in `query` individually, or the entire range in one go
          *       (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC.
@@ -47,11 +47,11 @@ class ISse {
         ) const = 0;
 
         /**
-         * Free memory and clear the db/index, without fully destroying this object as the destructor does
+         * free memory and clear the db/index, without fully destroying this object as the destructor does
          * (so we can still call `setup()` again with the same object, perhaps with a different db).
          * 
-         * Notes:
-         *     - Should be idempotent and safe to call without `setup()` first as well.
+         * notes:
+         *     - should be idempotent and safe to call without `setup()` first as well.
          */
         virtual void clear() = 0;
 
@@ -122,7 +122,7 @@ class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
         // shared code
 
         /**
-         * Helper function to decrypt `encIndVal`.
+         * helper function to decrypt `encIndVal`.
          */
         DbDoc decryptEncIndVal(const EncIndVal& encIndVal) const {
             ustring encDbDoc = encIndVal.first;
@@ -170,7 +170,7 @@ class ISdaUnderly : public virtual ISse<DbDoc, DbKw> {
         // methods to implement
 
         /**
-         * Append the `db` most recently passed to `setup()` (without any replications/padding/processing) to `ret`.
+         * append the `db` most recently passed to `setup()` (without any replications/padding/processing) to `ret`.
          */
         virtual void getDb(Db<DbDoc, DbKw>& ret) const = 0;
 

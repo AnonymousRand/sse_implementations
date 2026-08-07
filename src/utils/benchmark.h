@@ -46,7 +46,7 @@ struct Benchmark {
 
 
 /**
- * Use this templated class as a "Python decorator" or "aspect" by using `Benchmarked<scheme>`
+ * use this templated class as a "Python decorator" or "aspect" by using `Benchmarked<scheme>`
  * instead of just `scheme` when you wish to activate benchmarking features (along with having a
  * `Benchmark` member variable; unfortunately there doesn't seem to be an easy way to make one
  * automatically enforce the other).
