@@ -21,57 +21,47 @@ Sda<Underly>::~Sda() {
 // `ISse`
 
 
-// uncomment for the non-shortcut `setup()` of calling `update()` for each item in `db`
-// (the shortcut is mainly to speed up `setup()` for experimental evaluation of searches)
-/*
 template <IsSdaUnderly Underly>
 void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
-
     this->secParam = secParam;
-    for (DbEntry<Doc<>, Kw> entry : db) {
-        this->update(entry);
-    }
-}
-*/
 
+    if (this->useShortcutSetup) {
+        int64_t lastFilledInd = db.size() != 0 ? (int64_t)std::log2(db.size()) : -1;
 
-// TODO: use a boolean member variable in IDsse to control which implementation of setup to use?
-template <IsSdaUnderly Underly>
-void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
-    this->clear();
+        // this is the shortcut way: simply initialize and fill in all subindexes in one go
+        // (note that the non-shortcut `setup()` places earlier items in `db` into larger
+        // subindexes, so we preserve that behavior here by starting from the earlier entries
+        // in `db` up the largest subindexes first (this was needed anyway))
+        int64_t dbPos = 0;
+        for (int64_t i = lastFilledInd; i >= 0; i--) {
+            int64_t indSize = (int64_t)std::pow(2, i);
+            Db<Doc<>, Kw> indDb;
+            if (dbPos < db.size()) {
+                indDb = Db<Doc<>, Kw>(db.begin() + dbPos, db.begin() + dbPos + indSize);
+            } else {
+                indDb = Db<Doc<>, Kw>();
+            }
 
-    this->secParam = secParam;
-    int64_t lastFilledInd = db.size() != 0 ? (int64_t)std::log2(db.size()) : -1;
-
-    // this is the shortcut way: simply initialize and fill in all subindexes in one go
-    // (note that the non-shortcut `setup()` places earlier items in `db` into larger subindexes,
-    // so we preserve that behavior here by starting from the earlier entries in `db` and filling
-    // up the largest subindexes first (this was needed anyway))
-    int64_t dbPos = 0;
-    for (int64_t i = lastFilledInd; i >= 0; i--) {
-        int64_t indSize = (int64_t)std::pow(2, i);
-        Db<Doc<>, Kw> indDb;
-        if (dbPos < db.size()) {
-            indDb = Db<Doc<>, Kw>(db.begin() + dbPos, db.begin() + dbPos + indSize);
-        } else {
-            indDb = Db<Doc<>, Kw>();
+            Underly* newUnderly = new Underly {this->benchmark};
+            newUnderly->setup(this->secParam, indDb);
+            this->underlys.push_back(newUnderly);
+            dbPos += indSize;
         }
+        // reverse the vector at the end as we had pushed smaller subindexes to the back
+        std::reverse(this->underlys.begin(), this->underlys.end());
 
-        Underly* newUnderly = new Underly {this->benchmark};
-        newUnderly->setup(this->secParam, indDb);
-        this->underlys.push_back(newUnderly);
-        dbPos += indSize;
+        // update the pointer to the first empty index as usual (like in `update()`)
+        int64_t newFirstEmpty = 0;
+        while (newFirstEmpty < this->underlys.size() && this->underlys[newFirstEmpty]->getSize() > 0) {
+            newFirstEmpty++;
+        }
+        this->firstEmptyInd = newFirstEmpty;
+    } else {
+        for (DbEntry<Doc<>, Kw> entry : db) {
+            this->update(entry);
+        }
     }
-    // reverse the vector at the end as we had pushed smaller subindexes to the back
-    std::reverse(this->underlys.begin(), this->underlys.end());
-
-    // update the pointer to the first empty index as usual (like in `update()`)
-    int64_t newFirstEmpty = 0;
-    while (newFirstEmpty < this->underlys.size() && this->underlys[newFirstEmpty]->getSize() > 0) {
-        newFirstEmpty++;
-    }
-    this->firstEmptyInd = newFirstEmpty;
 }
 
 

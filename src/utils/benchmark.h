@@ -79,6 +79,7 @@ class Benchmarked : public Sse {
             return results;
         }
 
+        // TODO: use another bool member variable in IDsse for this?
         // (uncomment if you want to benchmark DSSE schemes per update instead of per setup)
         /*
         void update(const DbEntry<Doc<>, Kw>& newEntry) requires IsDsse<Sse> {

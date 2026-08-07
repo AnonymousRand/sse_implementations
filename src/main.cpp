@@ -3,6 +3,7 @@
 #include <format>
 #include <iostream>
 
+// TODO include utils before schemes
 #include "schemes/log_src.h"
 #include "schemes/log_src_i.h"
 #include "schemes/log_src_i_star.h"
@@ -184,21 +185,22 @@ int main() {
     int64_t maxDbSize = std::pow(2, maxDbSizeExp);
     std::cout << std::endl;
 
+    bool dsseUseShortcutSetup = true;
     Benchmark benchmark;
-    Benchmarked<PiBas<>> piBas {benchmark};
-    Benchmarked<NLogN<>> nLogN {benchmark};
-    Benchmarked<LogSrc<PiBas>> logSrcPiBas {benchmark};
-    Benchmarked<LogSrc<NLogN>> logSrcNLogN {benchmark};
-    Benchmarked<LogSrcI<PiBas>> logSrcIPiBas {benchmark};
-    Benchmarked<LogSrcI<NLogN>> logSrcINLogN {benchmark};
-    Benchmarked<LogSrcIStar> logSrcIStar {benchmark};
-    Benchmarked<Sda<PiBas<>>> sdaPiBas {benchmark};
-    Benchmarked<Sda<NLogN<>>> sdaNLogN {benchmark};
-    Benchmarked<Sda<LogSrc<PiBas>>> sdaLogSrcPiBas {benchmark};
-    Benchmarked<Sda<LogSrc<PiBas>>> sdaLogSrcNLogN {benchmark};
-    Benchmarked<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas {benchmark};
-    Benchmarked<Sda<LogSrcI<PiBas>>> sdaLogSrcINLogN {benchmark};
-    Benchmarked<Sda<LogSrcIStar>> sdaLogSrcIStar {benchmark};
+    Benchmarked<PiBas<>> piBas(benchmark);
+    Benchmarked<NLogN<>> nLogN(benchmark);
+    Benchmarked<LogSrc<PiBas>> logSrcPiBas(benchmark);
+    Benchmarked<LogSrc<NLogN>> logSrcNLogN(benchmark);
+    Benchmarked<LogSrcI<PiBas>> logSrcIPiBas(benchmark);
+    Benchmarked<LogSrcI<NLogN>> logSrcINLogN(benchmark);
+    Benchmarked<LogSrcIStar> logSrcIStar(benchmark);
+    Benchmarked<Sda<PiBas<>>> sdaPiBas(benchmark, dsseUseShortcutSetup);
+    Benchmarked<Sda<NLogN<>>> sdaNLogN(benchmark, dsseUseShortcutSetup);
+    Benchmarked<Sda<LogSrc<PiBas>>> sdaLogSrcPiBas(benchmark, dsseUseShortcutSetup);
+    Benchmarked<Sda<LogSrc<PiBas>>> sdaLogSrcNLogN(benchmark, dsseUseShortcutSetup);
+    Benchmarked<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas(benchmark, dsseUseShortcutSetup);
+    Benchmarked<Sda<LogSrcI<PiBas>>> sdaLogSrcINLogN(benchmark, dsseUseShortcutSetup);
+    Benchmarked<Sda<LogSrcIStar>> sdaLogSrcIStar(benchmark, dsseUseShortcutSetup);
 
     //--------------------------------------------------------------------------
     // debugging experiment
