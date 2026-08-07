@@ -1,5 +1,7 @@
 #include <cmath>
+#include <cstdint>
 #include <format>
+#include <iostream>
 
 #include "schemes/log_src.h"
 #include "schemes/log_src_i.h"
@@ -9,6 +11,9 @@
 #include "schemes/sda.h"
 #include "schemes/sse.h"
 #include "utils/benchmark.h"
+#include "utils/constants.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
 
 
 Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {

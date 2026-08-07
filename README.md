@@ -86,4 +86,5 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 # Todo
 
 - faster way to do `setup()` for dynamic schemes instead of calling `update()` (for ease of experimental evaluation)
-- minor: move things like `EncIndVal` alias to `enc_ind.h` instead of keeping everything in `utils.h`? or like `SrcIDb1Doc` even, or maybe some of the `toUstr()`s? and actually just break apart utils.h into range, doc, etc.
+- minor: investigate if srcidb1doc can be moved out of utils
+- >minor: lowercase docstring comments too

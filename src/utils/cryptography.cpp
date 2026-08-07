@@ -1,10 +1,13 @@
 #include "utils/cryptography.h"
 
 #include <cstdlib>
+#include <iostream>
 
 #include <openssl/err.h>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
+
+#include "utils/constants.h"
 
 
 // thanks to https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#C.2B.2B_Programs,

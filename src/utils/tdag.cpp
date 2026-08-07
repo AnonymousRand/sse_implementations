@@ -1,6 +1,10 @@
 #include "utils/tdag.h"
 
+#include <cstdlib>
 #include <deque>
+#include <iostream>
+
+#include "utils/sse_utils.h"
 
 
 template <class T>

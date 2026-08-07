@@ -1,12 +1,13 @@
 #pragma once
 
-#include "utils/utils.h"
+#include "utils/doc.h"
+#include "utils/sse_utils.h"
 
 
 struct Benchmark;
 
 
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISseServer {
     public:
         // this should be the client/controller's benchmarking struct

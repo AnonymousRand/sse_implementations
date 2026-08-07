@@ -1,6 +1,10 @@
 #include "utils/enc_ind.h"
 
+#include <cstdlib>
 #include <cstring>
+#include <iostream>
+
+#include "utils/debugging.h"
 
 
 //------------------------------------------------------------------------------

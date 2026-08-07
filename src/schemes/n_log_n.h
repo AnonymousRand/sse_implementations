@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "schemes/n_log_n_server.h"
 #include "schemes/sse.h"
 #include "utils/benchmark.h" // since this was only forward declared in `sse.h`

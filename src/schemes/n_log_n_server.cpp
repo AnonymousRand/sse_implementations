@@ -15,7 +15,7 @@ NLogNServer<DbDoc, DbKw>::~NLogNServer() {
 // `ISseServer`
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::clear() {
     for (EncInd* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
@@ -35,21 +35,21 @@ void NLogNServer<DbDoc, DbKw>::clear() {
 // other
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::addEncIndLvl(EncInd* encIndLvl) {
     this->benchmark.communication += encIndLvl->getSize() * EncInd::ENTRY_LEN;
     this->encIndLvls.push_back(encIndLvl);
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::writeToEncInd(int64_t lvl, uint64_t pos, const EncIndEntry& entry) {
     this->benchmark.communication += EncInd::VAL_LEN;
     this->encIndLvls[lvl]->write(pos, entry);
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::vector<EncIndVal> NLogNServer<DbDoc, DbKw>::findEncIndBucket(
     int64_t lvl, uint64_t startPos, int64_t bucketSize, const ustring& label
 ) const {
@@ -78,27 +78,27 @@ std::vector<EncIndVal> NLogNServer<DbDoc, DbKw>::findEncIndBucket(
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 bool NLogNServer<DbDoc, DbKw>::getEncIndVal(int64_t lvl, uint64_t pos, EncIndVal& ret) const {
     this->benchmark.communication += EncInd::VAL_LEN;
     return this->encIndLvls[lvl]->read(pos, ret);
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::initDbKwCountsDict(int64_t size) {
     this->dbKwCountsDict->init(size);
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::writeToDbKwCountsDict(uint64_t pos, const EncIndEntry& entry) {
     this->benchmark.communication += EncInd::ENTRY_LEN;
     this->dbKwCountsDict->write(pos, entry);
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams <DbDoc, DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 bool NLogNServer<DbDoc, DbKw>::getDbKwCount(uint64_t pos, const ustring& label, EncIndVal& ret) {
     this->benchmark.communication += label.length() + EncInd::VAL_LEN;
     return this->dbKwCountsDict->find(pos, label, ret);

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "schemes/sse.h"
-#include "utils/utils.h"
+#include "utils/sse_utils.h"
 
 
 struct Benchmark {

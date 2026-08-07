@@ -18,9 +18,13 @@ add_executable(
     src/schemes/pi_bas_server.cpp
     src/schemes/sda.cpp
     src/utils/cryptography.cpp
+    src/utils/debugging.cpp
+    src/utils/doc.cpp
     src/utils/enc_ind.cpp
+    src/utils/range.cpp
+    src/utils/sse_utils.cpp
     src/utils/tdag.cpp
-    src/utils/utils.cpp
+    src/utils/ustring.cpp
 )
 
 # base directories for `#include`
