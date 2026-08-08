@@ -24,31 +24,31 @@ struct Benchmark {
 
     static void printHeader() {
         if (SHOULD_BENCHMARK) {
-            std::cout << std::format("| {:<18} ", "Params")
-                      << std::format("| {:<18} ", "Time (ms)")
-                      << std::format("| {:<18} |", "Communication (B)")
+            std::cout << std::format("| {:<24} ", "Params")
+                      << std::format("| {:<17} ", "Time (ms)")
+                      << std::format("| {:<17} |", "Communication (B)")
                       << std::endl
+                      << std::format("--------------------------")
                       << std::format("--------------------")
-                      << std::format("---------------------")
-                      << std::format("-----------------------")
+                      << std::format("----------------------")
                       << std::endl;
         }
     }
 
     void print(const std::string& label) const {
         if (SHOULD_BENCHMARK) {
-            std::cout << std::format("| {:<18} ", label)
-                      << std::format("| {:<18} ", this->time)
-                      << std::format("| {:<18} |", this->communication)
+            std::cout << std::format("| {:<24} ", label)
+                      << std::format("| {:<17} ", this->time)
+                      << std::format("| {:<17} |", this->communication)
                       << std::endl;
         }
     }
 
     void print(const std::string& label1, const std::string& label2) const {
         if (SHOULD_BENCHMARK) {
-            std::cout << std::format("| {:<6} ", label1) << std::format("{:<11} ", label2)
-                      << std::format("| {:<18} ", this->time)
-                      << std::format("| {:<18} |", this->communication)
+            std::cout << std::format("| {:<6} ", label1) << std::format("{:<17} ", label2)
+                      << std::format("| {:<17} ", this->time)
+                      << std::format("| {:<17} |", this->communication)
                       << std::endl;
         }
     }

@@ -84,3 +84,9 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
     - Experiment 2, which times a fixed range query on dbs of varying sizes.
     - Experiment 3, which demonstrates the advantage of Logarithmic-SRC-i over Logarithmic-SRC when a lot of false positives are generated.
 - i have pain
+
+# TODO
+
+- disk space/index size benchmarking
+- per update benchmarking?
+- experiment that varies result sizes?

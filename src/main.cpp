@@ -114,7 +114,7 @@ void exp1(ISse<>* sse, int64_t dbSize) {
     for (int64_t i = 0; i <= std::log2(dbSize); i++) {
         Range<Kw> query {0, (int64_t)std::pow(2, i) - 1};
         sse->search(query);
-        sse->benchmark->print("Search", std::format("(size 2^{})", std::log2(query.size())));
+        sse->benchmark->print("Search", std::format("(range size 2^{})", std::log2(query.size())));
     }
     std::cout << std::endl;
 
@@ -139,7 +139,7 @@ void exp2(ISse<>* sse, int64_t maxDbSize) {
 
         // search
         sse->search(query);
-        sse->benchmark->print("Search", std::format("(size 2^{})", std::log2(dbSize)));
+        sse->benchmark->print("Search");
     }
     std::cout << std::endl;
 
@@ -169,12 +169,12 @@ void exp3(ISse<>* sse, int64_t maxDbSize) {
 
         // setup
         sse->setup(KEY_LEN, db);
-        sse->benchmark->print("Setup", std::format("(size 2^{})", std::log2(dbSize)));
+        sse->benchmark->print("Setup");
 
         // search
         Range<Kw> query {1, dbSize - 1};
         sse->search(query);
-        sse->benchmark->print("Search", std::format("(size 2^{})", std::log2(dbSize)));
+        sse->benchmark->print("Search");
     }
     std::cout << std::endl;
 
