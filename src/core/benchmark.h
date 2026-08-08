@@ -16,21 +16,31 @@
 
 struct Benchmark {
     double time = 0;
-    int64_t communication = 0;
+    int64_t diskSize = 0;
+    int64_t network = 0;
 
-    void reset() {
-        this->communication = 0;
+    void resetAll() {
+        this->time = 0;
+        this->diskSize = 0;
+        this->network = 0;
+    }
+
+    void resetEphems() {
+        this->time = 0;
+        this->network = 0;
     }
 
     static void printHeader() {
         if (SHOULD_BENCHMARK) {
             std::cout << std::format("| {:<24} ", "Params")
-                      << std::format("| {:<17} ", "Time (ms)")
-                      << std::format("| {:<17} |", "Communication (B)")
+                      << std::format("| {:<14} ", "Time (ms)")
+                      << std::format("| {:<14} ", "Disk Size (B)")
+                      << std::format("| {:<14} |", "Network (B)")
                       << std::endl
-                      << std::format("--------------------------")
-                      << std::format("--------------------")
-                      << std::format("----------------------")
+                      << std::format("---------------------------")
+                      << std::format("-----------------")
+                      << std::format("-----------------")
+                      << std::format("------------------")
                       << std::endl;
         }
     }
@@ -38,8 +48,9 @@ struct Benchmark {
     void print(const std::string& label) const {
         if (SHOULD_BENCHMARK) {
             std::cout << std::format("| {:<24} ", label)
-                      << std::format("| {:<17} ", this->time)
-                      << std::format("| {:<17} |", this->communication)
+                      << std::format("| {:<14} ", this->time)
+                      << std::format("| {:<14} ", this->diskSize)
+                      << std::format("| {:<14} |", this->network)
                       << std::endl;
         }
     }
@@ -47,8 +58,9 @@ struct Benchmark {
     void print(const std::string& label1, const std::string& label2) const {
         if (SHOULD_BENCHMARK) {
             std::cout << std::format("| {:<6} ", label1) << std::format("{:<17} ", label2)
-                      << std::format("| {:<17} ", this->time)
-                      << std::format("| {:<17} |", this->communication)
+                      << std::format("| {:<14} ", this->time)
+                      << std::format("| {:<14} ", this->diskSize)
+                      << std::format("| {:<14} |", this->network)
                       << std::endl;
         }
     }
@@ -67,7 +79,7 @@ public:
     using Sse::Sse;
 
     void setup(int secParam, const Db<Doc<>, Kw>& db) override {
-        this->benchmark->reset();
+        this->benchmark->resetAll();
 
         auto start = std::chrono::high_resolution_clock::now();
         Sse::setup(secParam, db);
@@ -79,7 +91,7 @@ public:
     std::vector<Doc<>> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override {
-        this->benchmark->reset();
+        this->benchmark->resetEphems();
 
         auto start = std::chrono::high_resolution_clock::now();
         std::vector<Doc<>> results = Sse::search(query, shouldCleanUpResults, isNaive);
@@ -97,7 +109,7 @@ public:
     using Benchmarked<Dsse>::Benchmarked;
 
     void update(const DbEntry<Doc<>, Kw>& newEntry) override {
-        this->benchmark->reset();
+        this->benchmark->resetEphems();
 
         auto start = std::chrono::high_resolution_clock::now();
         Dsse::update(newEntry);

@@ -197,7 +197,7 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     uint64_t pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
     uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResults = this->server->findEncIndBckt(lvl, startPos, dbKwPaddedCount, label);
+    std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(lvl, startPos, dbKwPaddedCount, label);
     for (EncIndVal encResult : encResults) {
         DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);

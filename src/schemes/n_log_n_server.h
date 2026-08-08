@@ -28,7 +28,7 @@ public:
 
     void setEncIndLvls(const std::vector<EncInd*>& encIndLvls);
     std::vector<EncInd*> getEncIndLvls() const;
-    std::vector<EncIndVal> findEncIndBckt(
+    std::vector<EncIndVal> searchEncIndForBckt(
         int64_t lvl, uint64_t startPos, int64_t bcktSize, const ustring& label
     ) const;
 

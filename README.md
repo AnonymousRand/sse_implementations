@@ -87,6 +87,5 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 
 # TODO
 
-- disk space/index size benchmarking
-- per update benchmarking?
+- >per update benchmarking/experiment?
 - experiment that varies result sizes?

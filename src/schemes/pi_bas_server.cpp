@@ -20,6 +20,7 @@ PiBasServer<DbDoc, DbKw>::~PiBasServer() {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasServer<DbDoc, DbKw>::clear() {
     if (this->encInd != nullptr) {
+        this->benchmark->diskSize -= this->encInd->getSize() * EncInd::ENTRY_LEN;
         this->encInd->clear();
     };
 }
@@ -31,21 +32,23 @@ void PiBasServer<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasServer<DbDoc, DbKw>::setEncInd(EncInd* encInd) {
-    this->benchmark->communication += encInd->getSize() * EncInd::ENTRY_LEN;
+    int64_t encIndBytes = encInd->getSize() * EncInd::ENTRY_LEN;
+    this->benchmark->diskSize += encIndBytes;
+    this->benchmark->network += encIndBytes;
     this->encInd = encInd;
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 EncInd* PiBasServer<DbDoc, DbKw>::getEncInd() const {
-    this->benchmark->communication += this->encInd->getSize() * EncInd::ENTRY_LEN;
+    this->benchmark->network += this->encInd->getSize() * EncInd::ENTRY_LEN;
     return this->encInd;
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::searchEncInd(const ustring& queryToken) const {
-    this->benchmark->communication += queryToken.length();
+    this->benchmark->network += queryToken.length();
     std::vector<EncIndVal> encResults;
 
     // for c = 0 until `Get` returns error
@@ -65,7 +68,7 @@ std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::searchEncInd(const ustring& que
         dbKwCounter++;
     }
 
-    this->benchmark->communication += encResults.size() * EncInd::VAL_LEN;
+    this->benchmark->network += encResults.size() * EncInd::VAL_LEN;
     return encResults;
 }
 
