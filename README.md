@@ -29,7 +29,7 @@ See [src/main.cpp](src/main.cpp) for usage examples.
 # Requirements
 
 - CMake
-- [Conan 2](https://docs.conan.io/2/installation.html)
+- Conan 2
 - A C++ compiler that supports C++20 (ideally g++ version 10 or above; e.g. for `apt`, install with `apt install g++-10`)
 
 Only tested on Linux (NixOS, Ubuntu). To run on Windows, don't. (ok, fine, WSL works :p)
@@ -41,7 +41,7 @@ Only tested on Linux (NixOS, Ubuntu). To run on Windows, don't. (ok, fine, WSL w
     conan profile detect --name=sse_implementations_debug
     conan profile detect --name=sse_implementations_release
     ```
-2. Edit both Conan profiles (by default at `~/.conan2/profiles/`; the `.conanrc` should set it to `./conan2/profiles` however):
+2. Edit both Conan profiles (by default at `./conan2/profiles`, or `~/.conan2/profiles/` if the `.conanrc` didn't work):
     - Set `build_type=Debug` for the debugging profile and `build_type=Release` for the release profile.
     - Make sure `compiler.cppstd=20` is set (`gnu20` is fine too if using `compiler=gcc`).
     - If your "default" compiler (usually `/usr/bin/c++`, which is usually symlinked to `/usr/bin/g++`) is not the correct version and something like `g++-10` was separately installed (e.g. to `/usr/bin/g++-10`), add the following to the bottom of both profiles to specify the compiler executable:
@@ -69,12 +69,12 @@ Adjust the basic configuration options in [src/config.h](./src/config.h) (e.g. w
 
 ## NixOS
 
-If you're using NixOS, there is a `flake.nix` provided that installs the packages listed in the "Requirements" section above. Run `nix develop` in this project's base directory to install them and then proceed with the steps above (I have chosen to not make the flake replace conan as dependency management).
+If you're using NixOS, there is a `flake.nix` provided that installs the packages listed in the "Requirements" section above. Run `nix develop` in this project's base directory to install them and then proceed with the steps above (I have chosen to not make the flake replace Conan for managing the dependencies of the actual code).
 
 # Notes
 
 - This is NOT intended for actual, real-world use! It's more as a proof of concept or a simulation for running experimental evaluation.
-- The client-server distinction is very minimal and is only meant for benchmarking the network communication size. It does not actually run on two separate machines or have a well-defined client/server program. (At the moment, only the "most underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep many instances of these underlying schemes, client and server together.)
+- The client-server distinction is very minimal and is only meant for benchmarking things like the network communication size. It does not actually run on two separate machines or have a well-defined client/server program. (At the moment, only the "most underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep many instances of these underlying schemes, client and server together.)
 - Ids and keywords must be nonnegative integral values. Otherwise, Bad Things may happen.
 - While each database tuple possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
