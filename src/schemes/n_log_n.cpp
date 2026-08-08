@@ -141,6 +141,7 @@ void NLogN<DbDoc, DbKw>::clear() {
     if (this->server != nullptr) {
         this->server->clear();
     }
+    this->numLvls = 0;
 }
 
 
@@ -156,6 +157,7 @@ void NLogN<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
         EncInd* encIndLvl = encIndLvls[lvl];
         // don't use `this->size()` as the bound here as that doesn't include padding
         // while `encIndLvl` does (this should all be client-side anyway so not leaking anything)
+        std::cerr << "getting db: lvl " << lvl << ", claimed size is " << encIndLvl->getSize() << std::endl;
         for (int64_t pos = 0; pos < encIndLvl->getSize(); pos++) {
             EncIndVal encIndVal;
             bool isValidVal = encIndLvl->read(pos, encIndVal);
@@ -175,6 +177,7 @@ void NLogN<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
             ret.push_back(std::pair {dbDoc, dbKwRange});
         }
     }
+    std::cerr << "finished getting db :3" << std::endl << std::endl;
 }
 
 

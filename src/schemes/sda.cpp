@@ -125,6 +125,7 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
     mergedDb.reserve(std::pow(2, this->firstEmptyInd));
     std::cerr << "====== updating: " << newDbEntry.first << std::endl;
     for (int64_t i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
+        std::cerr << "trying to get subindex " << i << "; firstEmptyInd is " << this->firstEmptyInd << std::endl;
         // (`getDb()` appends to the passed-in container)
         this->underlys[i]->getDb(mergedDb);
         std::cerr << "merged subindex " << i << ", mergedDb is now, " << newDbEntry.first;
