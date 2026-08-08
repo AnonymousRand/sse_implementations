@@ -24,7 +24,7 @@ Since many of these can be instantiated with various underlying schemes, the fol
 - SDa[Logarithmic-SRC-i[NLogN]]
 - SDa[Logarithmic-SRC-i\*]
 
-See [src/main.cpp](src/main.cpp) for usage examples.
+See [src/main.cpp](src/main.cpp) and [src/core/sse_factory.cpp](src/core/sse_factory.cpp) for usage examples.
 
 # Requirements
 
@@ -36,7 +36,7 @@ Only tested on Linux (NixOS, Ubuntu). To run on Windows, don't. (ok, fine, WSL w
 
 # Running
 
-1. Generate two Conan profiles for debug and release respectively (names must match those in the [Makefile](./Makefile)!):
+1. Generate two Conan profiles for debug and release respectively (names must match those in the [Makefile](Makefile)!):
     ```
     conan profile detect --name=sse_implementations_debug
     conan profile detect --name=sse_implementations_release
@@ -51,32 +51,32 @@ Only tested on Linux (NixOS, Ubuntu). To run on Windows, don't. (ok, fine, WSL w
         ```
 
         Make sure to use the C++, not C compiler! (E.g. `g++` instead of `gcc` or `clang++` instead of `clang`.)
-3. Verify that the compiler executable set for `CMAKE_CXX_COMPILER` in [CMakeLists.txt](./CMakeLists.txt) matches the one set in the Conan profiles. If using default, you can comment this line out in CMakeLists.txt (in which case CMake will use the default `/usr/bin/c++`).
+3. Verify that the compiler executable set for `CMAKE_CXX_COMPILER` in [CMakeLists.txt](CMakeLists.txt) (as described above) matches the one set in the Conan profiles. If using default, you can comment this line out in CMakeLists.txt (in which case CMake will use the default `/usr/bin/c++`).
 4. In the base directory of this project/repo, run
     ```
     make
     ```
     and then run either the debug (non-compiler-optimized) version with
     ```
-    ./build-debug/main
+    build_debug/main
     ```
     or the release (compiler-optimized) version with
     ```
-    ./build-release/main
+    build_release/main
     ```
 
-Adjust the basic configuration options in [src/config.h](./src/config.h) (e.g. whether to enable benchmarking) as desired. Note that currently these values are only read at compile time, so you must recompile after making changes.
+Adjust the basic configuration options in [src/core/config.h](src/core/config.h) (e.g. whether to enable benchmarking) as desired. Note that currently these values are only read at compile time, so you must recompile after making changes.
 
 ## NixOS
 
-If you're using NixOS, there is a `flake.nix` provided that installs the packages listed in the "Requirements" section above. Run `nix develop` in this project's base directory to install them and then proceed with the steps above (I have chosen to not make the flake replace Conan for managing the dependencies of the actual code).
+If you're using NixOS, there is a `flake.nix` provided that installs the packages listed in the "Requirements" section above. Run `nix develop` in this project's base directory to install them and then proceed with the steps above (I have chosen to not make the flake replace Conan for managing the runtime dependencies, only the buildtime ones).
 
 # Notes
 
-- This is NOT intended for actual, real-world use! It's more as a proof of concept or a simulation for running experimental evaluation.
-- The client-server distinction is very minimal and is only meant for benchmarking things like the network communication size. It does not actually run on two separate machines or have a well-defined client/server program. (At the moment, only the "most underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep many instances of these underlying schemes, client and server together.)
+- This is NOT intended for actual, real-world use! It's more a proof of concept or a simulation for doing experimental evaluation.
+- The client-server distinction is very minimal and is only meant for benchmarking things like the network communication size. This implementation does not actually run across two separate hosts or have a well-defined client/server program. (At the moment, only the "most underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep many instances of these underlying schemes, client and server together.)
 - Ids and keywords must be nonnegative integral values. Otherwise, Bad Things may happen.
-- While each database tuple possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
+- While database tuples eeach possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
 - Currently, [src/main.cpp](src/main.cpp) implements four experiments:
     - A debugging experiment that prints out the results for each scheme and acts as a basic test case/sanity check.

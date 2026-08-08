@@ -32,12 +32,3 @@ std::unique_ptr<Dsse> createDsse(bool shouldBenchmark, bool useShortcutSetup, bo
         return std::make_unique<Dsse>(benchmark, useShortcutSetup);
     }
 }
-
-
-template <class Sse> requires IsSse<Sse>
-void deleteSse(Sse*& sse) {
-    if (sse != nullptr) {
-        delete sse;
-        sse = nullptr;
-    }
-}
