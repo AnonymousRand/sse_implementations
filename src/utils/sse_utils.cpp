@@ -19,6 +19,11 @@ std::ostream& operator <<(std::ostream& os, const DbEntry<DbDoc, DbKw>& dbEntry)
 }
 
 
+template std::ostream& operator <<(std::ostream& os, const DbEntry<Doc<>, Kw>& dbEntry);
+template std::ostream& operator <<(std::ostream& os, const DbEntry<SrcIDb1Doc, Kw>& dbEntry);
+//template std::ostream& operator <<(std::ostream& os, const DbEntry<Doc<IdAlias>, IdAlias>& dbEntry);
+
+
 //------------------------------------------------------------------------------
 // util functions
 //------------------------------------------------------------------------------
