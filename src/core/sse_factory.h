@@ -5,7 +5,7 @@
 
 #include "core/benchmark.h"
 
-#include "schemes/sse.h"
+#include "schemes/interfaces/sse.h"
 
 
 template <class Sse> requires IsSse<Sse>

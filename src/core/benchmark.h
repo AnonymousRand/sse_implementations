@@ -6,7 +6,8 @@
 #include <iostream>
 #include <string>
 
-#include "schemes/sse.h"
+#include "schemes/interfaces/dsse.h"
+#include "schemes/interfaces/sse.h"
 
 #include "utils/sse_utils.h"
 

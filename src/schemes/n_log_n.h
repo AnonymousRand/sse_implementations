@@ -5,7 +5,8 @@
 #include "core/benchmark.h" // since this was only forward declared in `sse.h`
 
 #include "schemes/n_log_n_server.h"
-#include "schemes/sse.h"
+#include "schemes/interfaces/sda_underly.h"
+#include "schemes/interfaces/static_point_sse.h"
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
