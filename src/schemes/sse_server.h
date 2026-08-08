@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "utils/doc.h"
 #include "utils/sse_utils.h"
 
@@ -11,9 +13,9 @@ template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, 
 class ISseServer {
     public:
         // this should be the client/controller's benchmarking struct
-        Benchmark& benchmark;
+        std::shared_ptr<Benchmark> benchmark;
 
-        ISseServer(Benchmark& benchmark) : benchmark(benchmark) {}
+        ISseServer(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
         virtual void clear();
 };

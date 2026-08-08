@@ -1,4 +1,5 @@
 #pragma once
+// TODO: unindent class contents by one level?
 
 #include <chrono>
 #include <concepts>
@@ -57,39 +58,42 @@ class Benchmarked : public Sse {
         using Sse::Sse;
 
         void setup(int secParam, const Db<Doc<>, Kw>& db) override {
-            this->benchmark.reset();
+            this->benchmark->reset();
 
             auto start = std::chrono::high_resolution_clock::now();
             Sse::setup(secParam, db);
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::milli> elapsed = end - start;
-            this->benchmark.time = elapsed.count();
+            this->benchmark->time = elapsed.count();
         }
 
         std::vector<Doc<>> search(
             const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
         ) const override {
-            this->benchmark.reset();
+            this->benchmark->reset();
 
             auto start = std::chrono::high_resolution_clock::now();
             std::vector<Doc<>> results = Sse::search(query, shouldCleanUpResults, isNaive);
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::milli> elapsed = end - start;
-            this->benchmark.time = elapsed.count();
+            this->benchmark->time = elapsed.count();
             return results;
         }
+};
 
-        // TODO: use another bool member variable in IDsse for this?
-        // (uncomment if you want to benchmark DSSE schemes per update instead of per setup)
-        /*
-        void update(const DbEntry<Doc<>, Kw>& newEntry) requires IsDsse<Sse> {
-            this->benchmark.reset();
+
+template <class Dsse> requires IsDsse<Dsse>
+class BenchmarkedUpdt : public Benchmarked<Dsse> {
+    public:
+        using Benchmarked<Dsse>::Benchmarked;
+
+        void update(const DbEntry<Doc<>, Kw>& newEntry) override {
+            this->benchmark->reset();
 
             auto start = std::chrono::high_resolution_clock::now();
-            Sse::update(newEntry);
+            Dsse::update(newEntry);
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::milli> elapsed = end - start;
-            this->benchmark.time = elapsed.count();
+            this->benchmark->time = elapsed.count();
         }
-        */
 };

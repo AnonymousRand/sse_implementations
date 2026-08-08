@@ -5,6 +5,7 @@
 
 #include <concepts>
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 #include "utils/cryptography.h"
@@ -27,12 +28,12 @@ struct Benchmark;
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISse {
     public:
-        Benchmark& benchmark;
+        std::shared_ptr<Benchmark> benchmark;
 
         //----------------------------------------------------------------------
         // methods to implement
 
-        ISse(Benchmark& benchmark) : benchmark(benchmark) {}
+        ISse(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
         virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
         
@@ -144,8 +145,13 @@ template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, 
 class IDsse : public ISse<DbDoc, DbKw> {
     public:
         using ISse<DbDoc, DbKw>::ISse;
-        IDsse(Benchmark& benchmark, bool useShortcutSetup) :
+        IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup) :
                 ISse<DbDoc, DbKw>(benchmark), useShortcutSetup(useShortcutSetup) {}
+
+        //IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup, bool shouldBenchmarkPerUpdt) :
+        //        ISse<DbDoc, DbKw>(benchmark),
+        //        useShortcutSetup(useShortcutSetup),
+        //        shouldBenchmarkPerUpdt(shouldBenchmarkPerUpdt) {}
 
         //----------------------------------------------------------------------
         // methods to implement
@@ -159,6 +165,11 @@ class IDsse : public ISse<DbDoc, DbKw> {
          * for experimental evaluation of searches.
          */
         bool useShortcutSetup = false;
+
+        ///**
+        // * whether benchmarking stats should be reset per `update()` call or only per `setup()`.
+        // */
+        //bool shouldBenchmarkPerUpdt = false;
 };
 
 

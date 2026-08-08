@@ -2,7 +2,10 @@
 #include <cstdint>
 #include <format>
 #include <iostream>
+#include <memory>
 
+#include "benchmark.h"
+#include "sse_factory.h"
 #include "schemes/log_src.h"
 #include "schemes/log_src_i.h"
 #include "schemes/log_src_i_star.h"
@@ -10,7 +13,6 @@
 #include "schemes/pi_bas.h"
 #include "schemes/sda.h"
 #include "schemes/sse.h"
-#include "utils/benchmark.h"
 #include "utils/constants.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
@@ -67,12 +69,12 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
 
 
 // experiment for debugging with fixed query and printed results
-void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
+void expDebug(ISse<>* sse, const Db<>& db, Range<Kw> query) {
     // setup
-    sse.setup(KEY_LEN, db);
+    sse->setup(KEY_LEN, db);
 
     // search
-    std::vector<Doc<>> results = sse.search(query);
+    std::vector<Doc<>> results = sse->search(query);
     std::vector<Doc<>> falsePositives;
     std::cout << "Results ((id,kw,op),kwrange):" << std::endl;
     for (Doc<> result : results) {
@@ -90,11 +92,11 @@ void expDebug(ISse<>& sse, const Db<>& db, Range<Kw> query) {
     }
     std::cout << std::endl;
 
-    sse.clear();
+    sse->clear();
 }
 
 
-void exp1(ISse<>& sse, int64_t dbSize) {
+void exp1(ISse<>* sse, int64_t dbSize) {
     if (dbSize == 0) {
         return;
     }
@@ -102,22 +104,22 @@ void exp1(ISse<>& sse, int64_t dbSize) {
     Benchmark::printHeader();
 
     // setup
-    sse.setup(KEY_LEN, db);
-    sse.benchmark.print("Setup");
+    sse->setup(KEY_LEN, db);
+    sse->benchmark->print("Setup");
 
     // search
     for (int64_t i = 0; i <= std::log2(dbSize); i++) {
         Range<Kw> query {0, (int64_t)std::pow(2, i) - 1};
-        sse.search(query);
-        sse.benchmark.print("Search", std::format("(size 2^{})", std::log2(query.size())));
+        sse->search(query);
+        sse->benchmark->print("Search", std::format("(size 2^{})", std::log2(query.size())));
     }
     std::cout << std::endl;
 
-    sse.clear();
+    sse->clear();
 }
 
 
-void exp2(ISse<>& sse, int64_t maxDbSize) {
+void exp2(ISse<>* sse, int64_t maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
@@ -129,20 +131,20 @@ void exp2(ISse<>& sse, int64_t maxDbSize) {
         Db<> db = createDb(dbSize, true, true);
 
         // setup
-        sse.setup(KEY_LEN, db);
-        sse.benchmark.print("Setup", std::format("(size 2^{})", std::log2(dbSize)));
+        sse->setup(KEY_LEN, db);
+        sse->benchmark->print("Setup", std::format("(size 2^{})", std::log2(dbSize)));
 
         // search
-        sse.search(query);
-        sse.benchmark.print("Search", std::format("(size 2^{})", std::log2(dbSize)));
+        sse->search(query);
+        sse->benchmark->print("Search", std::format("(size 2^{})", std::log2(dbSize)));
     }
     std::cout << std::endl;
 
-    sse.clear();
+    sse->clear();
 }
 
 
-void exp3(ISse<>& sse, int64_t maxDbSize) {
+void exp3(ISse<>* sse, int64_t maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
@@ -163,17 +165,17 @@ void exp3(ISse<>& sse, int64_t maxDbSize) {
         db.push_back(DbEntry {Doc<>(dbSize - 1, kw2, Op::INS, kwRange2), kwRange2});
 
         // setup
-        sse.setup(KEY_LEN, db);
-        sse.benchmark.print("Setup", std::format("(size 2^{})", std::log2(dbSize)));
+        sse->setup(KEY_LEN, db);
+        sse->benchmark->print("Setup", std::format("(size 2^{})", std::log2(dbSize)));
 
         // search
         Range<Kw> query {1, dbSize - 1};
-        sse.search(query);
-        sse.benchmark.print("Search", std::format("(size 2^{})", std::log2(dbSize)));
+        sse->search(query);
+        sse->benchmark->print("Search", std::format("(size 2^{})", std::log2(dbSize)));
     }
     std::cout << std::endl;
 
-    sse.clear();
+    sse->clear();
 }
 
 
@@ -184,22 +186,53 @@ int main() {
     int64_t maxDbSize = std::pow(2, maxDbSizeExp);
     std::cout << std::endl;
 
+    bool shouldBenchmark = true;
     bool dsseUseShortcutSetup = true;
-    Benchmark benchmark;
-    Benchmarked<PiBas<>> piBas(benchmark);
-    Benchmarked<NLogN<>> nLogN(benchmark);
-    Benchmarked<LogSrc<PiBas>> logSrcPiBas(benchmark);
-    Benchmarked<LogSrc<NLogN>> logSrcNLogN(benchmark);
-    Benchmarked<LogSrcI<PiBas>> logSrcIPiBas(benchmark);
-    Benchmarked<LogSrcI<NLogN>> logSrcINLogN(benchmark);
-    Benchmarked<LogSrcIStar> logSrcIStar(benchmark);
-    Benchmarked<Sda<PiBas<>>> sdaPiBas(benchmark, dsseUseShortcutSetup);
-    Benchmarked<Sda<NLogN<>>> sdaNLogN(benchmark, dsseUseShortcutSetup);
-    Benchmarked<Sda<LogSrc<PiBas>>> sdaLogSrcPiBas(benchmark, dsseUseShortcutSetup);
-    Benchmarked<Sda<LogSrc<PiBas>>> sdaLogSrcNLogN(benchmark, dsseUseShortcutSetup);
-    Benchmarked<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas(benchmark, dsseUseShortcutSetup);
-    Benchmarked<Sda<LogSrcI<PiBas>>> sdaLogSrcINLogN(benchmark, dsseUseShortcutSetup);
-    Benchmarked<Sda<LogSrcIStar>> sdaLogSrcIStar(benchmark, dsseUseShortcutSetup);
+    bool dsseShouldBenchmarkPerUpdt = true;
+
+    std::unique_ptr<PiBas<>>             piBas           = createSse<PiBas<>>(
+        shouldBenchmark
+    );
+    std::unique_ptr<NLogN<>>             nLogN           = createSse<NLogN<>>(
+        shouldBenchmark
+    );
+    std::unique_ptr<LogSrc<PiBas>>       logSrcPiBas     = createSse<LogSrc<PiBas>>(
+        shouldBenchmark
+    );
+    std::unique_ptr<LogSrc<NLogN>>       logSrcNLogN     = createSse<LogSrc<NLogN>>(
+        shouldBenchmark
+    );
+    std::unique_ptr<LogSrcI<PiBas>>      logSrcIPiBas    = createSse<LogSrcI<PiBas>>(
+        shouldBenchmark
+    );
+    std::unique_ptr<LogSrcI<NLogN>>      logSrcINLogN    = createSse<LogSrcI<NLogN>>(
+        shouldBenchmark
+    );
+    std::unique_ptr<LogSrcIStar>         logSrcIStar     = createSse<LogSrcIStar>(
+        shouldBenchmark
+    );
+    // TODO can remove the default angled brackets here?
+    std::unique_ptr<Sda<PiBas<>>>        sdaPiBas        = createDsse<Sda<PiBas<>>>(
+        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+    );
+    std::unique_ptr<Sda<NLogN<>>>        sdaNLogN        = createDsse<Sda<NLogN<>>>(
+        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+    );
+    std::unique_ptr<Sda<LogSrc<PiBas>>>  sdaLogSrcPiBas  = createDsse<Sda<LogSrc<PiBas>>>(
+        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+    );
+    std::unique_ptr<Sda<LogSrc<NLogN>>>  sdaLogSrcNLogN  = createDsse<Sda<LogSrc<NLogN>>>(
+        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+    );
+    std::unique_ptr<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas = createDsse<Sda<LogSrcI<PiBas>>>(
+        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+    );
+    std::unique_ptr<Sda<LogSrcI<NLogN>>> sdaLogSrcINLogN = createDsse<Sda<LogSrcI<NLogN>>>(
+        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+    );
+    std::unique_ptr<Sda<LogSrcIStar>>    sdaLogSrcIStar  = createDsse<Sda<LogSrcIStar>>(
+        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+    );
 
     //--------------------------------------------------------------------------
     // debugging experiment
@@ -216,59 +249,59 @@ int main() {
 
     std::cout << "================ PiBas =================" << std::endl;
     std::cout << std::endl;
-    expDebug(piBas, db, query);
+    expDebug(piBas.get(), db, query);
 
     std::cout << "================ NLogN =================" << std::endl;
     std::cout << std::endl;
-    expDebug(nLogN, db, query);
+    expDebug(nLogN.get(), db, query);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcPiBas, db, query);
+    expDebug(logSrcPiBas.get(), db, query);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcNLogN, db, query);
+    expDebug(logSrcNLogN.get(), db, query);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcIPiBas, db, query);
+    expDebug(logSrcIPiBas.get(), db, query);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcINLogN, db, query);
+    expDebug(logSrcINLogN.get(), db, query);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl;
     std::cout << std::endl;
-    expDebug(logSrcIStar, db, query);
+    expDebug(logSrcIStar.get(), db, query);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaPiBas, db, query);
+    expDebug(sdaPiBas.get(), db, query);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaNLogN, db, query);
+    expDebug(sdaNLogN.get(), db, query);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcPiBas, db, query);
+    expDebug(sdaLogSrcPiBas.get(), db, query);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcNLogN, db, query);
+    expDebug(sdaLogSrcNLogN.get(), db, query);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcIPiBas, db, query);
+    expDebug(sdaLogSrcIPiBas.get(), db, query);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcINLogN, db, query);
+    expDebug(sdaLogSrcINLogN.get(), db, query);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
     std::cout << std::endl;
-    expDebug(sdaLogSrcIStar, db, query);
+    expDebug(sdaLogSrcIStar.get(), db, query);
 
     //--------------------------------------------------------------------------
     // experiment 1
@@ -281,59 +314,59 @@ int main() {
 
     std::cout << "================ PiBas =================" << std::endl;
     std::cout << std::endl;
-    exp1(piBas, maxDbSize);
+    exp1(piBas.get(), maxDbSize);
 
     std::cout << "================ NLogN =================" << std::endl;
     std::cout << std::endl;
-    exp1(nLogN, maxDbSize);
+    exp1(nLogN.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
     std::cout << std::endl;
-    exp1(logSrcPiBas, maxDbSize);
+    exp1(logSrcPiBas.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
     std::cout << std::endl;
-    exp1(logSrcNLogN, maxDbSize);
+    exp1(logSrcNLogN.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
-    exp1(logSrcIPiBas, maxDbSize);
+    exp1(logSrcIPiBas.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
-    exp1(logSrcINLogN, maxDbSize);
+    exp1(logSrcINLogN.get(), maxDbSize);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl;
     std::cout << std::endl;
-    exp1(logSrcIStar, maxDbSize);
+    exp1(logSrcIStar.get(), maxDbSize);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl;
     std::cout << std::endl;
-    exp1(sdaPiBas, maxDbSize);
+    exp1(sdaPiBas.get(), maxDbSize);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl;
     std::cout << std::endl;
-    exp1(sdaNLogN, maxDbSize);
+    exp1(sdaNLogN.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrcPiBas, maxDbSize);
+    exp1(sdaLogSrcPiBas.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrcNLogN, maxDbSize);
+    exp1(sdaLogSrcNLogN.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrcIPiBas, maxDbSize);
+    exp1(sdaLogSrcIPiBas.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrcINLogN, maxDbSize);
+    exp1(sdaLogSrcINLogN.get(), maxDbSize);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
     std::cout << std::endl;
-    exp1(sdaLogSrcIStar, maxDbSize);
+    exp1(sdaLogSrcIStar.get(), maxDbSize);
 
     //--------------------------------------------------------------------------
     // experiment 2
@@ -346,59 +379,59 @@ int main() {
 
     std::cout << "================ PiBas =================" << std::endl;
     std::cout << std::endl;
-    exp2(piBas, maxDbSize);
+    exp2(piBas.get(), maxDbSize);
 
     std::cout << "================ NLogN =================" << std::endl;
     std::cout << std::endl;
-    exp2(nLogN, maxDbSize);
+    exp2(nLogN.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
     std::cout << std::endl;
-    exp2(logSrcPiBas, maxDbSize);
+    exp2(logSrcPiBas.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
     std::cout << std::endl;
-    exp2(logSrcNLogN, maxDbSize);
+    exp2(logSrcNLogN.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
-    exp2(logSrcIPiBas, maxDbSize);
+    exp2(logSrcIPiBas.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
-    exp2(logSrcINLogN, maxDbSize);
+    exp2(logSrcINLogN.get(), maxDbSize);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl;
     std::cout << std::endl;
-    exp2(logSrcIStar, maxDbSize);
+    exp2(logSrcIStar.get(), maxDbSize);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl;
     std::cout << std::endl;
-    exp2(sdaPiBas, maxDbSize);
+    exp2(sdaPiBas.get(), maxDbSize);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl;
     std::cout << std::endl;
-    exp2(sdaNLogN, maxDbSize);
+    exp2(sdaNLogN.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrcPiBas, maxDbSize);
+    exp2(sdaLogSrcPiBas.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrcNLogN, maxDbSize);
+    exp2(sdaLogSrcNLogN.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrcIPiBas, maxDbSize);
+    exp2(sdaLogSrcIPiBas.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrcINLogN, maxDbSize);
+    exp2(sdaLogSrcINLogN.get(), maxDbSize);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
     std::cout << std::endl;
-    exp2(sdaLogSrcIStar, maxDbSize);
+    exp2(sdaLogSrcIStar.get(), maxDbSize);
     
     //--------------------------------------------------------------------------
     // experiment 3
@@ -411,17 +444,17 @@ int main() {
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
     std::cout << std::endl;
-    exp3(logSrcPiBas, maxDbSize);
+    exp3(logSrcPiBas.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
     std::cout << std::endl;
-    exp3(logSrcIPiBas, maxDbSize);
+    exp3(logSrcIPiBas.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
     std::cout << std::endl;
-    exp3(logSrcNLogN, maxDbSize);
+    exp3(logSrcNLogN.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
-    exp3(logSrcINLogN, maxDbSize);
+    exp3(logSrcINLogN.get(), maxDbSize);
 }
