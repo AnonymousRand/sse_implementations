@@ -291,7 +291,6 @@ int main() {
     //--------------------------------------------------------------------------
     // experiment 1
 
-    /*
     std::cout << "================================= Experiment 1 =================================" << std::endl;
     std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
     std::cout << "Query  : varied"                                                                  << std::endl;
@@ -443,5 +442,4 @@ int main() {
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
     std::cout << std::endl;
     exp3(logSrcINLogN.get(), maxDbSize);
-    */
 }

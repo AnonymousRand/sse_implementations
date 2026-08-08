@@ -9,6 +9,17 @@
 
 
 //------------------------------------------------------------------------------
+// types
+//------------------------------------------------------------------------------
+
+
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
+std::ostream& operator <<(std::ostream& os, const DbEntry<DbDoc, DbKw>& dbEntry) {
+    return os << dbEntry.first << ", " << dbEntry.second;
+}
+
+
+//------------------------------------------------------------------------------
 // util functions
 //------------------------------------------------------------------------------
 

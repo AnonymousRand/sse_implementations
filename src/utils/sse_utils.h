@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <cstdint>
+#include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -11,7 +12,7 @@
 
 
 //------------------------------------------------------------------------------
-// declarations
+// types
 //------------------------------------------------------------------------------
 
 
@@ -65,6 +66,10 @@ enum class Op : char {
     DEL   = 'D',
     DUMMY = '-'
 };
+
+
+template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
+std::ostream& operator <<(std::ostream& os, const DbEntry<DbDoc, DbKw>& dbEntry);
 
 
 //------------------------------------------------------------------------------

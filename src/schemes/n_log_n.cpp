@@ -41,7 +41,6 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         lvl->init(bcktCountOnLvl * bcktSizeOnLvl);
         encIndLvls.push_back(lvl);
     }
-    // TODO << overload for db entries??
     EncInd* dbKwCountsDict = new EncInd();
     dbKwCountsDict->init(this->size);
 
