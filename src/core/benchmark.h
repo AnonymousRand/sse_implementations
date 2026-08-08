@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 
+#include "core/config.h"
+
 #include "schemes/interfaces/dsse.h"
 #include "schemes/interfaces/sse.h"
 
@@ -21,28 +23,34 @@ struct Benchmark {
     }
 
     static void printHeader() {
-        std::cout << std::format("| {:<18} ", "Params")
-                  << std::format("| {:<18} ", "Time (ms)")
-                  << std::format("| {:<18} |", "Communication (B)")
-                  << std::endl
-                  << std::format("--------------------")
-                  << std::format("---------------------")
-                  << std::format("-----------------------")
-                  << std::endl;
+        if (SHOULD_BENCHMARK) {
+            std::cout << std::format("| {:<18} ", "Params")
+                      << std::format("| {:<18} ", "Time (ms)")
+                      << std::format("| {:<18} |", "Communication (B)")
+                      << std::endl
+                      << std::format("--------------------")
+                      << std::format("---------------------")
+                      << std::format("-----------------------")
+                      << std::endl;
+        }
     }
 
     void print(const std::string& label) const {
-        std::cout << std::format("| {:<18} ", label)
-                  << std::format("| {:<18} ", this->time)
-                  << std::format("| {:<18} |", this->communication)
-                  << std::endl;
+        if (SHOULD_BENCHMARK) {
+            std::cout << std::format("| {:<18} ", label)
+                      << std::format("| {:<18} ", this->time)
+                      << std::format("| {:<18} |", this->communication)
+                      << std::endl;
+        }
     }
 
     void print(const std::string& label1, const std::string& label2) const {
-        std::cout << std::format("| {:<6} ", label1) << std::format("{:<11} ", label2)
-                  << std::format("| {:<18} ", this->time)
-                  << std::format("| {:<18} |", this->communication)
-                  << std::endl;
+        if (SHOULD_BENCHMARK) {
+            std::cout << std::format("| {:<6} ", label1) << std::format("{:<11} ", label2)
+                      << std::format("| {:<18} ", this->time)
+                      << std::format("| {:<18} |", this->communication)
+                      << std::endl;
+        }
     }
 };
 

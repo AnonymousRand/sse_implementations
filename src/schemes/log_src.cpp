@@ -76,8 +76,17 @@ void LogSrc<Underly>::clear() {
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrc<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
-    // TODO think about manually doing this instead of relying on underly to filter out replicated ones
-    this->underly->getDb(ret);
+    // need to exclude replicated tuples: assume any tuples with `DbKw` range size >1 is replicated
+    // (this doesn't seem to incur noticeable performance overhead with compiler optimizations)
+    Db<Doc<>, Kw> retWithRepls;
+    this->underly->getDb(retWithRepls);
+    for (DbEntry<Doc<>, Kw> dbEntry : retWithRepls) {
+        Doc<> dbDoc = dbEntry.first;
+        Range<Kw> dbKwRange = dbDoc.getDbKwRange();
+        if (dbKwRange.size() == 1) {
+            ret.push_back(dbEntry);
+        };
+    }
 }
 
 

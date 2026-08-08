@@ -155,12 +155,11 @@ void NLogN<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
             // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
             // to easily access these `DbKw` ranges in plaintext
             Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
-            // exclude replicated tuples: assume any tuples with `DbKw` range size >1 is non-leaf and hence replicated
-            // also exclude dummies/padding (from NLogN, but not from upstream SSE using NLogN as underly, for example)
-            if (dbKwRange.size() > 1 || dbKwRange == DUMMY_RANGE<DbKw>()) {
-                continue;
+            // exclude dummies/padding (that are from NLogN's `setup()`, but not from
+            // an upstream SSE scheme which is using NLogN as an underlying scheme)
+            if (dbKwRange != DUMMY_RANGE<DbKw>()) {
+                ret.push_back(std::pair {dbDoc, dbKwRange});
             }
-            ret.push_back(std::pair {dbDoc, dbKwRange});
         }
     }
 }
