@@ -85,16 +85,6 @@ void cleanUpResults(std::vector<Doc<>>& docs) {
 }
 
 
-// TODO move this to tdag.h? (static method)
-int64_t calcTdagItemCount(int64_t leafCount) {
-    // see `EncIndLoc::map()` comment in `utils/enc_ind.cpp` for where this formula comes from
-    int64_t topLevelNum = std::log2(leafCount);
-    return topLevelNum * (2 * leafCount)
-            - (1 - std::pow(2, -topLevelNum)) * std::pow(2, topLevelNum + 1)
-            + leafCount;
-}
-
-
 uint64_t hashToPos(const ustring& hash) {
     // this conversion mess is from USENIX'24
     return (*((uint64_t*)hash.c_str()));

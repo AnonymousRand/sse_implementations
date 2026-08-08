@@ -1,6 +1,7 @@
 #pragma once
 
 #include "benchmark.h" // since this was only forward declared in `sse.h`
+
 #include "schemes/pi_bas_server.h"
 #include "schemes/sse.h"
 

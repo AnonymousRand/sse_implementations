@@ -65,6 +65,8 @@ Only tested on Linux (NixOS, Ubuntu). To run on Windows, don't. (ok, fine, WSL w
     ./build-release/main
     ```
 
+Adjust the basic configuration options in [src/config.h](./src/config.h) (e.g. whether to enable benchmarking) as desired. Note that currently these values are only read at compile time, so you must recompile after making changes.
+
 ## NixOS
 
 If you're using NixOS, there is a `flake.nix` provided that installs the packages listed in the "Requirements" section above. Run `nix develop` in this project's base directory to install them and then proceed with the steps above (I have chosen to not make the flake replace conan as dependency management).

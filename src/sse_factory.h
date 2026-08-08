@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "benchmark.h"
+
 #include "schemes/sse.h"
 
 
@@ -19,11 +20,11 @@ std::unique_ptr<Sse> createSse(bool shouldBenchmark) {
 
 
 template <class Dsse> requires IsDsse<Dsse>
-std::unique_ptr<Dsse> createDsse(bool shouldBenchmark, bool useShortcutSetup, bool shouldBenchmarkPerUpdt) {
+std::unique_ptr<Dsse> createDsse(bool shouldBenchmark, bool useShortcutSetup, bool shouldBenchmarkUpdts) {
     std::shared_ptr<Benchmark> benchmark = std::make_shared<Benchmark>();
     if (shouldBenchmark) {
-        if (shouldBenchmarkPerUpdt) {
-            return std::make_unique<BenchmarkedUpdt<Dsse>>(benchmark, useShortcutSetup);
+        if (shouldBenchmarkUpdts) {
+            return std::make_unique<BenchmarkedUpdts<Dsse>>(benchmark, useShortcutSetup);
         } else {
             return std::make_unique<Benchmarked<Dsse>>(benchmark, useShortcutSetup);
         }

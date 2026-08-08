@@ -1,9 +1,15 @@
 #pragma once
 
+#include <cstdint>
 #include <list>
 #include <unordered_set>
 
 #include "utils/range.h"
+
+
+//------------------------------------------------------------------------------
+// `TdagNode`
+//------------------------------------------------------------------------------
 
 
 template <class T>
@@ -53,3 +59,11 @@ class TdagNode {
 
         Range<T> findSrcHelper(const Range<T>& targetRange);
 };
+
+
+//------------------------------------------------------------------------------
+// utils
+//------------------------------------------------------------------------------
+
+
+int64_t calcTdagEntryCount(int64_t leafCount);

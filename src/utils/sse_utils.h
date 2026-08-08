@@ -88,7 +88,4 @@ template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& docs);
 
 
-int64_t calcTdagItemCount(int64_t leafCount);
-
-
 uint64_t hashToPos(const ustring& hash);

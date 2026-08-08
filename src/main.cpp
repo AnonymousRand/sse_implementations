@@ -5,7 +5,9 @@
 #include <memory>
 
 #include "benchmark.h"
+#include "config.h"
 #include "sse_factory.h"
+
 #include "schemes/log_src.h"
 #include "schemes/log_src_i.h"
 #include "schemes/log_src_i_star.h"
@@ -13,6 +15,7 @@
 #include "schemes/pi_bas.h"
 #include "schemes/sda.h"
 #include "schemes/sse.h"
+
 #include "utils/constants.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
@@ -183,55 +186,37 @@ int main() {
     int64_t maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
-    int64_t maxDbSize = std::pow(2, maxDbSizeExp);
+    const int64_t maxDbSize = std::pow(2, maxDbSizeExp);
     std::cout << std::endl;
 
-    bool shouldBenchmark = true;
-    bool dsseUseShortcutSetup = true;
-    bool dsseShouldBenchmarkPerUpdt = true;
+    std::unique_ptr<PiBas<>> piBas               = createSse<PiBas<>>(SHOULD_BENCHMARK);
+    std::unique_ptr<NLogN<>> nLogN               = createSse<NLogN<>>(SHOULD_BENCHMARK);
+    std::unique_ptr<LogSrc<PiBas>> logSrcPiBas   = createSse<LogSrc<PiBas>>(SHOULD_BENCHMARK);
+    std::unique_ptr<LogSrc<NLogN>> logSrcNLogN   = createSse<LogSrc<NLogN>>(SHOULD_BENCHMARK);
+    std::unique_ptr<LogSrcI<PiBas>> logSrcIPiBas = createSse<LogSrcI<PiBas>>(SHOULD_BENCHMARK);
+    std::unique_ptr<LogSrcI<NLogN>> logSrcINLogN = createSse<LogSrcI<NLogN>>(SHOULD_BENCHMARK);
+    std::unique_ptr<LogSrcIStar> logSrcIStar     = createSse<LogSrcIStar>(SHOULD_BENCHMARK);
 
-    std::unique_ptr<PiBas<>>             piBas           = createSse<PiBas<>>(
-        shouldBenchmark
+    std::unique_ptr<Sda<PiBas<>>> sdaPiBas               = createDsse<Sda<PiBas<>>>(
+        SHOULD_BENCHMARK, DSSE_USE_SHORTCUT_SETUP, DSSE_SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<NLogN<>>             nLogN           = createSse<NLogN<>>(
-        shouldBenchmark
+    std::unique_ptr<Sda<NLogN<>>> sdaNLogN               = createDsse<Sda<NLogN<>>>(
+        SHOULD_BENCHMARK, DSSE_USE_SHORTCUT_SETUP, DSSE_SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<LogSrc<PiBas>>       logSrcPiBas     = createSse<LogSrc<PiBas>>(
-        shouldBenchmark
+    std::unique_ptr<Sda<LogSrc<PiBas>>> sdaLogSrcPiBas   = createDsse<Sda<LogSrc<PiBas>>>(
+        SHOULD_BENCHMARK, DSSE_USE_SHORTCUT_SETUP, DSSE_SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<LogSrc<NLogN>>       logSrcNLogN     = createSse<LogSrc<NLogN>>(
-        shouldBenchmark
-    );
-    std::unique_ptr<LogSrcI<PiBas>>      logSrcIPiBas    = createSse<LogSrcI<PiBas>>(
-        shouldBenchmark
-    );
-    std::unique_ptr<LogSrcI<NLogN>>      logSrcINLogN    = createSse<LogSrcI<NLogN>>(
-        shouldBenchmark
-    );
-    std::unique_ptr<LogSrcIStar>         logSrcIStar     = createSse<LogSrcIStar>(
-        shouldBenchmark
-    );
-    // TODO can remove the default angled brackets here?
-    std::unique_ptr<Sda<PiBas<>>>        sdaPiBas        = createDsse<Sda<PiBas<>>>(
-        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
-    );
-    std::unique_ptr<Sda<NLogN<>>>        sdaNLogN        = createDsse<Sda<NLogN<>>>(
-        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
-    );
-    std::unique_ptr<Sda<LogSrc<PiBas>>>  sdaLogSrcPiBas  = createDsse<Sda<LogSrc<PiBas>>>(
-        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
-    );
-    std::unique_ptr<Sda<LogSrc<NLogN>>>  sdaLogSrcNLogN  = createDsse<Sda<LogSrc<NLogN>>>(
-        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+    std::unique_ptr<Sda<LogSrc<NLogN>>> sdaLogSrcNLogN   = createDsse<Sda<LogSrc<NLogN>>>(
+        SHOULD_BENCHMARK, DSSE_USE_SHORTCUT_SETUP, DSSE_SHOULD_BENCHMARK_UPDTS
     );
     std::unique_ptr<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas = createDsse<Sda<LogSrcI<PiBas>>>(
-        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+        SHOULD_BENCHMARK, DSSE_USE_SHORTCUT_SETUP, DSSE_SHOULD_BENCHMARK_UPDTS
     );
     std::unique_ptr<Sda<LogSrcI<NLogN>>> sdaLogSrcINLogN = createDsse<Sda<LogSrcI<NLogN>>>(
-        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+        SHOULD_BENCHMARK, DSSE_USE_SHORTCUT_SETUP, DSSE_SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrcIStar>>    sdaLogSrcIStar  = createDsse<Sda<LogSrcIStar>>(
-        shouldBenchmark, dsseUseShortcutSetup, dsseShouldBenchmarkPerUpdt
+    std::unique_ptr<Sda<LogSrcIStar>> sdaLogSrcIStar     = createDsse<Sda<LogSrcIStar>>(
+        SHOULD_BENCHMARK, DSSE_USE_SHORTCUT_SETUP, DSSE_SHOULD_BENCHMARK_UPDTS
     );
 
     //--------------------------------------------------------------------------

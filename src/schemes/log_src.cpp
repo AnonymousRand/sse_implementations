@@ -32,7 +32,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     // replicate every document to all keyword ranges/TDAG nodes that cover it
     Db<Doc<>, Kw> dbWithRepls;
-    dbWithRepls.reserve(calcTdagItemCount(db.size()));
+    dbWithRepls.reserve(calcTdagEntryCount(db.size()));
     for (DbEntry<Doc<>, Kw> dbEntry : db) {
         Doc<> doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;

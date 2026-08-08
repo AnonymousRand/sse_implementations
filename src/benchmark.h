@@ -8,6 +8,7 @@
 #include <string>
 
 #include "schemes/sse.h"
+
 #include "utils/sse_utils.h"
 
 
@@ -83,7 +84,7 @@ class Benchmarked : public Sse {
 
 
 template <class Dsse> requires IsDsse<Dsse>
-class BenchmarkedUpdt : public Benchmarked<Dsse> {
+class BenchmarkedUpdts : public Benchmarked<Dsse> {
     public:
         using Benchmarked<Dsse>::Benchmarked;
 

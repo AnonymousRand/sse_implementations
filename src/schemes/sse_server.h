@@ -17,5 +17,5 @@ class ISseServer {
 
         ISseServer(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
-        virtual void clear();
+        virtual void clear() = 0;
 };
