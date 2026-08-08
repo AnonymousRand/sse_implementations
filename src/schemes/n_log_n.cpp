@@ -41,8 +41,14 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         lvl->init(bcktCountOnLvl * bcktSizeOnLvl);
         encIndLvls.push_back(lvl);
     }
+    // TODO << overload for db entries??
     EncInd* dbKwCountsDict = new EncInd();
     dbKwCountsDict->init(this->size);
+    //std::cerr << "--------- Setup beginning, db is:" << std::endl;
+    //for (auto entry : db) {
+    //    std::cerr << entry.first << std::endl;
+    //}
+    //std::cerr << std::endl;
 
     //--------------------------------------------------------------------------
     // build index
@@ -105,15 +111,22 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
         // for each id in DB(w) (write into same bucket consecutively)
         uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
+        //std::cerr << "Writing " << dbKwRange << " with unpadded count " << dbKwCount << " and padded count " << dbKwPaddedCount << " returned lvl " << lvl << " pos " << pos << " with startPos " << startPos << " (bucket size " << this->computeBcktSizeOnLvl(lvl) << ")" << std::endl;
+        //std::cerr << "-- Writing kw list:" << std::endl;
+        //for (auto entry : dbKwList) {
+        //    std::cerr << entry << std::endl;
+        //}
         for (int64_t dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
             ustring iv = genIv(IV_LEN);
             ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
+            std::cerr << "writing " << dbDoc << "," << dbKwRange << ", trying lvl " << lvl << " pos " << startPos + dbKwCounter << "; total size is " << this->size << std::endl;
             encIndLvls[lvl]->write(startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
     }
+    std::cerr << std::endl;
 
     this->server->setEncIndLvls(encIndLvls);
     this->server->setDbKwCountsDict(dbKwCountsDict);
@@ -140,9 +153,12 @@ void NLogN<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
     std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
 
     for (int64_t lvl = 0; lvl < this->numLvls; lvl++) {
-        for (int64_t pos = 0; pos < this->size; pos++) {
+        EncInd* encIndLvl = encIndLvls[lvl];
+        // don't use `this->size()` as the bound here as that doesn't include padding
+        // while `encIndLvl` does (this should all be client-side anyway so not leaking anything)
+        for (int64_t pos = 0; pos < encIndLvl->getSize(); pos++) {
             EncIndVal encIndVal;
-            bool isValidVal = encIndLvls[lvl]->read(pos, encIndVal);
+            bool isValidVal = encIndLvl->read(pos, encIndVal);
             if (!isValidVal) {
                 continue;
             }
@@ -194,11 +210,17 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     uint64_t pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
     uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
+    std::cerr << "Search for " << query << " returned unpadded size of " << dbKwCount << " and padded size " << dbKwPaddedCount << "; on lvl " << lvl << " pos " << pos << " with startPos " << startPos << " (bucket size " << this->computeBcktSizeOnLvl(lvl) << ")" << std::endl;
     std::vector<EncIndVal> encResults = this->server->findEncIndBckt(lvl, startPos, dbKwPaddedCount, label);
     for (EncIndVal encResult : encResults) {
         DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);
     }
+    std::cerr << "after decryption there are " << results.size() << " results";
+    for (DbDoc result : results) {
+        std::cout << ", " << result;
+    }
+    std::cout << std::endl << std::endl;
 
     return results;
 }
@@ -231,6 +253,7 @@ std::pair<uint64_t, uint64_t> NLogN<DbDoc, DbKw>::map(
     uint64_t pos = this->mapNoMod(queryToken, retLabel);
     // (note bottommost level is level 0)
     uint64_t lvl = std::log2(dbKwPaddedCount);
+    //std::cerr << "mapping with padded count " << dbKwPaddedCount << " returned lvl " << lvl << " pos " << pos << "; num buckets on lvl is " << (uint64_t)this->computeBcktCountOnLvl(lvl) << " so final pos is " << pos % (uint64_t)this->computeBcktCountOnLvl(lvl) << "; bucket size is " << this->computeBcktSizeOnLvl(lvl) << " and num lvls is " << this->numLvls << std::endl;
     pos %= (uint64_t)this->computeBcktCountOnLvl(lvl);
     return std::pair {lvl, pos};
 }
@@ -244,7 +267,7 @@ int64_t NLogN<DbDoc, DbKw>::computeNumLvls() const {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 int64_t NLogN<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvl) const {
-    // 2^{lvlCount - lvl + 1} is number of bckts on level `lvl`
+    // 2^{lvlCount - lvl + 1} is number of buckets on level `lvl`
     return std::pow(2, this->numLvls - lvl - 1);
 }
 

@@ -70,7 +70,10 @@ std::vector<Doc<>> Sda<Underly>::search(const Range<Kw>& query, bool shouldClean
     std::vector<Doc<>> allResults;
 
     // search through all non-empty indexes
+    int64_t tmp = 0;
     for (Underly* underly : this->underlys) {
+        std::cerr << "++++++ SDa searching underly " << tmp << "; it has size " << underly->getSize() << std::endl;
+        tmp++;
         if (underly->getSize() == 0) {
             continue;
         }
@@ -120,11 +123,18 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`; always merge/insert into first index if it's empty
     Db<Doc<>, Kw> mergedDb;
     mergedDb.reserve(std::pow(2, this->firstEmptyInd));
+    std::cerr << "====== updating: " << newDbEntry.first << std::endl;
     for (int64_t i = 0; i < (this->firstEmptyInd < 1 ? 1 : this->firstEmptyInd); i++) {
-        // `getDb()` appends to the passed-in container
+        // (`getDb()` appends to the passed-in container)
         this->underlys[i]->getDb(mergedDb);
+        std::cerr << "merged subindex " << i << ", mergedDb is now, " << newDbEntry.first;
+        for (auto entry : mergedDb) {
+            std::cerr << ", " << entry.first;
+        }
+        std::cerr << std::endl;
     }
     mergedDb.push_back(newDbEntry);
+    std::cerr << "making subindex " << this->firstEmptyInd << std::endl;
     if (this->firstEmptyInd >= this->underlys.size() - 1) {
         // if we need to create a new, larger index
         Underly* newUnderly = new Underly(this->benchmark);
@@ -145,6 +155,7 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
         newFirstEmpty++;
     }
     this->firstEmptyInd = newFirstEmpty;
+    std::cerr << std::endl;
 }
 
 

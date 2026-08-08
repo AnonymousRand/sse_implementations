@@ -51,6 +51,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 std::vector<Doc<>> LogSrc<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
     Range<Kw> src = this->tdag->findSrc(query);
+    std::cerr << "LogSrc: query " << query << " returned src " << src << std::endl;
     if (src == DUMMY_RANGE<Kw>()) {
         return std::vector<Doc<>> {};
     }
@@ -76,6 +77,7 @@ void LogSrc<Underly>::clear() {
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrc<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
+    // TODO think about manually doing this instead of relying on underly to filter out replicated ones
     this->underly->getDb(ret);
 }
 

@@ -99,7 +99,9 @@ void PiBas<DbDoc, DbKw>::clear() {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
     EncInd* encInd = this->server->getEncInd();
-    for (int64_t pos = 0; pos < this->size; pos++) {
+    // don't use `this->size()` as the bound here as that doesn't include padding
+    // while `encInd` does (this should all be client-side anyway so not leaking anything)
+    for (int64_t pos = 0; pos < encInd->getSize(); pos++) {
         EncIndVal encIndVal;
         bool isValidVal = encInd->read(pos, encIndVal);
         if (!isValidVal) {
