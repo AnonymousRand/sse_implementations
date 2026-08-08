@@ -6,10 +6,6 @@
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 PiBasServer<DbDoc, DbKw>::~PiBasServer() {
     this->clear();
-    if (this->encInd != nullptr) {
-        delete this->encInd;
-        this->encInd = nullptr;
-    };
 }
 
 
@@ -19,9 +15,12 @@ PiBasServer<DbDoc, DbKw>::~PiBasServer() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasServer<DbDoc, DbKw>::clear() {
+    // (this is deleted instead of just cleared since we only set it via direct pointer assignment,
+    // so if we don't delete we would make this memory inaccessible the next time we assign `encInd`)
     if (this->encInd != nullptr) {
         this->benchmark->diskSize -= this->encInd->getSize() * EncInd::ENTRY_LEN;
-        this->encInd->clear();
+        delete this->encInd;
+        this->encInd = nullptr;
     };
 }
 

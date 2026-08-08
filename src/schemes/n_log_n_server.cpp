@@ -22,7 +22,6 @@ void NLogNServer<DbDoc, DbKw>::clear() {
     }
     this->encIndLvls.clear();
 
-    // TODO try just clearing instead of deleting?
     if (this->dbKwCountsDict != nullptr) {
         this->benchmark->diskSize -= this->dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
         delete this->dbKwCountsDict;
