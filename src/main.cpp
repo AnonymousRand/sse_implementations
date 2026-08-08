@@ -4,9 +4,9 @@
 #include <iostream>
 #include <memory>
 
-#include "benchmark.h"
-#include "config.h"
-#include "sse_factory.h"
+#include "core/benchmark.h"
+#include "core/config.h"
+#include "core/sse_factory.h"
 
 #include "schemes/log_src.h"
 #include "schemes/log_src_i.h"

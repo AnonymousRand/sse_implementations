@@ -2,7 +2,7 @@
 
 #include <utility>
 
-#include "benchmark.h" // since this was only forward declared in `sse.h`
+#include "core/benchmark.h" // since this was only forward declared in `sse.h`
 
 #include "schemes/n_log_n_server.h"
 #include "schemes/sse.h"
