@@ -13,23 +13,23 @@
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class PiBasServer : public ISseServer<DbDoc, DbKw> {
-    public:
-        using ISseServer<DbDoc, DbKw>::ISseServer;
+public:
+    using ISseServer<DbDoc, DbKw>::ISseServer;
 
-        ~PiBasServer();
+    ~PiBasServer();
 
-        //----------------------------------------------------------------------
-        // `ISseServer`
+    //----------------------------------------------------------------------
+    // `ISseServer`
 
-        void clear() override;
+    void clear() override;
 
-        //----------------------------------------------------------------------
-        // other
+    //----------------------------------------------------------------------
+    // other
 
-        void setEncInd(EncInd* encInd);
-        EncInd* getEncInd() const;
-        std::vector<EncIndVal> searchEncInd(const ustring& queryToken) const;
+    void setEncInd(EncInd* encInd);
+    EncInd* getEncInd() const;
+    std::vector<EncIndVal> searchEncInd(const ustring& queryToken) const;
 
-    private:
-        EncInd* encInd = nullptr;
+private:
+    EncInd* encInd = nullptr;
 };

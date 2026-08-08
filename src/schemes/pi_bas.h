@@ -9,38 +9,38 @@
 // note that we use the result-hiding variant of PiBas from figure 12 of NDSS'20 (SDa paper) since SDa wants that
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class PiBas : public IStaticPointSse<DbDoc, DbKw>, public ISdaUnderly<DbDoc, DbKw> {
-    public:
-        using IStaticPointSse<DbDoc, DbKw>::IStaticPointSse;
+public:
+    using IStaticPointSse<DbDoc, DbKw>::IStaticPointSse;
 
-        ~PiBas();
+    ~PiBas();
 
-        //----------------------------------------------------------------------
-        // `ISse`
+    //----------------------------------------------------------------------
+    // `ISse`
 
-        void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
-        void clear() override;
+    void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
+    void clear() override;
 
-        //----------------------------------------------------------------------
-        // `ISdaUnderly`
+    //----------------------------------------------------------------------
+    // `ISdaUnderly`
 
-        void getDb(Db<DbDoc, DbKw>& ret) const override;
+    void getDb(Db<DbDoc, DbKw>& ret) const override;
 
-    private:
-        PiBasServer<DbDoc, DbKw>* server = new PiBasServer<DbDoc, DbKw>(this->benchmark);
+private:
+    PiBasServer<DbDoc, DbKw>* server = new PiBasServer<DbDoc, DbKw>(this->benchmark);
 
-        //----------------------------------------------------------------------
-        // `IStaticPointSse`
+    //----------------------------------------------------------------------
+    // `IStaticPointSse`
 
-        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
+    std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
 
-        //----------------------------------------------------------------------
-        // other
+    //----------------------------------------------------------------------
+    // other
 
-        ustring genQueryToken(const Range<DbKw>& query) const;
+    ustring genQueryToken(const Range<DbKw>& query) const;
 
-        /**
-         * generate encrypted label to store in encrypted index, and also return
-         * numerical position at which to place it in the index (pseudorandomly).
-         */
-        uint64_t map(const ustring& queryToken, int64_t dbKwListSize, ustring& retLabel) const;
+    /**
+     * generate encrypted label to store in encrypted index, and also return
+     * numerical position at which to place it in the index (pseudorandomly).
+     */
+    uint64_t map(const ustring& queryToken, int64_t dbKwListSize, ustring& retLabel) const;
 };

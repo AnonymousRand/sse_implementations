@@ -27,37 +27,37 @@ struct Benchmark;
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISse {
-    public:
-        std::shared_ptr<Benchmark> benchmark;
+public:
+    std::shared_ptr<Benchmark> benchmark;
 
-        //----------------------------------------------------------------------
-        // methods to implement
+    //----------------------------------------------------------------------
+    // methods to implement
 
-        ISse(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
+    ISse(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
-        virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
-        
-        /**
-         * params:
-         *     - `shouldCleanUpResults`: whether to filter out deleted docs or not
-         *     - `isNaive`: whether to search each point in `query` individually, or the entire range in one go
-         *       (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC.
-         */
-        virtual std::vector<DbDoc> search(
-            const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
-        ) const = 0;
+    virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
+    
+    /**
+     * params:
+     *     - `shouldCleanUpResults`: whether to filter out deleted docs or not
+     *     - `isNaive`: whether to search each point in `query` individually, or the entire range in one go
+     *       (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC.
+     */
+    virtual std::vector<DbDoc> search(
+        const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
+    ) const = 0;
 
-        /**
-         * free memory and clear the db/index, without fully destroying this object as the destructor does
-         * (so we can still call `setup()` again with the same object, perhaps with a different db).
-         * 
-         * notes:
-         *     - should be idempotent and safe to call without `setup()` first as well.
-         */
-        virtual void clear() = 0;
+    /**
+     * free memory and clear the db/index, without fully destroying this object as the destructor does
+     * (so we can still call `setup()` again with the same object, perhaps with a different db).
+     * 
+     * notes:
+     *     - should be idempotent and safe to call without `setup()` first as well.
+     */
+    virtual void clear() = 0;
 
-    protected:
-        int secParam;
+protected:
+    int secParam;
 };
 
 
@@ -76,61 +76,61 @@ concept IsSse = requires(T t) {
 // provide shared code for `search()` (depending on `searchBase()`)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
-    public:
-        using ISse<DbDoc, DbKw>::ISse;
+public:
+    using ISse<DbDoc, DbKw>::ISse;
 
-        //----------------------------------------------------------------------
-        // shared code
+    //----------------------------------------------------------------------
+    // shared code
 
-        std::vector<DbDoc> search(
-            const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
-        ) const override {
-            std::vector<DbDoc> allResults;
+    std::vector<DbDoc> search(
+        const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
+    ) const override {
+        std::vector<DbDoc> allResults;
 
-            if (isNaive) {
-                // naive, insecure range search: just individually query every point in range
-                for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-                    std::vector<DbDoc> results = this->searchBase(Range {dbKw, dbKw});
-                    allResults.insert(allResults.end(), results.begin(), results.end());
-                }
-            } else {
-                // search entire range in one go (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC
-                allResults = this->searchBase(query);
+        if (isNaive) {
+            // naive, insecure range search: just individually query every point in range
+            for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+                std::vector<DbDoc> results = this->searchBase(Range {dbKw, dbKw});
+                allResults.insert(allResults.end(), results.begin(), results.end());
             }
-
-            if (shouldCleanUpResults) {
-                cleanUpResults(allResults);
-            }
-            return allResults;
+        } else {
+            // search entire range in one go (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC
+            allResults = this->searchBase(query);
         }
 
-        // handle clearing of `prfKey` and `encKey` member variables belonging to this interface
-        void clear() override {
-            this->prfKey = toUstr("");
-            this->encKey = toUstr("");
+        if (shouldCleanUpResults) {
+            cleanUpResults(allResults);
         }
+        return allResults;
+    }
 
-    protected:
-        ustring prfKey;
-        ustring encKey;
+    // handle clearing of `prfKey` and `encKey` member variables belonging to this interface
+    void clear() override {
+        this->prfKey = toUstr("");
+        this->encKey = toUstr("");
+    }
 
-        //----------------------------------------------------------------------
-        // methods to implement
+protected:
+    ustring prfKey;
+    ustring encKey;
 
-        virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
-        
-        //----------------------------------------------------------------------
-        // shared code
+    //----------------------------------------------------------------------
+    // methods to implement
 
-        /**
-         * helper function to decrypt `encIndVal`.
-         */
-        DbDoc decryptEncIndVal(const EncIndVal& encIndVal) const {
-            ustring encDbDoc = encIndVal.first;
-            ustring iv = encIndVal.second;
-            ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
-            return DbDoc::fromUstr(decDbDoc);
-        }
+    virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
+    
+    //----------------------------------------------------------------------
+    // shared code
+
+    /**
+     * helper function to decrypt `encIndVal`.
+     */
+    DbDoc decryptEncIndVal(const EncIndVal& encIndVal) const {
+        ustring encDbDoc = encIndVal.first;
+        ustring iv = encIndVal.second;
+        ustring decDbDoc = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbDoc, iv);
+        return DbDoc::fromUstr(decDbDoc);
+    }
 };
 
 
@@ -143,33 +143,33 @@ class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
 // constructors, leading to the explicit constructor below with `useShortcutSetup` to not be seen)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class IDsse : public ISse<DbDoc, DbKw> {
-    public:
-        using ISse<DbDoc, DbKw>::ISse;
-        IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup) :
-                ISse<DbDoc, DbKw>(benchmark), useShortcutSetup(useShortcutSetup) {}
+public:
+    using ISse<DbDoc, DbKw>::ISse;
+    IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup) :
+            ISse<DbDoc, DbKw>(benchmark), useShortcutSetup(useShortcutSetup) {}
 
-        //IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup, bool shouldBenchmarkPerUpdt) :
-        //        ISse<DbDoc, DbKw>(benchmark),
-        //        useShortcutSetup(useShortcutSetup),
-        //        shouldBenchmarkPerUpdt(shouldBenchmarkPerUpdt) {}
+    //IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup, bool shouldBenchmarkPerUpdt) :
+    //        ISse<DbDoc, DbKw>(benchmark),
+    //        useShortcutSetup(useShortcutSetup),
+    //        shouldBenchmarkPerUpdt(shouldBenchmarkPerUpdt) {}
 
-        //----------------------------------------------------------------------
-        // methods to implement
+    //----------------------------------------------------------------------
+    // methods to implement
 
-        virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
+    virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
 
-    protected:
-        /**
-         * whether to use the shortcut `setup()` (non-shortcut is calling `update()`
-         * for each item in `db`). the shortcut should only be used to speed up `setup()`
-         * for experimental evaluation of searches.
-         */
-        bool useShortcutSetup = false;
+protected:
+    /**
+     * whether to use the shortcut `setup()` (non-shortcut is calling `update()`
+     * for each item in `db`). the shortcut should only be used to speed up `setup()`
+     * for experimental evaluation of searches.
+     */
+    bool useShortcutSetup = false;
 
-        ///**
-        // * whether benchmarking stats should be reset per `update()` call or only per `setup()`.
-        // */
-        //bool shouldBenchmarkPerUpdt = false;
+    ///**
+    // * whether benchmarking stats should be reset per `update()` call or only per `setup()`.
+    // */
+    //bool shouldBenchmarkPerUpdt = false;
 };
 
 
@@ -186,31 +186,31 @@ concept IsDsse = requires(T t) {
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class ISdaUnderly : public virtual ISse<DbDoc, DbKw> {
-    public:
-        using ISse<DbDoc, DbKw>::ISse;
+public:
+    using ISse<DbDoc, DbKw>::ISse;
 
-        //----------------------------------------------------------------------
-        // methods to implement
+    //----------------------------------------------------------------------
+    // methods to implement
 
-        /**
-         * append the `db` most recently passed to `setup()` (without any replications/padding/processing) to `ret`.
-         */
-        virtual void getDb(Db<DbDoc, DbKw>& ret) const = 0;
+    /**
+     * append the `db` most recently passed to `setup()` (without any replications/padding/processing) to `ret`.
+     */
+    virtual void getDb(Db<DbDoc, DbKw>& ret) const = 0;
 
-        //----------------------------------------------------------------------
-        // shared code
+    //----------------------------------------------------------------------
+    // shared code
 
-        // handle clearing of `size` member variable belonging to this interface
-        void clear() override {
-            this->size = 0;
-        }
+    // handle clearing of `size` member variable belonging to this interface
+    void clear() override {
+        this->size = 0;
+    }
 
-        int64_t getSize() const {
-            return this->size;
-        }
+    int64_t getSize() const {
+        return this->size;
+    }
 
-    protected:
-        int64_t size;
+protected:
+    int64_t size;
 };
 
 

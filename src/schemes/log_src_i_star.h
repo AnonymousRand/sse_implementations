@@ -16,27 +16,27 @@ namespace underly {
 // which blows up the storage unnecessarily, as observed in the TODS'18 paper (Section 7.1)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class LogSrcIStarUnderly : public NLogN<DbDoc, DbKw> {
-    public:
-        using NLogN<DbDoc, DbKw>::NLogN;
+public:
+    using NLogN<DbDoc, DbKw>::NLogN;
 
-        //----------------------------------------------------------------------
-        // `ISse`
+    //----------------------------------------------------------------------
+    // `ISse`
 
-        void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
+    void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
 
-    private:
-        int64_t leafCount;
+private:
+    int64_t leafCount;
 
-        //----------------------------------------------------------------------
-        // `IStaticPointSse`
+    //----------------------------------------------------------------------
+    // `IStaticPointSse`
 
-        std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
+    std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
 
-        //----------------------------------------------------------------------
-        // other
+    //----------------------------------------------------------------------
+    // other
 
-        int64_t computeNumLvls() const override;
-        int64_t computeBcktCountOnLvl(int64_t lvlNum) const override;
+    int64_t computeNumLvls() const override;
+    int64_t computeBcktCountOnLvl(int64_t lvlNum) const override;
 };
 
 
@@ -49,16 +49,16 @@ class LogSrcIStarUnderly : public NLogN<DbDoc, DbKw> {
 
 
 class LogSrcIStar : public LogSrcIBase<underly::LogSrcIStarUnderly> {
-    public:
-        using LogSrcIBase<underly::LogSrcIStarUnderly>::LogSrcIBase;
+public:
+    using LogSrcIBase<underly::LogSrcIStarUnderly>::LogSrcIBase;
 
-        //----------------------------------------------------------------------
-        // `ISse`
+    //----------------------------------------------------------------------
+    // `ISse`
 
-        /**
-         * preconditions:
-         *     - entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
-         *     - entries in `db` cannot have keyword equal to `DUMMY`.
-         */
-        void setup(int secParam, const Db<Doc<>, Kw>& db) override;
+    /**
+     * preconditions:
+     *     - entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
+     *     - entries in `db` cannot have keyword equal to `DUMMY`.
+     */
+    void setup(int secParam, const Db<Doc<>, Kw>& db) override;
 };

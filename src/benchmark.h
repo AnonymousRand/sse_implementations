@@ -1,5 +1,4 @@
 #pragma once
-// TODO: unindent class contents by one level?
 
 #include <chrono>
 #include <concepts>
@@ -55,46 +54,46 @@ struct Benchmark {
  */
 template <class Sse> requires IsSse<Sse>
 class Benchmarked : public Sse {
-    public:
-        using Sse::Sse;
+public:
+    using Sse::Sse;
 
-        void setup(int secParam, const Db<Doc<>, Kw>& db) override {
-            this->benchmark->reset();
+    void setup(int secParam, const Db<Doc<>, Kw>& db) override {
+        this->benchmark->reset();
 
-            auto start = std::chrono::high_resolution_clock::now();
-            Sse::setup(secParam, db);
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::milli> elapsed = end - start;
-            this->benchmark->time = elapsed.count();
-        }
+        auto start = std::chrono::high_resolution_clock::now();
+        Sse::setup(secParam, db);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        this->benchmark->time = elapsed.count();
+    }
 
-        std::vector<Doc<>> search(
-            const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
-        ) const override {
-            this->benchmark->reset();
+    std::vector<Doc<>> search(
+        const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
+    ) const override {
+        this->benchmark->reset();
 
-            auto start = std::chrono::high_resolution_clock::now();
-            std::vector<Doc<>> results = Sse::search(query, shouldCleanUpResults, isNaive);
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::milli> elapsed = end - start;
-            this->benchmark->time = elapsed.count();
-            return results;
-        }
+        auto start = std::chrono::high_resolution_clock::now();
+        std::vector<Doc<>> results = Sse::search(query, shouldCleanUpResults, isNaive);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        this->benchmark->time = elapsed.count();
+        return results;
+    }
 };
 
 
 template <class Dsse> requires IsDsse<Dsse>
 class BenchmarkedUpdts : public Benchmarked<Dsse> {
-    public:
-        using Benchmarked<Dsse>::Benchmarked;
+public:
+    using Benchmarked<Dsse>::Benchmarked;
 
-        void update(const DbEntry<Doc<>, Kw>& newEntry) override {
-            this->benchmark->reset();
+    void update(const DbEntry<Doc<>, Kw>& newEntry) override {
+        this->benchmark->reset();
 
-            auto start = std::chrono::high_resolution_clock::now();
-            Dsse::update(newEntry);
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::milli> elapsed = end - start;
-            this->benchmark->time = elapsed.count();
-        }
+        auto start = std::chrono::high_resolution_clock::now();
+        Dsse::update(newEntry);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        this->benchmark->time = elapsed.count();
+    }
 };

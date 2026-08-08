@@ -16,26 +16,26 @@
  */
 template <class T>
 class Range : public std::pair<T, T> {
-    public:
-        static const std::string REGEX_STR;
+public:
+    static const std::string REGEX_STR;
 
-        Range() = default;
-        Range(const T& start, const T& end);
+    Range() = default;
+    Range(const T& start, const T& end);
 
-        T size() const;
-        bool contains(const Range<T>& target) const;
-        bool contains(T target) const;
-        bool isDisjointFrom(const Range<T>& target) const;
+    T size() const;
+    bool contains(const Range<T>& target) const;
+    bool contains(T target) const;
+    bool isDisjointFrom(const Range<T>& target) const;
 
-        std::string toStr() const;
-        ustring toUstr() const;
-        static Range<T> fromStr(const std::string& str);
+    std::string toStr() const;
+    ustring toUstr() const;
+    static Range<T> fromStr(const std::string& str);
 
-        template <class T2>
-        friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
+    template <class T2>
+    friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 
-    private:
-        static const std::regex REGEX;
+private:
+    static const std::regex REGEX;
 };
 
 

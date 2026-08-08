@@ -13,32 +13,32 @@
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class NLogNServer : public ISseServer<DbDoc, DbKw> {
-    public:
-        using ISseServer<DbDoc, DbKw>::ISseServer;
+public:
+    using ISseServer<DbDoc, DbKw>::ISseServer;
 
-        ~NLogNServer();
+    ~NLogNServer();
 
-        //----------------------------------------------------------------------
-        // `ISseServer`
+    //----------------------------------------------------------------------
+    // `ISseServer`
 
-        void clear() override;
+    void clear() override;
 
-        //----------------------------------------------------------------------
-        // other
+    //----------------------------------------------------------------------
+    // other
 
-        void setEncIndLvls(const std::vector<EncInd*>& encIndLvls);
-        std::vector<EncInd*> getEncIndLvls() const;
-        std::vector<EncIndVal> findEncIndBckt(
-            int64_t lvl, uint64_t startPos, int64_t bcktSize, const ustring& label
-        ) const;
+    void setEncIndLvls(const std::vector<EncInd*>& encIndLvls);
+    std::vector<EncInd*> getEncIndLvls() const;
+    std::vector<EncIndVal> findEncIndBckt(
+        int64_t lvl, uint64_t startPos, int64_t bcktSize, const ustring& label
+    ) const;
 
-        void setDbKwCountsDict(EncInd* dbKwCountsDict);
-        bool getDbKwCount(uint64_t pos, const ustring& label, EncIndVal& ret) const;
+    void setDbKwCountsDict(EncInd* dbKwCountsDict);
+    bool getDbKwCount(uint64_t pos, const ustring& label, EncIndVal& ret) const;
 
-    protected:
-        std::vector<EncInd*> encIndLvls;
+protected:
+    std::vector<EncInd*> encIndLvls;
 
-    private:
-        // stuff to not share with Log-SRC-i*
-        EncInd* dbKwCountsDict = nullptr;
+private:
+    // stuff to not share with Log-SRC-i*
+    EncInd* dbKwCountsDict = nullptr;
 };
