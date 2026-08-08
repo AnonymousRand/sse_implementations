@@ -1,6 +1,7 @@
 #pragma once
 
 #include "schemes/interfaces/sda_underly.h"
+#include "schemes/interfaces/sse.h"
 
 #include "utils/tdag.h"
 

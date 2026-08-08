@@ -2,6 +2,7 @@
 
 #include "schemes/pi_bas.h"
 #include "schemes/interfaces/sda_underly.h"
+#include "schemes/interfaces/sse.h"
 
 #include "utils/tdag.h"
 
