@@ -6,8 +6,6 @@
 #include <iostream>
 #include <string>
 
-#include "core/config.h"
-
 #include "schemes/interfaces/dsse.h"
 #include "schemes/interfaces/sse.h"
 
@@ -30,8 +28,8 @@ struct Benchmark {
         this->network = 0;
     }
 
-    static void printHeader() {
-        if (SHOULD_BENCHMARK) {
+    static void printHeader(bool shouldBenchmark) {
+        if (shouldBenchmark) {
             std::cout << std::format("| {:<24} ", "Params")
                       << std::format("| {:<14} ", "Time (ms)")
                       << std::format("| {:<14} ", "Disk Size (B)")
@@ -45,8 +43,8 @@ struct Benchmark {
         }
     }
 
-    void print(const std::string& label) const {
-        if (SHOULD_BENCHMARK) {
+    void print(bool shouldBenchmark, const std::string& label) const {
+        if (shouldBenchmark) {
             std::cout << std::format("| {:<24} ", label)
                       << std::format("| {:<14} ", this->time)
                       << std::format("| {:<14} ", this->diskSize)
@@ -55,8 +53,8 @@ struct Benchmark {
         }
     }
 
-    void print(const std::string& label1, const std::string& label2) const {
-        if (SHOULD_BENCHMARK) {
+    void print(bool shouldBenchmark, const std::string& label1, const std::string& label2) const {
+        if (shouldBenchmark) {
             std::cout << std::format("| {:<6} ", label1) << std::format("{:<17} ", label2)
                       << std::format("| {:<14} ", this->time)
                       << std::format("| {:<14} ", this->diskSize)
