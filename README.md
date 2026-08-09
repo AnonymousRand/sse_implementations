@@ -30,7 +30,7 @@ See [src/main.cpp](src/main.cpp) and [src/core/sse_factory.cpp](src/core/sse_fac
 
 - CMake (tested with CMake 4.3.4)
 - Conan 2 (tested with Conan 2.28.1)
-- A C++ compiler that supports C++20 and `std::format` (tested with GCC 15.3.0, but GCC/g++ version 13 or above should do; not tested with Clang)
+- A C++ compiler that supports C++20 and `std::format` (tested with GCC 15.3.0, but GCC/g++ version 13 and above should do; not tested with Clang)
 
 Only tested on Linux (NixOS, Ubuntu). To run on Windows, don't. (ok, fine, WSL works :p)
 
