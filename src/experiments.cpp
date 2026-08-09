@@ -85,6 +85,33 @@ void debuggingExp(ISse<>* sse, const Db<>& db, Range<Kw> query) {
 }
 
 
+void dbSizesExp(ISse<>* sse, int64_t maxDbSize) {
+    if (maxDbSize == 0) {
+        return;
+    }
+    Range<Kw> query {0, 3};
+    Benchmark::printHeader(Config::SHOULD_BENCHMARK);
+
+    for (int64_t i = 2; i <= std::log2(maxDbSize); i++) {
+        int64_t dbSize = std::pow(2, i);
+        Db<> db = createDb(dbSize, true, true);
+
+        // setup
+        sse->setup(Constants::KEY_LEN, db);
+        sse->benchmark->print(
+            Config::SHOULD_BENCHMARK, "Setup", std::format("(size 2^{})", std::log2(dbSize))
+        );
+
+        // search
+        sse->search(query);
+        sse->benchmark->print(Config::SHOULD_BENCHMARK, "Search");
+    }
+    std::cout << std::endl;
+
+    sse->clear();
+}
+
+
 void searchSizesExp(ISse<>* sse, int64_t dbSize) {
     if (dbSize == 0) {
         return;
@@ -128,33 +155,6 @@ void resultSizesExp(ISse<>* sse, int64_t dbSize) {
         sse->benchmark->print(
             Config::SHOULD_BENCHMARK, "Search", std::format("(result size 2^{})", resultSizeExp)
         );
-    }
-    std::cout << std::endl;
-
-    sse->clear();
-}
-
-
-void setupSizesExp(ISse<>* sse, int64_t maxDbSize) {
-    if (maxDbSize == 0) {
-        return;
-    }
-    Range<Kw> query {0, 3};
-    Benchmark::printHeader(Config::SHOULD_BENCHMARK);
-
-    for (int64_t i = 2; i <= std::log2(maxDbSize); i++) {
-        int64_t dbSize = std::pow(2, i);
-        Db<> db = createDb(dbSize, true, true);
-
-        // setup
-        sse->setup(Constants::KEY_LEN, db);
-        sse->benchmark->print(
-            Config::SHOULD_BENCHMARK, "Setup", std::format("(size 2^{})", std::log2(dbSize))
-        );
-
-        // search
-        sse->search(query);
-        sse->benchmark->print(Config::SHOULD_BENCHMARK, "Search");
     }
     std::cout << std::endl;
 

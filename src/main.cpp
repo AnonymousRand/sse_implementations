@@ -141,6 +141,72 @@ int main() {
     Experiments::debuggingExp(sdaLogSrcIStar.get(), db, query);
 
     //--------------------------------------------------------------------------
+    // DB sizes experiment
+
+    std::cout << std::endl;
+    std::cout << "============================= DB Sizes Experiment ==============================" << std::endl;
+    std::cout << "DB size: varied, up to 2^" << maxDbSizeExp                                        << std::endl;
+    std::cout << "Query  : 0-3"                                                                     << std::endl;
+    std::cout << "================================================================================" << std::endl;
+    std::cout << std::endl << std::endl;
+
+    std::cout << "================ PiBas =================" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(piBas.get(), maxDbSize);
+
+    std::cout << "================ NLogN =================" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(nLogN.get(), maxDbSize);
+
+    std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(logSrcPiBas.get(), maxDbSize);
+
+    std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(logSrcNLogN.get(), maxDbSize);
+
+    std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(logSrcIPiBas.get(), maxDbSize);
+
+    std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(logSrcINLogN.get(), maxDbSize);
+
+    std::cout << "============== Log-SRC-i* ==============" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(logSrcIStar.get(), maxDbSize);
+
+    std::cout << "============== SDa[PiBas] ==============" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(sdaPiBas.get(), maxDbSize);
+
+    std::cout << "============== SDa[NLogN] ==============" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(sdaNLogN.get(), maxDbSize);
+
+    std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(sdaLogSrcPiBas.get(), maxDbSize);
+
+    std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(sdaLogSrcNLogN.get(), maxDbSize);
+
+    std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(sdaLogSrcIPiBas.get(), maxDbSize);
+
+    std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(sdaLogSrcINLogN.get(), maxDbSize);
+
+    std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
+    std::cout << std::endl;
+    Experiments::dbSizesExp(sdaLogSrcIStar.get(), maxDbSize);
+
+    //--------------------------------------------------------------------------
     // search sizes experiment
 
     std::cout << std::endl;
@@ -271,72 +337,6 @@ int main() {
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
     std::cout << std::endl;
     Experiments::resultSizesExp(sdaLogSrcIStar.get(), maxDbSize);
-
-    //--------------------------------------------------------------------------
-    // setup sizes experiment
-
-    std::cout << std::endl;
-    std::cout << "============================ Setup Sizes Experiment ============================" << std::endl;
-    std::cout << "DB size: varied, up to 2^" << maxDbSizeExp                                        << std::endl;
-    std::cout << "Query  : 0-3"                                                                     << std::endl;
-    std::cout << "================================================================================" << std::endl;
-    std::cout << std::endl << std::endl;
-
-    std::cout << "================ PiBas =================" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(piBas.get(), maxDbSize);
-
-    std::cout << "================ NLogN =================" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(nLogN.get(), maxDbSize);
-
-    std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(logSrcPiBas.get(), maxDbSize);
-
-    std::cout << "============ Log-SRC[NLogN] ============" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(logSrcNLogN.get(), maxDbSize);
-
-    std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(logSrcIPiBas.get(), maxDbSize);
-
-    std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(logSrcINLogN.get(), maxDbSize);
-
-    std::cout << "============== Log-SRC-i* ==============" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(logSrcIStar.get(), maxDbSize);
-
-    std::cout << "============== SDa[PiBas] ==============" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(sdaPiBas.get(), maxDbSize);
-
-    std::cout << "============== SDa[NLogN] ==============" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(sdaNLogN.get(), maxDbSize);
-
-    std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(sdaLogSrcPiBas.get(), maxDbSize);
-
-    std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(sdaLogSrcNLogN.get(), maxDbSize);
-
-    std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(sdaLogSrcIPiBas.get(), maxDbSize);
-
-    std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(sdaLogSrcINLogN.get(), maxDbSize);
-
-    std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl;
-    std::cout << std::endl;
-    Experiments::setupSizesExp(sdaLogSrcIStar.get(), maxDbSize);
     
     //--------------------------------------------------------------------------
     // false positives experiment
