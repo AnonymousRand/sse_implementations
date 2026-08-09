@@ -30,12 +30,12 @@ struct Benchmark {
 
     static void printHeader(bool shouldBenchmark) {
         if (shouldBenchmark) {
-            std::cout << std::format("| {:<24} ", "Params")
+            std::cout << std::format("| {:<25} ", "Params")
                       << std::format("| {:<14} ", "Time (ms)")
                       << std::format("| {:<14} ", "Disk Size (B)")
                       << std::format("| {:<14} |", "Network (B)")
                       << std::endl
-                      << std::format("---------------------------")
+                      << std::format("----------------------------")
                       << std::format("-----------------")
                       << std::format("-----------------")
                       << std::format("------------------")
@@ -45,7 +45,7 @@ struct Benchmark {
 
     void print(bool shouldBenchmark, const std::string& label) const {
         if (shouldBenchmark) {
-            std::cout << std::format("| {:<24} ", label)
+            std::cout << std::format("| {:<25} ", label)
                       << std::format("| {:<14} ", this->time)
                       << std::format("| {:<14} ", this->diskSize)
                       << std::format("| {:<14} |", this->network)
@@ -55,7 +55,7 @@ struct Benchmark {
 
     void print(bool shouldBenchmark, const std::string& label1, const std::string& label2) const {
         if (shouldBenchmark) {
-            std::cout << std::format("| {:<6} ", label1) << std::format("{:<17} ", label2)
+            std::cout << std::format("| {:<6} ", label1) << std::format("{:<18} ", label2)
                       << std::format("| {:<14} ", this->time)
                       << std::format("| {:<14} ", this->diskSize)
                       << std::format("| {:<14} |", this->network)
@@ -106,6 +106,8 @@ class BenchmarkedUpdts : public Benchmarked<Dsse> {
 public:
     using Benchmarked<Dsse>::Benchmarked;
 
+    // reset necessary benchmarks per update if using `BenchmarkedUpdts` (e.g. if
+    // `Config::DSSE_SHOULD_BENCHMARK_UPDTS` is set to `true`)
     void update(const DbEntry<Doc<>, Kw>& newEntry) override {
         this->benchmark->resetEphems();
 

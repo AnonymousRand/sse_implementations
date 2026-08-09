@@ -87,5 +87,4 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 
 # TODO
 
-- >per update benchmarking/experiment?
-- experiment that varies result sizes?
+- >more namespaces? esp for classless utils, e.g. constants namespace?

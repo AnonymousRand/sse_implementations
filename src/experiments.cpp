@@ -3,6 +3,7 @@
 #include <format>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "core/benchmark.h"
 
@@ -24,26 +25,14 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
     Db<> db;
     std::uniform_int_distribution<int64_t> dist(0, dbSize - 1);
 
-    Id minId = 1;
+    Id minId = 0;
     Id maxId = dbSize - 1;
-    Range<Kw> kwRangeDel {4, 4};
-    db.push_back(DbEntry {Doc<> {0, 4, Op::INS, kwRangeDel}, kwRangeDel});
     if (hasDeletions) {
         // delete the document with keyword 4
+        Range<Kw> kwRangeDel {4, 4};
+        db.push_back(DbEntry {Doc<> {0, 4, Op::INS, kwRangeDel}, kwRangeDel});
         db.push_back(DbEntry {Doc<> {0, 4, Op::DEL, kwRangeDel}, kwRangeDel});
-        maxId = dbSize - 2;
-    }
-
-    // add in debugging experiment docs if we have the space to
-    if (maxId - minId >= 1) {
-        Range<Kw> kwRangeDebug1 {3, 3};
-        db.push_back(DbEntry {Doc<> {1, 3, Op::INS, kwRangeDebug1}, kwRangeDebug1});
-        minId++;
-    }
-    if (maxId - minId >= 1) {
-        Range<Kw> kwRangeDebug2 {5, 5};
-        db.push_back(DbEntry {Doc<> {2, 5, Op::INS, kwRangeDebug2}, kwRangeDebug2});
-        minId++;
+        maxId -= 2;
     }
 
     if (isRandom) {
@@ -112,6 +101,31 @@ void searchSizesExp(ISse<>* sse, int64_t dbSize) {
         sse->search(query);
         sse->benchmark->print(
             Config::SHOULD_BENCHMARK, "Search", std::format("(range size 2^{})", std::log2(query.size()))
+        );
+    }
+    std::cout << std::endl;
+
+    sse->clear();
+}
+
+
+void resultSizesExp(ISse<>* sse, int64_t dbSize) {
+    if (dbSize == 0) {
+        return;
+    }
+    // this is non-randomized to precisely control result sizes: then there is a unique entry per kw
+    Db<> db = createDb(dbSize, false, false);
+    sse->setup(KEY_LEN, db);
+    Benchmark::printHeader(Config::SHOULD_BENCHMARK);
+
+    for (int64_t resultSizeExp = 0; resultSizeExp <= std::log2(dbSize); resultSizeExp++) {
+        int64_t resultSize = std::pow(2, resultSizeExp);
+        // (referencing `createDb()`'s logic, this query should return exactly `resultSize`
+        // results, not including false positives)
+        Range<Kw> query {0, 2 * (resultSize - 1)};
+        sse->search(query);
+        sse->benchmark->print(
+            Config::SHOULD_BENCHMARK, "Search", std::format("(result size 2^{})", resultSizeExp)
         );
     }
     std::cout << std::endl;

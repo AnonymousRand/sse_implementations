@@ -27,7 +27,7 @@ void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->secParam = secParam;
 
     if (this->useShortcutSetup) {
-        int64_t lastFilledInd = db.size() != 0 ? (int64_t)std::log2(db.size()) : -1;
+        int64_t lastFilledInd = db.size() > 0 ? (int64_t)std::log2(db.size()) : -1;
 
         // this is the shortcut way: simply initialize and fill in all subindexes in one go
         // (note that the non-shortcut `setup()` places earlier items in `db` into larger
@@ -38,7 +38,11 @@ void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
             int64_t indSize = (int64_t)std::pow(2, i);
             Db<Doc<>, Kw> indDb;
             if (dbPos < db.size()) {
-                indDb = Db<Doc<>, Kw>(db.begin() + dbPos, db.begin() + dbPos + indSize);
+                if (dbPos + indSize < db.size()) {
+                    indDb = Db<Doc<>, Kw>(db.begin() + dbPos, db.begin() + dbPos + indSize);
+                } else {
+                    indDb = Db<Doc<>, Kw>(db.begin() + dbPos, db.end());
+                }
             } else {
                 indDb = Db<Doc<>, Kw>();
             }
@@ -49,7 +53,9 @@ void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
             dbPos += indSize;
         }
         // reverse the vector at the end as we had pushed smaller subindexes to the back
-        std::reverse(this->underlys.begin(), this->underlys.end());
+        if (this->underlys.size() > 0) {
+            std::reverse(this->underlys.begin(), this->underlys.end());
+        }
 
         // update the pointer to the first empty index as usual (like in `update()`)
         int64_t newFirstEmpty = 0;
