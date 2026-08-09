@@ -5,6 +5,21 @@
 #include "utils/ustring.h"
 
 
+namespace Constants {
+
+
+// lengths are in bytes
+static constexpr int KEY_LEN         = 256 / 8;
+static constexpr int IV_LEN          = 128 / 8;
+static constexpr int BLOCK_SIZE      = 128 / 8;
+static constexpr int HASH_OUTPUT_LEN = 512 / 8;
+static const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
+static const EVP_MD* HASH_FUNC       = EVP_sha512();
+
+
+} // namespace `Constants`
+
+
 ustring genKey(int keyLen);
 ustring genIv(int ivLen);
 

@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "utils/debugging.h"
+#include "utils/random.h"
 
 
 //------------------------------------------------------------------------------
@@ -141,7 +142,7 @@ bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
     }
 
     ret.first = ustring(&entry[EncInd::KEY_LEN], EncInd::DOC_LEN);
-    ret.second = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], IV_LEN);
+    ret.second = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], Constants::IV_LEN);
     return true;
 }
 
@@ -220,7 +221,7 @@ EncIndEntry EncInd::get(uint64_t pos) const {
 
     ustring key = ustring(&entry[0], EncInd::KEY_LEN);
     ustring doc = ustring(&entry[EncInd::KEY_LEN], EncInd::DOC_LEN);
-    ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], IV_LEN);
+    ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], Constants::IV_LEN);
     return EncIndEntry {key, EncIndVal {doc, iv}};
 };
 

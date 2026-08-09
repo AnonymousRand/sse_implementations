@@ -7,8 +7,6 @@
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 
-#include "utils/constants.h"
-
 
 // thanks to https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#C.2B.2B_Programs,
 // https://wiki.openssl.org/index.php/EVP_Message_Digests,
@@ -103,7 +101,7 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
     // perform encryption
     int ctextLen1, ctextLen2;
     ustring ctext;
-    ctext.resize(ptext.length() + BLOCK_SIZE); // need to allocate worst-case size first
+    ctext.resize(ptext.length() + Constants::BLOCK_SIZE); // need to allocate worst-case size first
     if (EVP_EncryptUpdate(ctx, &ctext[0], &ctextLen1, &ptext[0], ptext.length()) != 1) {
         handleErrors();
     }
@@ -177,6 +175,6 @@ ustring decryptAndUnpad(const EVP_CIPHER* cipher, const ustring& key, const ustr
             break;
         }
     }
-    ptext.resize(paddingStartInd + 1); // `+1` since strings still have to end with a null terminator
+    ptext.resize(paddingStartInd + 1); // `+ 1` since strings still have to end with a null terminator
     return ptext;
 }

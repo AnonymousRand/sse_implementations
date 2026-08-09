@@ -5,7 +5,6 @@
 #include <string>
 #include <utility>
 
-#include "utils/constants.h"
 #include "utils/sse_utils.h"
 #include "utils/ustring.h"
 

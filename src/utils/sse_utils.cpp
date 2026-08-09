@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "utils/doc.h"
+#include "utils/random.h"
 #include "utils/range.h"
 #include "utils/ustring.h"
 

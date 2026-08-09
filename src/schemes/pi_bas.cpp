@@ -71,8 +71,10 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ustring label;
             uint64_t pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
-            ustring iv = genIv(IV_LEN);
-            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
+            ustring iv = genIv(Constants::IV_LEN);
+            ustring encDbDoc = padAndEncrypt(
+                Constants::ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1
+            );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->write(pos, std::pair {label, std::pair {encDbDoc, iv}});
         }
@@ -151,7 +153,7 @@ ustring PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 uint64_t PiBas<DbDoc, DbKw>::map(const ustring& queryToken, int64_t dbKwCounter, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w) || c)
-    retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
+    retLabel = hash(Constants::HASH_FUNC, Constants::HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
     return hashToPos(retLabel);
 }
 

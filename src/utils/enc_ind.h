@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "utils/constants.h"
+#include "utils/cryptography.h"
 #include "utils/ustring.h"
 
 
@@ -32,9 +32,11 @@ ustring toUstr(const EncIndEntry& encIndEntry);
 
 class EncInd {
 public:
-    static constexpr int KEY_LEN = HASH_OUTPUT_LEN; // both PRF (default) and hash (res-hiding) have 512 bit output
-    static constexpr int DOC_LEN = 7 * BLOCK_SIZE;  // so max keyword/id size ~1.8x10^16 for encoding to fit
-    static constexpr int VAL_LEN = EncInd::DOC_LEN + IV_LEN;
+    // (both PRF (default) and hash (res-hiding) have 512 bit output)
+    static constexpr int KEY_LEN    = Constants::HASH_OUTPUT_LEN;
+    // (so max keyword/id size ~1.8x10^16 for encoding to fit)
+    static constexpr int DOC_LEN    = 7 * Constants::BLOCK_SIZE;
+    static constexpr int VAL_LEN    = EncInd::DOC_LEN + Constants::IV_LEN;
     static constexpr int ENTRY_LEN  = EncInd::KEY_LEN + EncInd::VAL_LEN;
 
     ~EncInd();

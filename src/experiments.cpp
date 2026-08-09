@@ -9,8 +9,9 @@
 
 #include "schemes/interfaces/sse.h"
 
-#include "utils/constants.h"
+#include "utils/cryptography.h"
 #include "utils/doc.h"
+#include "utils/random.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 
@@ -59,7 +60,7 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
 // experiment for debugging with fixed query and printed results
 void debuggingExp(ISse<>* sse, const Db<>& db, Range<Kw> query) {
     // setup
-    sse->setup(KEY_LEN, db);
+    sse->setup(Constants::KEY_LEN, db);
 
     // search
     std::vector<Doc<>> results = sse->search(query);
@@ -92,7 +93,7 @@ void searchSizesExp(ISse<>* sse, int64_t dbSize) {
     Benchmark::printHeader(Config::SHOULD_BENCHMARK);
 
     // setup
-    sse->setup(KEY_LEN, db);
+    sse->setup(Constants::KEY_LEN, db);
     sse->benchmark->print(Config::SHOULD_BENCHMARK, "Setup");
 
     // search
@@ -115,7 +116,7 @@ void resultSizesExp(ISse<>* sse, int64_t dbSize) {
     }
     // this is non-randomized to precisely control result sizes: then there is a unique entry per kw
     Db<> db = createDb(dbSize, false, false);
-    sse->setup(KEY_LEN, db);
+    sse->setup(Constants::KEY_LEN, db);
     Benchmark::printHeader(Config::SHOULD_BENCHMARK);
 
     for (int64_t resultSizeExp = 0; resultSizeExp <= std::log2(dbSize); resultSizeExp++) {
@@ -146,7 +147,7 @@ void setupSizesExp(ISse<>* sse, int64_t maxDbSize) {
         Db<> db = createDb(dbSize, true, true);
 
         // setup
-        sse->setup(KEY_LEN, db);
+        sse->setup(Constants::KEY_LEN, db);
         sse->benchmark->print(
             Config::SHOULD_BENCHMARK, "Setup", std::format("(size 2^{})", std::log2(dbSize))
         );
@@ -182,7 +183,7 @@ void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
         db.push_back(DbEntry {Doc<>(dbSize - 1, kw2, Op::INS, kwRange2), kwRange2});
 
         // setup
-        sse->setup(KEY_LEN, db);
+        sse->setup(Constants::KEY_LEN, db);
         sse->benchmark->print(Config::SHOULD_BENCHMARK, "Setup");
 
         // search
@@ -201,7 +202,7 @@ void updatesExp(IDsse<>* dsse, int64_t dbSize) {
         return;
     }
     Db<> db = createDb(dbSize, true, true);
-    dsse->setup(KEY_LEN, Db<> {});
+    dsse->setup(Constants::KEY_LEN, Db<> {});
     Benchmark::printHeader(Config::SHOULD_BENCHMARK);
 
     // update one at a time

@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "utils/cryptography.h"
+//#include "utils/random.h"
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
@@ -96,9 +97,9 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
-        ustring ivDict = genIv(IV_LEN);
+        ustring ivDict = genIv(Constants::IV_LEN);
         ustring encDbKwCount = padAndEncrypt(
-            ENC_CIPHER, this->encKey, toUstr(dbKwCount), ivDict, EncInd::DOC_LEN - 1
+            Constants::ENC_CIPHER, this->encKey, toUstr(dbKwCount), ivDict, EncInd::DOC_LEN - 1
         );
         uint64_t posDict = this->mapNoMod(queryToken, labelDict);
         dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
@@ -108,8 +109,10 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         for (int64_t dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
-            ustring iv = genIv(IV_LEN);
-            ustring encDbDoc = padAndEncrypt(ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1);
+            ustring iv = genIv(Constants::IV_LEN);
+            ustring encDbDoc = padAndEncrypt(
+                Constants::ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1
+            );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encIndLvls[lvl]->write(startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
         }
@@ -186,7 +189,7 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
-    ustring decDbKwCount = decryptAndUnpad(ENC_CIPHER, this->encKey, encDbKwCount, ivDict);
+    ustring decDbKwCount = decryptAndUnpad(Constants::ENC_CIPHER, this->encKey, encDbKwCount, ivDict);
     int64_t dbKwCount = fromUstr(decDbKwCount);
     int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
@@ -221,7 +224,7 @@ ustring NLogN<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 uint64_t NLogN<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
-    retLabel = hash(HASH_FUNC, HASH_OUTPUT_LEN, queryToken);
+    retLabel = hash(Constants::HASH_FUNC, Constants::HASH_OUTPUT_LEN, queryToken);
     return hashToPos(retLabel); // no modulus
 }
 
