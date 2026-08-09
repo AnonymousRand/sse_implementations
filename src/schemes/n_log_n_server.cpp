@@ -36,11 +36,12 @@ void NLogNServer<DbDoc, DbKw>::clear() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void NLogNServer<DbDoc, DbKw>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls) {
-    if (encIndLvls.size() > 0) {
-        int64_t encIndBytes = encIndLvls.size() * encIndLvls[0]->getSize() * EncInd::ENTRY_LEN;
-        this->benchmark->diskSize += encIndBytes;
-        this->benchmark->network += encIndBytes;
+    int64_t encIndBytes = 0;
+    for (EncInd* encIndLvl : encIndLvls) {
+        encIndBytes += encIndLvl->getSize() * EncInd::ENTRY_LEN;
     }
+    this->benchmark->diskSize += encIndBytes;
+    this->benchmark->network += encIndBytes;
     this->encIndLvls = encIndLvls;
 }
 
