@@ -69,7 +69,7 @@ Adjust the basic configuration options in [src/config.h](src/config.h) (e.g. whe
 
 ## NixOS
 
-If you're using NixOS, there is a `flake.nix` provided that installs the packages listed in the "Requirements" section above. Run `nix develop` in this project's base directory to install them and then proceed with the steps above (I have chosen to not make the flake replace Conan for managing the runtime dependencies, only the buildtime ones).
+If you're using NixOS, there is a `flake.nix` provided that installs the packages listed in the "Requirements" section above. Run `nix develop` in this project's base directory to install them and then proceed with the steps above. (Note that the flake only installs the build tools; Conan is still responsible for managing the project's dependencies.)
 
 # Notes
 
