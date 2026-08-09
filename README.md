@@ -30,7 +30,7 @@ See [src/main.cpp](src/main.cpp) and [src/core/sse_factory.cpp](src/core/sse_fac
 
 - CMake
 - Conan 2
-- A C++ compiler that supports C++20 (ideally g++ version 10 or above; e.g. for `apt`, install with `apt install g++-10`)
+- A C++ compiler that supports C++20 (specifically g++ version 13 or above for `std::format` support; e.g. for `apt`, install with `apt install g++-13`—not tested with Clang!)
 
 Only tested on Linux (NixOS, Ubuntu). To run on Windows, don't. (ok, fine, WSL works :p)
 
