@@ -68,7 +68,7 @@ protected:
     DbDoc decryptEncIndVal(const EncIndVal& encIndVal) const {
         ustring encDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
-        ustring decDbDoc = decryptAndUnpad(Constants::ENC_CIPHER, this->encKey, encDbDoc, iv);
+        ustring decDbDoc = decryptAndUnpad(constants::ENC_CIPHER, this->encKey, encDbDoc, iv);
         return DbDoc::fromUstr(decDbDoc);
     }
 };

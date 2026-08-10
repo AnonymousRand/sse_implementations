@@ -3,9 +3,12 @@
 #include <concepts>
 #include <memory>
 
-#include "core/benchmark.h"
-
 #include "schemes/interfaces/sse.h"
+
+#include "utils/benchmark.h"
+
+
+namespace app {
 
 
 template <class Sse> requires IsSse<Sse>
@@ -32,3 +35,6 @@ std::unique_ptr<Dsse> createDsse(bool shouldBenchmark, bool useShortcutSetup, bo
         return std::make_unique<Dsse>(benchmark, useShortcutSetup);
     }
 }
+
+
+} // namespace `app`

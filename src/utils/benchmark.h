@@ -107,7 +107,7 @@ public:
     using Benchmarked<Dsse>::Benchmarked;
 
     // reset necessary benchmarks per update if using `BenchmarkedUpdts` (e.g. if
-    // `Config::DSSE_SHOULD_BENCHMARK_UPDTS` is set to `true`)
+    // `config::DSSE_SHOULD_BENCHMARK_UPDTS` is set to `true`)
     void update(const DbEntry<Doc<>, Kw>& newEntry) override {
         this->benchmark->resetEphems();
 

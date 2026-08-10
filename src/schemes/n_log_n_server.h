@@ -3,10 +3,9 @@
 #include <cstdint>
 #include <vector>
 
-#include "core/benchmark.h" // since this was only forward declared in `sse_server.h`
-
 #include "schemes/interfaces/sse_server.h"
 
+#include "utils/benchmark.h" // since this was only forward declared in `sse_server.h`
 #include "utils/enc_ind.h"
 #include "utils/ustring.h"
 

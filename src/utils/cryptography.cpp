@@ -101,7 +101,7 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
     // perform encryption
     int ctextLen1, ctextLen2;
     ustring ctext;
-    ctext.resize(ptext.length() + Constants::BLOCK_SIZE); // need to allocate worst-case size first
+    ctext.resize(ptext.length() + constants::BLOCK_SIZE); // need to allocate worst-case size first
     if (EVP_EncryptUpdate(ctx, &ctext[0], &ctextLen1, &ptext[0], ptext.length()) != 1) {
         handleErrors();
     }

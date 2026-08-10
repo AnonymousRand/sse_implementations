@@ -5,7 +5,7 @@
 #include "utils/ustring.h"
 
 
-namespace Constants {
+namespace constants {
 
 
 // lengths are in bytes
@@ -17,7 +17,7 @@ static const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
 static const EVP_MD* HASH_FUNC       = EVP_sha512();
 
 
-} // namespace `Constants`
+} // namespace `constants`
 
 
 ustring genKey(int keyLen);

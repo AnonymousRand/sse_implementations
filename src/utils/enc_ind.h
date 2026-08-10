@@ -33,10 +33,10 @@ ustring toUstr(const EncIndEntry& encIndEntry);
 class EncInd {
 public:
     // (both PRF (default) and hash (res-hiding) have 512 bit output)
-    static constexpr int KEY_LEN    = Constants::HASH_OUTPUT_LEN;
+    static constexpr int KEY_LEN    = constants::HASH_OUTPUT_LEN;
     // (so max keyword/id size ~1.8x10^16 for encoding to fit)
-    static constexpr int DOC_LEN    = 7 * Constants::BLOCK_SIZE;
-    static constexpr int VAL_LEN    = EncInd::DOC_LEN + Constants::IV_LEN;
+    static constexpr int DOC_LEN    = 7 * constants::BLOCK_SIZE;
+    static constexpr int VAL_LEN    = EncInd::DOC_LEN + constants::IV_LEN;
     static constexpr int ENTRY_LEN  = EncInd::KEY_LEN + EncInd::VAL_LEN;
 
     ~EncInd();

@@ -6,11 +6,11 @@
 
 
 //------------------------------------------------------------------------------
-// `LogSrcIStarUnderly`
+// `log_src_i_star::Underly`
 //------------------------------------------------------------------------------
 
 
-namespace underly {
+namespace log_src_i_star {
 
 
 //------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ namespace underly {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+void Underly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     Range<DbKw> dbKwBounds = findDbKwBounds(db);
     this->leafCount = dbKwBounds.size();
     NLogN<DbDoc, DbKw>::setup(secParam, db);
@@ -30,7 +30,7 @@ void LogSrcIStarUnderly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>&
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
+std::vector<DbDoc> Underly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbDoc> results;
 
     // PRF(K_1, w)
@@ -64,7 +64,7 @@ std::vector<DbDoc> LogSrcIStarUnderly<DbDoc, DbKw>::searchBase(const Range<DbKw>
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-int64_t LogSrcIStarUnderly<DbDoc, DbKw>::computeNumLvls() const {
+int64_t Underly<DbDoc, DbKw>::computeNumLvls() const {
     // the key to avoiding the blowup of using NLogN as a black box is by using `leafCount` instead of `db.size()` here,
     // since `db.size()` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
     return std::ceil(std::log2(this->leafCount)) + 1;
@@ -72,7 +72,7 @@ int64_t LogSrcIStarUnderly<DbDoc, DbKw>::computeNumLvls() const {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-int64_t LogSrcIStarUnderly<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
+int64_t Underly<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
     if (lvlNum == 0) {
         return this->leafCount;
     } else {
@@ -82,12 +82,12 @@ int64_t LogSrcIStarUnderly<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) c
 }
 
 
-template class LogSrcIStarUnderly<Doc<>, Kw>;       
-template class LogSrcIStarUnderly<SrcIDb1Doc, Kw>;
-//template class LogSrcIStarUnderly<Doc<IdAlias>, IdAlias>;
+template class Underly<Doc<>, Kw>;       
+template class Underly<SrcIDb1Doc, Kw>;
+//template class Underly<Doc<IdAlias>, IdAlias>;
 
 
-} // namespace `underly`
+} // namespace `log_src_i_star`
 
 
 //------------------------------------------------------------------------------
