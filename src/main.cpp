@@ -80,8 +80,8 @@ int main() {
 
     std::cout << std::endl;
     std::cout << "============================= Debugging Experiment =============================" << std::endl;
-    std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
-    std::cout << "Query  : " << query                                                                  << std::endl;
+    std::cout << "Fixed DB size 2^" << maxDbSizeExp                                                 << std::endl;
+    std::cout << "Fixed query " << query                                                            << std::endl;
     std::cout << "================================================================================" << std::endl;
     std::cout << std::endl << std::endl;
 
@@ -146,8 +146,8 @@ int main() {
 
     std::cout << std::endl;
     std::cout << "============================= DB Sizes Experiment ==============================" << std::endl;
-    std::cout << "DB size: varied, up to 2^" << maxDbSizeExp                                        << std::endl;
-    std::cout << "Query  : 0-3"                                                                     << std::endl;
+    std::cout << "Varied DB size up to 2^" << maxDbSizeExp                                          << std::endl;
+    std::cout << "Fixed query 0-3"                                                                  << std::endl;
     std::cout << "================================================================================" << std::endl;
     std::cout << std::endl << std::endl;
 
@@ -212,7 +212,7 @@ int main() {
 
     std::cout << std::endl;
     std::cout << "=========================== Search Sizes Experiment ============================" << std::endl;
-    std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
+    std::cout << "Fixed DB size 2^" << maxDbSizeExp                                                 << std::endl;
     std::cout << "Varied query range size"                                                          << std::endl;
     std::cout << "================================================================================" << std::endl;
     std::cout << std::endl << std::endl;
@@ -278,7 +278,7 @@ int main() {
 
     std::cout << std::endl;
     std::cout << "=========================== Result Sizes Experiment ============================" << std::endl;
-    std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
+    std::cout << "Fixed DB size 2^" << maxDbSizeExp                                                 << std::endl;
     std::cout << "Varied query result size"                                                         << std::endl;
     std::cout << "================================================================================" << std::endl;
     std::cout << std::endl << std::endl;
@@ -344,7 +344,7 @@ int main() {
 
     std::cout << std::endl;
     std::cout << "========================== False Positives Experiment ==========================" << std::endl;
-    std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
+    std::cout << "Varied DB size up to 2^" << maxDbSizeExp                                          << std::endl;
     std::cout << "High false positives query"                                                       << std::endl;
     std::cout << "================================================================================" << std::endl;
     std::cout << std::endl << std::endl;
@@ -371,8 +371,8 @@ int main() {
     if (config::DSSE_SHOULD_BENCHMARK_UPDTS) {
         std::cout << std::endl;
         std::cout << "============================== Updates Experiment ==============================" << std::endl;
-        std::cout << "DB size: 2^" << maxDbSizeExp                                                      << std::endl;
-        std::cout << "One update at a time"                                                           << std::endl;
+        std::cout << "Fixed DB size 2^" << maxDbSizeExp                                                 << std::endl;
+        std::cout << "One update at a time"                                                             << std::endl;
         std::cout << "================================================================================" << std::endl;
         std::cout << std::endl << std::endl;
 

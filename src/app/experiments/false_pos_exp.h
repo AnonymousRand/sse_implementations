@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cmath>
 #include <cstdint>
 #include <iostream>
@@ -26,6 +28,24 @@ void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
 
     for (int64_t i = 2; i <= std::log2(maxDbSize); i++) {
         int64_t dbSize = std::pow(2, i);
+
+        // two unique keywords, with half being 0 and the other half being the max
+        // thus using Log-SRC, half the docs will be returned as false positives on a
+        // [1, n - 1] query (if the root node is the SRC)
+        Db<> db;
+        Kw kw1 = 0;
+        Kw kw2 = dbSize - 1;
+        Range<Kw> kwRange1 {kw1, kw1};
+        int64_t id;
+        Range<Kw> kwRange2 {kw2, kw2};
+        for (id = 0; id < dbSize / 2; id++) {
+            db.push_back(DbEntry {Doc<>(id, kw1, Op::INS, kwRange1), kwRange1});
+        }
+        for (; id < dbSize; id++) {
+            db.push_back(DbEntry {Doc<>(id, kw2, Op::INS, kwRange2), kwRange2});
+        }
+
+        /*
         // two unique keywords, with all but one being 0 and the other being the max
         // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
         Db<> db;
@@ -37,10 +57,13 @@ void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
             db.push_back(DbEntry {Doc<>(i, kw1, Op::INS, kwRange1), kwRange1});
         }
         db.push_back(DbEntry {Doc<>(dbSize - 1, kw2, Op::INS, kwRange2), kwRange2});
+        */
 
         // setup
         sse->setup(utils::KEY_LEN, db);
-        sse->benchmark->print(config::SHOULD_BENCHMARK, "Setup");
+        sse->benchmark->print(
+            config::SHOULD_BENCHMARK, "Setup", std::format("(size 2^{})", std::log2(dbSize))
+        );
 
         // search
         Range<Kw> query {1, dbSize - 1};
