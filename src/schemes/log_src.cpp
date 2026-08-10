@@ -60,12 +60,12 @@ std::vector<Doc<>> LogSrc<Underly>::search(const Range<Kw>& query, bool shouldCl
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrc<Underly>::clear() {
+    this->underly->clear();
     // delete TDAG fully since it is reallocated with `new` in `setup()`
     if (this->tdag != nullptr) {
         delete this->tdag;
         this->tdag = nullptr;
     }
-    this->underly->clear();
     this->size = 0;
 }
 
