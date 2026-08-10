@@ -1,9 +1,10 @@
 #include "schemes/n_log_n.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "utils/cryptography.h"
-//#include "utils/random.h"
+#include "utils/random.h"
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
@@ -83,7 +84,7 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             }
         }
         //// randomly permute documents associated with same keyword, i.e. shuffle within bucket
-        //std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
+        std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         int64_t dbKwPaddedCount = dbKwList.size();
