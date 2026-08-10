@@ -3,6 +3,7 @@
 #include <concepts>
 #include <memory>
 
+#include "schemes/interfaces/dsse.h"
 #include "schemes/interfaces/sse.h"
 
 #include "utils/benchmark.h"

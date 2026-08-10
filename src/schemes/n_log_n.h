@@ -1,12 +1,18 @@
 #pragma once
 
+#include <concepts>
+#include <cstdint>
 #include <utility>
+#include <vector>
 
 #include "schemes/n_log_n_server.h"
 #include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/static_point_sse.h"
 
-#include "utils/benchmark.h" // since this was only forward declared in `sse.h`
+#include "utils/doc.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
+#include "utils/ustring.h"
 
 
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>

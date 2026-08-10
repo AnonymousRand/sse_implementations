@@ -1,10 +1,25 @@
 #include "schemes/n_log_n.h"
 
 #include <algorithm>
+#include <concepts>
+#include <cstdint>
 #include <cmath>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
+#include "schemes/n_log_n_server.h"
+#include "schemes/interfaces/sd_underly.h"
+#include "schemes/interfaces/static_point_sse.h"
+
+// TODO check if these benchmark includes are actually necessary
+#include "utils/benchmark.h" // since this was only forward declared in `sse.h`
 #include "utils/cryptography.h"
+#include "utils/doc.h"
 #include "utils/random.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
+#include "utils/ustring.h"
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
@@ -83,7 +98,7 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
                 dbKwList.push_back(dummyDbDoc);
             }
         }
-        //// randomly permute documents associated with same keyword, i.e. shuffle within bucket
+        // randomly permute documents associated with same keyword, i.e. shuffle within bucket
         std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket

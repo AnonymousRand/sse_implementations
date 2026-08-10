@@ -1,11 +1,16 @@
 #include "utils/enc_ind.h"
 
+#include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <random>
+#include <string>
 
 #include "utils/debugging.h"
 #include "utils/random.h"
+#include "utils/ustring.h"
 
 
 //==============================================================================

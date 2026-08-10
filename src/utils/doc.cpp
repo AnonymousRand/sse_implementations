@@ -2,7 +2,15 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <regex>
 #include <sstream>
+#include <string>
+#include <tuple>
+#include <utility>
+
+#include "utils/range.h"
+#include "utils/sse_utils.h"
+#include "utils/ustring.h"
 
 
 //==============================================================================

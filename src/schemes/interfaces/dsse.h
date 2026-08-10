@@ -9,12 +9,17 @@
 #include "utils/sse_utils.h"
 
 
+// forward declare instead of include as otherwise we would get a circular include with `benchmark.h`
+struct Benchmark;
+
+
 // (note: no virtual inheritance here as otherwise things extending `IDsse` will skip over `IDsse`'s
 // constructors, leading to the explicit constructor below with `useShortcutSetup` to not be seen)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class IDsse : public ISse<DbDoc, DbKw> {
 public:
     using ISse<DbDoc, DbKw>::ISse;
+
     IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup) :
             ISse<DbDoc, DbKw>(benchmark), useShortcutSetup(useShortcutSetup) {}
 

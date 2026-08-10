@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <random>
 
 #include "utils/doc.h"
 #include "utils/random.h"

@@ -2,6 +2,9 @@
 
 #include <iomanip>
 #include <sstream>
+#include <string>
+
+#include "utils/ustring.h"
 
 
 std::string ustrToHex(const uchar* str, int len) {

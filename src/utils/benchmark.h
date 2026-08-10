@@ -2,13 +2,17 @@
 
 #include <chrono>
 #include <concepts>
+#include <cstdint>
 #include <format>
 #include <iostream>
 #include <string>
+#include <vector>
 
-#include "schemes/interfaces/dsse.h"
 #include "schemes/interfaces/sse.h"
+#include "schemes/interfaces/dsse.h"
 
+#include "utils/doc.h"
+#include "utils/range.h"
 #include "utils/sse_utils.h"
 
 

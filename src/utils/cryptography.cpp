@@ -7,6 +7,8 @@
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 
+#include "utils/ustring.h"
+
 
 // thanks to https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#C.2B.2B_Programs,
 // https://wiki.openssl.org/index.php/EVP_Message_Digests,

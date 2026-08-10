@@ -1,8 +1,22 @@
 #include "schemes/pi_bas.h"
 
-#include "schemes/pi_bas_server.h"
+#include <concepts>
+#include <cstdint>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
+#include "schemes/pi_bas_server.h"
+#include "schemes/interfaces/sd_underly.h"
+#include "schemes/interfaces/static_point_sse.h"
+
+#include "utils/benchmark.h" // since this was only forward declared in `sse.h`
 #include "utils/cryptography.h"
+#include "utils/doc.h"
+#include "utils/enc_ind.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
+#include "utils/ustring.h"
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>

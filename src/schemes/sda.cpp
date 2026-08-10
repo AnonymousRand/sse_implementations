@@ -1,7 +1,10 @@
 #include "schemes/sda.h"
 
 #include <algorithm>
+#include <concepts>
 #include <cmath>
+#include <cstdint>
+#include <vector>
 
 // for explicit template instantiation
 #include "schemes/log_src.h"
@@ -9,6 +12,11 @@
 #include "schemes/log_src_i_star.h"
 #include "schemes/n_log_n.h"
 #include "schemes/pi_bas.h"
+#include "schemes/interfaces/sd_underly.h"
+
+#include "utils/doc.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
 
 
 template <IsSdUnderly Underly>

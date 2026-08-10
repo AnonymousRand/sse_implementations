@@ -2,7 +2,13 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <regex>
 #include <sstream>
+#include <string>
+#include <utility>
+
+#include "utils/sse_utils.h"
+#include "utils/ustring.h"
 
 
 template <class T>

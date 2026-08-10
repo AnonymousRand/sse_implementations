@@ -1,7 +1,15 @@
 #pragma once
 
+#include <concepts>
+#include <cstdint>
+#include <vector>
+
 #include "schemes/interfaces/dsse.h"
 #include "schemes/interfaces/sd_underly.h"
+
+#include "utils/doc.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
 
 
 // don't use template template param for `Underly` because they may have other deeper underlying schemes 

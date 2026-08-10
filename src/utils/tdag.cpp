@@ -1,9 +1,14 @@
 #include "utils/tdag.h"
 
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <deque>
+#include <list>
+#include <unordered_set>
+#include <vector>
 
+#include "utils/range.h"
 #include "utils/sse_utils.h"
 
 

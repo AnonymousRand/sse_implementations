@@ -1,9 +1,21 @@
 #include "schemes/log_src_i.h"
 
+#include <concepts>
+#include <cstdint>
+#include <list>
+#include <utility>
+#include <vector>
+
 // for explicit template instantiation
 #include "schemes/log_src_i_star.h"
 #include "schemes/n_log_n.h"
 #include "schemes/pi_bas.h"
+#include "schemes/interfaces/sse.h"
+
+#include "utils/doc.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
+#include "utils/tdag.h"
 
 
 //==============================================================================

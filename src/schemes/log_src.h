@@ -1,8 +1,14 @@
 #pragma once
 
+#include <concepts>
+#include <vector>
+
 #include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/sse.h"
 
+#include "utils/doc.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
 #include "utils/tdag.h"
 
 

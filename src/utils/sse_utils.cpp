@@ -1,7 +1,12 @@
 #include "sse_utils.h"
 
 #include <algorithm>
-#include <cmath>
+#include <concepts>
+#include <cstdint>
+#include <iostream>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 #include "utils/doc.h"
 #include "utils/random.h"
@@ -71,6 +76,34 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 }
 
 
+// template specialize just this method for `Doc<>` instead of all SSE classes that use it
+void cleanUpResults(std::vector<Doc<>>& docs) {
+    std::vector<Doc<>> newDocs;
+    std::unordered_set<Id> deletedIds;
+
+    // find all cancellation tuples
+    for (Doc<> doc : docs) {
+        Op op = doc.getOp();
+        if (op == Op::DEL) {
+            Id id = doc.getId();
+            deletedIds.insert(id);
+        }
+    }
+    // copy over vector without deleted (or dummy) docs, as well as no dummy ids
+    for (Doc<> doc : docs) {
+        Id id = doc.getId();
+        Op op = doc.getOp();
+        if (id != DUMMY && op == Op::INS && deletedIds.count(id) == 0) {
+            newDocs.push_back(doc);
+        }
+    }
+
+    docs = newDocs;
+}
+
+
+// (note we still need the general case of this function to be able to call it from within
+// `IStaticPointSse`; it just does nothing except in the template specialization below)
 template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& docs) {}
 
@@ -120,4 +153,6 @@ template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc<>, Kw>& db
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);
 //template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc<IdAlias>, IdAlias>& db);
 
+// remaining explicit template specializations beyond the one previously
 template void cleanUpResults(std::vector<SrcIDb1Doc>& docs);
+//template void cleanUpResults(std::vector<Doc<IdAlias>>& docs);

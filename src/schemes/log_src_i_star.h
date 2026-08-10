@@ -1,7 +1,15 @@
 #pragma once
 
+#include <concepts>
+#include <cstdint>
+#include <vector>
+
 #include "schemes/log_src_i.h" 
 #include "schemes/n_log_n.h" 
+
+#include "utils/doc.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
 
 
 //==============================================================================
