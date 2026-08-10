@@ -77,8 +77,8 @@ std::vector<DbDoc> Underly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 int64_t Underly<DbDoc, DbKw>::computeNumLvls() const {
-    // the key to avoiding the blowup of using NLogN as a black box is by using `leafCount` instead of `db.size()` here,
-    // since `db.size()` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
+    // the key to avoiding the blowup of using NLogN as a black box is by using `leafCount` instead of `this->size` here,
+    // since `this->size` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
     return std::ceil(std::log2(this->leafCount)) + 1;
 }
 
@@ -88,7 +88,7 @@ int64_t Underly<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
     if (lvlNum == 0) {
         return this->leafCount;
     } else {
-        // this gives the TDAG node/bucket count at level `lvlNum` (for `lvlNum` >= 1)
+        // this gives the TDAG-specific node/bucket count at level `lvlNum` (for `lvlNum` >= 1)
         return std::pow(2, this->numLvls - lvlNum) - 1;
     }
 }
