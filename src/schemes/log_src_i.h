@@ -1,7 +1,7 @@
 #pragma once
 
 #include "schemes/pi_bas.h"
-#include "schemes/interfaces/sda_underly.h"
+#include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/sse.h"
 
 #include "utils/tdag.h"
@@ -14,9 +14,9 @@
 
 // common code between `LogSrcI` and `LogSrcIStar`
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-class LogSrcIBase : public ISdaUnderly<Doc<>, Kw> {
+class LogSrcIBase : public ISdUnderly<Doc<>, Kw> {
 public:
-    using ISdaUnderly<Doc<>, Kw>::ISdaUnderly;
+    using ISdUnderly<Doc<>, Kw>::ISdUnderly;
 
     virtual ~LogSrcIBase();
 
@@ -29,7 +29,7 @@ public:
     void clear() override;
 
     //----------------------------------------------------------------------
-    // `ISdaUnderly`
+    // `ISdUnderly`
 
     void getDb(Db<Doc<>, Kw>& ret) const override;
 

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "schemes/interfaces/sda_underly.h"
+#include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/sse.h"
 
 #include "utils/tdag.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-class LogSrc : public ISdaUnderly<Doc<>, Kw> {
+class LogSrc : public ISdUnderly<Doc<>, Kw> {
 public:
-    using ISdaUnderly<Doc<>, Kw>::ISdaUnderly;
+    using ISdUnderly<Doc<>, Kw>::ISdUnderly;
 
     ~LogSrc();
 
@@ -23,7 +23,7 @@ public:
     void clear() override;
 
     //----------------------------------------------------------------------
-    // `ISdaUnderly`
+    // `ISdUnderly`
 
     void getDb(Db<Doc<>, Kw>& ret) const override;
 

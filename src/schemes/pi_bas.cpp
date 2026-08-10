@@ -87,7 +87,7 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::clear() {
     IStaticPointSse<DbDoc, DbKw>::clear();
-    ISdaUnderly<DbDoc, DbKw>::clear();
+    ISdUnderly<DbDoc, DbKw>::clear();
     if (this->server != nullptr) {
         this->server->clear();
     }
@@ -95,7 +95,7 @@ void PiBas<DbDoc, DbKw>::clear() {
 
 
 //------------------------------------------------------------------------------
-// `ISdaUnderly`
+// `ISdUnderly`
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>

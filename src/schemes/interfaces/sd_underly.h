@@ -9,8 +9,9 @@
 #include "utils/sse_utils.h"
 
 
+// underlying SSE schemes for SD-type DSSE schemes (from NDSS'20)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class ISdaUnderly : public virtual ISse<DbDoc, DbKw> {
+class ISdUnderly : public virtual ISse<DbDoc, DbKw> {
 public:
     using ISse<DbDoc, DbKw>::ISse;
 
@@ -40,6 +41,6 @@ protected:
 
 
 template <class T>
-concept IsSdaUnderly = requires(T t) {
-    []<class ... Args>(ISdaUnderly<Args ...>&){}(t);
+concept IsSdUnderly = requires(T t) {
+    []<class ... Args>(ISdUnderly<Args ...>&){}(t);
 };

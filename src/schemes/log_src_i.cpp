@@ -97,7 +97,7 @@ void LogSrcIBase<Underly>::clear() {
 
 
 //------------------------------------------------------------------------------
-// `ISdaUnderly`
+// `ISdUnderly`
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
