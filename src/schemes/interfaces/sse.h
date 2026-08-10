@@ -9,11 +9,6 @@
 #include "utils/sse_utils.h"
 
 
-//------------------------------------------------------------------------------
-// `ISse`
-//------------------------------------------------------------------------------
-
-
 // forward declare instead of include as otherwise we would get a circular include with `benchmark.h`
 struct Benchmark;
 

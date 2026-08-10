@@ -7,9 +7,9 @@
 #include "utils/tdag.h"
 
 
-//------------------------------------------------------------------------------
+//==============================================================================
 // `LogSrcIBase`
-//------------------------------------------------------------------------------
+//==============================================================================
 
 
 // common code between `LogSrcI` and `LogSrcIStar`
@@ -40,16 +40,16 @@ protected:
     // instead of reconstructing the original db from `underly1`'s and `underly2`'s indexes/dbs
     // do NOT search on this one!
     // also it's specifically PiBas since `LogSrcIStar` may use locality-aware `Underly`,
-    // which doesn't store non-TDAG-structured datasets correctly (e.g. it might have padding)
+    // which doesn't store non-TDAG-structured datasets correctly or efficiently (e.g. they might pad)
     PiBas<Doc<>, Kw>* origDbUnderly = new PiBas<Doc<>, Kw>(this->benchmark);
     TdagNode<Kw>* tdag1 = nullptr;
     TdagNode<IdAlias>* tdag2 = nullptr;
 };
 
 
-//------------------------------------------------------------------------------
+//==============================================================================
 // `LogSrcI`
-//------------------------------------------------------------------------------
+//==============================================================================
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
