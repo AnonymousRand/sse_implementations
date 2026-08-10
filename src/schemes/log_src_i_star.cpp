@@ -113,6 +113,9 @@ template class Underly<SrcIDb1Doc, Kw>;
 void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
+    //--------------------------------------------------------------------------
+    // init things
+
     this->secParam = secParam;
     this->size = db.size();
     this->origDbUnderly->setup(secParam, db);

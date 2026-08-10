@@ -12,7 +12,7 @@
 #include "utils/ustring.h"
 
 
-// subclasses of this include `PiBas`, `NLogN`, and `LogSrcIStarUnderly`
+// subclasses of this include `PiBas`, `NLogN`, and `log_src_i_star::Underly`
 // provide shared code for `search()` (depending on `searchBase()`)
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {

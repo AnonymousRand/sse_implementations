@@ -34,8 +34,14 @@ template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->clear();
 
+    //--------------------------------------------------------------------------
+    // init things
+
     this->secParam = secParam;
     this->size = db.size();
+
+    //--------------------------------------------------------------------------
+    // build index
 
     // build TDAG 1 over `Kw`s
     Range<Kw> kwBounds = findDbKwBounds(db);

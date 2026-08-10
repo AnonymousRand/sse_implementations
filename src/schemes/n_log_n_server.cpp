@@ -6,7 +6,6 @@
 
 #include "schemes/interfaces/sse_server.h"
 
-#include "utils/benchmark.h" // since this was only forward declared in `sse_server.h`
 #include "utils/doc.h"
 #include "utils/enc_ind.h"
 #include "utils/sse_utils.h"

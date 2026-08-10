@@ -10,7 +10,6 @@
 #include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/static_point_sse.h"
 
-#include "utils/benchmark.h" // since this was only forward declared in `sse.h`
 #include "utils/cryptography.h"
 #include "utils/doc.h"
 #include "utils/enc_ind.h"

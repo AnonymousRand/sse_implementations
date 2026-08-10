@@ -12,8 +12,6 @@
 #include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/static_point_sse.h"
 
-// TODO check if these benchmark includes are actually necessary
-#include "utils/benchmark.h" // since this was only forward declared in `sse.h`
 #include "utils/cryptography.h"
 #include "utils/doc.h"
 #include "utils/random.h"
