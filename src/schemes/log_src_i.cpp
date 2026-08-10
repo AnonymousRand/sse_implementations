@@ -1,5 +1,6 @@
 #include "schemes/log_src_i.h"
 
+#include <algorithm>
 #include <concepts>
 #include <cstdint>
 #include <list>
