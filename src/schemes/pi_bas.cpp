@@ -160,4 +160,4 @@ uint64_t PiBas<DbDoc, DbKw>::map(const ustring& queryToken, int64_t dbKwCounter,
 
 template class PiBas<Doc<>, Kw>;               // default/standalone
 template class PiBas<SrcIDb1Doc, Kw>;          // Log-SRC-i index 1
-//template class PiBas<Doc<IdAlias>, IdAlias>; // Log-SRC-i index 2
+//template class PiBas<Doc<IdAlias>, IdAlias>;   // Log-SRC-i index 2
