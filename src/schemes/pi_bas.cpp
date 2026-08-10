@@ -88,9 +88,8 @@ template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBas<DbDoc, DbKw>::clear() {
     IStaticPointSse<DbDoc, DbKw>::clear();
     ISdUnderly<DbDoc, DbKw>::clear();
-    if (this->server != nullptr) {
-        this->server->clear();
-    }
+
+    this->server->clear();
 }
 
 

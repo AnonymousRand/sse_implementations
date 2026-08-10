@@ -129,9 +129,7 @@ void NLogN<DbDoc, DbKw>::clear() {
     IStaticPointSse<DbDoc, DbKw>::clear();
     ISdUnderly<DbDoc, DbKw>::clear();
 
-    if (this->server != nullptr) {
-        this->server->clear();
-    }
+    this->server->clear();
     this->numLvls = 0;
 }
 
