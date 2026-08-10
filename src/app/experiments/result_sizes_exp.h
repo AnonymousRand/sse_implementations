@@ -10,7 +10,7 @@
 #include "schemes/interfaces/sse.h"
 
 #include "utils/benchmark.h"
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
@@ -25,7 +25,7 @@ void resultSizesExp(ISse<>* sse, int64_t dbSize) {
     }
     // this is non-randomized to precisely control result sizes: then there is a unique entry per kw
     Db<> db = createDb(dbSize, false, false);
-    sse->setup(constants::KEY_LEN, db);
+    sse->setup(utils::KEY_LEN, db);
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     for (int64_t resultSizeExp = 0; resultSizeExp <= std::log2(dbSize); resultSizeExp++) {

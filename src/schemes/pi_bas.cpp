@@ -10,7 +10,7 @@
 #include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/static_point_sse.h"
 
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 #include "utils/doc.h"
 #include "utils/enc_ind.h"
 #include "utils/range.h"
@@ -42,8 +42,8 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->secParam = secParam;
     this->size = db.size();
 
-    this->prfKey = genKey(secParam);
-    this->encKey = genKey(secParam);
+    this->prfKey = utils::genKey(secParam);
+    this->encKey = utils::genKey(secParam);
 
     EncInd* encInd = new EncInd();
     encInd->init(this->size);
@@ -63,10 +63,10 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         }
     }
     // randomly permute documents associated with same keyword, required by some schemes on top of PiBas (e.g. Log-SRC)
-    shuffleInd(ind);
+    utils::shuffleInd(ind);
 
     // for each w in W
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
@@ -84,9 +84,9 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ustring label;
             uint64_t pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
-            ustring iv = genIv(constants::IV_LEN);
-            ustring encDbDoc = padAndEncrypt(
-                constants::ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1
+            ustring iv = utils::genIv(utils::IV_LEN);
+            ustring encDbDoc = utils::padAndEncrypt(
+                utils::ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->write(pos, std::pair {label, std::pair {encDbDoc, iv}});
@@ -158,15 +158,17 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 ustring PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
-    return prf(this->prfKey, query.toUstr());
+    return utils::prf(this->prfKey, query.toUstr());
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 uint64_t PiBas<DbDoc, DbKw>::map(const ustring& queryToken, int64_t dbKwCounter, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w) || c)
-    retLabel = hash(constants::HASH_FUNC, constants::HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
-    return hashToPos(retLabel);
+    retLabel = utils::hash(
+        utils::HASH_FUNC, utils::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
+    );
+    return utils::hashToPos(retLabel);
 }
 
 

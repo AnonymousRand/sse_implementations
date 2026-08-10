@@ -9,7 +9,7 @@
 #include "schemes/interfaces/sse.h"
 
 #include "utils/benchmark.h"
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
@@ -39,7 +39,7 @@ void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
         db.push_back(DbEntry {Doc<>(dbSize - 1, kw2, Op::INS, kwRange2), kwRange2});
 
         // setup
-        sse->setup(constants::KEY_LEN, db);
+        sse->setup(utils::KEY_LEN, db);
         sse->benchmark->print(config::SHOULD_BENCHMARK, "Setup");
 
         // search

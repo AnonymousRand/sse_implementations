@@ -44,12 +44,12 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // build index
 
     // build TDAG 1 over `Kw`s
-    Range<Kw> kwBounds = findDbKwBounds(db);
+    Range<Kw> kwBounds = utils::findDbKwBounds(db);
     this->tdag = new TdagNode<Kw>(kwBounds);
 
     // replicate every document to all keyword ranges/TDAG nodes that cover it
     Db<Doc<>, Kw> dbWithRepls;
-    dbWithRepls.reserve(calcTdagEntryCount(db.size()));
+    dbWithRepls.reserve(utils::calcTdagEntryCount(db.size()));
     for (DbEntry<Doc<>, Kw> dbEntry : db) {
         Doc<> doc = dbEntry.first;
         Range<Kw> kwRange = dbEntry.second;

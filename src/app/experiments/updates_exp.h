@@ -9,7 +9,7 @@
 #include "schemes/interfaces/dsse.h"
 
 #include "utils/benchmark.h"
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 #include "utils/sse_utils.h"
 
 
@@ -21,7 +21,7 @@ void updatesExp(IDsse<>* dsse, int64_t dbSize) {
         return;
     }
     Db<> db = createDb(dbSize, true, true);
-    dsse->setup(constants::KEY_LEN, Db<> {});
+    dsse->setup(utils::KEY_LEN, Db<> {});
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     // update one at a time

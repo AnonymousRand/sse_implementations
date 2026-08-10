@@ -31,7 +31,7 @@ namespace log_src_i_star {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void Underly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
-    Range<DbKw> dbKwBounds = findDbKwBounds(db);
+    Range<DbKw> dbKwBounds = utils::findDbKwBounds(db);
     this->leafCount = dbKwBounds.size();
     NLogN<DbDoc, DbKw>::setup(secParam, db);
 }
@@ -199,7 +199,7 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     db2Size = db2.size();
-    db2.reserve(calcTdagEntryCount(db2Size));
+    db2.reserve(utils::calcTdagEntryCount(db2Size));
     for (int64_t i = 0; i < db2Size; i++) {
         DbEntry<Doc<IdAlias>, IdAlias> dbEntry = db2[i];
         Doc<IdAlias> doc = dbEntry.first;
@@ -242,7 +242,7 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     }
     // after guaranteeing contiguous-ness of `Kw`s, pad `db1` to power of 2 as well
     int64_t db1Size = db1.size();
-    Range<Kw> db1KwBounds = findDbKwBounds(db1);
+    Range<Kw> db1KwBounds = utils::findDbKwBounds(db1);
     Kw maxDb1Kw = db1KwBounds.second;
     if (!std::has_single_bit((uint64_t)db1Size)) {
         int64_t amountToPad = std::pow(2, std::ceil(std::log2(db1Size))) - db1Size;
@@ -259,7 +259,7 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     db1Size = db1.size();
-    db1.reserve(calcTdagEntryCount(db1Size));
+    db1.reserve(utils::calcTdagEntryCount(db1Size));
     for (int64_t i = 0; i < db1Size; i++) {
         DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
         SrcIDb1Doc doc = dbEntry.first;

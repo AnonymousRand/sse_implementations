@@ -11,11 +11,19 @@ using uchar   = unsigned char;
 using ustring = std::basic_string<uchar>;
 
 
+namespace utils {
+
+
 ustring toUstr(int64_t n);
 ustring toUstr(const std::string& s);
 ustring toUstr(uchar* ucstr, int len);
 std::string toStr(const ustring& ustr);
 int64_t fromUstr(const ustring& ustr);
+
+
+} // namespace `utils`
+
+
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 
@@ -23,6 +31,6 @@ std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 template <>
 struct std::hash<ustring> {
     inline std::size_t operator ()(const ustring& ustr) const noexcept {
-        return std::hash<std::string>{}(toStr(ustr));
+        return std::hash<std::string>{}(utils::toStr(ustr));
     }
 };

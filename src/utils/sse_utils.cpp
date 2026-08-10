@@ -35,6 +35,9 @@ template std::ostream& operator <<(std::ostream& os, const DbEntry<SrcIDb1Doc, K
 //==============================================================================
 
 
+namespace utils {
+
+
 template <class IndKey, IsDbDoc DbDoc>
 void shuffleInd(Ind<IndKey, DbDoc>& ind) {
     for (std::pair entry : ind) {
@@ -156,3 +159,6 @@ template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw
 // remaining explicit template specializations beyond the one previously
 template void cleanUpResults(std::vector<SrcIDb1Doc>& docs);
 //template void cleanUpResults(std::vector<Doc<IdAlias>>& docs);
+
+
+} // namespace `utils`

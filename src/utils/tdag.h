@@ -67,4 +67,10 @@ private:
 //==============================================================================
 
 
+namespace utils {
+
+
 int64_t calcTdagEntryCount(int64_t leafCount);
+
+
+} // namespace `utils`

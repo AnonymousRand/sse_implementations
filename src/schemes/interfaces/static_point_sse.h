@@ -5,7 +5,7 @@
 
 #include "schemes/interfaces/sse.h"
 
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
@@ -39,15 +39,15 @@ public:
         }
 
         if (shouldCleanUpResults) {
-            cleanUpResults(allResults);
+            utils::cleanUpResults(allResults);
         }
         return allResults;
     }
 
     // handle clearing of `prfKey` and `encKey` member variables belonging to this interface
     void clear() override {
-        this->prfKey = toUstr("");
-        this->encKey = toUstr("");
+        this->prfKey = utils::toUstr("");
+        this->encKey = utils::toUstr("");
     }
 
 protected:
@@ -68,7 +68,9 @@ protected:
     DbDoc decryptEncIndVal(const EncIndVal& encIndVal) const {
         ustring encDbDoc = encIndVal.first;
         ustring iv = encIndVal.second;
-        ustring decDbDoc = decryptAndUnpad(constants::ENC_CIPHER, this->encKey, encDbDoc, iv);
+        ustring decDbDoc = utils::decryptAndUnpad(
+            utils::ENC_CIPHER, this->encKey, encDbDoc, iv
+        );
         return DbDoc::fromUstr(decDbDoc);
     }
 };

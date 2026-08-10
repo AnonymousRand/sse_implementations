@@ -12,7 +12,7 @@
 #include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/static_point_sse.h"
 
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 #include "utils/doc.h"
 #include "utils/random.h"
 #include "utils/range.h"
@@ -45,8 +45,8 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     this->size = db.size();
     this->numLvls = this->computeNumLvls();
 
-    this->prfKey = genKey(secParam);
-    this->encKey = genKey(secParam);
+    this->prfKey = utils::genKey(secParam);
+    this->encKey = utils::genKey(secParam);
     
     std::vector<EncInd*> encIndLvls;
     for (int64_t lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
@@ -75,7 +75,7 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     }
 
     // for each w in W
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = getUniqDbKwRanges(db);
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
@@ -97,7 +97,7 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             }
         }
         // randomly permute documents associated with same keyword, i.e. shuffle within bucket
-        std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
+        std::shuffle(dbKwList.begin(), dbKwList.end(), utils::RNG);
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         int64_t dbKwPaddedCount = dbKwList.size();
@@ -111,9 +111,9 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
-        ustring ivDict = genIv(constants::IV_LEN);
-        ustring encDbKwCount = padAndEncrypt(
-            constants::ENC_CIPHER, this->encKey, toUstr(dbKwCount), ivDict, EncInd::DOC_LEN - 1
+        ustring ivDict = utils::genIv(utils::IV_LEN);
+        ustring encDbKwCount = utils::padAndEncrypt(
+            utils::ENC_CIPHER, this->encKey, utils::toUstr(dbKwCount), ivDict, EncInd::DOC_LEN - 1
         );
         uint64_t posDict = this->mapNoMod(queryToken, labelDict);
         dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
@@ -123,9 +123,9 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
         for (int64_t dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbDoc dbDoc = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
-            ustring iv = genIv(constants::IV_LEN);
-            ustring encDbDoc = padAndEncrypt(
-                constants::ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1
+            ustring iv = utils::genIv(utils::IV_LEN);
+            ustring encDbDoc = utils::padAndEncrypt(
+                utils::ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encIndLvls[lvl]->write(startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
@@ -201,8 +201,8 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
-    ustring decDbKwCount = decryptAndUnpad(constants::ENC_CIPHER, this->encKey, encDbKwCount, ivDict);
-    int64_t dbKwCount = fromUstr(decDbKwCount);
+    ustring decDbKwCount = utils::decryptAndUnpad(utils::ENC_CIPHER, this->encKey, encDbKwCount, ivDict);
+    int64_t dbKwCount = utils::fromUstr(decDbKwCount);
     int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
@@ -229,15 +229,15 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 ustring NLogN<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
-    return prf(this->prfKey, query.toUstr());
+    return utils::prf(this->prfKey, query.toUstr());
 }
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 uint64_t NLogN<DbDoc, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
-    retLabel = hash(constants::HASH_FUNC, constants::HASH_OUTPUT_LEN, queryToken);
-    return hashToPos(retLabel); // no modulus
+    retLabel = utils::hash(utils::HASH_FUNC, utils::HASH_OUTPUT_LEN, queryToken);
+    return utils::hashToPos(retLabel); // no modulus
 }
 
 

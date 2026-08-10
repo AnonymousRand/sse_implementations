@@ -39,7 +39,7 @@ Range<DbKw> IDbDoc<T, DbKw>::getDbKwRange() const {
 
 template <class T, class DbKw>
 ustring IDbDoc<T, DbKw>::toUstr() const {
-    return ::toUstr(this->toStr());
+    return ::utils::toUstr(this->toStr());
 }
 
 
@@ -82,7 +82,7 @@ std::string Doc<DbKw>::toStr() const {
 
 template <class DbKw>
 Doc<DbKw> Doc<DbKw>::fromUstr(const ustring& ustr) {
-    std::string str = ::toStr(ustr);
+    std::string str = ::utils::toStr(ustr);
     std::smatch matches;
     if (!std::regex_search(str, matches, Doc<DbKw>::REGEX) || matches.size() != 5) {
         std::cerr << "Error: Doc::fromUstr(): bad string \"" << str << "\" passed" << std::endl
@@ -161,7 +161,7 @@ std::string SrcIDb1Doc::toStr() const {
 
 
 SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
-    std::string str = ::toStr(ustr);
+    std::string str = ::utils::toStr(ustr);
     std::smatch matches;
     if (!std::regex_search(str, matches, SrcIDb1Doc::REGEX) || matches.size() != 4) {
         std::cerr << "Error: SrcIDb1Doc::fromUstr(): bad string \"" << ustr << "\" passed" << std::endl

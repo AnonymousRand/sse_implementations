@@ -7,6 +7,9 @@
 #include "utils/ustring.h"
 
 
+namespace utils {
+
+
 std::string ustrToHex(const uchar* str, int len) {
     std::stringstream ss;
     for (int i = 0; i < len; i++) {
@@ -19,3 +22,6 @@ std::string ustrToHex(const uchar* str, int len) {
 std::string ustrToHex(const ustring& str) {
     return ustrToHex(str.c_str(), str.length());
 }
+
+
+} // namespace `utils`

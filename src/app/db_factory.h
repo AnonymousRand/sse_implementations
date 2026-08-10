@@ -32,7 +32,7 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
     if (isRandom) {
         // fill the rest with random keywords
         for (Id id = minId; id <= maxId; id++) {
-            Kw kw = dist(RNG);
+            Kw kw = dist(utils::RNG);
             Range<Kw> kwRange {kw, kw};
             db.push_back(DbEntry {Doc<> {id, kw, Op::INS, kwRange}, kwRange});
         }

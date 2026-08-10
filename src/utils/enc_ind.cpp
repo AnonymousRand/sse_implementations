@@ -18,11 +18,17 @@
 //==============================================================================
 
 
+namespace utils {
+
+
 ustring toUstr(const EncIndEntry& encIndEntry) {
     ustring key = encIndEntry.first;
     EncIndVal val = encIndEntry.second;
     return key + val.first + val.second;
 }
+
+
+} // namespace `utils`
 
 
 //==============================================================================
@@ -50,12 +56,12 @@ void EncInd::init(int64_t size) {
     // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
     // the same file its first index was being stored in...
     std::uniform_int_distribution dist(100000000, 999999999);
-    this->filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
+    this->filename = "out/enc_ind_" + std::to_string(dist(utils::RNG)) + ".dat";
     FILE* fileTmp = std::fopen(this->filename.c_str(), "r");
     // while file exists (or any other error occurs on open), create new random filename
     while (fileTmp != nullptr) {
         std::fclose(fileTmp);
-        this->filename = "out/enc_ind_" + std::to_string(dist(RNG)) + ".dat";
+        this->filename = "out/enc_ind_" + std::to_string(dist(utils::RNG)) + ".dat";
         fileTmp = std::fopen(this->filename.c_str(), "r");
     }
     this->file = std::fopen(this->filename.c_str(), "wb+");
@@ -147,7 +153,7 @@ bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
     }
 
     ret.first = ustring(&entry[EncInd::KEY_LEN], EncInd::DOC_LEN);
-    ret.second = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], constants::IV_LEN);
+    ret.second = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], utils::IV_LEN);
     return true;
 }
 
@@ -226,7 +232,7 @@ EncIndEntry EncInd::get(uint64_t pos) const {
 
     ustring key = ustring(&entry[0], EncInd::KEY_LEN);
     ustring doc = ustring(&entry[EncInd::KEY_LEN], EncInd::DOC_LEN);
-    ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], constants::IV_LEN);
+    ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], utils::IV_LEN);
     return EncIndEntry {key, EncIndVal {doc, iv}};
 };
 
@@ -234,6 +240,6 @@ EncIndEntry EncInd::get(uint64_t pos) const {
 void EncInd::print() const {
     for (int64_t pos = 0; pos < this->size; pos++) {
         EncIndEntry entry = this->get(pos);
-        std::cerr << pos << ": " << ustrToHex(toUstr(entry)) << std::endl << std::endl;
+        std::cerr << pos << ": " << utils::ustrToHex(utils::toUstr(entry)) << std::endl << std::endl;
     }
 }

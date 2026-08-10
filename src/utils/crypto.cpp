@@ -1,4 +1,4 @@
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -15,10 +15,19 @@
 // and https://stackoverflow.com/a/34624592 for good reference code
 
 
+namespace {
+
+
 void handleErrors() {
     ERR_print_errors_fp(stderr);
     std::exit(EXIT_FAILURE);
 }
+
+
+} // anonymous namespace
+
+
+namespace utils {
 
 
 ustring genKey(int keyLen) {
@@ -103,7 +112,7 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
     // perform encryption
     int ctextLen1, ctextLen2;
     ustring ctext;
-    ctext.resize(ptext.length() + constants::BLOCK_SIZE); // need to allocate worst-case size first
+    ctext.resize(ptext.length() + utils::BLOCK_SIZE); // need to allocate worst-case size first
     if (EVP_EncryptUpdate(ctx, &ctext[0], &ctextLen1, &ptext[0], ptext.length()) != 1) {
         handleErrors();
     }
@@ -180,3 +189,6 @@ ustring decryptAndUnpad(const EVP_CIPHER* cipher, const ustring& key, const ustr
     ptext.resize(paddingStartInd + 1); // `+ 1` since strings still have to end with a null terminator
     return ptext;
 }
+
+
+} // namespace `utils`

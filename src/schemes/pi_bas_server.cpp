@@ -6,8 +6,8 @@
 
 #include "schemes/interfaces/sse_server.h"
 
-#include "utils/benchmark.h" // since this was only forward declared in `sse_server.h`
-#include "utils/cryptography.h"
+#include "utils/benchmark.h"
+#include "utils/crypto.h"
 #include "utils/doc.h"
 #include "utils/enc_ind.h"
 #include "utils/sse_utils.h"
@@ -65,8 +65,10 @@ std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::searchEncInd(const ustring& que
     int64_t dbKwCounter = 0;
     while (true) {
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos` (same as client's `setup()`)
-        ustring label = hash(constants::HASH_FUNC, constants::HASH_OUTPUT_LEN, queryToken + toUstr(dbKwCounter));
-        uint64_t pos = hashToPos(label);
+        ustring label = utils::hash(
+            utils::HASH_FUNC, utils::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
+        );
+        uint64_t pos = utils::hashToPos(label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;
         bool isFound = this->encInd->find(pos, label, encIndVal);

@@ -5,7 +5,7 @@
 
 #include "schemes/interfaces/sse.h"
 
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
@@ -17,7 +17,7 @@ namespace app::experiments {
 // experiment for debugging with fixed query and printed results
 void debuggingExp(ISse<>* sse, const Db<>& db, Range<Kw> query) {
     // setup
-    sse->setup(constants::KEY_LEN, db);
+    sse->setup(utils::KEY_LEN, db);
 
     // search
     std::vector<Doc<>> results = sse->search(query);

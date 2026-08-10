@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 #include "utils/ustring.h"
 
 
@@ -22,7 +22,14 @@
 using EncIndVal   = std::pair<ustring, ustring>;
 using EncIndEntry = std::pair<ustring, EncIndVal>;
 
+
+namespace utils {
+
+
 ustring toUstr(const EncIndEntry& encIndEntry);
+
+
+} // namespace `utils`
 
 
 //==============================================================================
@@ -33,10 +40,10 @@ ustring toUstr(const EncIndEntry& encIndEntry);
 class EncInd {
 public:
     // (both PRF (default) and hash (res-hiding) have 512 bit output)
-    static constexpr int KEY_LEN    = constants::HASH_OUTPUT_LEN;
+    static constexpr int KEY_LEN    = utils::HASH_OUTPUT_LEN;
     // (so max keyword/id size ~1.8x10^16 for encoding to fit)
-    static constexpr int DOC_LEN    = 7 * constants::BLOCK_SIZE;
-    static constexpr int VAL_LEN    = EncInd::DOC_LEN + constants::IV_LEN;
+    static constexpr int DOC_LEN    = 7 * utils::BLOCK_SIZE;
+    static constexpr int VAL_LEN    = EncInd::DOC_LEN + utils::IV_LEN;
     static constexpr int ENTRY_LEN  = EncInd::KEY_LEN + EncInd::VAL_LEN;
 
     ~EncInd();

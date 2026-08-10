@@ -17,7 +17,7 @@ add_executable(
     src/schemes/pi_bas.cpp
     src/schemes/pi_bas_server.cpp
     src/schemes/sda.cpp
-    src/utils/cryptography.cpp
+    src/utils/crypto.cpp
     src/utils/debugging.cpp
     src/utils/doc.cpp
     src/utils/enc_ind.cpp

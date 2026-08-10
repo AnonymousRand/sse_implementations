@@ -208,7 +208,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     int64_t db2Size = db2.size();
-    db2.reserve(calcTdagEntryCount(db2Size));
+    db2.reserve(utils::calcTdagEntryCount(db2Size));
     for (int64_t i = 0; i < db2Size; i++) {
         DbEntry<Doc<IdAlias>, IdAlias> dbEntry = db2[i];
         Doc<IdAlias> doc = dbEntry.first;
@@ -230,12 +230,12 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // build index 1
 
     // build TDAG 1 over `Kw`s
-    Range<Kw> db1KwBounds = findDbKwBounds(db1);
+    Range<Kw> db1KwBounds = utils::findDbKwBounds(db1);
     this->tdag1 = new TdagNode<Kw>(db1KwBounds);
 
     // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
     int64_t db1Size = db1.size();
-    db1.reserve(calcTdagEntryCount(db1Size));
+    db1.reserve(utils::calcTdagEntryCount(db1Size));
     for (int64_t i = 0; i < db1Size; i++) {
         DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
         SrcIDb1Doc doc = dbEntry.first;

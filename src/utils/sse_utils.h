@@ -26,7 +26,7 @@ using IdAlias = int64_t; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
  *     - keywords and ids are both nonnegative integer values (storable by `int64_t`)
  *       (as `DUMMY` here is used for both).
  */
-static constexpr int64_t DUMMY = -1;
+inline constexpr int64_t DUMMY = -1;
 
 
 // forward declarations (not includes to avoid circular includes)
@@ -85,6 +85,9 @@ std::ostream& operator <<(std::ostream& os, const DbEntry<DbDoc, DbKw>& dbEntry)
 //==============================================================================
 
 
+namespace utils {
+
+
 template <class IndKey, IsDbDoc DbDoc>
 void shuffleInd(Ind<IndKey, DbDoc>& ind);
 
@@ -102,3 +105,6 @@ void cleanUpResults(std::vector<DbDoc>& docs);
 
 
 uint64_t hashToPos(const ustring& hash);
+
+
+} // namespace `utils`

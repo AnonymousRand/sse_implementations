@@ -5,6 +5,9 @@
 #include <string>
 
 
+namespace utils {
+
+
 ustring toUstr(int64_t n) {
     std::string str = std::to_string(n);
     return ustring(str.begin(), str.end());
@@ -31,11 +34,14 @@ std::string toStr(const ustring& ustr) {
 
 
 int64_t fromUstr(const ustring& ustr) {
-    return std::stol(toStr(ustr));
+    return std::stol(utils::toStr(ustr));
 }
 
 
+} // namespace `utils`
+
+
 std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
-    return os << toStr(ustr);
+    return os << utils::toStr(ustr);
 }
 

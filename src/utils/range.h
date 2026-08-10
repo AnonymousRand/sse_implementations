@@ -48,6 +48,6 @@ struct std::hash<Range<T>> {
 
 
 template <class T>
-static Range<T> DUMMY_RANGE() {
+inline Range<T> DUMMY_RANGE() {
     return Range<T> {DUMMY, DUMMY};
 }

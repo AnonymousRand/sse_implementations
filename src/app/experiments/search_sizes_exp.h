@@ -10,7 +10,7 @@
 #include "schemes/interfaces/sse.h"
 
 #include "utils/benchmark.h"
-#include "utils/cryptography.h"
+#include "utils/crypto.h"
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
@@ -27,7 +27,7 @@ void searchSizesExp(ISse<>* sse, int64_t dbSize) {
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     // setup
-    sse->setup(constants::KEY_LEN, db);
+    sse->setup(utils::KEY_LEN, db);
     sse->benchmark->print(config::SHOULD_BENCHMARK, "Setup");
 
     // search

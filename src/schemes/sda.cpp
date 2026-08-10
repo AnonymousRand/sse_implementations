@@ -96,7 +96,7 @@ std::vector<Doc<>> Sda<Underly>::search(const Range<Kw>& query, bool shouldClean
     }
 
     if (shouldCleanUpResults) {
-        cleanUpResults(allResults);
+        utils::cleanUpResults(allResults);
     }
     return allResults;
 }
