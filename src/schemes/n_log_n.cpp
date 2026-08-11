@@ -1,6 +1,7 @@
 #include "schemes/n_log_n.h"
 
 #include <algorithm>
+#include <bit>
 #include <concepts>
 #include <cstdint>
 #include <cmath>

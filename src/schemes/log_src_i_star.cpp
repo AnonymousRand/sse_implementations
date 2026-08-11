@@ -1,6 +1,7 @@
 #include "schemes/log_src_i_star.h"
 
 #include <algorithm>
+#include <bit>
 #include <cmath>
 #include <concepts>
 #include <cstdint>
