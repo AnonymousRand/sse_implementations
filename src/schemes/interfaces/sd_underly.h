@@ -27,7 +27,7 @@ public:
     //----------------------------------------------------------------------
     // shared code
 
-    // handle clearing of `size` member variable belonging to this interface
+    // handle clearing of `this->size`
     void clear() override {
         this->size = 0;
     }
