@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "schemes/interfaces/sse.h"
 #include "schemes/interfaces/dsse.h"
+#include "schemes/interfaces/sse.h"
 
 #include "utils/doc.h"
 #include "utils/range.h"

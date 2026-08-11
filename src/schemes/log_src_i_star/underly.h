@@ -4,17 +4,11 @@
 #include <cstdint>
 #include <vector>
 
-#include "schemes/log_src_i.h" 
-#include "schemes/n_log_n.h" 
+#include "schemes/n_log_n/n_log_n.h" 
 
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
-
-
-//==============================================================================
-// `log_src_i_star::Underly`
-//==============================================================================
 
 
 namespace log_src_i_star {
@@ -50,24 +44,3 @@ private:
 
 
 } // namespace `log_src_i_star`
-
-
-//==============================================================================
-// `LogSrcIStar`
-//==============================================================================
-
-
-class LogSrcIStar : public LogSrcIBase<log_src_i_star::Underly> {
-public:
-    using LogSrcIBase<log_src_i_star::Underly>::LogSrcIBase;
-
-    //----------------------------------------------------------------------
-    // `ISse`
-
-    /**
-     * preconditions:
-     *     - entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
-     *     - entries in `db` cannot have keyword equal to `DUMMY`.
-     */
-    void setup(int secParam, const Db<Doc<>, Kw>& db) override;
-};

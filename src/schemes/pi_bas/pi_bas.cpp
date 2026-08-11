@@ -1,4 +1,4 @@
-#include "schemes/pi_bas.h"
+#include "schemes/pi_bas/pi_bas.h"
 
 #include <concepts>
 #include <cstdint>
@@ -6,9 +6,9 @@
 #include <utility>
 #include <vector>
 
-#include "schemes/pi_bas_server.h"
 #include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/static_point_sse.h"
+#include "schemes/pi_bas/pi_bas_server.h"
 
 #include "utils/crypto.h"
 #include "utils/doc.h"

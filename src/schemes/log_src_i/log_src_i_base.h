@@ -3,19 +3,14 @@
 #include <concepts>
 #include <vector>
 
-#include "schemes/pi_bas.h"
 #include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/sse.h"
+#include "schemes/pi_bas/pi_bas.h"
 
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/tdag.h"
-
-
-//==============================================================================
-// `LogSrcIBase`
-//==============================================================================
 
 
 // common code between `LogSrcI` and `LogSrcIStar`
@@ -51,26 +46,4 @@ protected:
     // also it's specifically PiBas since `LogSrcIStar` may use locality-aware `Underly`,
     // which doesn't store non-TDAG datasets correctly or efficiently (e.g. they might pad)
     PiBas<Doc<>, Kw>* origDbUnderly = new PiBas<Doc<>, Kw>(this->benchmark);
-};
-
-
-//==============================================================================
-// `LogSrcI`
-//==============================================================================
-
-
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-class LogSrcI : public LogSrcIBase<Underly> {
-public:
-    using LogSrcIBase<Underly>::LogSrcIBase;
-
-    //----------------------------------------------------------------------
-    // `ISse`
-
-    /**
-     * preconditions:
-     *     - entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
-     *     - entries in `db` cannot have keyword equal to `DUMMY`.
-     */
-    void setup(int secParam, const Db<Doc<>, Kw>& db) override;
 };

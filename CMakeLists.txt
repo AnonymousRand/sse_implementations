@@ -9,14 +9,23 @@ find_package(OpenSSL REQUIRED CONFIG)
 add_executable(
     main
     src/main.cpp
-    src/schemes/log_src.cpp
-    src/schemes/log_src_i.cpp
-    src/schemes/log_src_i_star.cpp
-    src/schemes/n_log_n.cpp
-    src/schemes/n_log_n_server.cpp
-    src/schemes/pi_bas.cpp
-    src/schemes/pi_bas_server.cpp
-    src/schemes/sda.cpp
+
+    src/schemes/log_src/log_src.cpp
+
+    src/schemes/log_src_i/log_src_i.cpp
+    src/schemes/log_src_i/log_src_i_base.cpp
+
+    src/schemes/log_src_i_star/log_src_i_star.cpp
+    src/schemes/log_src_i_star/underly.cpp
+
+    src/schemes/n_log_n/n_log_n.cpp
+    src/schemes/n_log_n/n_log_n_server.cpp
+
+    src/schemes/pi_bas/pi_bas.cpp
+    src/schemes/pi_bas/pi_bas_server.cpp
+
+    src/schemes/sda/sda.cpp
+
     src/utils/crypto.cpp
     src/utils/debugging.cpp
     src/utils/doc.cpp

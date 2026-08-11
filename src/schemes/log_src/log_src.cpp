@@ -1,4 +1,4 @@
-#include "schemes/log_src.h"
+#include "schemes/log_src/log_src.h"
 
 #include <concepts>
 #include <list>
@@ -13,8 +13,8 @@
 #include "utils/tdag.h"
 
 // for explicit template instantiation
-#include "schemes/n_log_n.h"
-#include "schemes/pi_bas.h"
+#include "schemes/n_log_n/n_log_n.h"
+#include "schemes/pi_bas/pi_bas.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>

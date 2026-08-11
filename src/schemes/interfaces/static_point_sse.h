@@ -7,6 +7,7 @@
 
 #include "utils/crypto.h"
 #include "utils/doc.h"
+#include "utils/enc_ind.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/ustring.h"

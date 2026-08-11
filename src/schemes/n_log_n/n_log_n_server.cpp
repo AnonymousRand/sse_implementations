@@ -1,4 +1,4 @@
-#include "schemes/n_log_n_server.h"
+#include "schemes/n_log_n/n_log_n_server.h"
 
 #include <concepts>
 #include <cstdint>

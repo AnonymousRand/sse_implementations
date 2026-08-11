@@ -9,12 +9,12 @@
 #include "app/sse_factory.h"
 #include "app/experiments/experiments.h"
 
-#include "schemes/log_src.h"
-#include "schemes/log_src_i.h"
-#include "schemes/log_src_i_star.h"
-#include "schemes/n_log_n.h"
-#include "schemes/pi_bas.h"
-#include "schemes/sda.h"
+#include "schemes/log_src/log_src.h"
+#include "schemes/log_src_i/log_src_i.h"
+#include "schemes/log_src_i_star/log_src_i_star.h"
+#include "schemes/n_log_n/n_log_n.h"
+#include "schemes/pi_bas/pi_bas.h"
+#include "schemes/sda/sda.h"
 
 #include "utils/range.h"
 #include "utils/sse_utils.h"
