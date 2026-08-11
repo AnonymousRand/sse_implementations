@@ -17,10 +17,11 @@
 //==============================================================================
 
 
-// interface for documents in dataset; also store the `DbKw` range (e.g. Log-SRC replications) they're stored with
-// in their respective datasets, so that we can easily fetch them in plaintext for things like SDa
-// (otherwise they might be only accessible via the encrypted "label" in the encrypted index, which can be a hash/PRF
-// and hence not easily reversible, unlike `DbDoc`s which are just encrypted and can be easily decrypted)
+// interface for documents in dataset; also store the `DbKw` range (e.g. Log-SRC replications)
+// they're stored with in their respective datasets, so that we can easily fetch them in
+// plaintext for things like SDa (otherwise they might be only accessible via the
+// encrypted "label" in the encrypted index, which can be a hash/PRF and hence not easily
+// reversible, unlike `DbDoc`s which are just encrypted and can be easily decrypted)
 template <class T, class DbKw>
 class IDbDoc {
 public:

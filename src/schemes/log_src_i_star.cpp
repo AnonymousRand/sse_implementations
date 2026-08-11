@@ -48,9 +48,9 @@ std::vector<DbDoc> Underly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
 
-    // for Log-SRC-i*, the TDAG structure means we can determine the number of results and hence the level to search
-    // based on the size of the queried range/node, so we don't have to store an encrypted map
-    // (and result size is leaked to server anyway)
+    // for Log-SRC-i*, the TDAG structure means we can determine the number of results
+    // and hence the level to search based on the size of the queried range/node, so we
+    // don't have to store an encrypted map (and result size is leaked to server anyway)
     int64_t dbKwCount = query.size();
     int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
@@ -59,9 +59,12 @@ std::vector<DbDoc> Underly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
     std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
     uint64_t lvl = lvlAndPos.first;
     uint64_t pos = lvlAndPos.second;
-    // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
+    // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
+    // to hide true result size
     uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(lvl, startPos, dbKwPaddedCount, label);
+    std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
+        lvl, startPos, dbKwPaddedCount, label
+    );
     for (EncIndVal encResult : encResults) {
         DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);
@@ -77,8 +80,9 @@ std::vector<DbDoc> Underly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 int64_t Underly<DbDoc, DbKw>::computeNumLvls() const {
-    // the key to avoiding the blowup of using NLogN as a black box is by using `leafCount` instead of `this->size` here,
-    // since `this->size` includes the replicated tuples and using it sort of assumes those are only the "raw" entries
+    // the key to avoiding the blowup of using NLogN as a black box is by using
+    // `leafCount` instead of `this->size` here, since `this->size` includes the
+    // replicated tuples and using it sort of assumes those are only the "raw" entries
     return std::ceil(std::log2(this->leafCount)) + 1;
 }
 
@@ -131,7 +135,8 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     Db<Doc<>, Kw> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
 
-    // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2` leaves with this information
+    // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
+    // leaves with this information
     Db<SrcIDb1Doc, Kw> db1;
     Db<Doc<IdAlias>, IdAlias> db2;
     int64_t dbSortedSize = dbSorted.size();
@@ -169,7 +174,8 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
             lastIdAliasWithKw = idAlias;
         }
     }
-    // make sure to write in last `Kw` (which cannot be detected by `kw != prevKw` in the loop above)
+    // make sure to write in last `Kw` (which cannot be detected by `kw != prevKw`
+    // in the loop above)
     if (prevKw != DUMMY) {
         addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
     }
@@ -220,10 +226,12 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // build index 1
 
     // build TDAG 1 over `Kw`s
-    // since `Kw`s have no guarantee of being contiguous but the leaves and hence bottom level in the index must be,
-    // we need to pad `db1` to have (exactly) one doc per `Kw` (we can just leave blanks in the case of non-locality
-    // Log-SRC-i since docs are placed pseudorandomly in the index, but here we have to pad to avoid empty buckets
-    // in the index that the server knows corresponds to a lack of docs with that keyword)
+    // since `Kw`s have no guarantee of being contiguous but the leaves and hence
+    // bottom level in the index must be, we need to pad `db1` to have (exactly)
+    // one doc per `Kw` (we can just leave blanks in the case of non-locality
+    // Log-SRC-i since docs are placed pseudorandomly in the index, but here we
+    // have to pad to avoid empty buckets in the index that the server knows
+    // corresponds to a lack of docs with that keyword)
     DbEntry<Doc<>, Kw> dbEntry = dbSorted[0];
     prevKw = dbEntry.second.first;
     for (int64_t i = 1; i < dbSortedSize; i++) {
@@ -257,7 +265,8 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
     }
     this->tdag1 = new TdagNode<Kw>(Range {db1KwBounds.first, maxDb1Kw});
 
-    // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
+    // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/
+    // TDAG 1 nodes that cover it
     db1Size = db1.size();
     db1.reserve(utils::calcTdagEntryCount(db1Size));
     for (int64_t i = 0; i < db1Size; i++) {

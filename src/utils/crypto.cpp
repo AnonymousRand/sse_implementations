@@ -87,7 +87,9 @@ ustring hash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input) {
 // PRF implemented with HMAC-SHA512, as done in Demertzis'16
 ustring prf(const ustring& key, const ustring& input) {
     unsigned int outputLen;
-    uchar* output = HMAC(EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen);
+    uchar* output = HMAC(
+        EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen
+    );
     return toUstr(output, outputLen);
 }
 
@@ -132,9 +134,8 @@ ustring padAndEncrypt(
     const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv, int targetLenBytes
 ) {
     if (targetLenBytes < ptext.length()) {
-        std::cerr << "Error: padAndEncrypt(): plaintext of length " << ptext.length() << " bytes is too long! "
-                  << "(want " << targetLenBytes << " bytes)" << std::endl;
-        std::exit(EXIT_FAILURE);
+        std::cerr << "Error: padAndEncrypt(): plaintext of length " << ptext.length()
+                  << " bytes is too long! " << "(want " << targetLenBytes << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
     ustring padding(targetLenBytes - ptext.length(), '\0');
@@ -142,7 +143,9 @@ ustring padAndEncrypt(
 }
 
 
-ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv) {
+ustring decrypt(
+    const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv
+) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
         handleErrors();
@@ -178,7 +181,9 @@ ustring decrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& cte
 }
 
 
-ustring decryptAndUnpad(const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv) {
+ustring decryptAndUnpad(
+    const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv
+) {
     ustring ptext = decrypt(cipher, key, ctext, iv);
     int paddingStartInd;
     for (paddingStartInd = ptext.length() - 1; paddingStartInd >= 0; paddingStartInd--) {
@@ -186,7 +191,7 @@ ustring decryptAndUnpad(const EVP_CIPHER* cipher, const ustring& key, const ustr
             break;
         }
     }
-    ptext.resize(paddingStartInd + 1); // `+ 1` since strings still have to end with a null terminator
+    ptext.resize(paddingStartInd + 1); // (`+ 1` for null terminator)
     return ptext;
 }
 

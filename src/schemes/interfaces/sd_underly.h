@@ -19,7 +19,8 @@ public:
     // methods to implement
 
     /**
-     * append the `db` most recently passed to `setup()` (without any replications/padding/processing) to `ret`.
+     * append the `db` most recently passed to `setup()` (without any replications/
+     * padding/processing) to `ret`.
      */
     virtual void getDb(Db<DbDoc, DbKw>& ret) const = 0;
 

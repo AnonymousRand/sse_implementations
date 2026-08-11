@@ -19,7 +19,8 @@
 
 template <class T>
 TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
-        range(Range<T> {left->range.first, right->range.second}), left(left), right(right), extraParent(nullptr) {}
+    range(Range<T> {left->range.first, right->range.second}),
+    left(left), right(right), extraParent(nullptr) {}
 
 
 template <class T>
@@ -43,7 +44,8 @@ TdagNode<T>::TdagNode(const Range<T>& leafValRange) {
     }
 
     // array to hold nodes while building; initialize with leaves
-    // `deque` seems to perform marginally better than `list` or `vector` and seems to be the most natural choice here
+    // (`deque` seems to perform marginally better than `list` or `vector` and seems to be
+    // the most natural choice here)
     std::deque<TdagNode<T>*> l;
     for (Range<T> leafVal : leafVals) {
         l.push_back(new TdagNode<T>(leafVal));
@@ -71,11 +73,13 @@ TdagNode<T>::TdagNode(const Range<T>& leafValRange) {
     };
 
     while (l.size() > 1) {
-        // find first two nodes from `l` that have contiguous ranges and join them with a parent node
-        // then delete these two nodes and append their new parent node to `l` to keep building tree
+        // find first two nodes from `l` that have contiguous ranges and join them with
+        // a parent node, then delete these two nodes and append their new parent node
+        // to `l` to keep building the tree
         TdagNode<T>* node1 = l.front();
         l.pop_front();
-        // find a contiguous node; I proved that this must either be the next node at the front, or the one at the back
+        // find a contiguous node (I've proved that this must either be the next node
+        // at the front, or the one at the back)
         if (joinNodes(node1, l.begin())) {
             continue;
         } 
@@ -92,9 +96,10 @@ TdagNode<T>::TdagNode(const Range<T>& leafValRange) {
         TdagNode<T>* node = nodes.front();
         nodes.pop_front();
         if (node->left == nullptr
-                || node->right == nullptr
-                || node->left->right == nullptr
-                || node->right->left == nullptr) {
+            || node->right == nullptr
+            || node->left->right == nullptr
+            || node->right->left == nullptr)
+        {
             continue;
         }
 
@@ -102,7 +107,8 @@ TdagNode<T>::TdagNode(const Range<T>& leafValRange) {
         node->left->right->extraParent = extraParent;
         node->right->left->extraParent = extraParent;
         extraParent->isExtraParent = true;
-        // using my method of finding places to add extra nodes, extra nodes themselves must also be checked
+        // using my method of finding places to add extra nodes, extra nodes themselves
+        // must also be checked
         nodes.push_back(extraParent);
     }
 
@@ -126,8 +132,9 @@ TdagNode<T>::~TdagNode() {
         this->right = nullptr;
     }
     if (this->extraParent != nullptr) {
-        // prevent double frees (since two nodes have the same `extraParent`) by setting the other such node's
-        // `extraParent` to nullptr, indicating it has been (or is about to be, I guess) freed
+        // prevent double frees (since two nodes have the same `extraParent`) by
+        // setting the other such node's `extraParent` to nullptr, indicating it
+        // has been (or is about to be, I guess) freed
         if (this == this->extraParent->left) {
             this->extraParent->right->extraParent = nullptr;
         } else if (this == this->extraParent->right) {
@@ -149,7 +156,9 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse() {
 
 
 template <class T>
-std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents) {
+std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(
+    std::unordered_set<TdagNode<T>*>& extraParents
+) {
     std::list<TdagNode<T>*> nodes;
     nodes.push_front(this);
 
@@ -162,7 +171,8 @@ std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(std::unordered_set<TdagNode<
     }
     if (this->extraParent != nullptr) {
         auto res = extraParents.insert(this->extraParent);
-        // if insertion succeeded; i.e., the node is not already in the `unordered_set` (this prevents duplicates)
+        // if insertion succeeded; i.e., the node is not already in the `unordered_set`
+        // (this prevents duplicates)
         if (res.second) {
             nodes.push_back(this->extraParent);
         }
@@ -218,7 +228,8 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
     // if the current node's range is narrower than the target range, it is impossible for
     // its children to be the SRC, so its extra TDAG parent is the only possible SRC candidate
     if (this->range.size() < targetRange.size()) {
-        // if the earlier `if` case concluded that `extraParent` is not a valid cover, return nothing
+        // if the earlier `if` case concluded that `extraParent` is not a valid cover,
+        // return nothing
         if (diff == -1) {
             return DUMMY_RANGE<T>();
         }
@@ -296,8 +307,9 @@ namespace utils {
 
 
 int64_t calcTdagEntryCount(int64_t leafCount) {
-    // a formula for the total number of entries above level i, where n = leaf count and m = log_2(n) is the
-    // level number of the top level (where bottom level is 0) is (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1):
+    // a formula for the total number of entries above level i, where n = leaf count
+    // and m = log_2(n) is the level number of the top level (where bottom level is 0)
+    // is (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1):
     // the bucket count at level j (j >= 1) is 2^(1-j)n - 1, and the bucket size at level j is 2^j,
     // so the total number of items above level i is
     //   (2^(1-m)n - 1)2^m  +  (2^(1-(m-1))n - 1)2^(m-1)  +  ...  +  (2^(1-(i+1))n - 1)2^(i+1)
@@ -309,12 +321,12 @@ int64_t calcTdagEntryCount(int64_t leafCount) {
     // = (m - i)(2n) - ((1 - 0.5^(m-i)) 2^m / 0.5)            (sum of geometric series)
     // = (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1)
     //
-    // so here we are just calculating the case where i is 0 (so number of entries above bottom level)
-    // and then adding the number of leaves
+    // so here we are just calculating the case where i is 0 (so number of entries
+    // above the bottommost level) and then adding the number of leaves
     int64_t topLevelNum = std::log2(leafCount);
     return topLevelNum * (2 * leafCount)
-            - (1 - std::pow(2, -topLevelNum)) * std::pow(2, topLevelNum + 1)
-            + leafCount;
+        - (1 - std::pow(2, -topLevelNum)) * std::pow(2, topLevelNum + 1)
+        + leafCount;
 }
 
 

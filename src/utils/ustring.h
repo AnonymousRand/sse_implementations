@@ -27,7 +27,8 @@ int64_t fromUstr(const ustring& ustr);
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 
-// provide hash function for `ustring`s to use faster hashmap-based structures, like `unordered_map` instead of `map`
+// provide hash function for `ustring`s to use faster hashmap-based structures,
+// like `unordered_map` instead of `map`
 template <>
 struct std::hash<ustring> {
     inline std::size_t operator ()(const ustring& ustr) const noexcept {

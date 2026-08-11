@@ -12,8 +12,9 @@
 #include "utils/sse_utils.h"
 
 
-// don't use template template param for `Underly` because they may have other deeper underlying schemes 
-// (e.g. `Sda<LogSrcI<PiBas>>`) and it gets complicated, so instead just specify all template params for `Underly` fully
+// don't use template template param for `Underly` because they may have other deeper
+// underlying schemes (e.g. `Sda<LogSrcI<PiBas>>`) and it gets complicated, so instead
+// just specify all template params for `Underly` fully
 template <IsSdUnderly Underly>
 class Sda : public IDsse<Doc<>, Kw> {
 public:

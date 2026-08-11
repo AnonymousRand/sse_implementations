@@ -37,7 +37,8 @@ void searchSizesExp(ISse<>* sse, int64_t dbSize) {
         Range<Kw> query {0, (int64_t)std::pow(2, i) - 1};
         sse->search(query);
         sse->benchmark->print(
-            config::SHOULD_BENCHMARK, "Search", std::format("(range size 2^{})", std::log2(query.size()))
+            config::SHOULD_BENCHMARK, "Search",
+            std::format("(range size 2^{})", std::log2(query.size()))
         );
     }
     std::cout << std::endl;

@@ -1,5 +1,6 @@
 /**
- * indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>` (aka `EncIndVal`) pairs,
+ * indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>`
+ * (aka `EncIndVal`) pairs,
  * each of which correspond to `std::pair<key/label, std::pair<encrypted doc, IV>>`.
  */
 
@@ -56,14 +57,17 @@ public:
      * (i.e. another kv pair overflowed there first).
      *
      * params:
-     *     - `posFoundAt`: pointer whose value is replaced by the `pos` at which `key` was eventually found
-     *       (if it was found; otherwise it is left unchanged). set to `nullptr` to not receive this value.
+     *     - `posFoundAt`: pointer whose value is replaced by the `pos` at which `key`
+     *       was eventually found (if it was found; otherwise it is left unchanged).
+     *       set to `nullptr` to not receive this value.
      *
      * returns:
      *     - `true` if the kv pair corresponding to `key` was eventually found.
      *     - `false` if the kv pair corresponding to `key` was never found in the entire index.
      */
-    bool find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* posFoundAt = nullptr) const;
+    bool find(
+        uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* posFoundAt = nullptr
+    ) const;
 
     /**
      * reads and decodes the value at `pos` (without checking the "key`).

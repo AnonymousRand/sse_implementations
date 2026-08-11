@@ -9,7 +9,7 @@
 #include "utils/sse_utils.h"
 
 
-// forward declare instead of include as otherwise we would get a circular include with `benchmark.h`
+// forward declare instead of include to avoid a circular include with `benchmark.h`
 struct Benchmark;
 
 
@@ -21,7 +21,7 @@ public:
     using ISse<DbDoc, DbKw>::ISse;
 
     IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup) :
-            ISse<DbDoc, DbKw>(benchmark), useShortcutSetup(useShortcutSetup) {}
+        ISse<DbDoc, DbKw>(benchmark), useShortcutSetup(useShortcutSetup) {}
 
     //----------------------------------------------------------------------
     // methods to implement

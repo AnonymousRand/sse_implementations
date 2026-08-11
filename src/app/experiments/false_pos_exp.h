@@ -47,7 +47,8 @@ void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
 
         /*
         // two unique keywords, with all but one being 0 and the other being the max
-        // thus all but one doc will be returned as false positives on a [1, n - 1] query (if the root node is the SRC)
+        // thus all but one doc will be returned as false positives on a [1, n - 1] query
+        // (if the root node is the SRC)
         Db<> db;
         Kw kw1 = 0;
         Kw kw2 = dbSize - 1;

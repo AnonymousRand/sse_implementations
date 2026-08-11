@@ -66,7 +66,8 @@ Range<T> Range<T>::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, Range<T>::REGEX) || matches.size() != 3) {
         std::cerr << "Error: Range::fromStr(): bad string \"" << str << "\" passed" << std::endl
-                  << "Regex to match is \"" << Range<T>::REGEX_STR << "\"; matched groups are:" << std::endl;
+                  << "Regex to match is \"" << Range<T>::REGEX_STR << "\"; matched groups are:"
+                  << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
         }

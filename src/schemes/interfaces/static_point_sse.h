@@ -34,7 +34,8 @@ public:
                 allResults.insert(allResults.end(), results.begin(), results.end());
             }
         } else {
-            // search entire range in one go (i.e. `query` itself must be in the db), e.g. as underlying for Log-SRC
+            // search entire range in one go (i.e. `query` itself must be in the db),
+            // e.g. as the underlying scheme for a range scheme like Log-SRC
             allResults = this->searchBase(query);
         }
 

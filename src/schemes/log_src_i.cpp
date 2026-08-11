@@ -7,16 +7,17 @@
 #include <utility>
 #include <vector>
 
-// for explicit template instantiation
-#include "schemes/log_src_i_star.h"
-#include "schemes/n_log_n.h"
-#include "schemes/pi_bas.h"
 #include "schemes/interfaces/sse.h"
 
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/tdag.h"
+
+// for explicit template instantiation
+#include "schemes/log_src_i_star.h"
+#include "schemes/n_log_n.h"
+#include "schemes/pi_bas.h"
 
 
 //==============================================================================
@@ -47,7 +48,9 @@ LogSrcIBase<Underly>::~LogSrcIBase() {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-std::vector<Doc<>> LogSrcIBase<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
+std::vector<Doc<>> LogSrcIBase<Underly>::search(
+    const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
+) const {
     //--------------------------------------------------------------------------
     // query 1
 
@@ -154,7 +157,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     Db<Doc<>, Kw> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
 
-    // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2` leaves with this information
+    // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
+    // leaves with this information
     Db<SrcIDb1Doc, Kw> db1;
     Db<Doc<IdAlias>, IdAlias> db2;
     db1.reserve(dbSorted.size());
@@ -191,7 +195,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
             lastIdAliasWithKw = idAlias;
         }
     }
-    // make sure to write in last `Kw` (which cannot be detected by `kw != prevKw` in the loop above)
+    // make sure to write in last `Kw` (which cannot be detected by `kw != prevKw`
+    // in the loop above)
     if (prevKw != DUMMY) {
         addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
     }
@@ -233,7 +238,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     Range<Kw> db1KwBounds = utils::findDbKwBounds(db1);
     this->tdag1 = new TdagNode<Kw>(db1KwBounds);
 
-    // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/TDAG 1 nodes that cover it
+    // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/
+    // TDAG 1 nodes that cover it
     int64_t db1Size = db1.size();
     db1.reserve(utils::calcTdagEntryCount(db1Size));
     for (int64_t i = 0; i < db1Size; i++) {

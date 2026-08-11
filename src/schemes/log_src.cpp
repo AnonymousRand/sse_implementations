@@ -5,15 +5,16 @@
 #include <utility>
 #include <vector>
 
-// for explicit template instantiation
-#include "schemes/n_log_n.h"
-#include "schemes/pi_bas.h"
 #include "schemes/interfaces/sse.h"
 
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/tdag.h"
+
+// for explicit template instantiation
+#include "schemes/n_log_n.h"
+#include "schemes/pi_bas.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
@@ -66,7 +67,9 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-std::vector<Doc<>> LogSrc<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
+std::vector<Doc<>> LogSrc<Underly>::search(
+    const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
+) const {
     Range<Kw> src = this->tdag->findSrc(query);
     if (src == DUMMY_RANGE<Kw>()) {
         return std::vector<Doc<>> {};

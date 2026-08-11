@@ -50,25 +50,32 @@ int main() {
     );
 
     std::unique_ptr<Sda<PiBas<>>> sdaPiBas               = app::createDsse<Sda<PiBas<>>>(
-        config::SHOULD_BENCHMARK, config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
+        config::SHOULD_BENCHMARK,
+        config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
     );
     std::unique_ptr<Sda<NLogN<>>> sdaNLogN               = app::createDsse<Sda<NLogN<>>>(
-        config::SHOULD_BENCHMARK, config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
+        config::SHOULD_BENCHMARK,
+        config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
     );
     std::unique_ptr<Sda<LogSrc<PiBas>>> sdaLogSrcPiBas   = app::createDsse<Sda<LogSrc<PiBas>>>(
-        config::SHOULD_BENCHMARK, config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
+        config::SHOULD_BENCHMARK,
+        config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
     );
     std::unique_ptr<Sda<LogSrc<NLogN>>> sdaLogSrcNLogN   = app::createDsse<Sda<LogSrc<NLogN>>>(
-        config::SHOULD_BENCHMARK, config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
+        config::SHOULD_BENCHMARK,
+        config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
     );
     std::unique_ptr<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas = app::createDsse<Sda<LogSrcI<PiBas>>>(
-        config::SHOULD_BENCHMARK, config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
+        config::SHOULD_BENCHMARK,
+        config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
     );
     std::unique_ptr<Sda<LogSrcI<NLogN>>> sdaLogSrcINLogN = app::createDsse<Sda<LogSrcI<NLogN>>>(
-        config::SHOULD_BENCHMARK, config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
+        config::SHOULD_BENCHMARK,
+        config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
     );
     std::unique_ptr<Sda<LogSrcIStar>> sdaLogSrcIStar     = app::createDsse<Sda<LogSrcIStar>>(
-        config::SHOULD_BENCHMARK, config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
+        config::SHOULD_BENCHMARK,
+        config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
     );
 
     //--------------------------------------------------------------------------
@@ -79,10 +86,12 @@ int main() {
     Db<> db = app::createDb(maxDbSize, true, true); // adjust params at will
 
     std::cout << std::endl;
-    std::cout << "============================= Debugging Experiment =============================" << std::endl;
-    std::cout << "Fixed DB size 2^" << maxDbSizeExp                                                 << std::endl;
-    std::cout << "Fixed query " << query                                                            << std::endl;
-    std::cout << "================================================================================" << std::endl;
+    std::cout << "============================= Debugging Experiment ============================="
+              << std::endl;
+    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
+    std::cout << "Fixed query " << query << std::endl;
+    std::cout << "================================================================================"
+              << std::endl;
     std::cout << std::endl << std::endl;
 
     std::cout << "================ PiBas =================" << std::endl;
@@ -145,10 +154,12 @@ int main() {
     // DB sizes experiment
 
     std::cout << std::endl;
-    std::cout << "============================= DB Sizes Experiment ==============================" << std::endl;
-    std::cout << "Varied DB size up to 2^" << maxDbSizeExp                                          << std::endl;
-    std::cout << "Fixed query 0-3"                                                                  << std::endl;
-    std::cout << "================================================================================" << std::endl;
+    std::cout << "============================= DB Sizes Experiment =============================="
+              << std::endl;
+    std::cout << "Varied DB size up to 2^" << maxDbSizeExp << std::endl;
+    std::cout << "Fixed query 0-3" << std::endl;
+    std::cout << "================================================================================"
+              << std::endl;
     std::cout << std::endl << std::endl;
 
     std::cout << "================ PiBas =================" << std::endl;
@@ -211,10 +222,12 @@ int main() {
     // search sizes experiment
 
     std::cout << std::endl;
-    std::cout << "=========================== Search Sizes Experiment ============================" << std::endl;
-    std::cout << "Fixed DB size 2^" << maxDbSizeExp                                                 << std::endl;
-    std::cout << "Varied query range size"                                                          << std::endl;
-    std::cout << "================================================================================" << std::endl;
+    std::cout << "=========================== Search Sizes Experiment ============================"
+              << std::endl;
+    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
+    std::cout << "Varied query range size" << std::endl;
+    std::cout << "================================================================================"
+              << std::endl;
     std::cout << std::endl << std::endl;
 
     std::cout << "================ PiBas =================" << std::endl;
@@ -277,10 +290,12 @@ int main() {
     // result sizes experiment
 
     std::cout << std::endl;
-    std::cout << "=========================== Result Sizes Experiment ============================" << std::endl;
-    std::cout << "Fixed DB size 2^" << maxDbSizeExp                                                 << std::endl;
-    std::cout << "Varied query result size"                                                         << std::endl;
-    std::cout << "================================================================================" << std::endl;
+    std::cout << "=========================== Result Sizes Experiment ============================"
+              << std::endl;
+    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
+    std::cout << "Varied query result size" << std::endl;
+    std::cout << "================================================================================"
+              << std::endl;
     std::cout << std::endl << std::endl;
 
     std::cout << "================ PiBas =================" << std::endl;
@@ -343,10 +358,12 @@ int main() {
     // false positives experiment
 
     std::cout << std::endl;
-    std::cout << "========================== False Positives Experiment ==========================" << std::endl;
-    std::cout << "Varied DB size up to 2^" << maxDbSizeExp                                          << std::endl;
-    std::cout << "High false positives query"                                                       << std::endl;
-    std::cout << "================================================================================" << std::endl;
+    std::cout << "========================== False Positives Experiment =========================="
+              << std::endl;
+    std::cout << "Varied DB size up to 2^" << maxDbSizeExp << std::endl;
+    std::cout << "High false positives query" << std::endl;
+    std::cout << "================================================================================"
+              << std::endl;
     std::cout << std::endl << std::endl;
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl;
@@ -370,10 +387,12 @@ int main() {
 
     if (config::DSSE_SHOULD_BENCHMARK_UPDTS) {
         std::cout << std::endl;
-        std::cout << "============================== Updates Experiment ==============================" << std::endl;
-        std::cout << "Fixed DB size 2^" << maxDbSizeExp                                                 << std::endl;
-        std::cout << "One update at a time"                                                             << std::endl;
-        std::cout << "================================================================================" << std::endl;
+        std::cout << "============================== Updates Experiment =============================="
+                  << std::endl;
+        std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
+        std::cout << "One update at a time" << std::endl;
+        std::cout << "================================================================================"
+                  << std::endl;
         std::cout << std::endl << std::endl;
 
         std::cout << "============== SDa[PiBas] ==============" << std::endl;

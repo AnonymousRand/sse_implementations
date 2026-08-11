@@ -55,7 +55,8 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc<T, DbKw>& iDbDoc) {
 
 
 template <class DbKw>
-const std::string Doc<DbKw>::REGEX_STR = "\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\),(-?[0-9]+--?[0-9]+)";
+const std::string Doc<DbKw>::REGEX_STR =
+    "\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\),(-?[0-9]+--?[0-9]+)";
 
 
 template <class DbKw>
@@ -64,17 +65,19 @@ const std::regex Doc<DbKw>::REGEX(Doc<DbKw>::REGEX_STR);
 
 template <class DbKw>
 Doc<DbKw>::Doc(const std::tuple<Id, Kw, Op>& val, const Range<DbKw>& dbKwRange) :
-        IDbDoc<std::tuple<Id, Kw, Op>, DbKw>(val, dbKwRange) {}
+    IDbDoc<std::tuple<Id, Kw, Op>, DbKw>(val, dbKwRange) {}
 
 
 template <class DbKw>
-Doc<DbKw>::Doc(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) : Doc<DbKw>(std::tuple {id, kw, op}, dbKwRange) {}
+Doc<DbKw>::Doc(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) :
+    Doc<DbKw>(std::tuple {id, kw, op}, dbKwRange) {}
 
 
 template <class DbKw>
 std::string Doc<DbKw>::toStr() const {
     std::stringstream ss;
-    ss << "(" << this->getId() << "," << this->getKw() << "," << static_cast<char>(this->getOp()) << "),"
+    ss << "(" << this->getId() << "," << this->getKw() << ","
+       << static_cast<char>(this->getOp()) << "),"
        << this->dbKwRange;
     return ss.str();
 }
@@ -86,7 +89,8 @@ Doc<DbKw> Doc<DbKw>::fromUstr(const ustring& ustr) {
     std::smatch matches;
     if (!std::regex_search(str, matches, Doc<DbKw>::REGEX) || matches.size() != 5) {
         std::cerr << "Error: Doc::fromUstr(): bad string \"" << str << "\" passed" << std::endl
-                  << "Regex to match is \"" << Doc<DbKw>::REGEX_STR << "\"; matched groups are:" << std::endl;
+                  << "Regex to match is \"" << Doc<DbKw>::REGEX_STR << "\"; matched groups are:"
+                  << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
         }
@@ -130,8 +134,12 @@ template class IDbDoc<std::tuple<Id, Kw, Op>, Kw>;
 template class Doc<Kw>;
 //template class Doc<IdAlias>;
 
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, Kw>& iDbDoc);
-//template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, IdAlias>& iDbDoc);
+template std::ostream& operator <<(
+    std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, Kw>& iDbDoc
+);
+//template std::ostream& operator <<(
+//    std::ostream& os, const IDbDoc<std::tuple<Id, Kw, Op>, IdAlias>& iDbDoc
+//);
 
 
 //==============================================================================
@@ -139,18 +147,19 @@ template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::tuple<Id,
 //==============================================================================
 
 
-const std::string SrcIDb1Doc::REGEX_STR = "\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(-?[0-9]+--?[0-9]+)";
+const std::string SrcIDb1Doc::REGEX_STR =
+    "\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(-?[0-9]+--?[0-9]+)";
 
 
 const std::regex SrcIDb1Doc::REGEX(SrcIDb1Doc::REGEX_STR);
 
 
 SrcIDb1Doc::SrcIDb1Doc(const std::pair<Kw, Range<IdAlias>>& val, const Range<Kw>& kwRange) :
-        IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>(val, kwRange) {}
+    IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>(val, kwRange) {}
 
 
 SrcIDb1Doc::SrcIDb1Doc(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange) :
-        SrcIDb1Doc(std::pair {kw, idAliasRange}, kwRange) {}
+    SrcIDb1Doc(std::pair {kw, idAliasRange}, kwRange) {}
 
 
 std::string SrcIDb1Doc::toStr() const {
@@ -164,8 +173,10 @@ SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
     std::string str = ::utils::toStr(ustr);
     std::smatch matches;
     if (!std::regex_search(str, matches, SrcIDb1Doc::REGEX) || matches.size() != 4) {
-        std::cerr << "Error: SrcIDb1Doc::fromUstr(): bad string \"" << ustr << "\" passed" << std::endl
-                  << "Regex to match is \"" << SrcIDb1Doc::REGEX_STR << "\"; matched groups are:" << std::endl;
+        std::cerr << "Error: SrcIDb1Doc::fromUstr(): bad string \"" << ustr << "\" passed"
+                  << std::endl
+                  << "Regex to match is \"" << SrcIDb1Doc::REGEX_STR << "\"; matched groups are:"
+                  << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
         }
@@ -185,4 +196,6 @@ SrcIDb1Doc SrcIDb1Doc::genDummy(const Range<Kw>& kwRange) {
 
 template class IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>;
 
-template std::ostream& operator <<(std::ostream& os, const IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>& iDbDoc);
+template std::ostream& operator <<(
+    std::ostream& os, const IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>& iDbDoc
+);

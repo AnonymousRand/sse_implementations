@@ -37,9 +37,10 @@ ustring toUstr(const EncIndEntry& encIndEntry) {
 
 
 // this initializes `NULL_ENTRY` to a contiguous block of zero bits
-// (technically it is possible that some encrypted tuple happened to be all `0` bytes and thus get mistaken for
-// a null kv pair, but currently `EncInd::ENTRY_LEN` is 1536 bits so there's a 2^1536 chance of this happening...
-// and USENIX'24's implementation seems to just do this too)
+// (technically it is possible that some encrypted tuple happened to be all `0` bytes
+// and thus get mistaken for a null kv pair, but currently `EncInd::ENTRY_LEN` is
+// 1536 bits so there's a 2^1536 chance of this happening...and USENIX'24's
+// implementation seems to just do this too)
 const uchar EncInd::NULL_ENTRY[EncInd::ENTRY_LEN] = {};
 
 
@@ -53,8 +54,8 @@ void EncInd::init(int64_t size) {
     this->size = size;
 
     // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
-    // I spent like four hours trying to debug Log-SRC-i without realizing that its second index was just overwriting
-    // the same file its first index was being stored in...
+    // I spent like four hours trying to debug Log-SRC-i without realizing that its second index
+    // was just overwriting the same file its first index was being stored in...
     std::uniform_int_distribution dist(100000000, 999999999);
     this->filename = "out/enc_ind_" + std::to_string(dist(utils::RNG)) + ".dat";
     FILE* fileTmp = std::fopen(this->filename.c_str(), "r");
@@ -74,7 +75,8 @@ void EncInd::init(int64_t size) {
     for (int64_t i = 0; i < size; i++) {
         int itemsWritten = std::fwrite(EncInd::NULL_ENTRY, EncInd::ENTRY_LEN, 1, this->file);
         if (itemsWritten != 1) {
-            std::cerr << "Error: EncInd::init(): error initializing file (nothing written)" << std::endl;
+            std::cerr << "Error: EncInd::init(): error initializing file (nothing written)"
+                      << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -108,11 +110,13 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         std::exit(EXIT_FAILURE);
     }
 
-    // if entry at `pos` did not match the target `key` (i.e. another kv pair overflowed here first),
-    // scan subsequent locations for where the target `key` could've overflowed to
+    // if entry at `pos` did not match the target `key` (i.e. another kv pair overflowed here
+    // first), scan subsequent locations for where the target `key` could've overflowed to
     const uchar* targetKeyCStr = key.c_str();
     int64_t numPositionsChecked = 1;
-    while (std::memcmp(currEntry, targetKeyCStr, EncInd::KEY_LEN) != 0 && numPositionsChecked < this->size) {
+    while (std::memcmp(currEntry, targetKeyCStr, EncInd::KEY_LEN) != 0
+           && numPositionsChecked < this->size)
+    {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
@@ -120,7 +124,8 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         }
         itemsRead = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file);
         if (itemsRead != 1) {
-            std::cerr << "Error: EncInd::find(): error reading from file (nothing read)" << std::endl;
+            std::cerr << "Error: EncInd::find(): error reading from file (nothing read)"
+                      << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -172,7 +177,9 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
 
     // if location is already filled (because of modulo), find next available location
     int64_t numPositionsChecked = 1;
-    while (std::memcmp(currEntry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0 && numPositionsChecked < this->size) {
+    while (std::memcmp(currEntry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0
+           && numPositionsChecked < this->size)
+    {
         numPositionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
@@ -180,7 +187,8 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
         }
         itemsReadOrWritten = std::fread(currEntry, EncInd::ENTRY_LEN, 1, this->file); 
         if (itemsReadOrWritten != 1) {
-            std::cerr << "Error: EncInd::write(): error reading from file (nothing read)" << std::endl;
+            std::cerr << "Error: EncInd::write(): error reading from file (nothing read)"
+                      << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -194,12 +202,14 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     EncIndVal val = encIndEntry.second;
     ustring entry = key + val.first + val.second;
     if (entry.length() != EncInd::ENTRY_LEN) {
-        std::cerr << "Error: EncInd::write(): write of length " << entry.length() << " bytes is not allowed! "
+        std::cerr << "Error: EncInd::write(): write of length " << entry.length()
+                  << " bytes is not allowed! "
                   << "(want " << EncInd::ENTRY_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
-    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET); // go back to the correct spot, undoing last `fread`
+    // go back to the correct spot, undoing last `fread`
+    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
     int itemsWritten = std::fwrite(entry.c_str(), EncInd::ENTRY_LEN, 1, this->file);
     if (itemsWritten != 1) {
         std::cerr << "Error: EncInd::write(): error writing to file (nothing written)" << std::endl;
@@ -240,6 +250,7 @@ EncIndEntry EncInd::get(uint64_t pos) const {
 void EncInd::print() const {
     for (int64_t pos = 0; pos < this->size; pos++) {
         EncIndEntry entry = this->get(pos);
-        std::cerr << pos << ": " << utils::ustrToHex(utils::toUstr(entry)) << std::endl << std::endl;
+        std::cerr << pos << ": " << utils::ustrToHex(utils::toUstr(entry))
+                  << std::endl << std::endl;
     }
 }

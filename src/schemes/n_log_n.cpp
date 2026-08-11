@@ -89,8 +89,9 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             int64_t amountToPad = std::pow(2, std::ceil(std::log2(dbKwCount))) - dbKwCount;
             dbKwList.reserve(dbKwCount + amountToPad);
             // notice we even use dummy range for the db keyword (i.e. `Range<DbKw>`)
-            // to differentiate from dummies originating upstream in Log-SRC-i* padding etc. (needed for `getDb()`)
-            // (also since doing this doesn't affect the correctness of NLogN or the purpose of the dummies)
+            // to differentiate from dummies originating upstream in Log-SRC-i* padding
+            // etc. (needed for `getDb()`)
+            // (and this doesn't affect the correctness of NLogN or the purpose of the dummies)
             DbDoc dummyDbDoc = DbDoc::genDummy(DUMMY_RANGE<DbKw>());
             for (int64_t i = 0; i < amountToPad; i++) {
                 dbKwList.push_back(dummyDbDoc);
@@ -128,7 +129,9 @@ void NLogN<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
                 utils::ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            encIndLvls[lvl]->write(startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}});
+            encIndLvls[lvl]->write(
+                startPos + dbKwCounter, std::pair {label, std::pair {encDbDoc, iv}}
+            );
         }
     }
 
@@ -191,7 +194,8 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
 
-    // first retrieve the number of results/`dbKwCount` to know what level to search (and how many dummies there are)
+    // first retrieve the number of results/`dbKwCount` to know what level to search
+    // (and how many dummies there are)
     ustring labelDict;
     uint64_t posDict = this->mapNoMod(queryToken, labelDict);
     EncIndVal encIndValDict;
@@ -201,7 +205,9 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
-    ustring decDbKwCount = utils::decryptAndUnpad(utils::ENC_CIPHER, this->encKey, encDbKwCount, ivDict);
+    ustring decDbKwCount = utils::decryptAndUnpad(
+        utils::ENC_CIPHER, this->encKey, encDbKwCount, ivDict
+    );
     int64_t dbKwCount = utils::fromUstr(decDbKwCount);
     int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
@@ -210,9 +216,12 @@ std::vector<DbDoc> NLogN<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
     std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
     uint64_t lvl = lvlAndPos.first;
     uint64_t pos = lvlAndPos.second;
-    // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server to hide true result size
+    // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
+    // to hide true result size
     uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(lvl, startPos, dbKwPaddedCount, label);
+    std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
+        lvl, startPos, dbKwPaddedCount, label
+    );
     for (EncIndVal encResult : encResults) {
         DbDoc result = this->decryptEncIndVal(encResult);
         results.push_back(result);

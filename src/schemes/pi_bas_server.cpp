@@ -26,8 +26,9 @@ PiBasServer<DbDoc, DbKw>::~PiBasServer() {
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 void PiBasServer<DbDoc, DbKw>::clear() {
-    // (this is deleted instead of just cleared since we only set it via direct pointer assignment,
-    // so if we don't delete we would make this memory inaccessible the next time we assign `encInd`)
+    // (this is deleted instead of just cleared since we only set it via direct
+    // pointer assignment, so if we don't delete we would make this memory inaccessible
+    // the next time we assign `encInd`)
     if (this->encInd != nullptr) {
         this->benchmark->diskSize -= this->encInd->getSize() * EncInd::ENTRY_LEN;
         delete this->encInd;
@@ -64,7 +65,8 @@ std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::searchEncInd(const ustring& que
     // for c = 0 until `Get` returns error
     int64_t dbKwCounter = 0;
     while (true) {
-        // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos` (same as client's `setup()`)
+        // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
+        // (same as client's `setup()`)
         ustring label = utils::hash(
             utils::HASH_FUNC, utils::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
         );

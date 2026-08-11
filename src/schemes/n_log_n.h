@@ -56,12 +56,15 @@ protected:
     /**
      * generate encrypted label to store in encrypted index, and also return
      * numerical level and position at which to place it in the index.
-     * (position is a bucket count, not entry count, so it is the raw position mod bucket count on that level.)
+     * (position is a bucket count, not entry count, so this is the raw position
+     * mod the bucket count on that level.)
      *
      * preconditions:
      *     - `dbKwListSize` is a power of 2.
      */
-    std::pair<uint64_t, uint64_t> map(const ustring& queryToken, int64_t dbKwPaddedCount, ustring& retLabel) const;
+    std::pair<uint64_t, uint64_t> map(
+        const ustring& queryToken, int64_t dbKwPaddedCount, ustring& retLabel
+    ) const;
 
     virtual int64_t computeNumLvls() const;
     virtual int64_t computeBcktCountOnLvl(int64_t lvlNum) const;

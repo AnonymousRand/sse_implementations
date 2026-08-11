@@ -40,10 +40,11 @@ template <class DbKw = Kw>
 class Doc;
 
 
-// black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s template param
-// i.e. without needing to know what the template param `T2` of `IDbDoc` is, unlike `std::derived_from` for example
-// (Java generics `extends`: look what they need to mimic a fraction of my power)
-// (and this doesn't even enforce existence of instance methods as clearly as Java, so just pretend that it does)
+// black magic to detect if `T` is derived from `IDbDoc` regardless of `IDbDoc`'s
+// template param, i.e. without needing to know what the template param `T2` of
+// `IDbDoc` is, unlike `std::derived_from` for example (Java generics `extends`:
+// look what they need to mimic a fraction of my power) (and this doesn't even enforce
+// existence of instance methods as clearly as Java, so just pretend that it does)
 template <class T>
 concept IsDbDoc = requires(T t) {
     []<class ... Args>(IDbDoc<Args ...>&){}(t);

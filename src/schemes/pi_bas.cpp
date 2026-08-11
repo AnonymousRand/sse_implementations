@@ -62,7 +62,8 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
             ind[dbKwRange].push_back(dbDoc);
         }
     }
-    // randomly permute documents associated with same keyword, required by some schemes on top of PiBas (e.g. Log-SRC)
+    // randomly permute documents associated with same keyword, required by
+    // some schemes on top of PiBas (e.g. Log-SRC)
     utils::shuffleInd(ind);
 
     // for each w in W
@@ -163,7 +164,9 @@ ustring PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
 
 
 template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-uint64_t PiBas<DbDoc, DbKw>::map(const ustring& queryToken, int64_t dbKwCounter, ustring& retLabel) const {
+uint64_t PiBas<DbDoc, DbKw>::map(
+    const ustring& queryToken, int64_t dbKwCounter, ustring& retLabel
+) const {
     // l <- Hash(PRF(K_1, w) || c)
     retLabel = utils::hash(
         utils::HASH_FUNC, utils::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)

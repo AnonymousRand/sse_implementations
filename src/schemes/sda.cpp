@@ -6,17 +6,18 @@
 #include <cstdint>
 #include <vector>
 
+#include "schemes/interfaces/sd_underly.h"
+
+#include "utils/doc.h"
+#include "utils/range.h"
+#include "utils/sse_utils.h"
+
 // for explicit template instantiation
 #include "schemes/log_src.h"
 #include "schemes/log_src_i.h"
 #include "schemes/log_src_i_star.h"
 #include "schemes/n_log_n.h"
 #include "schemes/pi_bas.h"
-#include "schemes/interfaces/sd_underly.h"
-
-#include "utils/doc.h"
-#include "utils/range.h"
-#include "utils/sse_utils.h"
 
 
 template <IsSdUnderly Underly>
@@ -67,7 +68,9 @@ void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
         // update the pointer to the first empty index as usual (like in `update()`)
         int64_t newFirstEmpty = 0;
-        while (newFirstEmpty < this->underlys.size() && this->underlys[newFirstEmpty]->getSize() > 0) {
+        while (newFirstEmpty < this->underlys.size()
+               && this->underlys[newFirstEmpty]->getSize() > 0)
+        {
             newFirstEmpty++;
         }
         this->firstEmptyInd = newFirstEmpty;
@@ -80,7 +83,9 @@ void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
 
 template <IsSdUnderly Underly>
-std::vector<Doc<>> Sda<Underly>::search(const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive) const {
+std::vector<Doc<>> Sda<Underly>::search(
+    const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
+) const {
     std::vector<Doc<>> allResults;
 
     // search through all non-empty indexes
@@ -88,9 +93,10 @@ std::vector<Doc<>> Sda<Underly>::search(const Range<Kw>& query, bool shouldClean
         if (underly->getSize() == 0) {
             continue;
         }
-        // don't filter out deleted tuples in underlying schemes even if `shouldCleanUpResults` is `true`
-        // the cancellation tuple for a document is not guaranteed to be in same index as the inserting tuple
-        // so we can't rely on the individual underlying instances to filter out all deleted documents
+        // don't filter out deleted tuples in underlying schemes even if `shouldCleanUpResults`
+        // is `true`; the cancellation tuple for a document is not guaranteed to be in
+        // the same index as the inserting tuple, so we can't rely on the individual
+        // underlying instances to filter out all deleted documents
         std::vector<Doc<>> results = underly->search(query, false, isNaive);
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
@@ -104,7 +110,8 @@ std::vector<Doc<>> Sda<Underly>::search(const Range<Kw>& query, bool shouldClean
 
 template <IsSdUnderly Underly>
 void Sda<Underly>::clear() {
-    // apparently vector `clear()` automatically calls the destructor for each element *unless* it is a pointer
+    // (apparently vector `clear()` automatically calls the destructor for each element
+    // *unless* it is a pointer)
     for (Underly* underly : this->underlys) {
         if (underly != nullptr) {
             delete underly;
