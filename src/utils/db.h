@@ -34,24 +34,24 @@
  * encrypted "label" in the encrypted index, which can be a hash/PRF and hence not easily
  * reversible, unlike `DbTuple`s which are just encrypted and can be easily decrypted).
  */
-template <class T, class DbKw>
+template <class DbDoc, class DbKw>
 class IDbTuple {
 public:
     // TODO are these default constructors still necessary?
     IDbTuple() = default;
-    IDbTuple(const T& val, const Range<DbKw>& dbKwRange);
+    IDbTuple(const DbDoc& val, const Range<DbKw>& dbKwRange);
 
-    T get() const;
+    DbDoc getDbDoc() const;
     Range<DbKw> getDbKwRange() const;
 
     virtual std::string toStr() const = 0;
     ustring toUstr() const;
 
-    template <class T2, class DbKw2>
-    friend std::ostream& operator <<(std::ostream& os, const IDbTuple<T2, DbKw2>& iDbTuple);
+    template <class DbDoc2, class DbKw2>
+    friend std::ostream& operator <<(std::ostream& os, const IDbTuple<DbDoc2, DbKw2>& iDbTuple);
 
 protected:
-    T val;
+    DbDoc dbDoc;
     Range<DbKw> dbKwRange;
 };
 
@@ -122,8 +122,6 @@ public:
 
     SrcIDb1Tuple() = default;
     SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange);
-    // TODO is this needed?
-    SrcIDb1Tuple(const SrcIDb1Tuple& srcIDb1Tuple);
 
     Kw getKw() const;
     Range<IdAlias> getIdAliasRange() const;

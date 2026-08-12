@@ -177,7 +177,7 @@ void NLogN<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
             // exclude dummies/padding (that are from NLogN's `setup()`, but not from
             // an upstream SSE scheme which is using NLogN as an underlying scheme)
             if (dbKwRange != DUMMY_RANGE<DbKw>()) {
-                DbTuple newDbTuple(dbTuple.get(), dbKwRange);
+                DbTuple newDbTuple(dbTuple.getDbDoc(), dbKwRange);
                 ret.push_back(newDbTuple);
             }
         }

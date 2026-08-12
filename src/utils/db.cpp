@@ -18,33 +18,33 @@
 //==============================================================================
 
 
-template <class T, class DbKw>
-IDbTuple<T, DbKw>::IDbTuple(const T& val, const Range<DbKw>& dbKwRange) {
-    this->val = val;
+template <class DbDoc, class DbKw>
+IDbTuple<DbDoc, DbKw>::IDbTuple(const T& dbDoc, const Range<DbKw>& dbKwRange) {
+    this->dbDoc = dbDoc;
     this->dbKwRange = dbKwRange;
 }
 
 
-template <class T, class DbKw>
-T IDbTuple<T, DbKw>::get() const {
-    return this->val;
+template <class DbDoc, class DbKw>
+T IDbTuple<DbDoc, DbKw>::getDbDoc() const {
+    return this->dbDoc;
 }
 
 
-template <class T, class DbKw>
-Range<DbKw> IDbTuple<T, DbKw>::getDbKwRange() const {
+template <class DbDoc, class DbKw>
+Range<DbKw> IDbTuple<DbDoc, DbKw>::getDbKwRange() const {
     return this->dbKwRange;
 }
 
 
-template <class T, class DbKw>
-ustring IDbTuple<T, DbKw>::toUstr() const {
+template <class DbDoc, class DbKw>
+ustring IDbTuple<DbDoc, DbKw>::toUstr() const {
     return ::utils::toUstr(this->toStr());
 }
 
 
-template <class T, class DbKw>
-std::ostream& operator <<(std::ostream& os, const IDbTuple<T, DbKw>& iDbTuple) {
+template <class DbDoc, class DbKw>
+std::ostream& operator <<(std::ostream& os, const IDbTuple<DbDoc, DbKw>& iDbTuple) {
     return os << iDbTuple.toStr();
 }
 
@@ -70,19 +70,19 @@ DbTuple<DbKw>::Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) :
 
 template <class DbKw>
 Id Tuple<DbKw>::getId() const {
-    return std::get<0>(this->val);
+    return std::get<0>(this->dbDoc);
 }
 
 
 template <class DbKw>
 Kw Tuple<DbKw>::getKw() const {
-    return std::get<1>(this->val);
+    return std::get<1>(this->dbDoc);
 }
 
 
 template <class DbKw>
 Op Tuple<DbKw>::getOp() const {
-    return std::get<2>(this->val);
+    return std::get<2>(this->dbDoc);
 }
 
 
@@ -159,23 +159,19 @@ SrcIDb1Tuple::SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Rang
     SrcIDb1Tuple(std::pair {kw, idAliasRange}, kwRange) {}
 
 
-SrcIDb1Tuple::SrcIDb1Tuple(const SrcIDb1Tuple& srcIDb1Tuple) :
-    val(srcIDb1Tuple.get()), dbKwRange(srcIDb1Tuple.getDbKwRange()) {}
-
-
 Kw SrcIDb1Tuple::getKw() const {
-    return this->val.first;
+    return this->dbDoc.first;
 }
 
 
 Range<IdAlias> SrcIDb1Tuple::getIdAliasRange() const {
-    return this->val.second;
+    return this->dbDoc.second;
 }
 
 
 std::string SrcIDb1Tuple::toStr() const {
     std::stringstream ss;
-    ss << "(" << this->val.first << "," << this->val.second << ")," << this->dbKwRange;
+    ss << "(" << this->dbDoc.first << "," << this->dbDoc.second << ")," << this->dbKwRange;
     return ss.str();
 }
 

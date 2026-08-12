@@ -118,7 +118,7 @@ void PiBas<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
         // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
         // to easily access these `DbKw` ranges in plaintext
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
-        DbTuple newDbTuple(dbTuple.get(), dbKwRange);
+        DbTuple newDbTuple(dbTuple.getDbDoc(), dbKwRange);
         ret.push_back(newDbTuple);
     }
 }

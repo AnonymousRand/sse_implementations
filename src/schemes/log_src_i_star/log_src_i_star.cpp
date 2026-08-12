@@ -33,8 +33,8 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // build index 2
 
     // sort documents by keyword
-    auto sortByKw = [](const DbTuple<Tuple<>, Kw>& dbTuple1, const DbTuple<Tuple<>, Kw>& dbTuple2) {
-        return dbTuple1.first.getKw() < dbTuple2.first.getKw();
+    auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
+        return tuple1.first.getKw() < tuple2.first.getKw();
     };
     Db<Tuple<>> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
@@ -51,7 +51,8 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     IdAlias lastIdAliasWithKw;
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
-        SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, Range<Kw> {prevKw, prevKw}};
+        Range<Kw> kwRange {prevKw, prevKw};
+        SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
         db1.push_back(newTuple);
     };
 
@@ -59,7 +60,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
         Tuple<> tuple = dbSorted[idAlias];
         // populate `db2` leaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};
-        Tuple<IdAlias> newTuple(tuple.get(), idAliasRange);
+        Tuple<IdAlias> newTuple(tuple.getDbDoc(), idAliasRange);
         db2.push_back(newTuple);
 
         // populate `db1` leaves
@@ -118,7 +119,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
             if (ancestor == idAliasRange) {
                 continue;
             }
-            Tuple<IdAlias> newTuple(tuple.get(), ancestor);
+            Tuple<IdAlias> newTuple(tuple.getDbDoc(), ancestor);
             db2.push_back(newTuple);
         }
     }
@@ -180,7 +181,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
             if (ancestor == kwRange) {
                 continue;
             }
-            SrcIDb1Tuple newTuple(tuple.get(), ancestor);
+            SrcIDb1Tuple newTuple(tuple.getDbDoc(), ancestor);
             db1.push_back(newTuple);
         }
     }

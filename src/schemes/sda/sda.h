@@ -34,7 +34,7 @@ public:
     //----------------------------------------------------------------------
     // `IDsse`
 
-    void update(const DbTuple<Tuple<>>& newDbTuple) override;
+    void update(const Tuple<>& newTuple) override;
 
 private:
     std::vector<Underly*> underlys;

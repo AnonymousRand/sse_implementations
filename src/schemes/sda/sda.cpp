@@ -129,11 +129,11 @@ void Sda<Underly>::clear() {
 
 
 template <IsSdUnderly Underly>
-void Sda<Underly>::update(const DbTuple<Tuple<>>& newDbTuple) {
+void Sda<Underly>::update(const Tuple<>& newTuple) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
         Underly* newUnderly = new Underly(this->benchmark);
-        newUnderly->setup(this->secParam, Db<Tuple<>> {newDbTuple});
+        newUnderly->setup(this->secParam, Db<Tuple<>> {newTuple});
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
         return;
@@ -146,7 +146,7 @@ void Sda<Underly>::update(const DbTuple<Tuple<>>& newDbTuple) {
         // (`getDb()` appends to the passed-in container)
         this->underlys[i]->getDb(mergedDb);
     }
-    mergedDb.push_back(newDbTuple);
+    mergedDb.push_back(newTuple);
     if (this->firstEmptyInd >= this->underlys.size() - 1) {
         // if we need to create a new, larger index
         Underly* newUnderly = new Underly(this->benchmark);

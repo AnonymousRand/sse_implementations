@@ -57,7 +57,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         std::list<Range<Kw>> ancestors = this->tdag->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {
             // make sure to update `DbKw` stored also in `Tuple`!
-            Tuple<> newTuple(tuple.get(), ancestor);
+            Tuple<> newTuple(tuple.getDbDoc(), ancestor);
             dbWithRepls.push_back(newTuple);
         }
     }

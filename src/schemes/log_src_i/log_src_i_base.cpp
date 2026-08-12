@@ -48,7 +48,7 @@ std::vector<Tuple<>> LogSrcIBase<Underly>::search(
     if (src1 == DUMMY_RANGE<Kw>()) { 
         return std::vector<Tuple<>> {};
     }
-    std::vector<SrcIDb1Tuple> choices = this->underly1->search(src1, false, false);
+    std::vector<SrcIDb1Tuple> query1Results = this->underly1->search(src1, false, false);
 
     //--------------------------------------------------------------------------
     // query 2
@@ -57,17 +57,17 @@ std::vector<Tuple<>> LogSrcIBase<Underly>::search(
     // (filter out unnecessary choices and merge remaining ones into a single id range)
     IdAlias minIdAlias = DUMMY;
     IdAlias maxIdAlias = DUMMY;
-    for (SrcIDb1Tuple choice : choices) {
-        Kw choiceKw = choice.get().first;
-        if (!query.contains(choiceKw)) {
+    for (SrcIDb1Tuple query1Result : query1Results) {
+        Kw kw = query1Result.getKw();
+        if (!query.contains(kw)) {
             continue;
         }
-        Range<IdAlias> choiceIdAliasRange = choice.get().second;
-        if (choiceIdAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
-            minIdAlias = choiceIdAliasRange.first;
+        Range<IdAlias> idAliasRange = query1Result.getIdAliasRange();
+        if (idAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
+            minIdAlias = idAliasRange.first;
         }
-        if (choiceIdAliasRange.second > maxIdAlias || maxIdAlias == DUMMY) {
-            maxIdAlias = choiceIdAliasRange.second;
+        if (idAliasRange.second > maxIdAlias || maxIdAlias == DUMMY) {
+            maxIdAlias = idAliasRange.second;
         }
     }
     // if there are no choices or something went wrong
@@ -117,15 +117,13 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
     this->underly2->getDb(db2);
     Ind<IdAlias, Tuple<IdAlias>> ind2 = utils::genInd(db2);
 
-    for (SrcIDb1Tuple tuple : db1) {
-        Range<Kw> kwRange = tuple.getDbKwRange();
+    for (SrcIDb1Tuple srcIDb1Tuple : db1) {
+        Range<Kw> kwRange = srcIDb1Tuple.getDbKwRange();
         // only iterate through leaf nodes in DB 1
         if (kwRange.size() > 1) {
             continue;
         }
-
         // also exclude ALL types of dummies (this is done client-side so it's fine to reveal sizes)
-        SrcIDb1Tuple srcIDb1Tuple = dbTuple.first;
         Range<IdAlias> idAliasRange = srcIDb1Tuple.getIdAliasRange();
         if (idAliasRange == DUMMY_RANGE<IdAlias>()) {
             continue;
@@ -140,9 +138,9 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
             }
 
             std::vector<Tuple<IdAlias>> kwList = iter->second;
-            for (Tuple<IdAlias> tuple : kwList) {
-                Tuple<IdAlias> newTuple(tuple.get(), kwRange);
-                ret.push_back(newTuple);
+            for (Tuple<IdAlias> db2Tuple : kwList) {
+                Tuple<IdAlias> newDb2Tuple(db2Tuple.getDbDoc(), kwRange);
+                ret.push_back(newDb2Tuple);
             }
         }
     }
