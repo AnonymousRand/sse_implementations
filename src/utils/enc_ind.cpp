@@ -21,9 +21,9 @@
 namespace utils {
 
 
-ustring toUstr(const EncIndTuple& encIndTuple) {
-    ustring key = encIndTuple.first;
-    EncIndVal val = encIndTuple.second;
+ustring toUstr(const EncIndEntry& encIndEntry) {
+    ustring key = encIndEntry.first;
+    EncIndVal val = encIndEntry.second;
     return key + val.first + val.second;
 }
 
@@ -163,7 +163,7 @@ bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
 }
 
 
-void EncInd::write(uint64_t pos, const EncIndTuple& encIndTuple) {
+void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     pos %= this->size;
 
     // check if location at `pos` is already filled
@@ -198,8 +198,8 @@ void EncInd::write(uint64_t pos, const EncIndTuple& encIndTuple) {
     }
 
     // once we've found our spot, perform the write
-    ustring key = encIndTuple.first;
-    EncIndVal val = encIndTuple.second;
+    ustring key = encIndEntry.first;
+    EncIndVal val = encIndEntry.second;
     ustring entry = key + val.first + val.second;
     if (entry.length() != EncInd::ENTRY_LEN) {
         std::cerr << "Error: EncInd::write(): write of length " << entry.length()
@@ -229,7 +229,7 @@ int64_t EncInd::getSize() const {
 // debugging
 
 
-EncIndTuple EncInd::get(uint64_t pos) const {
+EncIndEntry EncInd::get(uint64_t pos) const {
     pos %= this->size;
 
     uchar entry[EncInd::ENTRY_LEN];
@@ -243,13 +243,13 @@ EncIndTuple EncInd::get(uint64_t pos) const {
     ustring key = ustring(&entry[0], EncInd::KEY_LEN);
     ustring tuple = ustring(&entry[EncInd::KEY_LEN], EncInd::DOC_LEN);
     ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], utils::IV_LEN);
-    return EncIndTuple {key, EncIndVal {tuple, iv}};
+    return EncIndEntry {key, EncIndVal {tuple, iv}};
 };
 
 
 void EncInd::print() const {
     for (int64_t pos = 0; pos < this->size; pos++) {
-        EncIndTuple entry = this->get(pos);
+        EncIndEntry entry = this->get(pos);
         std::cerr << pos << ": " << utils::ustrToHex(utils::toUstr(entry))
                   << std::endl << std::endl;
     }

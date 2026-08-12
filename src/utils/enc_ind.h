@@ -1,7 +1,6 @@
 /**
- * indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>`
- * (aka `EncIndVal`) pairs,
- * each of which correspond to `std::pair<key/label, std::pair<encrypted tuple, IV>>`.
+ * indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>` (aka
+ * `EncIndVal`) pairs, each of which correspond to `std::pair<key, std::pair<encrypted tuple, IV>>`.
  */
 
 #pragma once
@@ -21,13 +20,13 @@
 
 
 using EncIndVal   = std::pair<ustring, ustring>;
-using EncIndTuple = std::pair<ustring, EncIndVal>;
+using EncIndEntry = std::pair<ustring, EncIndVal>;
 
 
 namespace utils {
 
 
-ustring toUstr(const EncIndTuple& encIndTuple);
+ustring toUstr(const EncIndEntry& encIndEntry);
 
 
 } // namespace `utils`
@@ -41,11 +40,15 @@ ustring toUstr(const EncIndTuple& encIndTuple);
 class EncInd {
 public:
     // (both PRF (default) and hash (res-hiding) have 512 bit output)
-    static constexpr int KEY_LEN    = utils::HASH_OUTPUT_LEN;
-    // (so max keyword/id size ~1.8x10^16 for encoding to fit)
-    static constexpr int DOC_LEN    = 7 * utils::BLOCK_SIZE;
-    static constexpr int VAL_LEN    = EncInd::DOC_LEN + utils::IV_LEN;
-    static constexpr int ENTRY_LEN  = EncInd::KEY_LEN + EncInd::VAL_LEN;
+    static constexpr int KEY_LEN   = utils::HASH_OUTPUT_LEN;
+    // (currently, encoding a `Tuple<>` is of the form `(id,kw,op),dbKw-dbKw` (and encrypting an
+    // exactly n block length plaintext with AES should produce the exact same block ciphertext),
+    // so if this is limited to the below number of characters/bytes, there are 57 chars for `id`,
+    // `kw`, and 2 instances of `dbKw` in total. if we assume they are all about the same size,
+    // this means a max keyword/id size of ~10^14 for the encoding to fit)
+    static constexpr int TUPLE_LEN = 4 * utils::BLOCK_SIZE;
+    static constexpr int VAL_LEN   = EncInd::TUPLE_LEN + utils::IV_LEN;
+    static constexpr int ENTRY_LEN = EncInd::KEY_LEN + EncInd::VAL_LEN;
 
     ~EncInd();
 
@@ -81,7 +84,7 @@ public:
     /**
      * write to first empty location starting at `pos` (may not be at `pos` if hash collision).
      */
-    void write(uint64_t pos, const EncIndTuple& encIndTuple);
+    void write(uint64_t pos, const EncIndEntry& encIndEntry);
 
     int64_t getSize() const;
 
@@ -95,6 +98,6 @@ private:
     //----------------------------------------------------------------------
     // debugging
 
-    EncIndTuple get(uint64_t pos) const;
+    EncIndEntry get(uint64_t pos) const;
     void print() const; // warning: this can be, like, a LOT of stuff!!
 };
