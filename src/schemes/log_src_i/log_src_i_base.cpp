@@ -108,21 +108,14 @@ template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
     // reconstruct the original DB passed to `setup()` from Log-SRC-i's two indexes
     // (an alternative is to store the original DB in a separate PiBas instance and call
-    // `getDb()` on that; it will be faster though it will also take up more disk space,
-    // and more importantly it can be an attack vector (e.g. it reveals the exact db size))
+    // `getDb()` on that; it will be slightly faster but it will also take up more disk space,
+    // and more importantly it can be another attack vector (e.g. it reveals the exact db size))
     Db<SrcIDb1Doc, Kw> db1;
     Db<Doc<IdAlias>, IdAlias> db2;
     this->underly1->getDb(db1);
     this->underly2->getDb(db2);
     Ind<IdAlias, Doc<IdAlias>> ind2 = utils::genInd(db2);
 
-    // >>TODO:
-    // for each entry in db1 of form (kw,id1'-id2'),kw with size 1 kw range (i.e. leaf):
-    // for each id' in range id1'-id2':
-    // look up id' in ind2 to obtain d_i, then insert (d_i, kw-kw) into final db
-    // for every i
-    // if n keywords, this is O(n) (since db1 cannot have multiple items to a kw?)
-    // REMEMBER to compare speeds with old method!!
     for (DbEntry<SrcIDb1Doc, Kw> dbEntry : db1) {
         Range<Kw> kwRange = dbEntry.second;
         // only iterate through leaf nodes in DB 1

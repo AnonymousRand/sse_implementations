@@ -32,7 +32,7 @@ void searchSizesExp(ISse<>* sse, int64_t dbSize) {
     sse->setup(utils::KEY_LEN, db);
     sse->benchmark->print(config::SHOULD_BENCHMARK, "Setup");
 
-    // search
+    // searches
     for (int64_t i = 0; i <= std::log2(dbSize); i++) {
         Range<Kw> query {0, (int64_t)std::pow(2, i) - 1};
         sse->search(query);

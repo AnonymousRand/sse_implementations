@@ -27,9 +27,13 @@ void resultSizesExp(ISse<>* sse, int64_t dbSize) {
     }
     // this is non-randomized to precisely control result sizes: then there is a unique entry per kw
     Db<> db = createDb(dbSize, false, false);
-    sse->setup(utils::KEY_LEN, db);
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
+    // setup
+    sse->setup(utils::KEY_LEN, db);
+    sse->benchmark->print(config::SHOULD_BENCHMARK, "Setup");
+
+    // searches
     for (int64_t resultSizeExp = 0; resultSizeExp <= std::log2(dbSize); resultSizeExp++) {
         int64_t resultSize = std::pow(2, resultSizeExp);
         // (referencing `createDb()`'s logic, this query should return exactly `resultSize`
@@ -46,4 +50,4 @@ void resultSizesExp(ISse<>* sse, int64_t dbSize) {
 }
 
 
-} // namespace `app::experiments`
+dbDodbDocc} // namespace `app::experiments`

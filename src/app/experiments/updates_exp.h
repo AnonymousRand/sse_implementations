@@ -23,10 +23,12 @@ void updatesExp(IDsse<>* dsse, int64_t dbSize) {
         return;
     }
     Db<> db = createDb(dbSize, true, true);
+
+    // setup (with empty DB, just to init keys and stuff)
     dsse->setup(utils::KEY_LEN, Db<> {});
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
-    // update one at a time
+    // updates
     for (int64_t i = 0; i < db.size(); i++) {
         DbEntry<> dbEntry = db[i];
         dsse->update(dbEntry);
