@@ -18,6 +18,7 @@
 #include "utils/db.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
+#include "utils/types.h"
 
 
 template <IsSdUnderly Underly>
@@ -31,7 +32,7 @@ Sda<Underly>::~Sda() {
 
 
 template <IsSdUnderly Underly>
-void Sda<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
+void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
     this->secParam = secParam;
 
@@ -45,15 +46,15 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
         int64_t dbPos = 0;
         for (int64_t i = lastFilledInd; i >= 0; i--) {
             int64_t indSize = (int64_t)std::pow(2, i);
-            Db<Tuple<>, Kw> indDb;
+            Db<Tuple<>> indDb;
             if (dbPos < db.size()) {
                 if (dbPos + indSize < db.size()) {
-                    indDb = Db<Tuple<>, Kw>(db.begin() + dbPos, db.begin() + dbPos + indSize);
+                    indDb = Db<Tuple<>>(db.begin() + dbPos, db.begin() + dbPos + indSize);
                 } else {
-                    indDb = Db<Tuple<>, Kw>(db.begin() + dbPos, db.end());
+                    indDb = Db<Tuple<>>(db.begin() + dbPos, db.end());
                 }
             } else {
-                indDb = Db<Tuple<>, Kw>();
+                indDb = Db<Tuple<>> {};
             }
 
             Underly* newUnderly = new Underly(this->benchmark);
@@ -75,7 +76,7 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
         }
         this->firstEmptyInd = newFirstEmpty;
     } else {
-        for (DbTuple<Tuple<>, Kw> tuple : db) {
+        for (Tuple<> tuple : db) {
             this->update(tuple);
         }
     }
@@ -128,18 +129,18 @@ void Sda<Underly>::clear() {
 
 
 template <IsSdUnderly Underly>
-void Sda<Underly>::update(const DbTuple<Tuple<>, Kw>& newDbTuple) {
+void Sda<Underly>::update(const DbTuple<Tuple<>>& newDbTuple) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
         Underly* newUnderly = new Underly(this->benchmark);
-        newUnderly->setup(this->secParam, Db<Tuple<>, Kw> {newDbTuple});
+        newUnderly->setup(this->secParam, Db<Tuple<>> {newDbTuple});
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
         return;
     }
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`
-    Db<Tuple<>, Kw> mergedDb;
+    Db<Tuple<>> mergedDb;
     mergedDb.reserve(std::pow(2, this->firstEmptyInd));
     for (int64_t i = 0; i < this->firstEmptyInd; i++) {
         // (`getDb()` appends to the passed-in container)

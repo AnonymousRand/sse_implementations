@@ -13,13 +13,14 @@
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/tdag.h"
+#include "utils/types.h"
 
 
 //------------------------------------------------------------------------------
 // `ISse`
 
 
-void LogSrcIStar::setup(int secParam, const Db<Tuple<>, Kw>& db) {
+void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -35,13 +36,13 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     auto sortByKw = [](const DbTuple<Tuple<>, Kw>& dbTuple1, const DbTuple<Tuple<>, Kw>& dbTuple2) {
         return dbTuple1.first.getKw() < dbTuple2.first.getKw();
     };
-    Db<Tuple<>, Kw> dbSorted = db;
+    Db<Tuple<>> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
-    Db<SrcIDb1Tuple, Kw> db1;
-    Db<Tuple<IdAlias>, IdAlias> db2;
+    Db<SrcIDb1Tuple> db1;
+    Db<Tuple<IdAlias>> db2;
     int64_t dbSortedSize = dbSorted.size();
     db1.reserve(dbSortedSize);
     db2.reserve(dbSortedSize);
@@ -50,22 +51,20 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     IdAlias lastIdAliasWithKw;
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
-        Range<Kw> kwRange {prevKw, prevKw};
-        SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
-        DbTuple<SrcIDb1Tuple, Kw> newDbTuple {newTuple, kwRange};
-        db1.push_back(newDbTuple);
+        SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, Range<Kw> {prevKw, prevKw}};
+        db1.push_back(newTuple);
     };
+
     for (int64_t idAlias = 0; idAlias < dbSortedSize; idAlias++) {
-        DbTuple<Tuple<>, Kw> dbTuple = dbSorted[idAlias];
-        Tuple<> tuple = dbTuple.first;
-        Kw kw = dbTuple.second.first; // tuples in `db` must have size 1 `Kw` ranges!
+        Tuple<> tuple = dbSorted[idAlias];
         // populate `db2` leaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};
-        Tuple<IdAlias> newDb2Tuple(tuple.get(), idAliasRange);
-        DbTuple<Tuple<IdAlias>, IdAlias> newDb2Tuple = DbTuple {newDb2Tuple, idAliasRange};
-        db2.push_back(newDb2Tuple);
+        Tuple<IdAlias> newTuple(tuple.get(), idAliasRange);
+        db2.push_back(newTuple);
 
         // populate `db1` leaves
+        // TODO this may? need to be getDbKw().first
+        Kw kw = tuple.getKw();
         if (kw != prevKw) {
             if (prevKw != DUMMY) {
                 addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
@@ -85,12 +84,13 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>, Kw>& db) {
 
     // build TDAG 2 over id aliases
     IdAlias maxIdAlias = 0;
-    for (DbTuple<Tuple<IdAlias>, IdAlias> dbTuple : db2) {
-        IdAlias idAlias = dbTuple.second.first;
+    for (Tuple<IdAlias> tuple: db2) {
+        IdAlias idAlias = dbTuple.getDbKwRange().first; // must be size 1 range
         if (idAlias > maxIdAlias) {
             maxIdAlias = idAlias;
         }
     }
+
     // pad TDAG 2 leaf count to the next power of two, as is required for Log-SRC-i*
     int64_t db2Size = db2.size();
     if (!std::has_single_bit((uint64_t)db2Size)) {
@@ -100,26 +100,26 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>, Kw>& db) {
             maxIdAlias++;
             Range<IdAlias> idAliasRange {maxIdAlias, maxIdAlias};
             Tuple<IdAlias> dummyTuple = Tuple<IdAlias>::genDummy(idAliasRange);
-            DbTuple<Tuple<IdAlias>, IdAlias> dummyDbTuple = DbTuple {dummyTuple, idAliasRange};
-            db2.push_back(dummyDbTuple);
+            db2.push_back(dummyTuple);
         }
     }
+    // TODO make another constructor for tdagnode that just takes the start and end instead of range?
     this->tdag2 = new TdagNode<IdAlias>(Range<IdAlias> {0, maxIdAlias});
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     db2Size = db2.size();
     db2.reserve(utils::calcTdagTupleCount(db2Size));
     for (int64_t i = 0; i < db2Size; i++) {
-        DbTuple<Tuple<IdAlias>, IdAlias> dbTuple = db2[i];
-        Tuple<IdAlias> tuple = dbTuple.first;
-        Range<IdAlias> idAliasRange = dbTuple.second;
+        Tuple<IdAlias> tuple = db2[i];
+        // TODO: is SrcIDb1Tuple::getIdAliasRange() used?
+        Range<IdAlias> idAliasRange = tuple.getDbKwRange();
         std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
         for (Range<IdAlias> ancestor : ancestors) {
             if (ancestor == idAliasRange) {
                 continue;
             }
             Tuple<IdAlias> newTuple(tuple.get(), ancestor);
-            db2.push_back(std::pair {newTuple, ancestor});
+            db2.push_back(newTuple);
         }
     }
 
@@ -135,22 +135,23 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     // Log-SRC-i since tuples are placed pseudorandomly in the index, but here we
     // have to pad to avoid empty buckets in the index that the server knows
     // corresponds to a lack of tuples with that keyword)
-    DbTuple<Tuple<>, Kw> dbTuple = dbSorted[0];
-    prevKw = dbTuple.second.first;
+    Tuple<> tuple = dbSorted[0];
+    // TODO this may? need to be getDbKwRange().first
+    prevKw = tuple.getKw();
     for (int64_t i = 1; i < dbSortedSize; i++) {
-        dbTuple = dbSorted[i];
-        Kw kw = dbTuple.second.first;
+        tuple = dbSorted[i];
+        Kw kw = tuple.getKw();
         // if non-contiguous `Kw`s detected, fill in the gap with dummies
         if (kw - prevKw > 1) {
             for (Kw paddingKw = prevKw + 1; paddingKw < kw; paddingKw++) {
                 Range<Kw> paddingKwRange {paddingKw, paddingKw};
                 SrcIDb1Tuple dummyTuple = SrcIDb1Tuple::genDummy(paddingKwRange);
-                DbTuple<SrcIDb1Tuple, Kw> dummyDbTuple = DbTuple {dummyTuple, paddingKwRange};
-                db1.push_back(dummyDbTuple);
+                db1.push_back(dummyTuple);
             }
         }
         prevKw = kw;
     }
+
     // after guaranteeing contiguous-ness of `Kw`s, pad `db1` to power of 2 as well
     int64_t db1Size = db1.size();
     Range<Kw> db1KwBounds = utils::findDbKwBounds(db1);
@@ -162,8 +163,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>, Kw>& db) {
             maxDb1Kw++;
             Range<Kw> paddingKwRange {maxDb1Kw, maxDb1Kw};
             SrcIDb1Tuple dummyTuple = SrcIDb1Tuple::genDummy(paddingKwRange);
-            DbTuple<SrcIDb1Tuple, Kw> dummyDbTuple = DbTuple {dummyTuple, paddingKwRange};
-            db1.push_back(dummyDbTuple);
+            db1.push_back(dummyTuple);
         }
     }
     this->tdag1 = new TdagNode<Kw>(Range {db1KwBounds.first, maxDb1Kw});
@@ -173,16 +173,15 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     db1Size = db1.size();
     db1.reserve(utils::calcTdagTupleCount(db1Size));
     for (int64_t i = 0; i < db1Size; i++) {
-        DbTuple<SrcIDb1Tuple, Kw> dbTuple = db1[i];
-        SrcIDb1Tuple tuple = dbTuple.first;
-        Range<Kw> kwRange = dbTuple.second;
+        SrcIDb1Tuple tuple = db[i];
+        Range<Kw> kwRange = tuple.getDbKwTuple();
         std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {
             if (ancestor == kwRange) {
                 continue;
             }
             SrcIDb1Tuple newTuple(tuple.get(), ancestor);
-            db1.push_back(std::pair {newTuple, ancestor});
+            db1.push_back(newTuple);
         }
     }
 

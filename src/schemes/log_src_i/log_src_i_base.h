@@ -8,8 +8,8 @@
 
 #include "utils/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tdag.h"
+#include "utils/types.h"
 
 
 // common code between `LogSrcI` and `LogSrcIStar`
@@ -31,7 +31,7 @@ public:
     //----------------------------------------------------------------------
     // `ISdUnderly`
 
-    void getDb(Db<Tuple<>, Kw>& ret) const override;
+    void getDb(Db<Tuple<>>& ret) const override;
 
 protected:
     Underly<SrcIDb1Tuple, Kw>* underly1 = new Underly<SrcIDb1Tuple, Kw>(this->benchmark);

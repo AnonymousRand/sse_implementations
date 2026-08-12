@@ -7,8 +7,8 @@
 
 #include "utils/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tdag.h"
+#include "utils/types.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
@@ -24,5 +24,5 @@ public:
      *     - tuples in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
      *     - tuples in `db` cannot have keyword equal to `DUMMY`.
      */
-    void setup(int secParam, const Db<Tuple<>, Kw>& db) override;
+    void setup(int secParam, const Db<Tuple<>>& db) override;
 };

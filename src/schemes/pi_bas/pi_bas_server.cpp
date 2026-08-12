@@ -11,6 +11,7 @@
 #include "utils/db.h"
 #include "utils/enc_ind.h"
 #include "utils/sse_utils.h"
+#include "utils/types.h"
 #include "utils/ustring.h"
 
 

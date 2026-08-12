@@ -9,7 +9,7 @@
 
 #include "utils/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 
 
 // don't use template template param for `Underly` because they may have other deeper
@@ -25,7 +25,7 @@ public:
     //----------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<Tuple<>, Kw>& db) override;
+    void setup(int secParam, const Db<Tuple<>>& db) override;
     std::vector<Tuple<>> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override;
@@ -34,7 +34,7 @@ public:
     //----------------------------------------------------------------------
     // `IDsse`
 
-    void update(const DbTuple<Tuple<>, Kw>& newDbTuple) override;
+    void update(const DbTuple<Tuple<>>& newDbTuple) override;
 
 private:
     std::vector<Underly*> underlys;

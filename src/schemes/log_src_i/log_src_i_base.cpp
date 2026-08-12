@@ -16,6 +16,7 @@
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/tdag.h"
+#include "utils/types.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
@@ -105,19 +106,19 @@ void LogSrcIBase<Underly>::clear() {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrcIBase<Underly>::getDb(Db<Tuple<>, Kw>& ret) const {
+void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
     // reconstruct the original DB passed to `setup()` from Log-SRC-i's two indexes
     // (an alternative is to store the original DB in a separate PiBas instance and call
     // `getDb()` on that; it will be slightly faster but it will also take up more disk space,
     // and more importantly it can be another attack vector (e.g. it reveals the exact db size))
-    Db<SrcIDb1Tuple, Kw> db1;
-    Db<Tuple<IdAlias>, IdAlias> db2;
+    Db<SrcIDb1Tuple> db1;
+    Db<Tuple<IdAlias>> db2;
     this->underly1->getDb(db1);
     this->underly2->getDb(db2);
     Ind<IdAlias, Tuple<IdAlias>> ind2 = utils::genInd(db2);
 
-    for (DbTuple<SrcIDb1Tuple, Kw> dbTuple : db1) {
-        Range<Kw> kwRange = dbTuple.second;
+    for (SrcIDb1Tuple tuple : db1) {
+        Range<Kw> kwRange = tuple.getDbKwRange();
         // only iterate through leaf nodes in DB 1
         if (kwRange.size() > 1) {
             continue;
@@ -140,11 +141,8 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>, Kw>& ret) const {
 
             std::vector<Tuple<IdAlias>> kwList = iter->second;
             for (Tuple<IdAlias> tuple : kwList) {
-                ret.push_back(
-                    DbTuple {
-                        Tuple<> {tuple.getId(), tuple.getKw(), tuple.getOp(), kwRange}, kwRange
-                    }
-                );
+                Tuple<IdAlias> newTuple(tuple.get(), kwRange);
+                ret.push_back(newTuple);
             }
         }
     }

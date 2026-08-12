@@ -6,7 +6,7 @@
 #include "schemes/interfaces/sse.h"
 
 #include "utils/db.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 
 
 // underlying SSE schemes for SD-type DSSE schemes (from NDSS'20)
@@ -22,7 +22,7 @@ public:
      * append the `db` most recently passed to `setup()` (without any replications/
      * padding/processing) to `ret`.
      */
-    virtual void getDb(Db<DbTuple, DbKw>& ret) const = 0;
+    virtual void getDb(Db<DbTuple>& ret) const = 0;
 
     //----------------------------------------------------------------------
     // shared code

@@ -10,7 +10,7 @@
 
 #include "utils/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 #include "utils/ustring.h"
 
 
@@ -26,13 +26,13 @@ public:
     //----------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<DbTuple, DbKw>& db) override;
+    void setup(int secParam, const Db<DbTuple>& db) override;
     void clear() override;
 
     //----------------------------------------------------------------------
     // `ISdUnderly`
 
-    void getDb(Db<DbTuple, DbKw>& ret) const override;
+    void getDb(Db<DbTuple>& ret) const override;
 
 private:
     PiBasServer<DbTuple, DbKw>* server = new PiBasServer<DbTuple, DbKw>(this->benchmark);

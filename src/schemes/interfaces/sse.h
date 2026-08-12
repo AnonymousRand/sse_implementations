@@ -6,7 +6,7 @@
 
 #include "utils/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 
 
 // forward declare instead of include to avoid a circular include with `benchmark.h`
@@ -23,7 +23,7 @@ public:
 
     ISse(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
-    virtual void setup(int secParam, const Db<DbTuple, DbKw>& db) = 0;
+    virtual void setup(int secParam, const Db<DbTuple>& db) = 0;
     
     /**
      * params:

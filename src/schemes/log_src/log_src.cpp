@@ -15,6 +15,7 @@
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/tdag.h"
+#include "utils/types.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
@@ -32,7 +33,7 @@ LogSrc<Underly>::~LogSrc() {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
+void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -49,16 +50,15 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     this->tdag = new TdagNode<Kw>(kwBounds);
 
     // replicate every document to all keyword ranges/TDAG nodes that cover it
-    Db<Tuple<>, Kw> dbWithRepls;
+    Db<Tuple<>> dbWithRepls;
     dbWithRepls.reserve(utils::calcTdagTupleCount(db.size()));
-    for (DbTuple<Tuple<>, Kw> dbTuple : db) {
-        Tuple<> tuple = dbTuple.first;
-        Range<Kw> kwRange = dbTuple.second;
+    for (Tuple<> tuple : db) {
+        Range<Kw> kwRange = tuple.getDbKwRange();
         std::list<Range<Kw>> ancestors = this->tdag->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {
             // make sure to update `DbKw` stored also in `Tuple`!
             Tuple<> newTuple(tuple.get(), ancestor);
-            dbWithRepls.push_back(std::pair {newTuple, ancestor});
+            dbWithRepls.push_back(newTuple);
         }
     }
 
@@ -98,13 +98,12 @@ template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw
 void LogSrc<Underly>::getDb(Db<Tuple<>, Kw>& ret) const {
     // need to exclude replicated tuples: assume any tuples with `DbKw` range size >1 is replicated
     // (this doesn't seem to incur noticeable performance overhead with compiler optimizations)
-    Db<Tuple<>, Kw> retWithRepls;
+    Db<Tuple<>> retWithRepls;
     this->underly->getDb(retWithRepls);
-    for (DbTuple<Tuple<>, Kw> dbTuple : retWithRepls) {
-        Tuple<> tuple = dbTuple.first;
+    for (Tuple<> tuple : retWithRepls) {
         Range<Kw> kwRange = tuple.getDbKwRange();
         if (kwRange.size() == 1) {
-            ret.push_back(dbTuple);
+            ret.push_back(tuple);
         };
     }
 }

@@ -6,7 +6,7 @@
 #include "utils/db.h"
 #include "utils/random.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 
 
 namespace app {
@@ -34,7 +34,7 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
         for (Id id = minId; id <= maxId; id++) {
             Kw kw = dist(utils::RNG);
             Range<Kw> kwRange {kw, kw};
-            db.push_back(DbTuple {Tuple<> {id, kw, Op::INS, kwRange}, kwRange});
+            db.push_back(DbTuple {id, kw, Op::INS, kwRange});
         }
     } else {
         for (Id id = minId; id <= maxId; id++) {
@@ -42,7 +42,7 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
             // and make them non-contiguous to test Log-SRC as well
             Kw kw = (dbSize - id) * 2;
             Range<Kw> kwRange {kw, kw};
-            db.push_back(DbTuple {Tuple<> {id, kw, Op::INS, kwRange}, kwRange});
+            db.push_back(DbTuple {id, kw, Op::INS, kwRange});
         }
     }
 

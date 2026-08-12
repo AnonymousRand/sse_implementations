@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "utils/range.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 #include "utils/ustring.h"
 
 
@@ -65,7 +65,7 @@ const std::regex Tuple<DbKw>::REGEX(Tuple<DbKw>::REGEX_STR);
 
 template <class DbKw>
 DbTuple<DbKw>::Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) :
-    IDbTuple<>(std::tuple {id, kw, op}, dbKwRange) {}
+    DbTuple<DbKw>(std::tuple {id, kw, op}, dbKwRange) {}
 
 
 template <class DbKw>
@@ -156,7 +156,7 @@ const std::regex SrcIDb1Tuple::REGEX(SrcIDb1Tuple::REGEX_STR);
 
 
 SrcIDb1Tuple::SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange) :
-    IDbTuple<>(std::pair {kw, idAliasRange}, kwRange) {}
+    SrcIDb1Tuple(std::pair {kw, idAliasRange}, kwRange) {}
 
 
 SrcIDb1Tuple::SrcIDb1Tuple(const SrcIDb1Tuple& srcIDb1Tuple) :

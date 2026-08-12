@@ -19,6 +19,7 @@
 #include "utils/random.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
+#include "utils/types.h"
 #include "utils/ustring.h"
 
 
@@ -37,7 +38,7 @@ NLogN<DbTuple, DbKw>::~NLogN() {
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple, DbKw>& db) {
+void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -148,7 +149,7 @@ void NLogN<DbTuple, DbKw>::clear() {
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void NLogN<DbTuple, DbKw>::getDb(Db<DbTuple, DbKw>& ret) const {
+void NLogN<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
     std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
 
     for (int64_t lvl = 0; lvl < this->numLvls; lvl++) {
@@ -166,10 +167,18 @@ void NLogN<DbTuple, DbKw>::getDb(Db<DbTuple, DbKw>& ret) const {
             // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
             // to easily access these `DbKw` ranges in plaintext
             Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
+            // TODO: is this differentiation required? what happens if we filter out all dummies,
+            // by filling everything with dummies even in upstream? or will that affect the TDAG,
+            // so try what happens if we remove all dummies here (e.g. checking kw/id instead of
+            // range, and if works, outsource that to a method in IDbTuple?)
+            // also if doing that, consider changing back the for loops above to use this->size,
+            // maybe also checking explicitly that it equals db->size?
+
             // exclude dummies/padding (that are from NLogN's `setup()`, but not from
             // an upstream SSE scheme which is using NLogN as an underlying scheme)
             if (dbKwRange != DUMMY_RANGE<DbKw>()) {
-                ret.push_back(std::pair {dbTuple, dbKwRange});
+                DbTuple newDbTuple(dbTuple.get(), dbKwRange);
+                ret.push_back(newDbTuple);
             }
         }
     }

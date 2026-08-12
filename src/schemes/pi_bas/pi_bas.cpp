@@ -15,6 +15,7 @@
 #include "utils/enc_ind.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
+#include "utils/types.h"
 #include "utils/ustring.h"
 
 
@@ -33,7 +34,7 @@ PiBas<DbTuple, DbKw>::~PiBas() {
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void PiBas<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple, DbKw>& db) {
+void PiBas<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -102,7 +103,7 @@ void PiBas<DbTuple, DbKw>::clear() {
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void PiBas<DbTuple, DbKw>::getDb(Db<DbTuple, DbKw>& ret) const {
+void PiBas<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
     EncInd* encInd = this->server->getEncInd();
     // don't use `this->size()` as the bound here as that doesn't include padding
     // while `encInd` does (this should all be client-side anyway so not leaking anything)
@@ -117,7 +118,8 @@ void PiBas<DbTuple, DbKw>::getDb(Db<DbTuple, DbKw>& ret) const {
         // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
         // to easily access these `DbKw` ranges in plaintext
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
-        ret.push_back(std::pair {dbTuple, dbKwRange});
+        DbTuple newDbTuple(dbTuple.get(), dbKwRange);
+        ret.push_back(newDbTuple);
     }
 }
 

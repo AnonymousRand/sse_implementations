@@ -13,7 +13,7 @@
 
 #include "utils/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 
 
 struct Benchmark {
@@ -80,7 +80,7 @@ class Benchmarked : public Sse {
 public:
     using Sse::Sse;
 
-    void setup(int secParam, const Db<Tuple<>, Kw>& db) override {
+    void setup(int secParam, const Db<Tuple<>>& db) override {
         this->benchmark->resetAll();
 
         auto start = std::chrono::high_resolution_clock::now();
@@ -112,7 +112,7 @@ public:
 
     // reset necessary benchmarks per update if using `BenchmarkedUpdts` (e.g. if
     // `config::DSSE_SHOULD_BENCHMARK_UPDTS` is set to `true`)
-    void update(const DbTuple<Tuple<>, Kw>& newTuple) override {
+    void update(const Tuple<>& newTuple) override {
         this->benchmark->resetEphems();
 
         auto start = std::chrono::high_resolution_clock::now();

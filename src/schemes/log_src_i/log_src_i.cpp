@@ -17,6 +17,7 @@
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/tdag.h"
+#include "utils/types.h"
 
 
 //------------------------------------------------------------------------------
@@ -24,7 +25,7 @@
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
+void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -37,16 +38,16 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     // build index 2
 
     // sort documents by keyword
-    auto sortByKw = [](const DbTuple<Tuple<>, Kw>& dbTuple1, const DbTuple<Tuple<>, Kw>& dbTuple2) {
-        return dbTuple1.first.getKw() < dbTuple2.first.getKw();
+    auto sortByKw = [](const DbTuple<Tuple<>, Kw>& tuple1, const DbTuple<Tuple<>, Kw>& tuple2) {
+        return tuple1.first.getKw() < tuple2.first.getKw();
     };
-    Db<Tuple<>, Kw> dbSorted = db;
+    Db<Tuple<>> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
-    Db<SrcIDb1Tuple, Kw> db1;
-    Db<Tuple<IdAlias>, IdAlias> db2;
+    Db<SrcIDb1Tuple> db1;
+    Db<Tuple<IdAlias>> db2;
     db1.reserve(dbSorted.size());
     db2.reserve(dbSorted.size());
     Kw prevKw = DUMMY;
@@ -54,22 +55,20 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     IdAlias lastIdAliasWithKw;
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
-        Range<Kw> kwRange {prevKw, prevKw};
-        SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
-        DbTuple<SrcIDb1Tuple, Kw> newDbTuple {newTuple, kwRange};
-        db1.push_back(newDbTuple);
+        SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, Range<Kw> {prevKw, prevKw}};
+        db1.push_back(newTuple);
     };
+
     for (int64_t idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
-        DbTuple<Tuple<>, Kw> dbTuple = dbSorted[idAlias];
-        Tuple<> tuple = dbTuple.first;
-        Kw kw = dbTuple.second.first; // tuples in `db` must have size 1 `Kw` ranges!
+        Tuple<> tuple = dbSorted[idAlias];
         // populate `db2` leaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};
-        Tuple<IdAlias> newDb2Tuple(tuple.get(), idAliasRange);
-        DbTuple<Tuple<IdAlias>, IdAlias> newDb2Tuple = DbTuple {newDb2Tuple, idAliasRange};
-        db2.push_back(newDb2Tuple);
+        Tuple<IdAlias> newTuple(tuple.get(), idAliasRange);
+        db2.push_back(newTuple);
 
         // populate `db1` leaves
+        // TODO this may? need to be getDbKwRange().first
+        Kw kw = tuple.getKw();
         if (kw != prevKw) {
             if (prevKw != DUMMY) {
                 addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
@@ -88,9 +87,11 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     }
 
     // build TDAG 2 over id aliases
+    // TODO move this process to a util (tdag util even? or no) function?
+    // maybe even some padding stuff like nlogn or log src i* setup?
     IdAlias maxIdAlias = 0;
-    for (DbTuple<Tuple<IdAlias>, IdAlias> dbTuple : db2) {
-        IdAlias idAlias = dbTuple.second.first;
+    for (Tuple<IdAlias>> tuple : db2) {
+        IdAlias idAlias = tuple.getDbKwRange().first; // must be size 1 range
         if (idAlias > maxIdAlias) {
             maxIdAlias = idAlias;
         }
@@ -101,9 +102,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     int64_t db2Size = db2.size();
     db2.reserve(utils::calcTdagTupleCount(db2Size));
     for (int64_t i = 0; i < db2Size; i++) {
-        DbTuple<Tuple<IdAlias>, IdAlias> dbTuple = db2[i];
-        Tuple<IdAlias> tuple = dbTuple.first;
-        Range<IdAlias> idAliasRange = dbTuple.second;
+        Tuple<IdAlias> tuple = db2[i];
+        Range<IdAlias> idAliasRange = tuple.getDbKwRange();
         std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
         for (Range<IdAlias> ancestor : ancestors) {
             // ancestors include the leaf itself, which is already in `db2`
@@ -111,7 +111,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
                 continue;
             }
             Tuple<IdAlias> newTuple(tuple.get(), ancestor);
-            db2.push_back(std::pair {newTuple, ancestor});
+            db2.push_back(newTuple);
         }
     }
 
@@ -129,16 +129,15 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     int64_t db1Size = db1.size();
     db1.reserve(utils::calcTdagTupleCount(db1Size));
     for (int64_t i = 0; i < db1Size; i++) {
-        DbTuple<SrcIDb1Tuple, Kw> dbTuple = db1[i];
-        SrcIDb1Tuple tuple = dbTuple.first;
-        Range<Kw> kwRange = dbTuple.second;
+        SrcIDb1Tuple tuple = db[i];
+        Range<Kw> kwRange = tuple.getDbKwRange();
         std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {
             if (ancestor == kwRange) {
                 continue;
             }
             SrcIDb1Tuple newTuple(tuple.get(), ancestor);
-            db1.push_back(std::pair {newTuple, ancestor});
+            db1.push_back(newTuple);
         }
     }
 

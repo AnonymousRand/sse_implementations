@@ -4,7 +4,7 @@
 #include "schemes/log_src_i_star/underly.h"
 
 #include "utils/db.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 
 
 class LogSrcIStar : public LogSrcIBase<log_src_i_star::Underly> {
@@ -19,5 +19,5 @@ public:
      *     - tuples in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
      *     - tuples in `db` cannot have keyword equal to `DUMMY`.
      */
-    void setup(int secParam, const Db<Tuple<>, Kw>& db) override;
+    void setup(int secParam, const Db<Tuple<>>& db) override;
 };

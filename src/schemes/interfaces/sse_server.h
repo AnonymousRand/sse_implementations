@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "utils/db.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 
 
 struct Benchmark;

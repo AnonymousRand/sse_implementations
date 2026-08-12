@@ -4,6 +4,7 @@
 #pragma once
 
 // TODO what is cstddef for
+#include <concepts>
 #include <cstddef>
 #include <iostream>
 #include <regex>
@@ -23,14 +24,20 @@
 //==============================================================================
 
 
-// interface for documents in dataset; also store the `DbKw` range (e.g. Log-SRC replications)
-// they're stored with in their respective datasets, so that we can easily fetch them in
-// plaintext for things like SDa (otherwise they might be only accessible via the
-// encrypted "label" in the encrypted index, which can be a hash/PRF and hence not easily
-// reversible, unlike `DbTuple`s which are just encrypted and can be easily decrypted)
+/**
+ * interface for database tuples.
+ *
+ * note that we also store their `DbKw` range, which is the same as the size 1 range corresponding
+ * to their `Kw` value for tuples inputted to the DB, but allows us to be general enough for
+ * Log-SRC replications, for example, where this is not the case. we need to be able to easily
+ * fetch this in plaintext for things like SDa (otherwise it might be only accessible via the
+ * encrypted "label" in the encrypted index, which can be a hash/PRF and hence not easily
+ * reversible, unlike `DbTuple`s which are just encrypted and can be easily decrypted).
+ */
 template <class T, class DbKw>
 class IDbTuple {
 public:
+    // TODO are these default constructors still necessary?
     IDbTuple() = default;
     IDbTuple(const T& val, const Range<DbKw>& dbKwRange);
 
@@ -77,6 +84,8 @@ concept IsValidDbParams = requires(DbTuple t) {
 template <class DbKw = Kw>
 class Tuple : public IDbTuple<std::tuple<Id, Kw, Op>, DbKw> {
 public:
+    using IDbTuple<std::tuple<Id, Kw, Op>, DbKw>::IDbTuple;
+
     Tuple() = default;
     Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange);
 
@@ -109,8 +118,11 @@ struct std::hash<Tuple<DbKw>> {
 
 class SrcIDb1Tuple : public IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw> {
 public:
+    using IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>::IDbTuple;
+
     SrcIDb1Tuple() = default;
     SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange);
+    // TODO is this needed?
     SrcIDb1Tuple(const SrcIDb1Tuple& srcIDb1Tuple);
 
     Kw getKw() const;
@@ -127,9 +139,12 @@ private:
 
 
 //==============================================================================
-// `Ind`
+// `Db` and `Ind`
 //==============================================================================
 
 
-template <class DbTuple = Tuple<>, class DbKw = Kw>
+template <IsDbTuple DbTuple = Tuple<>>
+using Db = std::vector<DbTuple>;
+
+template <class DbKw = Kw, class DbTuple = Tuple<>> requires IsValidDbParams<DbTuple, DbKw>
 using Ind = std::unordered_map<Range<DbKw>, std::vector<DbTuple>>;

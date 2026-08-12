@@ -10,6 +10,7 @@
 #include "utils/enc_ind.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
+#include "utils/types.h"
 #include "utils/ustring.h"
 
 
@@ -21,7 +22,7 @@ namespace log_src_i_star {
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void Underly<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple, DbKw>& db) {
+void Underly<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
     Range<DbKw> dbKwBounds = utils::findDbKwBounds(db);
     this->leafCount = dbKwBounds.size();
     NLogN<DbTuple, DbKw>::setup(secParam, db);

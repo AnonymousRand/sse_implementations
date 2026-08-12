@@ -8,7 +8,7 @@
 
 #include "utils/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
+#include "utils/types.h"
 
 
 namespace log_src_i_star {
@@ -25,7 +25,7 @@ public:
     //----------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<DbTuple, DbKw>& db) override;
+    void setup(int secParam, const Db<DbTuple>& db) override;
 
 private:
     int64_t leafCount;
