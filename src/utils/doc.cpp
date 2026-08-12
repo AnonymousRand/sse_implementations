@@ -211,6 +211,7 @@ Range<IdAlias> SrcIDb1Doc::getIdAliasRange() const {
 //------------------------------------------------------------------------------
 // explicit template instantiations
 
+
 template class IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>;
 
 template std::ostream& operator <<(
