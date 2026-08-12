@@ -132,8 +132,8 @@ template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Tuple>&
 //template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Tuple<IdAlias>>& db);
 
 // remaining explicit template specializations beyond the one earlier
-template void cleanUpResults(std::vector<SrcIDb1Tuple>& dbTuples);
-//template void cleanUpResults(std::vector<Tuple<IdAlias>>& dbTuples);
+template void cleanUpResults(std::vector<SrcIDb1Tuple>& tuples);
+//template void cleanUpResults(std::vector<Tuple<IdAlias>>& tuples);
 
 
 } // namespace `utils`
