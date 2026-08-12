@@ -128,6 +128,10 @@ Op Doc<DbKw>::getOp() const {
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class IDbDoc<std::tuple<Id, Kw, Op>, Kw>;
 //template class IDbDoc<std::tuple<Id, Kw, Op>, IdAlias>;
 
@@ -204,7 +208,9 @@ Range<IdAlias> SrcIDb1Doc::getIdAliasRange() const {
 }
 
 
-// TODO: use small banner to mark out explicit template instantiations?
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
 template class IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>;
 
 template std::ostream& operator <<(

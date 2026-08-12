@@ -87,6 +87,10 @@ std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class Range<Kw>;
 //template class Range<IdAlias>;
 

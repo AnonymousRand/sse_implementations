@@ -146,5 +146,9 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class LogSrcI<PiBas>;
 template class LogSrcI<NLogN>;

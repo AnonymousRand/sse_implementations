@@ -120,6 +120,10 @@ bool NLogNServer<DbDoc, DbKw>::getDbKwCount(
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class NLogNServer<Doc<>, Kw>;
 template class NLogNServer<SrcIDb1Doc, Kw>;
 //template class NLogNServer<Doc<IdAlias>, IdAlias>;

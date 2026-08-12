@@ -291,6 +291,10 @@ std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class TdagNode<Kw>;
 //template class TdagNode<IdAlias>;
 

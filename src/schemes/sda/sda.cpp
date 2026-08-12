@@ -169,6 +169,10 @@ void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class Sda<PiBas<>>;
 template class Sda<NLogN<>>;
 template class Sda<LogSrc<PiBas>>;

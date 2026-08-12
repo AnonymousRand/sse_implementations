@@ -159,6 +159,10 @@ uint64_t hashToPos(const ustring& hash) {
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template Ind<Kw, Doc<>> genInd(const Db<Doc<>, Kw>& db, bool shouldShuffleKwLists);
 template Ind<Kw, SrcIDb1Doc> genInd(const Db<SrcIDb1Doc, Kw>& db, bool shouldShuffleKwLists);
 //template Ind<IdAlias, Doc<IdAlias>> genInd(

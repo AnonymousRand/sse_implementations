@@ -87,6 +87,10 @@ std::vector<EncIndVal> PiBasServer<DbDoc, DbKw>::searchEncInd(const ustring& que
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class PiBasServer<Doc<>, Kw>;
 template class PiBasServer<SrcIDb1Doc, Kw>;
 //template class PiBasServer<Doc<IdAlias>, IdAlias>;

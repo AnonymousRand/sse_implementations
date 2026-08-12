@@ -275,6 +275,10 @@ int64_t NLogN<DbDoc, DbKw>::computeBcktSizeOnLvl(int64_t lvl) const {
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class NLogN<Doc<>, Kw>;
 template class NLogN<SrcIDb1Doc, Kw>;
 //template class NLogN<Doc<IdAlias>, IdAlias>;

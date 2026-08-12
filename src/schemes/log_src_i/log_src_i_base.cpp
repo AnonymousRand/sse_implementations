@@ -149,6 +149,10 @@ void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
 } 
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class LogSrcIBase<PiBas>;
 template class LogSrcIBase<NLogN>;
 template class LogSrcIBase<log_src_i_star::Underly>;

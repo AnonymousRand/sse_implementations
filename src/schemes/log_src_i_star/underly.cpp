@@ -89,6 +89,10 @@ int64_t Underly<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
 }
 
 
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
 template class Underly<Doc<>, Kw>;       
 template class Underly<SrcIDb1Doc, Kw>;
 //template class Underly<Doc<IdAlias>, IdAlias>;
