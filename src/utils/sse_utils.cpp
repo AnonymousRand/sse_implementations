@@ -38,7 +38,7 @@ template std::ostream& operator <<(std::ostream& os, const DbEntry<SrcIDb1Doc, K
 namespace utils {
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 Ind<DbKw, DbDoc> genInd(const Db<DbDoc, DbKw>& db, bool shouldShuffleKwLists) {
     Ind<DbKw, DbDoc> ind;
     for (DbEntry<DbDoc, DbKw> entry : db) {
@@ -62,7 +62,7 @@ Ind<DbKw, DbDoc> genInd(const Db<DbDoc, DbKw>& db, bool shouldShuffleKwLists) {
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db) {
     if (db.empty()) {
         return DUMMY_RANGE<DbKw>();
@@ -83,7 +83,7 @@ Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
     std::unordered_set<Range<DbKw>> uniqDbKwRanges;
     for (DbEntry<DbDoc, DbKw> entry : db) {

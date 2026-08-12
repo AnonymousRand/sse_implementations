@@ -52,7 +52,7 @@ concept IsDbDoc = requires(T t) {
 
 
 // this enforces the above plus that `T` uses `DbKw` as its second template param, e.g.
-// `IsDbDoc<IDbDoc<A, int64_t>, int64_t>` passes but not `IdDbDoc<IDbDoc<A, char>, int64_t>`
+// `IsDbDoc<IDbDoc<A, Kw>, Kw>` passes but not `IdDbDoc<IDbDoc<A, Kw>, char>`
 template <class T, class DbKw>
 concept IsValidDbParams = requires(T t) {
     []<class T2>(IDbDoc<T2, DbKw>&){}(t);
@@ -91,16 +91,15 @@ std::ostream& operator <<(std::ostream& os, const DbEntry<DbDoc, DbKw>& dbEntry)
 namespace utils {
 
 
-// TODO: all templates here should just require IsValidDbParams<DbDoc, DbKw>?
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 Ind<DbKw, DbDoc> genInd(const Db<DbDoc, DbKw>& db, bool shouldShuffleKwLists = false);
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db);
 
 
-template <IsDbDoc DbDoc, class DbKw>
+template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
 std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db);
 
 
