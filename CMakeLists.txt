@@ -27,8 +27,8 @@ add_executable(
     src/schemes/sda/sda.cpp
 
     src/utils/crypto.cpp
+    src/utils/db.cpp
     src/utils/debugging.cpp
-    src/utils/doc.cpp
     src/utils/enc_ind.cpp
     src/utils/range.cpp
     src/utils/sse_utils.cpp

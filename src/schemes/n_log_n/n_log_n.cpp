@@ -14,7 +14,7 @@
 #include "schemes/n_log_n/n_log_n_server.h"
 
 #include "utils/crypto.h"
-#include "utils/doc.h"
+#include "utils/db.h"
 #include "utils/enc_ind.h"
 #include "utils/random.h"
 #include "utils/range.h"

@@ -8,52 +8,31 @@
 #include <utility>
 #include <vector>
 
-#include "utils/doc.h"
+#include "utils/db.h"
 #include "utils/random.h"
 #include "utils/range.h"
 #include "utils/ustring.h"
 
 
-//==============================================================================
-// types
-//==============================================================================
-
-
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::ostream& operator <<(std::ostream& os, const DbEntry<DbDoc, DbKw>& dbEntry) {
-    return os << dbEntry.first << ", " << dbEntry.second;
-}
-
-
-template std::ostream& operator <<(std::ostream& os, const DbEntry<Doc<>, Kw>& dbEntry);
-template std::ostream& operator <<(std::ostream& os, const DbEntry<SrcIDb1Doc, Kw>& dbEntry);
-//template std::ostream& operator <<(std::ostream& os, const DbEntry<Doc<IdAlias>, IdAlias>& dbEntry);
-
-
-//==============================================================================
-// util functions
-//==============================================================================
-
-
 namespace utils {
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-Ind<DbKw, DbDoc> genInd(const Db<DbDoc, DbKw>& db, bool shouldShuffleKwLists) {
-    Ind<DbKw, DbDoc> ind;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
-        DbDoc dbDoc = entry.first;
+template <class DbEntry, class DbKw> requires IsValidDbParams<DbEntry, DbKw>
+Ind<DbKw, DbEntry> genInd(const Db<DbEntry, DbKw>& db, bool shouldShuffleKwLists) {
+    Ind<DbKw, DbEntry> ind;
+    for (DbEntry<DbEntry, DbKw> entry : db) {
+        DbEntry dbEntry = entry.first;
         Range<DbKw> dbKwRange = entry.second;
         if (ind.count(dbKwRange) == 0) {
-            ind[dbKwRange] = std::vector {dbDoc};
+            ind[dbKwRange] = std::vector {dbEntry};
         } else {
-            ind[dbKwRange].push_back(dbDoc);
+            ind[dbKwRange].push_back(dbEntry);
         }
     }
 
     if (shouldShuffleKwLists) {
         for (std::pair entry : ind) {
-            std::vector<DbDoc> dbKwList = entry.second;
+            std::vector<DbEntry> dbKwList = entry.second;
             std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
         }
     }
@@ -62,15 +41,15 @@ Ind<DbKw, DbDoc> genInd(const Db<DbDoc, DbKw>& db, bool shouldShuffleKwLists) {
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db) {
+template <class DbEntry, class DbKw> requires IsValidDbParams<DbEntry, DbKw>
+Range<DbKw> findDbKwBounds(const Db<DbEntry, DbKw>& db) {
     if (db.empty()) {
         return DUMMY_RANGE<DbKw>();
     }
 
     DbKw minDbKw = DUMMY;
     DbKw maxDbKw = DUMMY;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
+    for (DbEntry<DbEntry, DbKw> entry : db) {
         Range<DbKw> dbKwRange = entry.second;
         if (dbKwRange.first < minDbKw || minDbKw == DUMMY) {
             minDbKw = dbKwRange.first;
@@ -83,10 +62,10 @@ Range<DbKw> findDbKwBounds(const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
+template <class DbEntry, class DbKw> requires IsValidDbParams<DbEntry, DbKw>
+std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbEntry, DbKw>& db) {
     std::unordered_set<Range<DbKw>> uniqDbKwRanges;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
+    for (DbEntry<DbEntry, DbKw> entry : db) {
         Range<DbKw> dbKwRange = entry.second;
         uniqDbKwRanges.insert(dbKwRange); // `unordered_set` will not insert duplicate elements
     }
@@ -94,62 +73,37 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbDoc, DbKw>& db) {
 }
 
 
-// template specialize just this method for `Doc<>` instead of all SSE classes that use it
-void cleanUpResults(std::vector<Doc<>>& docs) {
-    std::vector<Doc<>> newDocs;
-    std::unordered_set<Id> deletedIds;
-
-    // find all cancellation tuples
-    for (Doc<> doc : docs) {
-        Op op = doc.getOp();
-        if (op == Op::DEL) {
-            Id id = doc.getId();
-            deletedIds.insert(id);
-        }
-    }
-    // copy over vector without deleted (or dummy) docs, as well as no dummy ids
-    for (Doc<> doc : docs) {
-        Id id = doc.getId();
-        Op op = doc.getOp();
-        if (id != DUMMY && op == Op::INS && deletedIds.count(id) == 0) {
-            newDocs.push_back(doc);
-        }
-    }
-
-    docs = newDocs;
-}
-
-
 // (note we still need the general case of this function to be able to call it from within
 // `IStaticPointSse`; it just does nothing except in the template specialization below)
-template <IsDbDoc DbDoc>
-void cleanUpResults(std::vector<DbDoc>& docs) {}
+template <IsDbEntry DbEntry>
+void cleanUpResults(std::vector<DbEntry>& dbEntries) {}
 
 
-// template specialize just this method for `Doc<>` instead of all SSE classes that use it
+// template specialize this method for just `DefaultDbEntry<>` instead of all
+// SSE classes that use it
 template <>
-void cleanUpResults(std::vector<Doc<>>& docs) {
-    std::vector<Doc<>> newDocs;
+void cleanUpResults(std::vector<DefaultDbEntry<>>& dbEntries) {
+    std::vector<DefaultDbEntry<>> newDbEntries;
     std::unordered_set<Id> deletedIds;
 
     // find all cancellation tuples
-    for (Doc<> doc : docs) {
-        Op op = doc.getOp();
+    for (DefaultDbEntry<> dbEntry : dbEntries) {
+        Op op = dbEntry.getOp();
         if (op == Op::DEL) {
-            Id id = doc.getId();
+            Id id = dbEntry.getId();
             deletedIds.insert(id);
         }
     }
-    // copy over vector without deleted (or dummy) docs, as well as no dummy ids
-    for (Doc<> doc : docs) {
-        Id id = doc.getId();
-        Op op = doc.getOp();
+    // copy over vector without deleted (or dummy) dbEntries, as well as no dummy ids
+    for (DefaultDbEntry<> dbEntry : dbEntries) {
+        Id id = dbEntry.getId();
+        Op op = dbEntry.getOp();
         if (id != DUMMY && op == Op::INS && deletedIds.count(id) == 0) {
-            newDocs.push_back(doc);
+            newDbEntries.push_back(dbEntry);
         }
     }
 
-    docs = newDocs;
+    dbEntries = newDbEntries;
 }
 
 
@@ -163,23 +117,29 @@ uint64_t hashToPos(const ustring& hash) {
 // explicit template instantiations
 
 
-template Ind<Kw, Doc<>> genInd(const Db<Doc<>, Kw>& db, bool shouldShuffleKwLists);
-template Ind<Kw, SrcIDb1Doc> genInd(const Db<SrcIDb1Doc, Kw>& db, bool shouldShuffleKwLists);
-//template Ind<IdAlias, Doc<IdAlias>> genInd(
-//    const Db<Doc<IdAlias>, IdAlias>& db, bool shouldShuffleKwLists
+template Ind<Kw, DefaultDbEntry<>> genInd(
+    const Db<DefaultDbEntry<>, Kw>& db, bool shouldShuffleKwLists
+);
+template Ind<Kw, SrcIDb1Entry> genInd(
+    const Db<SrcIDb1Entry, Kw>& db, bool shouldShuffleKwLists
+);
+//template Ind<IdAlias, DefaultDbEntry<IdAlias>> genInd(
+//    const Db<DefaultDbEntry<IdAlias>, IdAlias>& db, bool shouldShuffleKwLists
 //);
 
-template Range<Kw> findDbKwBounds(const Db<Doc<>, Kw>& db);
-template Range<Kw> findDbKwBounds(const Db<SrcIDb1Doc, Kw>& db);
-//template Range<Kw> findDbKwBounds(const Db<Doc<IdAlias>, IdAlias>& db);
+template Range<Kw> findDbKwBounds(const Db<DefaultDbEntry<>, Kw>& db);
+template Range<Kw> findDbKwBounds(const Db<SrcIDb1Entry, Kw>& db);
+//template Range<Kw> findDbKwBounds(const Db<DefaultDbEntry<IdAlias>, IdAlias>& db);
 
-template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Doc<>, Kw>& db);
-template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Doc, Kw>& db);
-//template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Doc<IdAlias>, IdAlias>& db);
+template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<DefaultDbEntry<>, Kw>& db);
+template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Entry, Kw>& db);
+//template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(
+//    const Db<DefaultDbEntry<IdAlias>, IdAlias>& db
+//);
 
 // remaining explicit template specializations beyond the one previously
-template void cleanUpResults(std::vector<SrcIDb1Doc>& docs);
-//template void cleanUpResults(std::vector<Doc<IdAlias>>& docs);
+template void cleanUpResults(std::vector<SrcIDb1Entry>& dbEntries);
+//template void cleanUpResults(std::vector<DefaultDbEntry<IdAlias>>& dbEntries);
 
 
 } // namespace `utils`

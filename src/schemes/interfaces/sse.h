@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-#include "utils/doc.h"
+#include "utils/db.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 

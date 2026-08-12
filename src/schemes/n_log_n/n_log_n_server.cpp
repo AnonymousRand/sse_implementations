@@ -7,7 +7,7 @@
 #include "schemes/interfaces/sse_server.h"
 
 #include "utils/benchmark.h"
-#include "utils/doc.h"
+#include "utils/db.h"
 #include "utils/enc_ind.h"
 #include "utils/sse_utils.h"
 #include "utils/ustring.h"

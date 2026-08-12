@@ -12,7 +12,7 @@
 
 #include "utils/benchmark.h"
 #include "utils/crypto.h"
-#include "utils/doc.h"
+#include "utils/db.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 
