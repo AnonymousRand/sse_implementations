@@ -13,7 +13,7 @@
 struct Benchmark;
 
 
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
+template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
 class ISse {
 public:
     std::shared_ptr<Benchmark> benchmark;
@@ -23,7 +23,7 @@ public:
 
     ISse(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
-    virtual void setup(int secParam, const Db<DbDoc, DbKw>& db) = 0;
+    virtual void setup(int secParam, const Db<DbRecord, DbKw>& db) = 0;
     
     /**
      * params:
@@ -32,7 +32,7 @@ public:
      *       or the entire range in one go (i.e. `query` itself must be in the db),
      *       e.g. as the underlying scheme for a range scheme like Log-SRC.
      */
-    virtual std::vector<DbDoc> search(
+    virtual std::vector<DbRecord> search(
         const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const = 0;
 

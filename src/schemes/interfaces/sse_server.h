@@ -10,7 +10,7 @@
 struct Benchmark;
 
 
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
+template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
 class ISseServer {
 public:
     // this should be the client/controller's benchmarking struct

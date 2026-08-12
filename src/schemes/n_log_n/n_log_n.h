@@ -15,32 +15,32 @@
 #include "utils/ustring.h"
 
 
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class NLogN : public IStaticPointSse<DbDoc, DbKw>, public ISdUnderly<DbDoc, DbKw> {
+template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
+class NLogN : public IStaticPointSse<DbRecord, DbKw>, public ISdUnderly<DbRecord, DbKw> {
 public:
-    using IStaticPointSse<DbDoc, DbKw>::IStaticPointSse;
+    using IStaticPointSse<DbRecord, DbKw>::IStaticPointSse;
 
     ~NLogN();
 
     //----------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<DbDoc, DbKw>& db) override;
+    void setup(int secParam, const Db<DbRecord, DbKw>& db) override;
     void clear() override;
 
     //----------------------------------------------------------------------
     // `ISdUnderly`
 
-    void getDb(Db<DbDoc, DbKw>& ret) const override;
+    void getDb(Db<DbRecord, DbKw>& ret) const override;
 
 protected:
-    NLogNServer<DbDoc, DbKw>* server = new NLogNServer<DbDoc, DbKw>(this->benchmark);
+    NLogNServer<DbRecord, DbKw>* server = new NLogNServer<DbRecord, DbKw>(this->benchmark);
     int64_t numLvls;
 
     //----------------------------------------------------------------------
     // `IStaticPointSse`
 
-    std::vector<DbDoc> searchBase(const Range<DbKw>& query) const override;
+    std::vector<DbRecord> searchBase(const Range<DbKw>& query) const override;
 
     //----------------------------------------------------------------------
     // other

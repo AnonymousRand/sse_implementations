@@ -18,7 +18,7 @@
 #include "utils/tdag.h"
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
 LogSrcIBase<Underly>::~LogSrcIBase() {
     this->clear();
     if (this->underly1 != nullptr) {
@@ -36,8 +36,8 @@ LogSrcIBase<Underly>::~LogSrcIBase() {
 // `ISse`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-std::vector<Doc<>> LogSrcIBase<Underly>::search(
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
+std::vector<Record<>> LogSrcIBase<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
     //--------------------------------------------------------------------------
@@ -45,9 +45,9 @@ std::vector<Doc<>> LogSrcIBase<Underly>::search(
 
     Range<Kw> src1 = this->tdag1->findSrc(query);
     if (src1 == DUMMY_RANGE<Kw>()) { 
-        return std::vector<Doc<>> {};
+        return std::vector<Record<>> {};
     }
-    std::vector<SrcIDb1Doc> choices = this->underly1->search(src1, false, false);
+    std::vector<SrcIDb1Record> choices = this->underly1->search(src1, false, false);
 
     //--------------------------------------------------------------------------
     // query 2
@@ -56,7 +56,7 @@ std::vector<Doc<>> LogSrcIBase<Underly>::search(
     // (filter out unnecessary choices and merge remaining ones into a single id range)
     IdAlias minIdAlias = DUMMY;
     IdAlias maxIdAlias = DUMMY;
-    for (SrcIDb1Doc choice : choices) {
+    for (SrcIDb1Record choice : choices) {
         Kw choiceKw = choice.get().first;
         if (!query.contains(choiceKw)) {
             continue;
@@ -71,20 +71,20 @@ std::vector<Doc<>> LogSrcIBase<Underly>::search(
     }
     // if there are no choices or something went wrong
     if (minIdAlias == DUMMY || maxIdAlias == DUMMY) {
-        return std::vector<Doc<>> {};
+        return std::vector<Record<>> {};
     }
 
     // perform query 2
     Range<IdAlias> query2 {minIdAlias, maxIdAlias};
     Range<IdAlias> src2 = this->tdag2->findSrc(query2);
     if (src2 == DUMMY_RANGE<IdAlias>()) {
-        return std::vector<Doc<>> {};
+        return std::vector<Record<>> {};
     }
     return this->underly2->search(src2, shouldCleanUpResults, false);
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
 void LogSrcIBase<Underly>::clear() {
     this->underly1->clear();
     this->underly2->clear();
@@ -104,28 +104,28 @@ void LogSrcIBase<Underly>::clear() {
 // `ISdUnderly`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
+void LogSrcIBase<Underly>::getDb(Db<Record<>, Kw>& ret) const {
     // reconstruct the original DB passed to `setup()` from Log-SRC-i's two indexes
     // (an alternative is to store the original DB in a separate PiBas instance and call
     // `getDb()` on that; it will be slightly faster but it will also take up more disk space,
     // and more importantly it can be another attack vector (e.g. it reveals the exact db size))
-    Db<SrcIDb1Doc, Kw> db1;
-    Db<Doc<IdAlias>, IdAlias> db2;
+    Db<SrcIDb1Record, Kw> db1;
+    Db<Record<IdAlias>, IdAlias> db2;
     this->underly1->getDb(db1);
     this->underly2->getDb(db2);
-    Ind<IdAlias, Doc<IdAlias>> ind2 = utils::genInd(db2);
+    Ind<IdAlias, Record<IdAlias>> ind2 = utils::genInd(db2);
 
-    for (DbEntry<SrcIDb1Doc, Kw> dbEntry : db1) {
-        Range<Kw> kwRange = dbEntry.second;
+    for (DbRecord<SrcIDb1Record, Kw> dbRecord : db1) {
+        Range<Kw> kwRange = dbRecord.second;
         // only iterate through leaf nodes in DB 1
         if (kwRange.size() > 1) {
             continue;
         }
 
         // also exclude ALL types of dummies (this is done client-side so it's fine to reveal sizes)
-        SrcIDb1Doc srcIDb1Doc = dbEntry.first;
-        Range<IdAlias> idAliasRange = srcIDb1Doc.getIdAliasRange();
+        SrcIDb1Record srcIDb1Record = dbRecord.first;
+        Range<IdAlias> idAliasRange = srcIDb1Record.getIdAliasRange();
         if (idAliasRange == DUMMY_RANGE<IdAlias>()) {
             continue;
         }
@@ -138,10 +138,12 @@ void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
                 std::exit(EXIT_FAILURE);
             }
 
-            std::vector<Doc<IdAlias>> kwList = iter->second;
-            for (Doc<IdAlias> doc : kwList) {
+            std::vector<Record<IdAlias>> kwList = iter->second;
+            for (Record<IdAlias> record : kwList) {
                 ret.push_back(
-                    DbEntry {Doc<> {doc.getId(), doc.getKw(), doc.getOp(), kwRange}, kwRange}
+                    DbRecord {
+                        Record<> {record.getId(), record.getKw(), record.getOp(), kwRange}, kwRange
+                    }
                 );
             }
         }

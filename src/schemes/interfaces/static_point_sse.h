@@ -15,23 +15,23 @@
 
 // subclasses of this include `PiBas`, `NLogN`, and `log_src_i_star::Underly`
 // provide shared code for `search()` (depending on `searchBase()`)
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class IStaticPointSse : public virtual ISse<DbDoc, DbKw> {
+template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
+class IStaticPointSse : public virtual ISse<DbRecord, DbKw> {
 public:
-    using ISse<DbDoc, DbKw>::ISse;
+    using ISse<DbRecord, DbKw>::ISse;
 
     //----------------------------------------------------------------------
     // shared code
 
-    std::vector<DbDoc> search(
+    std::vector<DbRecord> search(
         const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override {
-        std::vector<DbDoc> allResults;
+        std::vector<DbRecord> allResults;
 
         if (isNaive) {
             // naive, insecure range search: just individually query every point in range
             for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-                std::vector<DbDoc> results = this->searchBase(Range {dbKw, dbKw});
+                std::vector<DbRecord> results = this->searchBase(Range {dbKw, dbKw});
                 allResults.insert(allResults.end(), results.begin(), results.end());
             }
         } else {
@@ -59,7 +59,7 @@ protected:
     //----------------------------------------------------------------------
     // methods to implement
 
-    virtual std::vector<DbDoc> searchBase(const Range<DbKw>& query) const = 0;
+    virtual std::vector<DbRecord> searchBase(const Range<DbKw>& query) const = 0;
     
     //----------------------------------------------------------------------
     // shared code
@@ -67,12 +67,12 @@ protected:
     /**
      * helper function to decrypt `encIndVal`.
      */
-    DbDoc decryptEncIndVal(const EncIndVal& encIndVal) const {
-        ustring encDbDoc = encIndVal.first;
+    DbRecord decryptEncIndVal(const EncIndVal& encIndVal) const {
+        ustring encDbRecord = encIndVal.first;
         ustring iv = encIndVal.second;
-        ustring decDbDoc = utils::decryptAndUnpad(
-            utils::ENC_CIPHER, this->encKey, encDbDoc, iv
+        ustring decDbRecord = utils::decryptAndUnpad(
+            utils::ENC_CIPHER, this->encKey, encDbRecord, iv
         );
-        return DbDoc::fromUstr(decDbDoc);
+        return DbRecord::fromUstr(decDbRecord);
     }
 };

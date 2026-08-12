@@ -31,7 +31,7 @@ Sda<Underly>::~Sda() {
 
 
 template <IsSdUnderly Underly>
-void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
+void Sda<Underly>::setup(int secParam, const Db<Record<>, Kw>& db) {
     this->clear();
     this->secParam = secParam;
 
@@ -40,20 +40,20 @@ void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
         // this is the shortcut way: simply initialize and fill in all subindexes in one go
         // (note that the non-shortcut `setup()` places earlier items in `db` into larger
-        // subindexes, so we preserve that behavior here by starting from the earlier entries
+        // subindexes, so we preserve that behavior here by starting from the earlier records
         // in `db` up the largest subindexes first (this was needed anyway))
         int64_t dbPos = 0;
         for (int64_t i = lastFilledInd; i >= 0; i--) {
             int64_t indSize = (int64_t)std::pow(2, i);
-            Db<Doc<>, Kw> indDb;
+            Db<Record<>, Kw> indDb;
             if (dbPos < db.size()) {
                 if (dbPos + indSize < db.size()) {
-                    indDb = Db<Doc<>, Kw>(db.begin() + dbPos, db.begin() + dbPos + indSize);
+                    indDb = Db<Record<>, Kw>(db.begin() + dbPos, db.begin() + dbPos + indSize);
                 } else {
-                    indDb = Db<Doc<>, Kw>(db.begin() + dbPos, db.end());
+                    indDb = Db<Record<>, Kw>(db.begin() + dbPos, db.end());
                 }
             } else {
-                indDb = Db<Doc<>, Kw>();
+                indDb = Db<Record<>, Kw>();
             }
 
             Underly* newUnderly = new Underly(this->benchmark);
@@ -75,18 +75,18 @@ void Sda<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
         }
         this->firstEmptyInd = newFirstEmpty;
     } else {
-        for (DbEntry<Doc<>, Kw> entry : db) {
-            this->update(entry);
+        for (DbRecord<Record<>, Kw> record : db) {
+            this->update(record);
         }
     }
 }
 
 
 template <IsSdUnderly Underly>
-std::vector<Doc<>> Sda<Underly>::search(
+std::vector<Record<>> Sda<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
-    std::vector<Doc<>> allResults;
+    std::vector<Record<>> allResults;
 
     // search through all non-empty indexes
     for (Underly* underly : this->underlys) {
@@ -97,7 +97,7 @@ std::vector<Doc<>> Sda<Underly>::search(
         // is `true`; the cancellation tuple for a document is not guaranteed to be in
         // the same index as the inserting tuple, so we can't rely on the individual
         // underlying instances to filter out all deleted documents
-        std::vector<Doc<>> results = underly->search(query, false, isNaive);
+        std::vector<Record<>> results = underly->search(query, false, isNaive);
         allResults.insert(allResults.end(), results.begin(), results.end());
     }
 
@@ -128,24 +128,24 @@ void Sda<Underly>::clear() {
 
 
 template <IsSdUnderly Underly>
-void Sda<Underly>::update(const DbEntry<Doc<>, Kw>& newDbEntry) {
+void Sda<Underly>::update(const DbRecord<Record<>, Kw>& newDbRecord) {
     // if empty, initialize first index
     if (this->underlys.empty()) {
         Underly* newUnderly = new Underly(this->benchmark);
-        newUnderly->setup(this->secParam, Db<Doc<>, Kw> {newDbEntry});
+        newUnderly->setup(this->secParam, Db<Record<>, Kw> {newDbRecord});
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
         return;
     }
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`
-    Db<Doc<>, Kw> mergedDb;
+    Db<Record<>, Kw> mergedDb;
     mergedDb.reserve(std::pow(2, this->firstEmptyInd));
     for (int64_t i = 0; i < this->firstEmptyInd; i++) {
         // (`getDb()` appends to the passed-in container)
         this->underlys[i]->getDb(mergedDb);
     }
-    mergedDb.push_back(newDbEntry);
+    mergedDb.push_back(newDbRecord);
     if (this->firstEmptyInd >= this->underlys.size() - 1) {
         // if we need to create a new, larger index
         Underly* newUnderly = new Underly(this->benchmark);

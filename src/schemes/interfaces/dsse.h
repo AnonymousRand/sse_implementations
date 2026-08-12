@@ -15,18 +15,18 @@ struct Benchmark;
 
 // (note: no virtual inheritance here as otherwise things extending `IDsse` will skip over `IDsse`'s
 // constructors, leading to the explicit constructor below with `useShortcutSetup` to not be seen)
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class IDsse : public ISse<DbDoc, DbKw> {
+template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
+class IDsse : public ISse<DbRecord, DbKw> {
 public:
-    using ISse<DbDoc, DbKw>::ISse;
+    using ISse<DbRecord, DbKw>::ISse;
 
     IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup) :
-        ISse<DbDoc, DbKw>(benchmark), useShortcutSetup(useShortcutSetup) {}
+        ISse<DbRecord, DbKw>(benchmark), useShortcutSetup(useShortcutSetup) {}
 
     //----------------------------------------------------------------------
     // methods to implement
 
-    virtual void update(const DbEntry<DbDoc, DbKw>& newEntry) = 0;
+    virtual void update(const DbRecord<DbRecord, DbKw>& newRecord) = 0;
 
 protected:
     /**

@@ -23,8 +23,8 @@
 // `ISse`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
+void LogSrcI<Underly>::setup(int secParam, const Db<Record<>, Kw>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -37,16 +37,16 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     // build index 2
 
     // sort documents by keyword
-    auto sortByKw = [](const DbEntry<Doc<>, Kw>& dbEntry1, const DbEntry<Doc<>, Kw>& dbEntry2) {
-        return dbEntry1.first.getKw() < dbEntry2.first.getKw();
+    auto sortByKw = [](const DbRecord<Record<>, Kw>& dbRecord1, const DbRecord<Record<>, Kw>& dbRecord2) {
+        return dbRecord1.first.getKw() < dbRecord2.first.getKw();
     };
-    Db<Doc<>, Kw> dbSorted = db;
+    Db<Record<>, Kw> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
-    Db<SrcIDb1Doc, Kw> db1;
-    Db<Doc<IdAlias>, IdAlias> db2;
+    Db<SrcIDb1Record, Kw> db1;
+    Db<Record<IdAlias>, IdAlias> db2;
     db1.reserve(dbSorted.size());
     db2.reserve(dbSorted.size());
     Kw prevKw = DUMMY;
@@ -55,19 +55,19 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
-        SrcIDb1Doc newDoc {prevKw, idAliasRangeWithKw, kwRange};
-        DbEntry<SrcIDb1Doc, Kw> newDbEntry {newDoc, kwRange};
-        db1.push_back(newDbEntry);
+        SrcIDb1Record newRecord {prevKw, idAliasRangeWithKw, kwRange};
+        DbRecord<SrcIDb1Record, Kw> newDbRecord {newRecord, kwRange};
+        db1.push_back(newDbRecord);
     };
     for (int64_t idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
-        DbEntry<Doc<>, Kw> dbEntry = dbSorted[idAlias];
-        Doc<> doc = dbEntry.first;
-        Kw kw = dbEntry.second.first; // entries in `db` must have size 1 `Kw` ranges!
+        DbRecord<Record<>, Kw> dbRecord = dbSorted[idAlias];
+        Record<> record = dbRecord.first;
+        Kw kw = dbRecord.second.first; // records in `db` must have size 1 `Kw` ranges!
         // populate `db2` leaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};
-        Doc<IdAlias> newDb2Doc(doc.get(), idAliasRange);
-        DbEntry<Doc<IdAlias>, IdAlias> newDb2Entry = DbEntry {newDb2Doc, idAliasRange};
-        db2.push_back(newDb2Entry);
+        Record<IdAlias> newDb2Record(record.get(), idAliasRange);
+        DbRecord<Record<IdAlias>, IdAlias> newDb2Record = DbRecord {newDb2Record, idAliasRange};
+        db2.push_back(newDb2Record);
 
         // populate `db1` leaves
         if (kw != prevKw) {
@@ -89,8 +89,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     // build TDAG 2 over id aliases
     IdAlias maxIdAlias = 0;
-    for (DbEntry<Doc<IdAlias>, IdAlias> dbEntry : db2) {
-        IdAlias idAlias = dbEntry.second.first;
+    for (DbRecord<Record<IdAlias>, IdAlias> dbRecord : db2) {
+        IdAlias idAlias = dbRecord.second.first;
         if (idAlias > maxIdAlias) {
             maxIdAlias = idAlias;
         }
@@ -99,19 +99,19 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     int64_t db2Size = db2.size();
-    db2.reserve(utils::calcTdagEntryCount(db2Size));
+    db2.reserve(utils::calcTdagRecordCount(db2Size));
     for (int64_t i = 0; i < db2Size; i++) {
-        DbEntry<Doc<IdAlias>, IdAlias> dbEntry = db2[i];
-        Doc<IdAlias> doc = dbEntry.first;
-        Range<IdAlias> idAliasRange = dbEntry.second;
+        DbRecord<Record<IdAlias>, IdAlias> dbRecord = db2[i];
+        Record<IdAlias> record = dbRecord.first;
+        Range<IdAlias> idAliasRange = dbRecord.second;
         std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
         for (Range<IdAlias> ancestor : ancestors) {
             // ancestors include the leaf itself, which is already in `db2`
             if (ancestor == idAliasRange) {
                 continue;
             }
-            Doc<IdAlias> newDoc(doc.get(), ancestor);
-            db2.push_back(std::pair {newDoc, ancestor});
+            Record<IdAlias> newRecord(record.get(), ancestor);
+            db2.push_back(std::pair {newRecord, ancestor});
         }
     }
 
@@ -124,21 +124,21 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     Range<Kw> db1KwBounds = utils::findDbKwBounds(db1);
     this->tdag1 = new TdagNode<Kw>(db1KwBounds);
 
-    // replicate every document (in this case `SrcIDb1Doc`s) to all keyword ranges/
+    // replicate every document (in this case `SrcIDb1Record`s) to all keyword ranges/
     // TDAG 1 nodes that cover it
     int64_t db1Size = db1.size();
-    db1.reserve(utils::calcTdagEntryCount(db1Size));
+    db1.reserve(utils::calcTdagRecordCount(db1Size));
     for (int64_t i = 0; i < db1Size; i++) {
-        DbEntry<SrcIDb1Doc, Kw> dbEntry = db1[i];
-        SrcIDb1Doc doc = dbEntry.first;
-        Range<Kw> kwRange = dbEntry.second;
+        DbRecord<SrcIDb1Record, Kw> dbRecord = db1[i];
+        SrcIDb1Record record = dbRecord.first;
+        Range<Kw> kwRange = dbRecord.second;
         std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {
             if (ancestor == kwRange) {
                 continue;
             }
-            SrcIDb1Doc newDoc(doc.get(), ancestor);
-            db1.push_back(std::pair {newDoc, ancestor});
+            SrcIDb1Record newRecord(record.get(), ancestor);
+            db1.push_back(std::pair {newRecord, ancestor});
         }
     }
 

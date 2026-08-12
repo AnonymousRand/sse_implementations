@@ -14,80 +14,80 @@
 
 
 //==============================================================================
-// `IDbEntry`
+// `IDbRecord`
 //==============================================================================
 
 
 template <class T, class DbKw>
-IDbEntry<T, DbKw>::IDbEntry(const T& val, const Range<DbKw>& dbKwRange) {
+IDbRecord<T, DbKw>::IDbRecord(const T& val, const Range<DbKw>& dbKwRange) {
     this->val = val;
     this->dbKwRange = dbKwRange;
 }
 
 
 template <class T, class DbKw>
-T IDbEntry<T, DbKw>::get() const {
+T IDbRecord<T, DbKw>::get() const {
     return this->val;
 }
 
 
 template <class T, class DbKw>
-Range<DbKw> IDbEntry<T, DbKw>::getDbKwRange() const {
+Range<DbKw> IDbRecord<T, DbKw>::getDbKwRange() const {
     return this->dbKwRange;
 }
 
 
 template <class T, class DbKw>
-ustring IDbEntry<T, DbKw>::toUstr() const {
+ustring IDbRecord<T, DbKw>::toUstr() const {
     return ::utils::toUstr(this->toStr());
 }
 
 
 template <class T, class DbKw>
-std::ostream& operator <<(std::ostream& os, const IDbEntry<T, DbKw>& iDbEntry) {
-    return os << iDbEntry.toStr();
+std::ostream& operator <<(std::ostream& os, const IDbRecord<T, DbKw>& iDbRecord) {
+    return os << iDbRecord.toStr();
 }
 
 
 //==============================================================================
-// `DefaultDbEntry`
+// `Record`
 //==============================================================================
 
 
 template <class DbKw>
-const std::string DefaultDbEntry<DbKw>::REGEX_STR =
+const std::string Record<DbKw>::REGEX_STR =
     "\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\),(-?[0-9]+--?[0-9]+)";
 
 
 template <class DbKw>
-const std::regex DefaultDbEntry<DbKw>::REGEX(DefaultDbEntry<DbKw>::REGEX_STR);
+const std::regex Record<DbKw>::REGEX(Record<DbKw>::REGEX_STR);
 
 
 template <class DbKw>
-DbEntry<DbKw>::DefaultDbEntry(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) :
-    IDbEntry<>(std::tuple {id, kw, op}, dbKwRange) {}
+DbRecord<DbKw>::Record(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) :
+    IDbRecord<>(std::tuple {id, kw, op}, dbKwRange) {}
 
 
 template <class DbKw>
-Id DefaultDbEntry<DbKw>::getId() const {
+Id Record<DbKw>::getId() const {
     return std::get<0>(this->val);
 }
 
 
 template <class DbKw>
-Kw DefaultDbEntry<DbKw>::getKw() const {
+Kw Record<DbKw>::getKw() const {
     return std::get<1>(this->val);
 }
 
 
 template <class DbKw>
-Op DefaultDbEntry<DbKw>::getOp() const {
+Op Record<DbKw>::getOp() const {
     return std::get<2>(this->val);
 }
 
 
 template <class DbKw>
-std::string DefaultDbEntry<DbKw>::toStr() const {
+std::string Record<DbKw>::toStr() const {
     std::stringstream ss;
     ss << "(" << this->getId() << "," << this->getKw() << "," << static_cast<char>(this->getOp())
        << ")," << this->dbKwRange;
@@ -96,13 +96,13 @@ std::string DefaultDbEntry<DbKw>::toStr() const {
 
 
 template <class DbKw>
-DbEntry<DbKw> DefaultDbEntry<DbKw>::fromUstr(const ustring& ustr) {
+DbRecord<DbKw> Record<DbKw>::fromUstr(const ustring& ustr) {
     std::string str = ::utils::toStr(ustr);
     std::smatch matches;
-    if (!std::regex_search(str, matches, DefaultDbEntry<DbKw>::REGEX) || matches.size() != 5) {
-        std::cerr << "Error: DefaultDbEntry::fromUstr(): bad string \"" << str << "\" passed"
+    if (!std::regex_search(str, matches, Record<DbKw>::REGEX) || matches.size() != 5) {
+        std::cerr << "Error: Record::fromUstr(): bad string \"" << str << "\" passed"
                   << std::endl
-                  << "Regex to match is \"" << DefaultDbEntry<DbKw>::REGEX_STR << "\"; "
+                  << "Regex to match is \"" << Record<DbKw>::REGEX_STR << "\"; "
                   << "matched groups are:"
                   << std::endl;
         for (auto match : matches) {
@@ -115,13 +115,13 @@ DbEntry<DbKw> DefaultDbEntry<DbKw>::fromUstr(const ustring& ustr) {
     Kw kw = std::stoi(matches[2].str());
     Op op = static_cast<Op>(matches[3].str()[0]);
     Range<DbKw> dbKwRange = Range<DbKw>::fromStr(matches[4].str());
-    return DefaultDbEntry<DbKw> {id, kw, op, dbKwRange};
+    return Record<DbKw> {id, kw, op, dbKwRange};
 }
 
 
 template <class DbKw>
-DbEntry<DbKw> DefaultDbEntry<DbKw>::genDummy(const Range<DbKw>& dbKwRange) {
-    return DefaultDbEntry<DbKw> {DUMMY, DUMMY, Op::DUMMY, dbKwRange};
+DbRecord<DbKw> Record<DbKw>::genDummy(const Range<DbKw>& dbKwRange) {
+    return Record<DbKw> {DUMMY, DUMMY, Op::DUMMY, dbKwRange};
 }
 
 
@@ -129,64 +129,64 @@ DbEntry<DbKw> DefaultDbEntry<DbKw>::genDummy(const Range<DbKw>& dbKwRange) {
 // explicit template instantiations
 
 
-template class IDbEntry<std::tuple<Id, Kw, Op>, Kw>;
-//template class IDbEntry<std::tuple<Id, Kw, Op>, IdAlias>;
+template class IDbRecord<std::tuple<Id, Kw, Op>, Kw>;
+//template class IDbRecord<std::tuple<Id, Kw, Op>, IdAlias>;
 
-template class DefaultDbEntry<Kw>;
-//template class DefaultDbEntry<IdAlias>;
+template class Record<Kw>;
+//template class Record<IdAlias>;
 
 template std::ostream& operator <<(
-    std::ostream& os, const IDbEntry<std::tuple<Id, Kw, Op>, Kw>& iDbEntry
+    std::ostream& os, const IDbRecord<std::tuple<Id, Kw, Op>, Kw>& iDbRecord
 );
 //template std::ostream& operator <<(
-//    std::ostream& os, const IDbEntry<std::tuple<Id, Kw, Op>, IdAlias>& iDbEntry
+//    std::ostream& os, const IDbRecord<std::tuple<Id, Kw, Op>, IdAlias>& iDbRecord
 //);
 
 
 //==============================================================================
-// `SrcIDb1Entry`
+// `SrcIDb1Record`
 //==============================================================================
 
 
-const std::string SrcIDb1Entry::REGEX_STR =
+const std::string SrcIDb1Record::REGEX_STR =
     "\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(-?[0-9]+--?[0-9]+)";
 
 
-const std::regex SrcIDb1Entry::REGEX(SrcIDb1Entry::REGEX_STR);
+const std::regex SrcIDb1Record::REGEX(SrcIDb1Record::REGEX_STR);
 
 
-SrcIDb1Entry::SrcIDb1Entry(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange) :
-    IDbEntry<>(std::pair {kw, idAliasRange}, kwRange) {}
+SrcIDb1Record::SrcIDb1Record(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange) :
+    IDbRecord<>(std::pair {kw, idAliasRange}, kwRange) {}
 
 
-SrcIDb1Entry::SrcIDb1Entry(const SrcIDb1Entry& srcIDb1Entry) :
-    val(srcIDb1Entry.get()), dbKwRange(srcIDb1Entry.getDbKwRange()) {}
+SrcIDb1Record::SrcIDb1Record(const SrcIDb1Record& srcIDb1Record) :
+    val(srcIDb1Record.get()), dbKwRange(srcIDb1Record.getDbKwRange()) {}
 
 
-Kw SrcIDb1Entry::getKw() const {
+Kw SrcIDb1Record::getKw() const {
     return this->val.first;
 }
 
 
-Range<IdAlias> SrcIDb1Entry::getIdAliasRange() const {
+Range<IdAlias> SrcIDb1Record::getIdAliasRange() const {
     return this->val.second;
 }
 
 
-std::string SrcIDb1Entry::toStr() const {
+std::string SrcIDb1Record::toStr() const {
     std::stringstream ss;
     ss << "(" << this->val.first << "," << this->val.second << ")," << this->dbKwRange;
     return ss.str();
 }
 
 
-SrcIDb1Entry SrcIDb1Entry::fromUstr(const ustring& ustr) {
+SrcIDb1Record SrcIDb1Record::fromUstr(const ustring& ustr) {
     std::string str = ::utils::toStr(ustr);
     std::smatch matches;
-    if (!std::regex_search(str, matches, SrcIDb1Entry::REGEX) || matches.size() != 4) {
-        std::cerr << "Error: SrcIDb1Entry::fromUstr(): bad string \"" << ustr << "\" passed"
+    if (!std::regex_search(str, matches, SrcIDb1Record::REGEX) || matches.size() != 4) {
+        std::cerr << "Error: SrcIDb1Record::fromUstr(): bad string \"" << ustr << "\" passed"
                   << std::endl
-                  << "Regex to match is \"" << SrcIDb1Entry::REGEX_STR << "\"; matched groups are:"
+                  << "Regex to match is \"" << SrcIDb1Record::REGEX_STR << "\"; matched groups are:"
                   << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
@@ -197,12 +197,12 @@ SrcIDb1Entry SrcIDb1Entry::fromUstr(const ustring& ustr) {
     Kw kw = std::stol(matches[1].str());
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
     Range<Kw> kwRange = Range<Kw>::fromStr(matches[3].str());
-    return SrcIDb1Entry {kw, idAliasRange, kwRange};
+    return SrcIDb1Record {kw, idAliasRange, kwRange};
 }
 
 
-SrcIDb1Entry SrcIDb1Entry::genDummy(const Range<Kw>& kwRange) {
-    return SrcIDb1Entry {DUMMY, DUMMY_RANGE<IdAlias>(), kwRange};
+SrcIDb1Record SrcIDb1Record::genDummy(const Range<Kw>& kwRange) {
+    return SrcIDb1Record {DUMMY, DUMMY_RANGE<IdAlias>(), kwRange};
 }
 
 
@@ -210,8 +210,8 @@ SrcIDb1Entry SrcIDb1Entry::genDummy(const Range<Kw>& kwRange) {
 // explicit template instantiations
 
 
-template class IDbEntry<std::pair<Kw, Range<IdAlias>>, Kw>;
+template class IDbRecord<std::pair<Kw, Range<IdAlias>>, Kw>;
 
 template std::ostream& operator <<(
-    std::ostream& os, const IDbEntry<std::pair<Kw, Range<IdAlias>>, Kw>& iDbEntry
+    std::ostream& os, const IDbRecord<std::pair<Kw, Range<IdAlias>>, Kw>& iDbRecord
 );

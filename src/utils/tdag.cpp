@@ -310,8 +310,8 @@ template std::ostream& operator <<(std::ostream& os, TdagNode<Kw>* node);
 namespace utils {
 
 
-int64_t calcTdagEntryCount(int64_t leafCount) {
-    // a formula for the total number of entries above level i, where n = leaf count
+int64_t calcTdagRecordCount(int64_t leafCount) {
+    // a formula for the total number of records above level i, where n = leaf count
     // and m = log_2(n) is the level number of the top level (where bottom level is 0)
     // is (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1):
     // the bucket count at level j (j >= 1) is 2^(1-j)n - 1, and the bucket size at level j is 2^j,
@@ -325,7 +325,7 @@ int64_t calcTdagEntryCount(int64_t leafCount) {
     // = (m - i)(2n) - ((1 - 0.5^(m-i)) 2^m / 0.5)            (sum of geometric series)
     // = (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1)
     //
-    // so here we are just calculating the case where i is 0 (so number of entries
+    // so here we are just calculating the case where i is 0 (so number of records
     // above the bottommost level) and then adding the number of leaves
     int64_t topLevelNum = std::log2(leafCount);
     return topLevelNum * (2 * leafCount)

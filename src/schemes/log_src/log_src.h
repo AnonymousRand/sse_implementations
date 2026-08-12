@@ -12,18 +12,18 @@
 #include "utils/tdag.h"
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-class LogSrc : public ISdUnderly<Doc<>, Kw> {
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
+class LogSrc : public ISdUnderly<Record<>, Kw> {
 public:
-    using ISdUnderly<Doc<>, Kw>::ISdUnderly;
+    using ISdUnderly<Record<>, Kw>::ISdUnderly;
 
     ~LogSrc();
 
     //----------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<Doc<>, Kw>& db) override;
-    std::vector<Doc<>> search(
+    void setup(int secParam, const Db<Record<>, Kw>& db) override;
+    std::vector<Record<>> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override;
     void clear() override;
@@ -31,9 +31,9 @@ public:
     //----------------------------------------------------------------------
     // `ISdUnderly`
 
-    void getDb(Db<Doc<>, Kw>& ret) const override;
+    void getDb(Db<Record<>, Kw>& ret) const override;
 
 private:
-    Underly<Doc<>, Kw>* underly = new Underly<Doc<>, Kw>(this->benchmark);
+    Underly<Record<>, Kw>* underly = new Underly<Record<>, Kw>(this->benchmark);
     TdagNode<Kw>* tdag = nullptr;
 };

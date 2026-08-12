@@ -16,8 +16,8 @@ public:
 
     /**
      * preconditions:
-     *     - entries in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
-     *     - entries in `db` cannot have keyword equal to `DUMMY`.
+     *     - records in `db` must have size 1 `Kw` ranges, i.e. a singular `Kw` value.
+     *     - records in `db` cannot have keyword equal to `DUMMY`.
      */
-    void setup(int secParam, const Db<Doc<>, Kw>& db) override;
+    void setup(int secParam, const Db<Record<>, Kw>& db) override;
 };

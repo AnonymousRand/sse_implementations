@@ -20,11 +20,11 @@ namespace log_src_i_star {
 // `ISse`
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void Underly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+void Underly<DbRecord, DbKw>::setup(int secParam, const Db<DbRecord, DbKw>& db) {
     Range<DbKw> dbKwBounds = utils::findDbKwBounds(db);
     this->leafCount = dbKwBounds.size();
-    NLogN<DbDoc, DbKw>::setup(secParam, db);
+    NLogN<DbRecord, DbKw>::setup(secParam, db);
 }
 
 
@@ -32,9 +32,9 @@ void Underly<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 // `IStaticPointSse`
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::vector<DbDoc> Underly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
-    std::vector<DbDoc> results;
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+std::vector<DbRecord> Underly<DbRecord, DbKw>::searchBase(const Range<DbKw>& query) const {
+    std::vector<DbRecord> results;
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
@@ -57,7 +57,7 @@ std::vector<DbDoc> Underly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
         lvl, startPos, dbKwPaddedCount, label
     );
     for (EncIndVal encResult : encResults) {
-        DbDoc result = this->decryptEncIndVal(encResult);
+        DbRecord result = this->decryptEncIndVal(encResult);
         results.push_back(result);
     }
 
@@ -69,17 +69,17 @@ std::vector<DbDoc> Underly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
 // other
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-int64_t Underly<DbDoc, DbKw>::computeNumLvls() const {
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+int64_t Underly<DbRecord, DbKw>::computeNumLvls() const {
     // the key to avoiding the blowup of using NLogN as a black box is by using
     // `leafCount` instead of `this->size` here, since `this->size` includes the
-    // replicated tuples and using it sort of assumes those are only the "raw" entries
+    // replicated tuples and using it sort of assumes those are only the "raw" records
     return std::ceil(std::log2(this->leafCount)) + 1;
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-int64_t Underly<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+int64_t Underly<DbRecord, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
     if (lvlNum == 0) {
         return this->leafCount;
     } else {
@@ -93,9 +93,9 @@ int64_t Underly<DbDoc, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
 // explicit template instantiations
 
 
-template class Underly<Doc<>, Kw>;       
-template class Underly<SrcIDb1Doc, Kw>;
-//template class Underly<Doc<IdAlias>, IdAlias>;
+template class Underly<Record<>, Kw>;       
+template class Underly<SrcIDb1Record, Kw>;
+//template class Underly<Record<IdAlias>, IdAlias>;
 
 
 } // namespace `log_src_i_star`

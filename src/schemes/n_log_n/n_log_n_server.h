@@ -12,10 +12,10 @@
 #include "utils/ustring.h"
 
 
-template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
-class NLogNServer : public ISseServer<DbDoc, DbKw> {
+template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
+class NLogNServer : public ISseServer<DbRecord, DbKw> {
 public:
-    using ISseServer<DbDoc, DbKw>::ISseServer;
+    using ISseServer<DbRecord, DbKw>::ISseServer;
 
     ~NLogNServer();
 

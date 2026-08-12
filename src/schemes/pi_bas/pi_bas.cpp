@@ -18,8 +18,8 @@
 #include "utils/ustring.h"
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-PiBas<DbDoc, DbKw>::~PiBas() {
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+PiBas<DbRecord, DbKw>::~PiBas() {
     this->clear();
     if (this->server != nullptr) {
         delete this->server;
@@ -32,8 +32,8 @@ PiBas<DbDoc, DbKw>::~PiBas() {
 // `ISse`
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+void PiBas<DbRecord, DbKw>::setup(int secParam, const Db<DbRecord, DbKw>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -54,7 +54,7 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     // and randomly permute documents associated with same keyword, required by
     // some schemes on top of PiBas (e.g. Log-SRC)
-    Ind<DbKw, DbDoc> ind = utils::genInd(db, true);
+    Ind<DbKw, DbRecord> ind = utils::genInd(db, true);
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);
@@ -66,21 +66,21 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
-        std::vector<DbDoc> dbKwList = iter->second;
+        std::vector<DbRecord> dbKwList = iter->second;
 
         // for each id in DB(w)
         for (int64_t dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
-            DbDoc dbDoc = dbKwList[dbKwCounter];
+            DbRecord dbRecord = dbKwList[dbKwCounter];
             // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
             ustring label;
             uint64_t pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
             ustring iv = utils::genIv(utils::IV_LEN);
-            ustring encDbDoc = utils::padAndEncrypt(
-                utils::ENC_CIPHER, this->encKey, dbDoc.toUstr(), iv, EncInd::DOC_LEN - 1
+            ustring encDbRecord = utils::padAndEncrypt(
+                utils::ENC_CIPHER, this->encKey, dbRecord.toUstr(), iv, EncInd::DOC_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            encInd->write(pos, std::pair {label, std::pair {encDbDoc, iv}});
+            encInd->write(pos, std::pair {label, std::pair {encDbRecord, iv}});
         }
     }
 
@@ -88,10 +88,10 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void PiBas<DbDoc, DbKw>::clear() {
-    IStaticPointSse<DbDoc, DbKw>::clear();
-    ISdUnderly<DbDoc, DbKw>::clear();
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+void PiBas<DbRecord, DbKw>::clear() {
+    IStaticPointSse<DbRecord, DbKw>::clear();
+    ISdUnderly<DbRecord, DbKw>::clear();
 
     this->server->clear();
 }
@@ -101,8 +101,8 @@ void PiBas<DbDoc, DbKw>::clear() {
 // `ISdUnderly`
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+void PiBas<DbRecord, DbKw>::getDb(Db<DbRecord, DbKw>& ret) const {
     EncInd* encInd = this->server->getEncInd();
     // don't use `this->size()` as the bound here as that doesn't include padding
     // while `encInd` does (this should all be client-side anyway so not leaking anything)
@@ -113,11 +113,11 @@ void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
             continue;
         }
 
-        DbDoc dbDoc = this->decryptEncIndVal(encIndVal);
-        // this is where we use the fact that `DbDoc`s also store their `DbKw` ranges
+        DbRecord dbRecord = this->decryptEncIndVal(encIndVal);
+        // this is where we use the fact that `DbRecord`s also store their `DbKw` ranges
         // to easily access these `DbKw` ranges in plaintext
-        Range<DbKw> dbKwRange = dbDoc.getDbKwRange();
-        ret.push_back(std::pair {dbDoc, dbKwRange});
+        Range<DbKw> dbKwRange = dbRecord.getDbKwRange();
+        ret.push_back(std::pair {dbRecord, dbKwRange});
     }
 }
 
@@ -126,15 +126,15 @@ void PiBas<DbDoc, DbKw>::getDb(Db<DbDoc, DbKw>& ret) const {
 // `IStaticPointSse`
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) const {
-    std::vector<DbDoc> results;
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+std::vector<DbRecord> PiBas<DbRecord, DbKw>::searchBase(const Range<DbKw>& query) const {
+    std::vector<DbRecord> results;
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
     std::vector<EncIndVal> encResults = this->server->searchEncInd(queryToken);
     for (EncIndVal encResult : encResults) {
-        DbDoc result = this->decryptEncIndVal(encResult);
+        DbRecord result = this->decryptEncIndVal(encResult);
         results.push_back(result);
     }
 
@@ -146,15 +146,15 @@ std::vector<DbDoc> PiBas<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) cons
 // other
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-ustring PiBas<DbDoc, DbKw>::genQueryToken(const Range<DbKw>& query) const {
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+ustring PiBas<DbRecord, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
     return utils::prf(this->prfKey, query.toUstr());
 }
 
 
-template <class DbDoc, class DbKw> requires IsValidDbParams<DbDoc, DbKw>
-uint64_t PiBas<DbDoc, DbKw>::map(
+template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
+uint64_t PiBas<DbRecord, DbKw>::map(
     const ustring& queryToken, int64_t dbKwCounter, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w) || c)
@@ -169,6 +169,6 @@ uint64_t PiBas<DbDoc, DbKw>::map(
 // explicit template instantiations
 
 
-template class PiBas<Doc<>, Kw>;               // default/standalone
-template class PiBas<SrcIDb1Doc, Kw>;          // Log-SRC-i index 1
-//template class PiBas<Doc<IdAlias>, IdAlias>;   // Log-SRC-i index 2
+template class PiBas<Record<>, Kw>;               // default/standalone
+template class PiBas<SrcIDb1Record, Kw>;          // Log-SRC-i index 1
+//template class PiBas<Record<IdAlias>, IdAlias>;   // Log-SRC-i index 2

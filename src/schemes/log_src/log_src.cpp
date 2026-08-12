@@ -17,7 +17,7 @@
 #include "utils/tdag.h"
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
 LogSrc<Underly>::~LogSrc() {
     this->clear();
     if (this->underly != nullptr) {
@@ -31,8 +31,8 @@ LogSrc<Underly>::~LogSrc() {
 // `ISse`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
+void LogSrc<Underly>::setup(int secParam, const Db<Record<>, Kw>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -49,16 +49,16 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
     this->tdag = new TdagNode<Kw>(kwBounds);
 
     // replicate every document to all keyword ranges/TDAG nodes that cover it
-    Db<Doc<>, Kw> dbWithRepls;
-    dbWithRepls.reserve(utils::calcTdagEntryCount(db.size()));
-    for (DbEntry<Doc<>, Kw> dbEntry : db) {
-        Doc<> doc = dbEntry.first;
-        Range<Kw> kwRange = dbEntry.second;
+    Db<Record<>, Kw> dbWithRepls;
+    dbWithRepls.reserve(utils::calcTdagRecordCount(db.size()));
+    for (DbRecord<Record<>, Kw> dbRecord : db) {
+        Record<> record = dbRecord.first;
+        Range<Kw> kwRange = dbRecord.second;
         std::list<Range<Kw>> ancestors = this->tdag->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {
-            // make sure to update `DbKw` stored also in `Doc`!
-            Doc<> newDoc(doc.get(), ancestor);
-            dbWithRepls.push_back(std::pair {newDoc, ancestor});
+            // make sure to update `DbKw` stored also in `Record`!
+            Record<> newRecord(record.get(), ancestor);
+            dbWithRepls.push_back(std::pair {newRecord, ancestor});
         }
     }
 
@@ -66,19 +66,19 @@ void LogSrc<Underly>::setup(int secParam, const Db<Doc<>, Kw>& db) {
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-std::vector<Doc<>> LogSrc<Underly>::search(
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
+std::vector<Record<>> LogSrc<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
     Range<Kw> src = this->tdag->findSrc(query);
     if (src == DUMMY_RANGE<Kw>()) {
-        return std::vector<Doc<>> {};
+        return std::vector<Record<>> {};
     }
     return this->underly->search(src, shouldCleanUpResults, false);
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
 void LogSrc<Underly>::clear() {
     this->underly->clear();
     // delete TDAG fully since it is reallocated with `new` in `setup()`
@@ -94,17 +94,17 @@ void LogSrc<Underly>::clear() {
 // `ISdUnderly`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
-void LogSrc<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
+template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
+void LogSrc<Underly>::getDb(Db<Record<>, Kw>& ret) const {
     // need to exclude replicated tuples: assume any tuples with `DbKw` range size >1 is replicated
     // (this doesn't seem to incur noticeable performance overhead with compiler optimizations)
-    Db<Doc<>, Kw> retWithRepls;
+    Db<Record<>, Kw> retWithRepls;
     this->underly->getDb(retWithRepls);
-    for (DbEntry<Doc<>, Kw> dbEntry : retWithRepls) {
-        Doc<> doc = dbEntry.first;
-        Range<Kw> kwRange = doc.getDbKwRange();
+    for (DbRecord<Record<>, Kw> dbRecord : retWithRepls) {
+        Record<> record = dbRecord.first;
+        Range<Kw> kwRange = record.getDbKwRange();
         if (kwRange.size() == 1) {
-            ret.push_back(dbEntry);
+            ret.push_back(dbRecord);
         };
     }
 }
