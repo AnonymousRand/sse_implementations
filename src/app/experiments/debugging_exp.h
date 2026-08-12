@@ -22,10 +22,10 @@ void debuggingExp(ISse<>* sse, const Db<>& db, Range<Kw> query) {
     sse->setup(utils::KEY_LEN, db);
 
     // search
-    std::vector<Record<>> results = sse->search(query);
-    std::vector<Record<>> falsePositives;
+    std::vector<Tuple<>> results = sse->search(query);
+    std::vector<Tuple<>> falsePositives;
     std::cout << "Results ((id,kw,op),kwrange):" << std::endl;
-    for (Record<> result : results) {
+    for (Tuple<> result : results) {
         Kw kw = result.getKw();
         if (query.contains(kw)) {
             std::cout << result << " with keyword " << kw << std::endl;
@@ -35,7 +35,7 @@ void debuggingExp(ISse<>* sse, const Db<>& db, Range<Kw> query) {
     }
     std::cout << std::endl;
     std::cout << "False positives ((id,kw,op),kwrange):" << std::endl;
-    for (Record<> result : falsePositives) {
+    for (Tuple<> result : falsePositives) {
         std::cout << result << " with keyword " << result.getKw() << std::endl;
     }
     std::cout << std::endl;

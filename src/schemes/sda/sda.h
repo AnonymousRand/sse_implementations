@@ -16,17 +16,17 @@
 // underlying schemes (e.g. `Sda<LogSrcI<PiBas>>`) and it gets complicated, so instead
 // just specify all template params for `Underly` fully
 template <IsSdUnderly Underly>
-class Sda : public IDsse<Record<>, Kw> {
+class Sda : public IDsse<Tuple<>, Kw> {
 public:
-    using IDsse<Record<>, Kw>::IDsse;
+    using IDsse<Tuple<>, Kw>::IDsse;
 
     ~Sda();
 
     //----------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<Record<>, Kw>& db) override;
-    std::vector<Record<>> search(
+    void setup(int secParam, const Db<Tuple<>, Kw>& db) override;
+    std::vector<Tuple<>> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override;
     void clear() override;
@@ -34,7 +34,7 @@ public:
     //----------------------------------------------------------------------
     // `IDsse`
 
-    void update(const DbRecord<Record<>, Kw>& newDbRecord) override;
+    void update(const DbTuple<Tuple<>, Kw>& newDbTuple) override;
 
 private:
     std::vector<Underly*> underlys;

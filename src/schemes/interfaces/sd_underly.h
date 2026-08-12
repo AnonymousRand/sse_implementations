@@ -10,10 +10,10 @@
 
 
 // underlying SSE schemes for SD-type DSSE schemes (from NDSS'20)
-template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
-class ISdUnderly : public virtual ISse<DbRecord, DbKw> {
+template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
+class ISdUnderly : public virtual ISse<DbTuple, DbKw> {
 public:
-    using ISse<DbRecord, DbKw>::ISse;
+    using ISse<DbTuple, DbKw>::ISse;
 
     //----------------------------------------------------------------------
     // methods to implement
@@ -22,7 +22,7 @@ public:
      * append the `db` most recently passed to `setup()` (without any replications/
      * padding/processing) to `ret`.
      */
-    virtual void getDb(Db<DbRecord, DbKw>& ret) const = 0;
+    virtual void getDb(Db<DbTuple, DbKw>& ret) const = 0;
 
     //----------------------------------------------------------------------
     // shared code

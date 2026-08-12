@@ -14,8 +14,8 @@
 #include "utils/ustring.h"
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-PiBasServer<DbRecord, DbKw>::~PiBasServer() {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+PiBasServer<DbTuple, DbKw>::~PiBasServer() {
     this->clear();
 }
 
@@ -24,8 +24,8 @@ PiBasServer<DbRecord, DbKw>::~PiBasServer() {
 // `ISseServer`
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-void PiBasServer<DbRecord, DbKw>::clear() {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+void PiBasServer<DbTuple, DbKw>::clear() {
     // (this is deleted instead of just cleared since we only set it via direct
     // pointer assignment, so if we don't delete we would make this memory inaccessible
     // the next time we assign `encInd`)
@@ -41,8 +41,8 @@ void PiBasServer<DbRecord, DbKw>::clear() {
 // other
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-void PiBasServer<DbRecord, DbKw>::setEncInd(EncInd* encInd) {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+void PiBasServer<DbTuple, DbKw>::setEncInd(EncInd* encInd) {
     int64_t encIndBytes = encInd->getSize() * EncInd::ENTRY_LEN;
     this->benchmark->diskSize += encIndBytes;
     this->benchmark->network += encIndBytes;
@@ -50,15 +50,15 @@ void PiBasServer<DbRecord, DbKw>::setEncInd(EncInd* encInd) {
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-EncInd* PiBasServer<DbRecord, DbKw>::getEncInd() const {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+EncInd* PiBasServer<DbTuple, DbKw>::getEncInd() const {
     this->benchmark->network += this->encInd->getSize() * EncInd::ENTRY_LEN;
     return this->encInd;
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-std::vector<EncIndVal> PiBasServer<DbRecord, DbKw>::searchEncInd(const ustring& queryToken) const {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+std::vector<EncIndVal> PiBasServer<DbTuple, DbKw>::searchEncInd(const ustring& queryToken) const {
     this->benchmark->network += queryToken.length();
     std::vector<EncIndVal> encResults;
 
@@ -91,6 +91,6 @@ std::vector<EncIndVal> PiBasServer<DbRecord, DbKw>::searchEncInd(const ustring& 
 // explicit template instantiations
 
 
-template class PiBasServer<Record<>, Kw>;
-template class PiBasServer<SrcIDb1Record, Kw>;
-//template class PiBasServer<Record<IdAlias>, IdAlias>;
+template class PiBasServer<Tuple<>, Kw>;
+template class PiBasServer<SrcIDb1Tuple, Kw>;
+//template class PiBasServer<Tuple<IdAlias>, IdAlias>;

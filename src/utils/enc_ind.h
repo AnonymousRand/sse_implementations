@@ -1,7 +1,7 @@
 /**
  * indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>`
  * (aka `EncIndVal`) pairs,
- * each of which correspond to `std::pair<key/label, std::pair<encrypted record, IV>>`.
+ * each of which correspond to `std::pair<key/label, std::pair<encrypted tuple, IV>>`.
  */
 
 #pragma once
@@ -21,13 +21,13 @@
 
 
 using EncIndVal   = std::pair<ustring, ustring>;
-using EncIndRecord = std::pair<ustring, EncIndVal>;
+using EncIndTuple = std::pair<ustring, EncIndVal>;
 
 
 namespace utils {
 
 
-ustring toUstr(const EncIndRecord& encIndRecord);
+ustring toUstr(const EncIndTuple& encIndTuple);
 
 
 } // namespace `utils`
@@ -81,7 +81,7 @@ public:
     /**
      * write to first empty location starting at `pos` (may not be at `pos` if hash collision).
      */
-    void write(uint64_t pos, const EncIndRecord& encIndRecord);
+    void write(uint64_t pos, const EncIndTuple& encIndTuple);
 
     int64_t getSize() const;
 
@@ -95,6 +95,6 @@ private:
     //----------------------------------------------------------------------
     // debugging
 
-    EncIndRecord get(uint64_t pos) const;
+    EncIndTuple get(uint64_t pos) const;
     void print() const; // warning: this can be, like, a LOT of stuff!!
 };

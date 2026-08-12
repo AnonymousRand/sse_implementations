@@ -13,17 +13,17 @@
 
 
 // common code between `LogSrcI` and `LogSrcIStar`
-template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
-class LogSrcIBase : public ISdUnderly<Record<>, Kw> {
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+class LogSrcIBase : public ISdUnderly<Tuple<>, Kw> {
 public:
-    using ISdUnderly<Record<>, Kw>::ISdUnderly;
+    using ISdUnderly<Tuple<>, Kw>::ISdUnderly;
 
     virtual ~LogSrcIBase();
 
     //---------------------------------------------------------------------
     // `ISse`
 
-    std::vector<Record<>> search(
+    std::vector<Tuple<>> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override;
     void clear() override;
@@ -31,11 +31,11 @@ public:
     //----------------------------------------------------------------------
     // `ISdUnderly`
 
-    void getDb(Db<Record<>, Kw>& ret) const override;
+    void getDb(Db<Tuple<>, Kw>& ret) const override;
 
 protected:
-    Underly<SrcIDb1Record, Kw>* underly1 = new Underly<SrcIDb1Record, Kw>(this->benchmark);
-    Underly<Record<IdAlias>, IdAlias>* underly2 = new Underly<Record<IdAlias>, IdAlias>(this->benchmark);
+    Underly<SrcIDb1Tuple, Kw>* underly1 = new Underly<SrcIDb1Tuple, Kw>(this->benchmark);
+    Underly<Tuple<IdAlias>, IdAlias>* underly2 = new Underly<Tuple<IdAlias>, IdAlias>(this->benchmark);
     TdagNode<Kw>* tdag1 = nullptr;
     TdagNode<IdAlias>* tdag2 = nullptr;
 };

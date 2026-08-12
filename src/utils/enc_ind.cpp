@@ -21,9 +21,9 @@
 namespace utils {
 
 
-ustring toUstr(const EncIndRecord& encIndRecord) {
-    ustring key = encIndRecord.first;
-    EncIndVal val = encIndRecord.second;
+ustring toUstr(const EncIndTuple& encIndTuple) {
+    ustring key = encIndTuple.first;
+    EncIndVal val = encIndTuple.second;
     return key + val.first + val.second;
 }
 
@@ -102,9 +102,9 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
     pos %= this->size;
 
     // get entry at `pos`
-    uchar currRecord[EncInd::ENTRY_LEN];
+    uchar currTuple[EncInd::ENTRY_LEN];
     std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
-    int itemsRead = std::fread(currRecord, EncInd::ENTRY_LEN, 1, this->file);
+    int itemsRead = std::fread(currTuple, EncInd::ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
         std::cerr << "Error: EncInd::find(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -114,7 +114,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
     // first), scan subsequent locations for where the target `key` could've overflowed to
     const uchar* targetKeyCStr = key.c_str();
     int64_t numPositionsChecked = 1;
-    while (std::memcmp(currRecord, targetKeyCStr, EncInd::KEY_LEN) != 0
+    while (std::memcmp(currTuple, targetKeyCStr, EncInd::KEY_LEN) != 0
            && numPositionsChecked < this->size)
     {
         numPositionsChecked++;
@@ -122,7 +122,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsRead = std::fread(currRecord, EncInd::ENTRY_LEN, 1, this->file);
+        itemsRead = std::fread(currTuple, EncInd::ENTRY_LEN, 1, this->file);
         if (itemsRead != 1) {
             std::cerr << "Error: EncInd::find(): error reading from file (nothing read)"
                       << std::endl;
@@ -130,7 +130,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         }
     }
     // if not found
-    if (std::memcmp(currRecord, targetKeyCStr, EncInd::KEY_LEN) != 0) {
+    if (std::memcmp(currTuple, targetKeyCStr, EncInd::KEY_LEN) != 0) {
         return false;
     }
 
@@ -163,13 +163,13 @@ bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
 }
 
 
-void EncInd::write(uint64_t pos, const EncIndRecord& encIndRecord) {
+void EncInd::write(uint64_t pos, const EncIndTuple& encIndTuple) {
     pos %= this->size;
 
     // check if location at `pos` is already filled
-    uchar currRecord[EncInd::ENTRY_LEN];
+    uchar currTuple[EncInd::ENTRY_LEN];
     std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
-    int itemsReadOrWritten = std::fread(currRecord, EncInd::ENTRY_LEN, 1, this->file);
+    int itemsReadOrWritten = std::fread(currTuple, EncInd::ENTRY_LEN, 1, this->file);
     if (itemsReadOrWritten != 1) {
         std::cerr << "Error: EncInd::write(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -177,7 +177,7 @@ void EncInd::write(uint64_t pos, const EncIndRecord& encIndRecord) {
 
     // if location is already filled (because of modulo), find next available location
     int64_t numPositionsChecked = 1;
-    while (std::memcmp(currRecord, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0
+    while (std::memcmp(currTuple, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0
            && numPositionsChecked < this->size)
     {
         numPositionsChecked++;
@@ -185,21 +185,21 @@ void EncInd::write(uint64_t pos, const EncIndRecord& encIndRecord) {
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsReadOrWritten = std::fread(currRecord, EncInd::ENTRY_LEN, 1, this->file); 
+        itemsReadOrWritten = std::fread(currTuple, EncInd::ENTRY_LEN, 1, this->file); 
         if (itemsReadOrWritten != 1) {
             std::cerr << "Error: EncInd::write(): error reading from file (nothing read)"
                       << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
-    if (std::memcmp(currRecord, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0) {
+    if (std::memcmp(currTuple, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0) {
         std::cerr << "Error: EncInd::write(): ran out of space writing!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
     // once we've found our spot, perform the write
-    ustring key = encIndRecord.first;
-    EncIndVal val = encIndRecord.second;
+    ustring key = encIndTuple.first;
+    EncIndVal val = encIndTuple.second;
     ustring entry = key + val.first + val.second;
     if (entry.length() != EncInd::ENTRY_LEN) {
         std::cerr << "Error: EncInd::write(): write of length " << entry.length()
@@ -229,7 +229,7 @@ int64_t EncInd::getSize() const {
 // debugging
 
 
-EncIndRecord EncInd::get(uint64_t pos) const {
+EncIndTuple EncInd::get(uint64_t pos) const {
     pos %= this->size;
 
     uchar entry[EncInd::ENTRY_LEN];
@@ -241,15 +241,15 @@ EncIndRecord EncInd::get(uint64_t pos) const {
     }
 
     ustring key = ustring(&entry[0], EncInd::KEY_LEN);
-    ustring record = ustring(&entry[EncInd::KEY_LEN], EncInd::DOC_LEN);
+    ustring tuple = ustring(&entry[EncInd::KEY_LEN], EncInd::DOC_LEN);
     ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DOC_LEN], utils::IV_LEN);
-    return EncIndRecord {key, EncIndVal {record, iv}};
+    return EncIndTuple {key, EncIndVal {tuple, iv}};
 };
 
 
 void EncInd::print() const {
     for (int64_t pos = 0; pos < this->size; pos++) {
-        EncIndRecord entry = this->get(pos);
+        EncIndTuple entry = this->get(pos);
         std::cerr << pos << ": " << utils::ustrToHex(utils::toUstr(entry))
                   << std::endl << std::endl;
     }

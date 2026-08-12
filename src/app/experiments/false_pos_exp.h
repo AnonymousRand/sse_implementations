@@ -30,7 +30,7 @@ void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
         int64_t dbSize = std::pow(2, i);
 
         // two unique keywords, with half being 0 and the other half being the max
-        // thus using Log-SRC, half the records will be returned as false positives on a
+        // thus using Log-SRC, half the tuples will be returned as false positives on a
         // [1, n - 1] query (if the root node is the SRC)
         Db<> db;
         Kw kw1 = 0;
@@ -39,15 +39,15 @@ void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
         int64_t id;
         Range<Kw> kwRange2 {kw2, kw2};
         for (id = 0; id < dbSize / 2; id++) {
-            db.push_back(DbRecord {Record<>(id, kw1, Op::INS, kwRange1), kwRange1});
+            db.push_back(DbTuple {Tuple<>(id, kw1, Op::INS, kwRange1), kwRange1});
         }
         for (; id < dbSize; id++) {
-            db.push_back(DbRecord {Record<>(id, kw2, Op::INS, kwRange2), kwRange2});
+            db.push_back(DbTuple {Tuple<>(id, kw2, Op::INS, kwRange2), kwRange2});
         }
 
         /*
         // two unique keywords, with all but one being 0 and the other being the max
-        // thus all but one record will be returned as false positives on a [1, n - 1] query
+        // thus all but one tuple will be returned as false positives on a [1, n - 1] query
         // (if the root node is the SRC)
         Db<> db;
         Kw kw1 = 0;
@@ -55,9 +55,9 @@ void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
         Range<Kw> kwRange1 {kw1, kw1};
         Range<Kw> kwRange2 {kw2, kw2};
         for (int64_t i = 0; i < dbSize - 1; i++) {
-            db.push_back(DbRecord {Record<>(i, kw1, Op::INS, kwRange1), kwRange1});
+            db.push_back(DbTuple {Tuple<>(i, kw1, Op::INS, kwRange1), kwRange1});
         }
-        db.push_back(DbRecord {Record<>(dbSize - 1, kw2, Op::INS, kwRange2), kwRange2});
+        db.push_back(DbTuple {Tuple<>(dbSize - 1, kw2, Op::INS, kwRange2), kwRange2});
         */
 
         // setup

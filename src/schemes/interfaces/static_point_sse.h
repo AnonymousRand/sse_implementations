@@ -15,23 +15,23 @@
 
 // subclasses of this include `PiBas`, `NLogN`, and `log_src_i_star::Underly`
 // provide shared code for `search()` (depending on `searchBase()`)
-template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
-class IStaticPointSse : public virtual ISse<DbRecord, DbKw> {
+template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
+class IStaticPointSse : public virtual ISse<DbTuple, DbKw> {
 public:
-    using ISse<DbRecord, DbKw>::ISse;
+    using ISse<DbTuple, DbKw>::ISse;
 
     //----------------------------------------------------------------------
     // shared code
 
-    std::vector<DbRecord> search(
+    std::vector<DbTuple> search(
         const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override {
-        std::vector<DbRecord> allResults;
+        std::vector<DbTuple> allResults;
 
         if (isNaive) {
             // naive, insecure range search: just individually query every point in range
             for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-                std::vector<DbRecord> results = this->searchBase(Range {dbKw, dbKw});
+                std::vector<DbTuple> results = this->searchBase(Range {dbKw, dbKw});
                 allResults.insert(allResults.end(), results.begin(), results.end());
             }
         } else {
@@ -59,7 +59,7 @@ protected:
     //----------------------------------------------------------------------
     // methods to implement
 
-    virtual std::vector<DbRecord> searchBase(const Range<DbKw>& query) const = 0;
+    virtual std::vector<DbTuple> searchBase(const Range<DbKw>& query) const = 0;
     
     //----------------------------------------------------------------------
     // shared code
@@ -67,12 +67,12 @@ protected:
     /**
      * helper function to decrypt `encIndVal`.
      */
-    DbRecord decryptEncIndVal(const EncIndVal& encIndVal) const {
-        ustring encDbRecord = encIndVal.first;
+    DbTuple decryptEncIndVal(const EncIndVal& encIndVal) const {
+        ustring encDbTuple = encIndVal.first;
         ustring iv = encIndVal.second;
-        ustring decDbRecord = utils::decryptAndUnpad(
-            utils::ENC_CIPHER, this->encKey, encDbRecord, iv
+        ustring decDbTuple = utils::decryptAndUnpad(
+            utils::ENC_CIPHER, this->encKey, encDbTuple, iv
         );
-        return DbRecord::fromUstr(decDbRecord);
+        return DbTuple::fromUstr(decDbTuple);
     }
 };

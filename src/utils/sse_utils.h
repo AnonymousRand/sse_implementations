@@ -13,20 +13,20 @@
 namespace utils {
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-Ind<DbKw, DbRecord> genInd(const Db<DbRecord, DbKw>& db, bool shouldShuffleKwLists = false);
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+Ind<DbKw, DbTuple> genInd(const Db<DbTuple, DbKw>& db, bool shouldShuffleKwLists = false);
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-Range<DbKw> findDbKwBounds(const Db<DbRecord, DbKw>& db);
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+Range<DbKw> findDbKwBounds(const Db<DbTuple, DbKw>& db);
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbRecord, DbKw>& db);
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbTuple, DbKw>& db);
 
 
-template <IsDbRecord DbRecord>
-void cleanUpResults(std::vector<DbRecord>& dbRecords);
+template <IsDbTuple DbTuple>
+void cleanUpResults(std::vector<DbTuple>& dbTuples);
 
 
 uint64_t hashToPos(const ustring& hash);

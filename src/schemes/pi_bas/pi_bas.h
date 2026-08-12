@@ -16,31 +16,31 @@
 
 // note that we use the result-hiding variant of PiBas from figure 12 of NDSS'20
 // (SDa paper) since SDa wants that
-template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
-class PiBas : public IStaticPointSse<DbRecord, DbKw>, public ISdUnderly<DbRecord, DbKw> {
+template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
+class PiBas : public IStaticPointSse<DbTuple, DbKw>, public ISdUnderly<DbTuple, DbKw> {
 public:
-    using IStaticPointSse<DbRecord, DbKw>::IStaticPointSse;
+    using IStaticPointSse<DbTuple, DbKw>::IStaticPointSse;
 
     ~PiBas();
 
     //----------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<DbRecord, DbKw>& db) override;
+    void setup(int secParam, const Db<DbTuple, DbKw>& db) override;
     void clear() override;
 
     //----------------------------------------------------------------------
     // `ISdUnderly`
 
-    void getDb(Db<DbRecord, DbKw>& ret) const override;
+    void getDb(Db<DbTuple, DbKw>& ret) const override;
 
 private:
-    PiBasServer<DbRecord, DbKw>* server = new PiBasServer<DbRecord, DbKw>(this->benchmark);
+    PiBasServer<DbTuple, DbKw>* server = new PiBasServer<DbTuple, DbKw>(this->benchmark);
 
     //----------------------------------------------------------------------
     // `IStaticPointSse`
 
-    std::vector<DbRecord> searchBase(const Range<DbKw>& query) const override;
+    std::vector<DbTuple> searchBase(const Range<DbKw>& query) const override;
 
     //----------------------------------------------------------------------
     // other

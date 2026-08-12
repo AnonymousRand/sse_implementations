@@ -70,7 +70,7 @@ private:
 namespace utils {
 
 
-int64_t calcTdagRecordCount(int64_t leafCount);
+int64_t calcTdagTupleCount(int64_t leafCount);
 
 
 } // namespace `utils`

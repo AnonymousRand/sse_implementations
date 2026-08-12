@@ -11,10 +11,10 @@
 #include "utils/ustring.h"
 
 
-template <class DbRecord = Record<>, class DbKw = Kw> requires IsValidDbParams<DbRecord, DbKw>
-class PiBasServer : public ISseServer<DbRecord, DbKw> {
+template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
+class PiBasServer : public ISseServer<DbTuple, DbKw> {
 public:
-    using ISseServer<DbRecord, DbKw>::ISseServer;
+    using ISseServer<DbTuple, DbKw>::ISseServer;
 
     ~PiBasServer();
 

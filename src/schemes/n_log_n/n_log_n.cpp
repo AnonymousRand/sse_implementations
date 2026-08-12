@@ -22,8 +22,8 @@
 #include "utils/ustring.h"
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-NLogN<DbRecord, DbKw>::~NLogN() {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+NLogN<DbTuple, DbKw>::~NLogN() {
     this->clear();
     if (this->server != nullptr) {
         delete this->server;
@@ -36,8 +36,8 @@ NLogN<DbRecord, DbKw>::~NLogN() {
 // `ISse`
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-void NLogN<DbRecord, DbKw>::setup(int secParam, const Db<DbRecord, DbKw>& db) {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple, DbKw>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -65,7 +65,7 @@ void NLogN<DbRecord, DbKw>::setup(int secParam, const Db<DbRecord, DbKw>& db) {
     // build index
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    Ind<DbKw, DbRecord> ind = utils::genInd(db);
+    Ind<DbKw, DbTuple> ind = utils::genInd(db);
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);
@@ -76,7 +76,7 @@ void NLogN<DbRecord, DbKw>::setup(int secParam, const Db<DbRecord, DbKw>& db) {
         }
 
         // pad keyword list to the next power of two
-        std::vector<DbRecord> dbKwList = iter->second;
+        std::vector<DbTuple> dbKwList = iter->second;
         int64_t dbKwCount = dbKwList.size();
         if (!std::has_single_bit((uint64_t)dbKwCount)) {
             int64_t amountToPad = std::pow(2, std::ceil(std::log2(dbKwCount))) - dbKwCount;
@@ -85,9 +85,9 @@ void NLogN<DbRecord, DbKw>::setup(int secParam, const Db<DbRecord, DbKw>& db) {
             // to differentiate from dummies originating upstream in Log-SRC-i* padding
             // etc. (needed for `getDb()`)
             // (and this doesn't affect the correctness of NLogN or the purpose of the dummies)
-            DbRecord dummyDbRecord = DbRecord::genDummy(DUMMY_RANGE<DbKw>());
+            DbTuple dummyDbTuple = DbTuple::genDummy(DUMMY_RANGE<DbKw>());
             for (int64_t i = 0; i < amountToPad; i++) {
-                dbKwList.push_back(dummyDbRecord);
+                dbKwList.push_back(dummyDbTuple);
             }
         }
         // randomly permute documents associated with same keyword, i.e. shuffle within bucket
@@ -115,15 +115,15 @@ void NLogN<DbRecord, DbKw>::setup(int secParam, const Db<DbRecord, DbKw>& db) {
         // for each id in DB(w) (write into same bucket consecutively)
         uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
         for (int64_t dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
-            DbRecord dbRecord = dbKwList[dbKwCounter];
+            DbTuple dbTuple = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
             ustring iv = utils::genIv(utils::IV_LEN);
-            ustring encDbRecord = utils::padAndEncrypt(
-                utils::ENC_CIPHER, this->encKey, dbRecord.toUstr(), iv, EncInd::DOC_LEN - 1
+            ustring encDbTuple = utils::padAndEncrypt(
+                utils::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DOC_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encIndLvls[lvl]->write(
-                startPos + dbKwCounter, std::pair {label, std::pair {encDbRecord, iv}}
+                startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
             );
         }
     }
@@ -133,10 +133,10 @@ void NLogN<DbRecord, DbKw>::setup(int secParam, const Db<DbRecord, DbKw>& db) {
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-void NLogN<DbRecord, DbKw>::clear() {
-    IStaticPointSse<DbRecord, DbKw>::clear();
-    ISdUnderly<DbRecord, DbKw>::clear();
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+void NLogN<DbTuple, DbKw>::clear() {
+    IStaticPointSse<DbTuple, DbKw>::clear();
+    ISdUnderly<DbTuple, DbKw>::clear();
 
     this->server->clear();
     this->numLvls = 0;
@@ -147,8 +147,8 @@ void NLogN<DbRecord, DbKw>::clear() {
 // `ISdUnderly`
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-void NLogN<DbRecord, DbKw>::getDb(Db<DbRecord, DbKw>& ret) const {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+void NLogN<DbTuple, DbKw>::getDb(Db<DbTuple, DbKw>& ret) const {
     std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
 
     for (int64_t lvl = 0; lvl < this->numLvls; lvl++) {
@@ -162,14 +162,14 @@ void NLogN<DbRecord, DbKw>::getDb(Db<DbRecord, DbKw>& ret) const {
                 continue;
             }
 
-            DbRecord dbRecord = this->decryptEncIndVal(encIndVal);
-            // this is where we use the fact that `DbRecord`s also store their `DbKw` ranges
+            DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
+            // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
             // to easily access these `DbKw` ranges in plaintext
-            Range<DbKw> dbKwRange = dbRecord.getDbKwRange();
+            Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
             // exclude dummies/padding (that are from NLogN's `setup()`, but not from
             // an upstream SSE scheme which is using NLogN as an underlying scheme)
             if (dbKwRange != DUMMY_RANGE<DbKw>()) {
-                ret.push_back(std::pair {dbRecord, dbKwRange});
+                ret.push_back(std::pair {dbTuple, dbKwRange});
             }
         }
     }
@@ -180,9 +180,9 @@ void NLogN<DbRecord, DbKw>::getDb(Db<DbRecord, DbKw>& ret) const {
 // `IStaticPointSse`
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-std::vector<DbRecord> NLogN<DbRecord, DbKw>::searchBase(const Range<DbKw>& query) const {
-    std::vector<DbRecord> results;
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+std::vector<DbTuple> NLogN<DbTuple, DbKw>::searchBase(const Range<DbKw>& query) const {
+    std::vector<DbTuple> results;
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
@@ -194,7 +194,7 @@ std::vector<DbRecord> NLogN<DbRecord, DbKw>::searchBase(const Range<DbKw>& query
     EncIndVal encIndValDict;
     bool isFoundDict = this->server->getDbKwCount(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
-        return std::vector<DbRecord> {};
+        return std::vector<DbTuple> {};
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
@@ -216,7 +216,7 @@ std::vector<DbRecord> NLogN<DbRecord, DbKw>::searchBase(const Range<DbKw>& query
         lvl, startPos, dbKwPaddedCount, label
     );
     for (EncIndVal encResult : encResults) {
-        DbRecord result = this->decryptEncIndVal(encResult);
+        DbTuple result = this->decryptEncIndVal(encResult);
         results.push_back(result);
     }
 
@@ -228,23 +228,23 @@ std::vector<DbRecord> NLogN<DbRecord, DbKw>::searchBase(const Range<DbKw>& query
 // other
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-ustring NLogN<DbRecord, DbKw>::genQueryToken(const Range<DbKw>& query) const {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+ustring NLogN<DbTuple, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
     return utils::prf(this->prfKey, query.toUstr());
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-uint64_t NLogN<DbRecord, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+uint64_t NLogN<DbTuple, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
     retLabel = utils::hash(utils::HASH_FUNC, utils::HASH_OUTPUT_LEN, queryToken);
     return utils::hashToPos(retLabel); // no modulus
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-std::pair<uint64_t, uint64_t> NLogN<DbRecord, DbKw>::map(
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+std::pair<uint64_t, uint64_t> NLogN<DbTuple, DbKw>::map(
     const ustring& queryToken, int64_t dbKwPaddedCount, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w))
@@ -256,21 +256,21 @@ std::pair<uint64_t, uint64_t> NLogN<DbRecord, DbKw>::map(
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-int64_t NLogN<DbRecord, DbKw>::computeNumLvls() const {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+int64_t NLogN<DbTuple, DbKw>::computeNumLvls() const {
     return std::ceil(std::log2(this->size)) + 1;
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-int64_t NLogN<DbRecord, DbKw>::computeBcktCountOnLvl(int64_t lvl) const {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+int64_t NLogN<DbTuple, DbKw>::computeBcktCountOnLvl(int64_t lvl) const {
     // 2^{lvlCount - lvl + 1} is number of buckets on level `lvl`
     return std::pow(2, this->numLvls - lvl - 1);
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-int64_t NLogN<DbRecord, DbKw>::computeBcktSizeOnLvl(int64_t lvl) const {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+int64_t NLogN<DbTuple, DbKw>::computeBcktSizeOnLvl(int64_t lvl) const {
     return std::pow(2, lvl);
 }
 
@@ -279,6 +279,6 @@ int64_t NLogN<DbRecord, DbKw>::computeBcktSizeOnLvl(int64_t lvl) const {
 // explicit template instantiations
 
 
-template class NLogN<Record<>, Kw>;
-template class NLogN<SrcIDb1Record, Kw>;
-//template class NLogN<Record<IdAlias>, IdAlias>;
+template class NLogN<Tuple<>, Kw>;
+template class NLogN<SrcIDb1Tuple, Kw>;
+//template class NLogN<Tuple<IdAlias>, IdAlias>;

@@ -17,7 +17,7 @@
 #include "utils/tdag.h"
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
 LogSrc<Underly>::~LogSrc() {
     this->clear();
     if (this->underly != nullptr) {
@@ -31,8 +31,8 @@ LogSrc<Underly>::~LogSrc() {
 // `ISse`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
-void LogSrc<Underly>::setup(int secParam, const Db<Record<>, Kw>& db) {
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>, Kw>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -49,16 +49,16 @@ void LogSrc<Underly>::setup(int secParam, const Db<Record<>, Kw>& db) {
     this->tdag = new TdagNode<Kw>(kwBounds);
 
     // replicate every document to all keyword ranges/TDAG nodes that cover it
-    Db<Record<>, Kw> dbWithRepls;
-    dbWithRepls.reserve(utils::calcTdagRecordCount(db.size()));
-    for (DbRecord<Record<>, Kw> dbRecord : db) {
-        Record<> record = dbRecord.first;
-        Range<Kw> kwRange = dbRecord.second;
+    Db<Tuple<>, Kw> dbWithRepls;
+    dbWithRepls.reserve(utils::calcTdagTupleCount(db.size()));
+    for (DbTuple<Tuple<>, Kw> dbTuple : db) {
+        Tuple<> tuple = dbTuple.first;
+        Range<Kw> kwRange = dbTuple.second;
         std::list<Range<Kw>> ancestors = this->tdag->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {
-            // make sure to update `DbKw` stored also in `Record`!
-            Record<> newRecord(record.get(), ancestor);
-            dbWithRepls.push_back(std::pair {newRecord, ancestor});
+            // make sure to update `DbKw` stored also in `Tuple`!
+            Tuple<> newTuple(tuple.get(), ancestor);
+            dbWithRepls.push_back(std::pair {newTuple, ancestor});
         }
     }
 
@@ -66,19 +66,19 @@ void LogSrc<Underly>::setup(int secParam, const Db<Record<>, Kw>& db) {
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
-std::vector<Record<>> LogSrc<Underly>::search(
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+std::vector<Tuple<>> LogSrc<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
     Range<Kw> src = this->tdag->findSrc(query);
     if (src == DUMMY_RANGE<Kw>()) {
-        return std::vector<Record<>> {};
+        return std::vector<Tuple<>> {};
     }
     return this->underly->search(src, shouldCleanUpResults, false);
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
 void LogSrc<Underly>::clear() {
     this->underly->clear();
     // delete TDAG fully since it is reallocated with `new` in `setup()`
@@ -94,17 +94,17 @@ void LogSrc<Underly>::clear() {
 // `ISdUnderly`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Record<>, Kw>>
-void LogSrc<Underly>::getDb(Db<Record<>, Kw>& ret) const {
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+void LogSrc<Underly>::getDb(Db<Tuple<>, Kw>& ret) const {
     // need to exclude replicated tuples: assume any tuples with `DbKw` range size >1 is replicated
     // (this doesn't seem to incur noticeable performance overhead with compiler optimizations)
-    Db<Record<>, Kw> retWithRepls;
+    Db<Tuple<>, Kw> retWithRepls;
     this->underly->getDb(retWithRepls);
-    for (DbRecord<Record<>, Kw> dbRecord : retWithRepls) {
-        Record<> record = dbRecord.first;
-        Range<Kw> kwRange = record.getDbKwRange();
+    for (DbTuple<Tuple<>, Kw> dbTuple : retWithRepls) {
+        Tuple<> tuple = dbTuple.first;
+        Range<Kw> kwRange = tuple.getDbKwRange();
         if (kwRange.size() == 1) {
-            ret.push_back(dbRecord);
+            ret.push_back(dbTuple);
         };
     }
 }

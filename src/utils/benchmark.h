@@ -80,7 +80,7 @@ class Benchmarked : public Sse {
 public:
     using Sse::Sse;
 
-    void setup(int secParam, const Db<Record<>, Kw>& db) override {
+    void setup(int secParam, const Db<Tuple<>, Kw>& db) override {
         this->benchmark->resetAll();
 
         auto start = std::chrono::high_resolution_clock::now();
@@ -90,13 +90,13 @@ public:
         this->benchmark->time = elapsed.count();
     }
 
-    std::vector<Record<>> search(
+    std::vector<Tuple<>> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override {
         this->benchmark->resetEphems();
 
         auto start = std::chrono::high_resolution_clock::now();
-        std::vector<Record<>> results = Sse::search(query, shouldCleanUpResults, isNaive);
+        std::vector<Tuple<>> results = Sse::search(query, shouldCleanUpResults, isNaive);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> elapsed = end - start;
         this->benchmark->time = elapsed.count();
@@ -112,11 +112,11 @@ public:
 
     // reset necessary benchmarks per update if using `BenchmarkedUpdts` (e.g. if
     // `config::DSSE_SHOULD_BENCHMARK_UPDTS` is set to `true`)
-    void update(const DbRecord<Record<>, Kw>& newRecord) override {
+    void update(const DbTuple<Tuple<>, Kw>& newTuple) override {
         this->benchmark->resetEphems();
 
         auto start = std::chrono::high_resolution_clock::now();
-        Dsse::update(newRecord);
+        Dsse::update(newTuple);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> elapsed = end - start;
         this->benchmark->time = elapsed.count();

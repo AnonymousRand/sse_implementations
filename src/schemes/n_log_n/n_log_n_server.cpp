@@ -13,8 +13,8 @@
 #include "utils/ustring.h"
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-NLogNServer<DbRecord, DbKw>::~NLogNServer() {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+NLogNServer<DbTuple, DbKw>::~NLogNServer() {
     this->clear();
 }
 
@@ -23,8 +23,8 @@ NLogNServer<DbRecord, DbKw>::~NLogNServer() {
 // `ISseServer`
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-void NLogNServer<DbRecord, DbKw>::clear() {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+void NLogNServer<DbTuple, DbKw>::clear() {
     for (EncInd* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
             this->benchmark->diskSize -= lvl->getSize() * EncInd::ENTRY_LEN;
@@ -46,8 +46,8 @@ void NLogNServer<DbRecord, DbKw>::clear() {
 // other
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-void NLogNServer<DbRecord, DbKw>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls) {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+void NLogNServer<DbTuple, DbKw>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls) {
     int64_t encIndBytes = 0;
     for (EncInd* encIndLvl : encIndLvls) {
         encIndBytes += encIndLvl->getSize() * EncInd::ENTRY_LEN;
@@ -58,8 +58,8 @@ void NLogNServer<DbRecord, DbKw>::setEncIndLvls(const std::vector<EncInd*>& encI
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-std::vector<EncInd*> NLogNServer<DbRecord, DbKw>::getEncIndLvls() const {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+std::vector<EncInd*> NLogNServer<DbTuple, DbKw>::getEncIndLvls() const {
     if (encIndLvls.size() > 0) {
         this->benchmark->network +=
             encIndLvls.size() * encIndLvls[0]->getSize() * EncInd::ENTRY_LEN;
@@ -68,8 +68,8 @@ std::vector<EncInd*> NLogNServer<DbRecord, DbKw>::getEncIndLvls() const {
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-std::vector<EncIndVal> NLogNServer<DbRecord, DbKw>::searchEncIndForBckt(
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+std::vector<EncIndVal> NLogNServer<DbTuple, DbKw>::searchEncIndForBckt(
     int64_t lvl, uint64_t startPos, int64_t bcktSize, const ustring& label
 ) const {
     this->benchmark->network +=
@@ -102,8 +102,8 @@ std::vector<EncIndVal> NLogNServer<DbRecord, DbKw>::searchEncIndForBckt(
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-void NLogNServer<DbRecord, DbKw>::setDbKwCountsDict(EncInd* dbKwCountsDict) {
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+void NLogNServer<DbTuple, DbKw>::setDbKwCountsDict(EncInd* dbKwCountsDict) {
     int64_t dbKwCountsDictBytes = dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
     this->benchmark->diskSize += dbKwCountsDictBytes;
     this->benchmark->network += dbKwCountsDictBytes;
@@ -111,8 +111,8 @@ void NLogNServer<DbRecord, DbKw>::setDbKwCountsDict(EncInd* dbKwCountsDict) {
 }
 
 
-template <class DbRecord, class DbKw> requires IsValidDbParams<DbRecord, DbKw>
-bool NLogNServer<DbRecord, DbKw>::getDbKwCount(
+template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
+bool NLogNServer<DbTuple, DbKw>::getDbKwCount(
     uint64_t pos, const ustring& label, EncIndVal& ret
 ) const {
     this->benchmark->network += sizeof(uint64_t) + label.length() + EncInd::VAL_LEN;
@@ -124,6 +124,6 @@ bool NLogNServer<DbRecord, DbKw>::getDbKwCount(
 // explicit template instantiations
 
 
-template class NLogNServer<Record<>, Kw>;
-template class NLogNServer<SrcIDb1Record, Kw>;
-//template class NLogNServer<Record<IdAlias>, IdAlias>;
+template class NLogNServer<Tuple<>, Kw>;
+template class NLogNServer<SrcIDb1Tuple, Kw>;
+//template class NLogNServer<Tuple<IdAlias>, IdAlias>;
