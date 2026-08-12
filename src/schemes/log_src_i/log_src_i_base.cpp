@@ -6,15 +6,14 @@
 #include "schemes/interfaces/sse.h"
 #include "schemes/pi_bas/pi_bas.h"
 
+// for explicit template instantiation
+#include "schemes/log_src_i_star/underly.h"
+#include "schemes/n_log_n/n_log_n.h"
+
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/tdag.h"
-
-// for explicit template instantiation
-#include "schemes/log_src_i_star/underly.h"
-#include "schemes/n_log_n/n_log_n.h"
-#include "schemes/pi_bas/pi_bas.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>

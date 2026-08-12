@@ -9,14 +9,14 @@
 #include "schemes/interfaces/sse.h"
 #include "schemes/log_src_i/log_src_i_base.h"
 
+// for explicit template instantiation
+#include "schemes/n_log_n/n_log_n.h"
+#include "schemes/pi_bas/pi_bas.h"
+
 #include "utils/doc.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
 #include "utils/tdag.h"
-
-// for explicit template instantiation
-#include "schemes/n_log_n/n_log_n.h"
-#include "schemes/pi_bas/pi_bas.h"
 
 
 //------------------------------------------------------------------------------
