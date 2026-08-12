@@ -1,14 +1,16 @@
 #include "schemes/log_src_i/log_src_i_base.h"
 
 #include <concepts>
+#include <cstdlib>
+#include <iostream>
 #include <vector>
 
 #include "schemes/interfaces/sse.h"
-#include "schemes/pi_bas/pi_bas.h"
 
 // for explicit template instantiation
 #include "schemes/log_src_i_star/underly.h"
 #include "schemes/n_log_n/n_log_n.h"
+#include "schemes/pi_bas/pi_bas.h"
 
 #include "utils/doc.h"
 #include "utils/range.h"
@@ -26,10 +28,6 @@ LogSrcIBase<Underly>::~LogSrcIBase() {
     if (this->underly2 != nullptr) {
         delete this->underly2;
         this->underly2 = nullptr;
-    }
-    if (this->origDbUnderly != nullptr) {
-        delete this->origDbUnderly;
-        this->origDbUnderly = nullptr;
     }
 }
 
@@ -98,7 +96,6 @@ void LogSrcIBase<Underly>::clear() {
         delete this->tdag2;
         this->tdag2 = nullptr;
     }
-    this->origDbUnderly->clear();
     this->size = 0;
 }
 
@@ -109,8 +106,54 @@ void LogSrcIBase<Underly>::clear() {
 
 template <template <class ...> class Underly> requires IsSse<Underly<Doc<>, Kw>>
 void LogSrcIBase<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
-    this->origDbUnderly->getDb(ret);
-}
+    // reconstruct the original DB passed to `setup()` from Log-SRC-i's two indexes
+    // (an alternative is to store the original DB in a separate PiBas instance and call
+    // `getDb()` on that; it will be faster though it will also take up more disk space,
+    // and more importantly it can be an attack vector (e.g. it reveals the exact db size))
+    Db<SrcIDb1Doc, Kw> db1;
+    Db<Doc<IdAlias>, IdAlias> db2;
+    this->underly1->getDb(db1);
+    this->underly2->getDb(db2);
+    Ind<IdAlias, Doc<IdAlias>> ind2 = utils::genInd(db2);
+
+    // >>TODO:
+    // for each entry in db1 of form (kw,id1'-id2'),kw with size 1 kw range (i.e. leaf):
+    // for each id' in range id1'-id2':
+    // look up id' in ind2 to obtain d_i, then insert (d_i, kw-kw) into final db
+    // for every i
+    // if n keywords, this is O(n) (since db1 cannot have multiple items to a kw?)
+    // REMEMBER to compare speeds with old method!!
+    for (DbEntry<SrcIDb1Doc, Kw> dbEntry : db1) {
+        Range<Kw> kwRange = dbEntry.second;
+        // only iterate through leaf nodes in DB 1
+        if (kwRange.size() > 1) {
+            continue;
+        }
+
+        // also exclude ALL types of dummies (this is done client-side so it's fine to reveal sizes)
+        SrcIDb1Doc srcIDb1Doc = dbEntry.first;
+        Range<IdAlias> idAliasRange = srcIDb1Doc.getIdAliasRange();
+        if (idAliasRange == DUMMY_RANGE<IdAlias>()) {
+            continue;
+        }
+
+        for (IdAlias idAlias = idAliasRange.first; idAlias < idAliasRange.second; idAlias++) {
+            auto iter = ind2.find(Range<IdAlias> {idAlias, idAlias});
+            if (iter == ind2.end()) {
+                std::cerr << "Error: LogSrcIBase::getDb(): "
+                          << "I don't think this is supposed to happen." << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+
+            std::vector<Doc<IdAlias>> kwList = iter->second;
+            for (Doc<IdAlias> doc : kwList) {
+                ret.push_back(
+                    DbEntry {Doc<> {doc.getId(), doc.getKw(), doc.getOp(), kwRange}, kwRange}
+                );
+            }
+        }
+    }
+} 
 
 
 template class LogSrcIBase<PiBas>;

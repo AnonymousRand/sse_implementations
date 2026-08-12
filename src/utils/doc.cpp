@@ -194,6 +194,17 @@ SrcIDb1Doc SrcIDb1Doc::genDummy(const Range<Kw>& kwRange) {
 }
 
 
+Kw SrcIDb1Doc::getKw() const {
+    return this->val.first;
+}
+
+
+Range<IdAlias> SrcIDb1Doc::getIdAliasRange() const {
+    return this->val.second;
+}
+
+
+// TODO: use small banner to mark out explicit template instantiations?
 template class IDbDoc<std::pair<Kw, Range<IdAlias>>, Kw>;
 
 template std::ostream& operator <<(

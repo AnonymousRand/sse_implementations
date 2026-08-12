@@ -38,12 +38,27 @@ template std::ostream& operator <<(std::ostream& os, const DbEntry<SrcIDb1Doc, K
 namespace utils {
 
 
-template <class IndKey, IsDbDoc DbDoc>
-void shuffleInd(Ind<IndKey, DbDoc>& ind) {
-    for (std::pair entry : ind) {
-        std::vector<DbDoc> dbKwList = entry.second;
-        std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
+template <IsDbDoc DbDoc, class DbKw>
+Ind<DbKw, DbDoc> genInd(const Db<DbDoc, DbKw>& db, bool shouldShuffleKwLists) {
+    Ind<DbKw, DbDoc> ind;
+    for (DbEntry<DbDoc, DbKw> entry : db) {
+        DbDoc dbDoc = entry.first;
+        Range<DbKw> dbKwRange = entry.second;
+        if (ind.count(dbKwRange) == 0) {
+            ind[dbKwRange] = std::vector {dbDoc};
+        } else {
+            ind[dbKwRange].push_back(dbDoc);
+        }
     }
+
+    if (shouldShuffleKwLists) {
+        for (std::pair entry : ind) {
+            std::vector<DbDoc> dbKwList = entry.second;
+            std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
+        }
+    }
+
+    return ind;
 }
 
 
@@ -144,9 +159,11 @@ uint64_t hashToPos(const ustring& hash) {
 }
 
 
-template void shuffleInd(Ind<Kw, Doc<>>& ind);
-template void shuffleInd(Ind<Kw, SrcIDb1Doc>& ind);
-//template void shuffleInd(Ind<IdAlias, Doc<IdAlias>>& ind);
+template Ind<Kw, Doc<>> genInd(const Db<Doc<>, Kw>& db, bool shouldShuffleKwLists);
+template Ind<Kw, SrcIDb1Doc> genInd(const Db<SrcIDb1Doc, Kw>& db, bool shouldShuffleKwLists);
+//template Ind<IdAlias, Doc<IdAlias>> genInd(
+//    const Db<Doc<IdAlias>, IdAlias>& db, bool shouldShuffleKwLists
+//);
 
 template Range<Kw> findDbKwBounds(const Db<Doc<>, Kw>& db);
 template Range<Kw> findDbKwBounds(const Db<SrcIDb1Doc, Kw>& db);

@@ -64,6 +64,8 @@ template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, 
 using DbEntry     = std::pair<DbDoc, Range<DbKw>>;
 // technically dbs only need to contain the `DbDoc` part since `Doc` is the full (id,kw,op) tuple
 // but we will also explicitly store keyword ranges (`DbKw`) for convenience in our implementation
+// TODO: eventually make Db also be stored on disk like EncInds? and move benchmarks
+// from server to Db and EncInds and make them keep track of disk size
 template <class DbDoc = Doc<>, class DbKw = Kw> requires IsValidDbParams<DbDoc, DbKw>
 using Db          = std::vector<DbEntry<DbDoc, DbKw>>;
 template <class IndKey = Kw, class DbDoc = Doc<>>
@@ -89,8 +91,9 @@ std::ostream& operator <<(std::ostream& os, const DbEntry<DbDoc, DbKw>& dbEntry)
 namespace utils {
 
 
-template <class IndKey, IsDbDoc DbDoc>
-void shuffleInd(Ind<IndKey, DbDoc>& ind);
+// TODO: all templates here should just require IsValidDbParams<DbDoc, DbKw>?
+template <IsDbDoc DbDoc, class DbKw>
+Ind<DbKw, DbDoc> genInd(const Db<DbDoc, DbKw>& db, bool shouldShuffleKwLists = false);
 
 
 template <IsDbDoc DbDoc, class DbKw>

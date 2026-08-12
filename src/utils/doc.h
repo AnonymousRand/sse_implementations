@@ -92,6 +92,9 @@ public:
     static SrcIDb1Doc fromUstr(const ustring& ustr);
     static SrcIDb1Doc genDummy(const Range<Kw>& kwRange);
 
+    Kw getKw() const;
+    Range<IdAlias> getIdAliasRange() const;
+
 private:
     static const std::string REGEX_STR;
     static const std::regex REGEX;

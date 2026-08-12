@@ -52,19 +52,9 @@ void PiBas<DbDoc, DbKw>::setup(int secParam, const Db<DbDoc, DbKw>& db) {
     // build index
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    Ind<DbKw, DbDoc> ind;
-    for (DbEntry<DbDoc, DbKw> entry : db) {
-        DbDoc dbDoc = entry.first;
-        Range<DbKw> dbKwRange = entry.second;
-        if (ind.count(dbKwRange) == 0) {
-            ind[dbKwRange] = std::vector {dbDoc};
-        } else {
-            ind[dbKwRange].push_back(dbDoc);
-        }
-    }
-    // randomly permute documents associated with same keyword, required by
+    // and randomly permute documents associated with same keyword, required by
     // some schemes on top of PiBas (e.g. Log-SRC)
-    utils::shuffleInd(ind);
+    Ind<DbKw, DbDoc> ind = utils::genInd(db, true);
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);

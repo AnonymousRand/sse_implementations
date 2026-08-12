@@ -101,9 +101,9 @@ void LogSrc<Underly>::getDb(Db<Doc<>, Kw>& ret) const {
     Db<Doc<>, Kw> retWithRepls;
     this->underly->getDb(retWithRepls);
     for (DbEntry<Doc<>, Kw> dbEntry : retWithRepls) {
-        Doc<> dbDoc = dbEntry.first;
-        Range<Kw> dbKwRange = dbDoc.getDbKwRange();
-        if (dbKwRange.size() == 1) {
+        Doc<> doc = dbEntry.first;
+        Range<Kw> kwRange = doc.getDbKwRange();
+        if (kwRange.size() == 1) {
             ret.push_back(dbEntry);
         };
     }

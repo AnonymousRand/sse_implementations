@@ -27,7 +27,6 @@ void LogSrcIStar::setup(int secParam, const Db<Doc<>, Kw>& db) {
 
     this->secParam = secParam;
     this->size = db.size();
-    this->origDbUnderly->setup(secParam, db);
 
     //--------------------------------------------------------------------------
     // build index 2

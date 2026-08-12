@@ -39,9 +39,9 @@ std::vector<DbDoc> Underly<DbDoc, DbKw>::searchBase(const Range<DbKw>& query) co
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
 
-    // for Log-SRC-i*, the TDAG structure means we can determine the number of results
-    // and hence the level to search based on the size of the queried range/node, so we
-    // don't have to store an encrypted map (and result size is leaked to server anyway)
+    // for Log-SRC-i*, the number of results from either index and hence the level
+    // to search is exactly the size of the queried range/SRC node, so we don't have to
+    // additionally store an encrypted map (and result size is leaked to server anyway)
     int64_t dbKwCount = query.size();
     int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
