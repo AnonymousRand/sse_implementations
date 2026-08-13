@@ -143,4 +143,4 @@ template <IsDbTuple DbTuple = Tuple<>>
 using Db = std::vector<DbTuple>;
 
 template <class DbKw = Kw, class DbTuple = Tuple<>> requires IsValidDbParams<DbTuple, DbKw>
-using Ind = std::unordered_map<Range<DbKw>, std::vector<DbTuple>>;
+using Ind = std::unordered_map<Range<DbKw>, Db<DbTuple>>;

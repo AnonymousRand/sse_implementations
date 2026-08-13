@@ -77,8 +77,7 @@ void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
         }
 
         // pad keyword list to the next power of two
-        // >>if so, change Ind to store a Db in the values, and make dbKwLists explicitly Db
-        std::vector<DbTuple> dbKwList = iter->second;
+        Db<DbTuple> dbKwList = iter->second;
         int64_t dbKwCount = dbKwList.size();
         Range<DbKw> dbKwBounds = utils::findDbKwBounds(db);
         DbKw maxDbKw = dbKwBounds.second;

@@ -67,7 +67,7 @@ void PiBas<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
 
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
-        std::vector<DbTuple> dbKwList = iter->second;
+        Db<DbTuple> dbKwList = iter->second;
 
         // for each id in DB(w)
         for (int64_t dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {

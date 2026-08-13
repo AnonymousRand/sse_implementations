@@ -36,7 +36,7 @@ Ind<typename DbTuple::DbKwType, DbTuple> genInd(const Db<DbTuple>& db, bool shou
 
     if (shouldShuffleKwLists) {
         for (std::pair pair : ind) {
-            std::vector<DbTuple> dbKwList = pair.second;
+            Db<DbTuple> dbKwList = pair.second;
             std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
         }
     }

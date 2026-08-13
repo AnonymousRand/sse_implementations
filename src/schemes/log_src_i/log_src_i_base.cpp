@@ -144,7 +144,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
                 std::exit(EXIT_FAILURE);
             }
 
-            std::vector<Tuple<IdAlias>> dbKwList = iter->second;
+            Db<Tuple<IdAlias>> dbKwList = iter->second;
             for (Tuple<IdAlias> db2Tuple : dbKwList) {
                 Tuple<> newTuple(db2Tuple.getDbDoc(), kwRange);
                 ret.push_back(newTuple);
