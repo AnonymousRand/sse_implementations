@@ -42,7 +42,7 @@ public:
         }
 
         if (shouldCleanUpResults) {
-            utils::cleanUpResults(allResults);
+            allResults = utils::cleanUpResults(allResults);
         }
         return allResults;
     }
