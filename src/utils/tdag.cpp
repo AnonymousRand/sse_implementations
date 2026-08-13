@@ -154,7 +154,7 @@ TdagNode<T>::~TdagNode() {
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
 // track `extraParent` nodes in an `unordered_set` to prevent duplicates
 template <class T>
-std::list<TdagNode<T>*> TdagNode<T>::traverse() {
+std::list<TdagNode<T>*> TdagNode<T>::traverse() const {
     std::unordered_set<TdagNode<T>*> extraParents;
     return this->traverseHelper(extraParents);
 }
@@ -163,7 +163,7 @@ std::list<TdagNode<T>*> TdagNode<T>::traverse() {
 template <class T>
 std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(
     std::unordered_set<TdagNode<T>*>& extraParents
-) {
+) const {
     std::list<TdagNode<T>*> nodes;
     nodes.push_front(this);
 
@@ -188,7 +188,7 @@ std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(
 
 
 template <class T>
-Range<T> TdagNode<T>::findSrc(Range<T> targetRange) {
+Range<T> TdagNode<T>::findSrc(Range<T> targetRange) const {
     // if target range exceeds this entire tree's range on either side, return what we can
     if (targetRange.first < this->range.first) {
         targetRange.first = this->range.first;
@@ -202,7 +202,7 @@ Range<T> TdagNode<T>::findSrc(Range<T> targetRange) {
 
 // basically traverses tree with DFS and early exits to find best SRC
 template <class T>
-Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
+Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) const {
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
     if (this->range.isDisjointFrom(targetRange)) {
@@ -269,7 +269,7 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) {
 
 
 template <class T>
-std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) {
+std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) const {
     std::list<Range<T>> ancestors {this->range};
 
     if (this->left != nullptr && this->left->range.contains(target)) {
@@ -287,7 +287,7 @@ std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) {
 
 
 template <class T>
-std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
+std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) const {
     std::list<TdagNode<T>*> nodes = node->traverse();
     for (TdagNode<T>* node : nodes) {
         os << node->range << std::endl;

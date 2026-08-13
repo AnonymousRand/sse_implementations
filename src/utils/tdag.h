@@ -29,13 +29,13 @@ public:
      * find the single range cover of the leaves containing `range`.
      * if `range` not found in `this`, return `nullptr`.
      */
-    Range<T> findSrc(Range<T> targetRange);
+    Range<T> findSrc(Range<T> targetRange) const;
 
     /**
      * get all ancestors (i.e. covering nodes) of the leaf node with range `target`
      * within the tree `this`, including the leaf itself.
      */
-    std::list<Range<T>> getLeafAncestors(const Range<T>& target);
+    std::list<Range<T>> getLeafAncestors(const Range<T>& target) const;
 
     template <class T2>
     friend std::ostream& operator <<(std::ostream& os, TdagNode<T2>* node);
@@ -56,10 +56,10 @@ private:
     /**
      * traverse subtree of `this` and return all traversed nodes in preorder.
      */
-    std::list<TdagNode<T>*> traverse();
-    std::list<TdagNode<T>*> traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents);
+    std::list<TdagNode<T>*> traverse() const;
+    std::list<TdagNode<T>*> traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents) const;
 
-    Range<T> findSrcHelper(const Range<T>& targetRange);
+    Range<T> findSrcHelper(const Range<T>& targetRange) const;
 };
 
 

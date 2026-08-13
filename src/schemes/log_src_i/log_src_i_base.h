@@ -1,6 +1,8 @@
 #pragma once
 
 #include <concepts>
+#include <functional>
+#include <utility>
 #include <vector>
 
 #include "schemes/interfaces/sd_underly.h"
@@ -38,4 +40,27 @@ protected:
     Underly<Tuple<IdAlias>, IdAlias>* underly2 = new Underly<Tuple<IdAlias>, IdAlias>(this->benchmark);
     TdagNode<Kw>* tdag1 = nullptr;
     TdagNode<IdAlias>* tdag2 = nullptr;
+
+    //--------------------------------------------------------------------------
+    // other
+
+    Db<Tuple<>> sortInputDb(const Db<Tuple<>>& db) const;
+
+    std::pair<Db<SrcIDb1Tuple>, Db<Tuple<IdAlias>>> initDbLeaves(
+        const Db<Tuple<>>& dbSorted,
+        const std::function<
+            void(Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw)
+        >& addDb1Leaf
+    );
+
+    void buildTdag1(
+        Db<Tuple<>>& db1, bool shouldPadLeafCount = false, bool shouldMakeLeavesContig = false
+    );
+    void buildTdag2(Db<Tuple<IdAlias>>& db2, bool shouldPadLeafCount = false);
+
+    template <IsDbTuple DbTuple>
+    void padDb(Db<DbTuple>& db, typename DbTuple::DbKwType currMaxDbKw) const;
+
+    template <IsDbTuple DbTuple>
+    void replicateDb(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tdag) const;
 };

@@ -62,7 +62,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
     for (int64_t idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
         Tuple<> tuple = dbSorted[idAlias];
-        // populate `db2` Sortedleaves
+        // populate `db2` leaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};
         Tuple<IdAlias> newTuple(tuple.getDbDoc(), idAliasRange);
         db2.push_back(newTuple);
@@ -87,33 +87,12 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     }
 
     // build TDAG 2 over id aliases
-    // TODO move this process to a util (tdag util even? or no) function?
-    // maybe even some padding stuff like nlogn or log src i* setup?
-    IdAlias maxIdAlias = 0;
-    for (Tuple<IdAlias> tuple : db2) {
-        IdAlias idAlias = tuple.getDbKwRange().first; // must be size 1 range
-        if (idAlias > maxIdAlias) {
-            maxIdAlias = idAlias;
-        }
-    }
-    this->tdag2 = new TdagNode<IdAlias>(0, maxIdAlias);
+    // >>TODO move this process to a util (tdag util even? or no) function?
+    // TODO maybe even move some padding stuff like nlogn or log src i* setup to utils?
+    this->buildTdag2(db2);
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
-    int64_t db2Size = db2.size();
-    db2.reserve(utils::calcTdagTupleCount(db2Size));
-    for (int64_t i = 0; i < db2Size; i++) {
-        Tuple<IdAlias> tuple = db2[i];
-        Range<IdAlias> idAliasRange = tuple.getDbKwRange();
-        std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
-        for (Range<IdAlias> ancestor : ancestors) {
-            // ancestors include the leaf itself, which is already in `db2`
-            if (ancestor == idAliasRange) {
-                continue;
-            }
-            Tuple<IdAlias> newTuple(tuple.getDbDoc(), ancestor);
-            db2.push_back(newTuple);
-        }
-    }
+    this->replicateDb<>(db2, this->tdag2);
 
     this->underly2->setup(secParam, db2);
 
@@ -124,22 +103,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     Range<Kw> db1KwBounds = utils::findDbKwBounds(db1);
     this->tdag1 = new TdagNode<Kw>(db1KwBounds);
 
-    // replicate every document (in this case `SrcIDb1Tuple`s) to all keyword ranges/
-    // TDAG 1 nodes that cover it
-    int64_t db1Size = db1.size();
-    db1.reserve(utils::calcTdagTupleCount(db1Size));
-    for (int64_t i = 0; i < db1Size; i++) {
-        SrcIDb1Tuple tuple = db1[i];
-        Range<Kw> kwRange = tuple.getDbKwRange();
-        std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
-        for (Range<Kw> ancestor : ancestors) {
-            if (ancestor == kwRange) {
-                continue;
-            }
-            SrcIDb1Tuple newTuple(tuple.getDbDoc(), ancestor);
-            db1.push_back(newTuple);
-        }
-    }
+    // replicate every document to all keyword ranges/TDAG 1 nodes that cover it
+    this->replicateDb<>(db1, this->tdag1);
 
     this->underly1->setup(secParam, db1);
 }

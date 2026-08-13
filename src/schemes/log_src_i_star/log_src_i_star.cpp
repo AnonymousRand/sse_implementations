@@ -81,44 +81,12 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
         addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
     }
 
-    // build TDAG 2 over id aliases
-    IdAlias maxIdAlias = 0;
-    for (Tuple<IdAlias> tuple: db2) {
-        IdAlias idAlias = tuple.getDbKwRange().first; // must be size 1 range
-        if (idAlias > maxIdAlias) {
-            maxIdAlias = idAlias;
-        }
-    }
-
-    // pad TDAG 2 leaf count to the next power of two, as is required for Log-SRC-i*
-    int64_t db2Size = db2.size();
-    if (!std::has_single_bit((uint64_t)db2Size)) {
-        int64_t amountToPad = std::pow(2, std::ceil(std::log2(db2Size))) - db2Size;
-        db2.reserve(db2Size + amountToPad);
-        for (int64_t i = 0; i < amountToPad; i++) {
-            maxIdAlias++;
-            Range<IdAlias> idAliasRange {maxIdAlias, maxIdAlias};
-            Tuple<IdAlias> dummyTuple = Tuple<IdAlias>::genDummy(idAliasRange);
-            db2.push_back(dummyTuple);
-        }
-    }
-    this->tdag2 = new TdagNode<IdAlias>(0, maxIdAlias);
+    // build TDAG 2 over id aliases, padding the leaf count to the next power of 2
+    // as is required for Log-SRC-i*
+    this->buildTdag2(db2, true);
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
-    db2Size = db2.size();
-    db2.reserve(utils::calcTdagTupleCount(db2Size));
-    for (int64_t i = 0; i < db2Size; i++) {
-        Tuple<IdAlias> tuple = db2[i];
-        Range<IdAlias> idAliasRange = tuple.getDbKwRange();
-        std::list<Range<IdAlias>> ancestors = this->tdag2->getLeafAncestors(idAliasRange);
-        for (Range<IdAlias> ancestor : ancestors) {
-            if (ancestor == idAliasRange) {
-                continue;
-            }
-            Tuple<IdAlias> newTuple(tuple.getDbDoc(), ancestor);
-            db2.push_back(newTuple);
-        }
-    }
+    this->replicateDb<>(db2, this->tdag2);
 
     this->underly2->setup(secParam, db2);
 
@@ -166,22 +134,8 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     }
     this->tdag1 = new TdagNode<Kw>(db1KwBounds.first, maxDb1Kw);
 
-    // replicate every document (in this case `SrcIDb1Tuple`s) to all keyword ranges/
-    // TDAG 1 nodes that cover it
-    db1Size = db1.size();
-    db1.reserve(utils::calcTdagTupleCount(db1Size));
-    for (int64_t i = 0; i < db1Size; i++) {
-        SrcIDb1Tuple tuple = db1[i];
-        Range<Kw> kwRange = tuple.getDbKwRange();
-        std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
-        for (Range<Kw> ancestor : ancestors) {
-            if (ancestor == kwRange) {
-                continue;
-            }
-            SrcIDb1Tuple newTuple(tuple.getDbDoc(), ancestor);
-            db1.push_back(newTuple);
-        }
-    }
+    // replicate every document to all keyword ranges/TDAG 1 nodes that cover it
+    this->replicateDb<>(db1, this->tdag1);
 
     this->underly1->setup(secParam, db1);
 }
