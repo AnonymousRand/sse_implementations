@@ -13,6 +13,21 @@
 #include "utils/ustring.h"
 
 
+namespace {
+
+
+int64_t calcAllEncIndLvlsBytes(const std::vector<EncInd*>& encIndLvls) {
+    int64_t bytes = 0;
+    for (EncInd* encIndLvl : encIndLvls) {
+        bytes += encIndLvl->getSize() * EncInd::ENTRY_LEN;
+    }
+    return bytes;
+}
+
+
+} // anonymous namespace
+
+
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
 NLogNServer<DbTuple, DbKw>::~NLogNServer() {
     this->clear();
@@ -48,22 +63,20 @@ void NLogNServer<DbTuple, DbKw>::clear() {
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
 void NLogNServer<DbTuple, DbKw>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls) {
-    int64_t encIndBytes = 0;
-    for (EncInd* encIndLvl : encIndLvls) {
-        encIndBytes += encIndLvl->getSize() * EncInd::ENTRY_LEN;
-    }
-    this->benchmark->diskSize += encIndBytes;
-    this->benchmark->network += encIndBytes;
+    int64_t allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(encIndLvls);
+    this->benchmark->diskSize += allEncIndLvlsBytes;
+    this->benchmark->network += allEncIndLvlsBytes;
+
     this->encIndLvls = encIndLvls;
 }
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
 std::vector<EncInd*> NLogNServer<DbTuple, DbKw>::getEncIndLvls() const {
-    if (encIndLvls.size() > 0) {
-        this->benchmark->network +=
-            encIndLvls.size() * encIndLvls[0]->getSize() * EncInd::ENTRY_LEN;
-    }
+    int64_t allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(this->encIndLvls);
+    this->benchmark->diskSize += allEncIndLvlsBytes;
+    this->benchmark->network += allEncIndLvlsBytes;
+
     return this->encIndLvls;
 }
 

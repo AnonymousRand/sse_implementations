@@ -40,6 +40,10 @@ protected:
     std::vector<EncInd*> encIndLvls;
 
 private:
-    // stuff to not share with Log-SRC-i*
     EncInd* dbKwCountsDict = nullptr;
+
+    //--------------------------------------------------------------------------
+    // other
+
+    int64_t calcAllEncIndLvlsBytes() const;
 };

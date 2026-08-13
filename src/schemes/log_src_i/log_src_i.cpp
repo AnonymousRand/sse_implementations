@@ -38,10 +38,10 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // build index 2
 
     // sort documents by keyword
+    Db<Tuple<>> dbSorted = db;
     auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
         return tuple1.getKw() < tuple2.getKw();
     };
-    Db<Tuple<>> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
@@ -62,7 +62,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
     for (int64_t idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
         Tuple<> tuple = dbSorted[idAlias];
-        // populate `db2` leaves
+        // populate `db2` Sortedleaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};
         Tuple<IdAlias> newTuple(tuple.getDbDoc(), idAliasRange);
         db2.push_back(newTuple);
@@ -80,8 +80,8 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
             lastIdAliasWithKw = idAlias;
         }
     }
-    // make sure to write in last `Kw` (which cannot be detected by `kw != prevKw`
-    // in the loop above)
+    // make sure to write in last `Kw` (which cannot be detected by `kw != prevKw` in
+    // the loop above; note this relies on nothing in `db` having keyword `DUMMY`)
     if (prevKw != DUMMY) {
         addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
     }
