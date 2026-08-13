@@ -176,6 +176,7 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     }
 
     // if location is already filled (because of modulo), find next available location
+    // (this is what USENIX'24's implementation does)
     int64_t numPositionsChecked = 1;
     while (std::memcmp(currTuple, NULL_ENTRY, ENTRY_LEN) != 0
            && numPositionsChecked < this->size)
