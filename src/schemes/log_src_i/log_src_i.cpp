@@ -54,7 +54,6 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // build index 2
 
     // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately
-    // >>TODO move this process to a util (tdag util even? or no) function?
     // TODO can swap index 1 and 2 creation??
     utils::buildTdag(this->tdag2, db2);
 
