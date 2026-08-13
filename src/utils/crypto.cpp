@@ -10,7 +10,8 @@
 #include "utils/ustring.h"
 
 
-// thanks to https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#C.2B.2B_Programs,
+// thanks to
+// https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption#C.2B.2B_Programs,
 // https://wiki.openssl.org/index.php/EVP_Message_Digests,
 // and https://stackoverflow.com/a/34624592 for good reference code
 
@@ -99,7 +100,9 @@ ustring prf(const ustring& key, const ustring& input) {
 }
 
 
-ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv) {
+ustring encrypt(
+    const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv
+) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
         handleErrors();
@@ -136,7 +139,8 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
 
 
 ustring padAndEncrypt(
-    const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv, int targetLenBytes
+    const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv,
+    int targetLenBytes
 ) {
     if (targetLenBytes < ptext.length()) {
         std::cerr << "Error: padAndEncrypt(): plaintext of length " << ptext.length()
