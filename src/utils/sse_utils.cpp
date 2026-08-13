@@ -1,6 +1,8 @@
 #include "sse_utils.h"
 
 #include <algorithm>
+#include <bit>
+#include <cmath>
 #include <concepts>
 #include <cstdint>
 #include <iostream>
@@ -79,6 +81,24 @@ std::unordered_set<Range<typename DbTuple::DbKwType>> getUniqDbKwRanges(const Db
 }
 
 
+template <IsDbTuple DbTuple>
+void padDb(Db<DbTuple>& db, typename DbTuple::DbKwType& currMaxDbKw) {
+    using DbKw = typename DbTuple::DbKwType;
+
+    int64_t dbSize = db.size();
+    if (!std::has_single_bit((uint64_t)dbSize)) {
+        int64_t amountToPad = std::pow(2, std::ceil(std::log2(dbSize))) - dbSize;
+        db.reserve(dbSize + amountToPad);
+        for (int64_t i = 0; i < amountToPad; i++) {
+            currMaxDbKw++;
+            Range<DbKw> dbKwRange {currMaxDbKw, currMaxDbKw};
+            DbTuple dummyTuple = DbTuple::genDummy(dbKwRange);
+            db.push_back(dummyTuple);
+        }
+    }
+}
+
+
 // (we need the general case of this function to be able to call it from within the general context
 // of `IStaticPointSse`; it just does nothing except in the template specialization below)
 template <IsDbTuple DbTuple>
@@ -138,6 +158,10 @@ template Range<Kw> findDbKwBounds(const Db<SrcIDb1Tuple>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Tuple<>>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Tuple>& db);
 //template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Tuple<IdAlias>>& db);
+
+template void padDb(const Db<Tuple<>>& db, Kw& currMaxDbKw);
+template void padDb(const Db<SrcIDb1Tuple>& db, Kw& currMaxDbKw);
+template void padDb(const Db<Tuple<IdAlias>>& db, IdAlias& currMaxDbKw);
 
 // remaining explicit template specializations beyond the one earlier
 template std::vector<SrcIDb1Tuple> cleanUpResults(const std::vector<SrcIDb1Tuple>& tuples);

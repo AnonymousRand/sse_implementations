@@ -25,7 +25,7 @@
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
+void LogSrcI<Underly>::setup(int secParam, Db<Tuple<>>const Db<Tuple<>>& db) { db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -35,14 +35,10 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->size = db.size();
 
     //--------------------------------------------------------------------------
-    // build index 2
+    // init sub-DBs
 
     // sort documents by keyword
-    Db<Tuple<>> dbSorted = db;
-    auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
-        return tuple1.getKw() < tuple2.getKw();
-    };
-    std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
+    Db<Tuple<>> dbSorted = this->sortInputDb(db);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
@@ -50,61 +46,29 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     Db<Tuple<IdAlias>> db2;
     db1.reserve(dbSorted.size());
     db2.reserve(dbSorted.size());
-    Kw prevKw = DUMMY;
-    IdAlias firstIdAliasWithKw;
-    IdAlias lastIdAliasWithKw;
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
         db1.push_back(newTuple);
     };
+    this->initDbsLeaves(dbSorted, db2, addDb1Leaf);
 
-    for (int64_t idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
-        Tuple<> tuple = dbSorted[idAlias];
-        // populate `db2` leaves
-        Range<IdAlias> idAliasRange {idAlias, idAlias};
-        Tuple<IdAlias> newTuple(tuple.getDbDoc(), idAliasRange);
-        db2.push_back(newTuple);
+    //--------------------------------------------------------------------------
+    // build index 2
 
-        // populate `db1` leaves
-        Kw kw = tuple.getKw();
-        if (kw != prevKw) {
-            if (prevKw != DUMMY) {
-                addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
-            }
-            prevKw = kw;
-            firstIdAliasWithKw = idAlias;
-            lastIdAliasWithKw = idAlias;
-        } else {
-            lastIdAliasWithKw = idAlias;
-        }
-    }
-    // make sure to write in last `Kw` (which cannot be detected by `kw != prevKw` in
-    // the loop above; note this relies on nothing in `db` having keyword `DUMMY`)
-    if (prevKw != DUMMY) {
-        addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
-    }
-
-    // build TDAG 2 over id aliases
+    // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately
     // >>TODO move this process to a util (tdag util even? or no) function?
-    // TODO maybe even move some padding stuff like nlogn or log src i* setup to utils?
-    this->buildTdag2(db2);
-
-    // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
-    this->replicateDb<>(db2, this->tdag2);
+    // TODO can swap index 1 and 2 creation??
+    utils::buildTdag(this->tdag2, db2);
 
     this->underly2->setup(secParam, db2);
 
     //--------------------------------------------------------------------------
     // build index 1
 
-    // build TDAG 1 over `Kw`s
-    Range<Kw> db1KwBounds = utils::findDbKwBounds(db1);
-    this->tdag1 = new TdagNode<Kw>(db1KwBounds);
-
-    // replicate every document to all keyword ranges/TDAG 1 nodes that cover it
-    this->replicateDb<>(db1, this->tdag1);
+    // build TDAG 1 over `Kw`s and replicate `db1` appropriately
+    utils::buildTdag(this->tdag1, db1);
 
     this->underly1->setup(secParam, db1);
 }

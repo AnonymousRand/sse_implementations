@@ -33,7 +33,7 @@ LogSrc<Underly>::~LogSrc() {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
+void LogSrc<Underly>::setup(int secParam, Db<Tuple<>>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -45,24 +45,10 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     //--------------------------------------------------------------------------
     // build index
 
-    // build TDAG 1 over `Kw`s
-    Range<Kw> kwBounds = utils::findDbKwBounds(db);
-    this->tdag = new TdagNode<Kw>(kwBounds);
+    // build TDAG over `Kw`s and replicate `db` appropriately
+    utils::buildTdag(this->tdag, db);
 
-    // replicate every document to all keyword ranges/TDAG nodes that cover it
-    Db<Tuple<>> dbWithRepls;
-    dbWithRepls.reserve(utils::calcTdagTupleCount(db.size()));
-    for (Tuple<> tuple : db) {
-        Range<Kw> kwRange = tuple.getDbKwRange();
-        std::list<Range<Kw>> ancestors = this->tdag->getLeafAncestors(kwRange);
-        for (Range<Kw> ancestor : ancestors) {
-            // make sure to update `DbKw` stored also in `Tuple`!
-            Tuple<> newTuple(tuple.getDbDoc(), ancestor);
-            dbWithRepls.push_back(newTuple);
-        }
-    }
-
-    this->underly->setup(secParam, dbWithRepls);
+    this->underly->setup(secParam, db);
 }
 
 

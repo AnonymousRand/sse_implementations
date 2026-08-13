@@ -1,5 +1,6 @@
 #include "utils/tdag.h"
 
+#include <concepts>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -8,6 +9,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "utils/db.h"
 #include "utils/range.h"
 #include "utils/types.h"
 
@@ -337,6 +339,61 @@ int64_t calcTdagTupleCount(int64_t leafCount) {
         - (1 - std::pow(2, -topLevelNum)) * std::pow(2, topLevelNum + 1)
         + leafCount;
 }
+
+
+template <IsDbTuple DbTuple>
+void buildTdag(TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, bool shouldPadDb) {
+    using DbKw = typename DbTuple::DbKwType;
+
+    // obtain TDAG leaf bounds
+    Range<DbKw> dbKwBounds = findDbKwBounds(db);
+    DbKw maxDbKw = dbKwBounds.second;
+
+    // pad if necessary
+    if (shouldPadDb) {
+        padDb<>(db, maxDbKw);
+    }
+
+    // construct TDAG
+    tdag = new TdagNode<DbKw>(dbKwBounds.first, maxDbKw);
+    
+    // replicate every (leaf node) DB tuple to all TDAG nodes that cover it
+    replDbForTdag(db, this->tdag);
+}
+
+
+template <IsDbTuple DbTuple>
+void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tdag) {
+    using DbKw = typename DbTuple::DbKwType;
+
+    int64_t dbSize = db.size();
+    db.reserve(calcTdagTupleCount(dbSize));
+    for (int64_t i = 0; i < dbSize; i++) {
+        DbTuple tuple = db[i];
+        Range<DbKw> dbKwRange = tuple.getDbKwRange();
+        std::list<Range<DbKw>> ancestors = tdag->getLeafAncestors(dbKwRange);
+        for (Range<DbKw> ancestor : ancestors) {
+            if (ancestor == dbKwRange) {
+                continue;
+            }
+            DbTuple newTuple(tuple.getDbDoc(), ancestor);
+            db.push_back(newTuple);
+        }
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
+template void buildTdag(const TdagNode<Kw>* tdag, const Db<Tuple<>>& db);
+template void buildTdag(const TdagNode<Kw>* tdag, const Db<SrcIDb1Tuple>& db);
+//template void buildTdag(const TdagNode<IdAlias>* tdag, const Db<Tuple<IdAlias>>& db);
+
+template void replDbForTdag(const Db<Tuple<>>& db, const TdagNode<Kw>* tdag);
+template void replDbForTdag(const Db<SrcIDb1Tuple>& db, const TdagNode<Kw>* tdag);
+//template void replDbForTdag(const Db<Tuple<IdAlias>>& db, const TdagNode<IdAlias>* tdag);
 
 
 } // namespace `utils`

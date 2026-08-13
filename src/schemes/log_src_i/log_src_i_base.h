@@ -2,7 +2,6 @@
 
 #include <concepts>
 #include <functional>
-#include <utility>
 #include <vector>
 
 #include "schemes/interfaces/sd_underly.h"
@@ -42,25 +41,15 @@ protected:
     TdagNode<IdAlias>* tdag2 = nullptr;
 
     //--------------------------------------------------------------------------
-    // other
+    // other (mostly shared code between all Log-SRC-i-type schemes' `setup()`)
 
     Db<Tuple<>> sortInputDb(const Db<Tuple<>>& db) const;
 
-    std::pair<Db<SrcIDb1Tuple>, Db<Tuple<IdAlias>>> initDbLeaves(
+    void initDbsLeaves(
         const Db<Tuple<>>& dbSorted,
+        Db<Tuple<IdAlias>>& db2,
         const std::function<
             void(Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw)
         >& addDb1Leaf
     );
-
-    void buildTdag1(
-        Db<Tuple<>>& db1, bool shouldPadLeafCount = false, bool shouldMakeLeavesContig = false
-    );
-    void buildTdag2(Db<Tuple<IdAlias>>& db2, bool shouldPadLeafCount = false);
-
-    template <IsDbTuple DbTuple>
-    void padDb(Db<DbTuple>& db, typename DbTuple::DbKwType currMaxDbKw) const;
-
-    template <IsDbTuple DbTuple>
-    void replicateDb(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tdag) const;
 };

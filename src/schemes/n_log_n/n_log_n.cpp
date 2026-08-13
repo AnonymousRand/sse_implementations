@@ -38,7 +38,7 @@ NLogN<DbTuple, DbKw>::~NLogN() {
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
+void NLogN<DbTuple, DbKw>::setup(int secParam, Db<DbTuple>const Db<DbTuple>& db) { db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -86,6 +86,8 @@ void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
             // to differentiate from dummies originating upstream in Log-SRC-i* padding
             // etc. (needed for `getDb()`)
             // (and this doesn't affect the correctness of NLogN or the purpose of the dummies)
+            // >TODO test if this can be dummy using real dbKwRange still, and if so,
+            // using sse_utils' padDb()
             DbTuple dummyDbTuple = DbTuple::genDummy(DUMMY_RANGE<DbKw>());
             for (int64_t i = 0; i < amountToPad; i++) {
                 dbKwList.push_back(dummyDbTuple);

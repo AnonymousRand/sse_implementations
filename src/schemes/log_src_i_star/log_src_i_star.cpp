@@ -20,7 +20,7 @@
 // `ISse`
 
 
-void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
+void LogSrcIStar::setup(int secParam, Db<Tuple<>>const Db<Tuple<>>& db) { db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -30,14 +30,10 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     this->size = db.size();
 
     //--------------------------------------------------------------------------
-    // build index 2
+    // init sub-DBs
 
     // sort documents by keyword
-    Db<Tuple<>> dbSorted = db;
-    auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
-        return tuple1.getKw() < tuple2.getKw();
-    };
-    std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
+    Db<Tuple<>> dbSorted = this->sortInputDb(db);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
@@ -45,55 +41,27 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     Db<Tuple<IdAlias>> db2;
     db1.reserve(dbSorted.size());
     db2.reserve(dbSorted.size());
-    Kw prevKw = DUMMY;
-    IdAlias firstIdAliasWithKw;
-    IdAlias lastIdAliasWithKw;
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
         db1.push_back(newTuple);
     };
+    this->initDbsLeaves(dbSorted, db2, addDb1Leaf);
 
-    for (int64_t idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
-        Tuple<> tuple = dbSorted[idAlias];
-        // populate `db2` leaves
-        Range<IdAlias> idAliasRange {idAlias, idAlias};
-        Tuple<IdAlias> newTuple(tuple.getDbDoc(), idAliasRange);
-        db2.push_back(newTuple);
+    //--------------------------------------------------------------------------
+    // build index 2
 
-        // populate `db1` leaves
-        Kw kw = tuple.getKw();
-        if (kw != prevKw) {
-            if (prevKw != DUMMY) {
-                addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
-            }
-            prevKw = kw;
-            firstIdAliasWithKw = idAlias;
-            lastIdAliasWithKw = idAlias;
-        } else {
-            lastIdAliasWithKw = idAlias;
-        }
-    }
-    // make sure to write in last `Kw` (which cannot be detected by `kw != prevKw` in
-    // the loop above; note this relies on nothing in `db` having keyword `DUMMY`)
-    if (prevKw != DUMMY) {
-        addDb1Leaf(prevKw, firstIdAliasWithKw, lastIdAliasWithKw);
-    }
-
-    // build TDAG 2 over id aliases, padding the leaf count to the next power of 2
-    // as is required for Log-SRC-i*
-    this->buildTdag2(db2, true);
-
-    // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
-    this->replicateDb<>(db2, this->tdag2);
+    // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately, and padding
+    // the leaf count to the next power of 2 as is required for Log-SRC-i*
+    utils::buildTdag(this->tdag2, db2, true);
 
     this->underly2->setup(secParam, db2);
 
     //--------------------------------------------------------------------------
     // build index 1
 
-    // build TDAG 1 over `Kw`s
+    // first ensure (leaf) `Kw`s are contiguous:
     // since `Kw`s have no guarantee of being contiguous but the leaves and hence
     // bottom level in the index must be, we need to pad `db1` to have (exactly)
     // one tuple per `Kw` (we can just leave blanks in the case of non-locality
@@ -118,24 +86,10 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
         }
     }
 
-    // after guaranteeing contiguous-ness of `Kw`s, pad `db1` to power of 2 as well
-    int64_t db1Size = db1.size();
-    Range<Kw> db1KwBounds = utils::findDbKwBounds(db1);
-    Kw maxDb1Kw = db1KwBounds.second;
-    if (!std::has_single_bit((uint64_t)db1Size)) {
-        int64_t amountToPad = std::pow(2, std::ceil(std::log2(db1Size))) - db1Size;
-        db1.reserve(db1Size + amountToPad);
-        for (int64_t i = 0; i < amountToPad; i++) {
-            maxDb1Kw++;
-            Range<Kw> paddingKwRange {maxDb1Kw, maxDb1Kw};
-            SrcIDb1Tuple dummyTuple = SrcIDb1Tuple::genDummy(paddingKwRange);
-            db1.push_back(dummyTuple);
-        }
-    }
-    this->tdag1 = new TdagNode<Kw>(db1KwBounds.first, maxDb1Kw);
-
-    // replicate every document to all keyword ranges/TDAG 1 nodes that cover it
-    this->replicateDb<>(db1, this->tdag1);
+    // after guaranteeing contiguous-ness of `Kw`s, build TDAG 1 over `Kw`s and replicate
+    // `db1` appropriately, again padding the leaf count to the next power of 2 as is
+    // required for Log-SRC-i*
+    utils::buildTdag(this->tdag1, db1, true);
 
     this->underly1->setup(secParam, db1);
 }

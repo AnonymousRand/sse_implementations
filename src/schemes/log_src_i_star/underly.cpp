@@ -22,7 +22,7 @@ namespace log_src_i_star {
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void Underly<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
+void Underly<DbTuple, DbKw>::setup(int secParam, Db<DbTuple>const Db<DbTuple>& db) { db) {
     Range<DbKw> dbKwBounds = utils::findDbKwBounds(db);
     this->leafCount = dbKwBounds.size();
     NLogN<DbTuple, DbKw>::setup(secParam, db);

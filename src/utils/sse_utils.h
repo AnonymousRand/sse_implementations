@@ -30,6 +30,10 @@ std::unordered_set<Range<typename DbTuple::DbKwType>> getUniqDbKwRanges(const Db
 
 
 template <IsDbTuple DbTuple>
+void padDb(Db<DbTuple>& db, typename DbTuple::DbKwType& currMaxDbKw);
+
+
+template <IsDbTuple DbTuple>
 std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples);
 
 

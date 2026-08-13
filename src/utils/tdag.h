@@ -1,10 +1,12 @@
 #pragma once
 
+#include <concepts>
 #include <cstdint>
 #include <iostream>
 #include <list>
 #include <unordered_set>
 
+#include "utils/db.h"
 #include "utils/range.h"
 
 
@@ -72,6 +74,16 @@ namespace utils {
 
 
 int64_t calcTdagTupleCount(int64_t leafCount);
+
+
+template <IsDbTuple DbTuple>
+void buildTdag(
+    TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db1, bool shouldPadDb = false
+);
+
+
+template <IsDbTuple DbTuple>
+void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tdag);
 
 
 } // namespace `utils`
