@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "utils/db.h"
+#include "utils/tuple.h"
 #include "utils/range.h"
 #include "utils/ustring.h"
 

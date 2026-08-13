@@ -7,7 +7,7 @@
 #include "schemes/interfaces/dsse.h"
 #include "schemes/interfaces/sd_underly.h"
 
-#include "utils/db.h"
+#include "utils/tuple.h"
 #include "utils/range.h"
 #include "utils/types.h"
 

@@ -11,7 +11,7 @@
 #include "schemes/pi_bas/pi_bas_server.h"
 
 #include "utils/crypto.h"
-#include "utils/db.h"
+#include "utils/tuple.h"
 #include "utils/enc_ind.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"

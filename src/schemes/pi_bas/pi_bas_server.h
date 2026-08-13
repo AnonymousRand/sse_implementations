@@ -5,7 +5,7 @@
 
 #include "schemes/interfaces/sse_server.h"
 
-#include "utils/db.h"
+#include "utils/tuple.h"
 #include "utils/enc_ind.h"
 #include "utils/types.h"
 #include "utils/ustring.h"
