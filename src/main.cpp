@@ -5,7 +5,6 @@
 
 #include "config.h"
 
-#include "app/db_factory.h"
 #include "app/sse_factory.h"
 #include "app/experiments/experiments.h"
 
@@ -81,279 +80,243 @@ int main() {
     //--------------------------------------------------------------------------
     // debugging experiment
 
-    // (this is out here so all the schemes get the same DB (if it was randomized))
-    Range<Kw> query {3, 5};
-    Db<> db = app::createDb(maxDbSize, true, true); // adjust params at will
+    // declare these out here so that they don't change (in particular, randomized DBs)
+    // during any one program execution, between different SSE schemes/calls to `run()`
+    // adjust at will here!
+    Db<> debuggingDb = app::createDb(maxDbSize, true, true);
+    Range<Kw> debuggingQuery {3, 5};
+    app::experiments::debugging::init(&debuggingDb, debuggingQuery);
 
-    std::cout << std::endl;
-    std::cout << "============================= Debugging Experiment ============================="
-              << std::endl;
-    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
-    std::cout << "Fixed query " << query << std::endl;
-    std::cout << "================================================================================"
-              << std::endl;
-    std::cout << std::endl << std::endl;
+    app::experiments::debugging::printHeader(maxDbSizeExp);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::debuggingExp(piBas.get(), db, query);
+    app::experiments::debugging::run(piBas.get());
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::debuggingExp(nLogN.get(), db, query);
+    app::experiments::debugging::run(nLogN.get());
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::debuggingExp(logSrcPiBas.get(), db, query);
+    app::experiments::debugging::run(logSrcPiBas.get());
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::debuggingExp(logSrcNLogN.get(), db, query);
+    app::experiments::debugging::run(logSrcNLogN.get());
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::debuggingExp(logSrcIPiBas.get(), db, query);
+    app::experiments::debugging::run(logSrcIPiBas.get());
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::debuggingExp(logSrcINLogN.get(), db, query);
+    app::experiments::debugging::run(logSrcINLogN.get());
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    app::experiments::debuggingExp(logSrcIStar.get(), db, query);
+    app::experiments::debugging::run(logSrcIStar.get());
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    app::experiments::debuggingExp(sdaPiBas.get(), db, query);
+    app::experiments::debugging::run(sdaPiBas.get());
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    app::experiments::debuggingExp(sdaNLogN.get(), db, query);
+    app::experiments::debugging::run(sdaNLogN.get());
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    app::experiments::debuggingExp(sdaLogSrcPiBas.get(), db, query);
+    app::experiments::debugging::run(sdaLogSrcPiBas.get());
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    app::experiments::debuggingExp(sdaLogSrcNLogN.get(), db, query);
+    app::experiments::debugging::run(sdaLogSrcNLogN.get());
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    app::experiments::debuggingExp(sdaLogSrcIPiBas.get(), db, query);
+    app::experiments::debugging::run(sdaLogSrcIPiBas.get());
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    app::experiments::debuggingExp(sdaLogSrcINLogN.get(), db, query);
+    app::experiments::debugging::run(sdaLogSrcINLogN.get());
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    app::experiments::debuggingExp(sdaLogSrcIStar.get(), db, query);
+    app::experiments::debugging::run(sdaLogSrcIStar.get());
+
+    // to save memory
+    debuggingDb.clear();
 
     //--------------------------------------------------------------------------
     // DB sizes experiment
 
-    std::cout << std::endl;
-    std::cout << "============================= DB Sizes Experiment =============================="
-              << std::endl;
-    std::cout << "Varied DB size up to 2^" << maxDbSizeExp << std::endl;
-    std::cout << "Fixed query 0-3" << std::endl;
-    std::cout << "================================================================================"
-              << std::endl;
-    std::cout << std::endl << std::endl;
+    app::experiments::db_sizes::printHeader(maxDbSizeExp);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::dbSizesExp(piBas.get(), maxDbSize);
+    app::experiments::db_sizes::run(piBas.get(), maxDbSize);
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::dbSizesExp(nLogN.get(), maxDbSize);
+    app::experiments::db_sizes::run(nLogN.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::dbSizesExp(logSrcPiBas.get(), maxDbSize);
+    app::experiments::db_sizes::run(logSrcPiBas.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::dbSizesExp(logSrcNLogN.get(), maxDbSize);
+    app::experiments::db_sizes::run(logSrcNLogN.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::dbSizesExp(logSrcIPiBas.get(), maxDbSize);
+    app::experiments::db_sizes::run(logSrcIPiBas.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::dbSizesExp(logSrcINLogN.get(), maxDbSize);
+    app::experiments::db_sizes::run(logSrcINLogN.get(), maxDbSize);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    app::experiments::dbSizesExp(logSrcIStar.get(), maxDbSize);
+    app::experiments::db_sizes::run(logSrcIStar.get(), maxDbSize);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    app::experiments::dbSizesExp(sdaPiBas.get(), maxDbSize);
+    app::experiments::db_sizes::run(sdaPiBas.get(), maxDbSize);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    app::experiments::dbSizesExp(sdaNLogN.get(), maxDbSize);
+    app::experiments::db_sizes::run(sdaNLogN.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    app::experiments::dbSizesExp(sdaLogSrcPiBas.get(), maxDbSize);
+    app::experiments::db_sizes::run(sdaLogSrcPiBas.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    app::experiments::dbSizesExp(sdaLogSrcNLogN.get(), maxDbSize);
+    app::experiments::db_sizes::run(sdaLogSrcNLogN.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    app::experiments::dbSizesExp(sdaLogSrcIPiBas.get(), maxDbSize);
+    app::experiments::db_sizes::run(sdaLogSrcIPiBas.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    app::experiments::dbSizesExp(sdaLogSrcINLogN.get(), maxDbSize);
+    app::experiments::db_sizes::run(sdaLogSrcINLogN.get(), maxDbSize);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    app::experiments::dbSizesExp(sdaLogSrcIStar.get(), maxDbSize);
+    app::experiments::db_sizes::run(sdaLogSrcIStar.get(), maxDbSize);
 
     //--------------------------------------------------------------------------
     // search sizes experiment
 
-    std::cout << std::endl;
-    std::cout << "=========================== Search Sizes Experiment ============================"
-              << std::endl;
-    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
-    std::cout << "Varied query range size" << std::endl;
-    std::cout << "================================================================================"
-              << std::endl;
-    std::cout << std::endl << std::endl;
+    app::experiments::search_sizes::printHeader(maxDbSizeExp);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::searchSizesExp(piBas.get(), maxDbSize);
+    app::experiments::search_sizes::run(piBas.get(), maxDbSize);
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::searchSizesExp(nLogN.get(), maxDbSize);
+    app::experiments::search_sizes::run(nLogN.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::searchSizesExp(logSrcPiBas.get(), maxDbSize);
+    app::experiments::search_sizes::run(logSrcPiBas.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::searchSizesExp(logSrcNLogN.get(), maxDbSize);
+    app::experiments::search_sizes::run(logSrcNLogN.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::searchSizesExp(logSrcIPiBas.get(), maxDbSize);
+    app::experiments::search_sizes::run(logSrcIPiBas.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::searchSizesExp(logSrcINLogN.get(), maxDbSize);
+    app::experiments::search_sizes::run(logSrcINLogN.get(), maxDbSize);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    app::experiments::searchSizesExp(logSrcIStar.get(), maxDbSize);
+    app::experiments::search_sizes::run(logSrcIStar.get(), maxDbSize);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    app::experiments::searchSizesExp(sdaPiBas.get(), maxDbSize);
+    app::experiments::search_sizes::run(sdaPiBas.get(), maxDbSize);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    app::experiments::searchSizesExp(sdaNLogN.get(), maxDbSize);
+    app::experiments::search_sizes::run(sdaNLogN.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    app::experiments::searchSizesExp(sdaLogSrcPiBas.get(), maxDbSize);
+    app::experiments::search_sizes::run(sdaLogSrcPiBas.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    app::experiments::searchSizesExp(sdaLogSrcNLogN.get(), maxDbSize);
+    app::experiments::search_sizes::run(sdaLogSrcNLogN.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    app::experiments::searchSizesExp(sdaLogSrcIPiBas.get(), maxDbSize);
+    app::experiments::search_sizes::run(sdaLogSrcIPiBas.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    app::experiments::searchSizesExp(sdaLogSrcINLogN.get(), maxDbSize);
+    app::experiments::search_sizes::run(sdaLogSrcINLogN.get(), maxDbSize);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    app::experiments::searchSizesExp(sdaLogSrcIStar.get(), maxDbSize);
+    app::experiments::search_sizes::run(sdaLogSrcIStar.get(), maxDbSize);
 
     //--------------------------------------------------------------------------
     // result sizes experiment
 
-    std::cout << std::endl;
-    std::cout << "=========================== Result Sizes Experiment ============================"
-              << std::endl;
-    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
-    std::cout << "Varied query result size" << std::endl;
-    std::cout << "================================================================================"
-              << std::endl;
-    std::cout << std::endl << std::endl;
+    app::experiments::result_sizes::printHeader(maxDbSizeExp);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::resultSizesExp(piBas.get(), maxDbSize);
+    app::experiments::result_sizes::run(piBas.get(), maxDbSize);
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::resultSizesExp(nLogN.get(), maxDbSize);
+    app::experiments::result_sizes::run(nLogN.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::resultSizesExp(logSrcPiBas.get(), maxDbSize);
+    app::experiments::result_sizes::run(logSrcPiBas.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::resultSizesExp(logSrcNLogN.get(), maxDbSize);
+    app::experiments::result_sizes::run(logSrcNLogN.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::resultSizesExp(logSrcIPiBas.get(), maxDbSize);
+    app::experiments::result_sizes::run(logSrcIPiBas.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::resultSizesExp(logSrcINLogN.get(), maxDbSize);
+    app::experiments::result_sizes::run(logSrcINLogN.get(), maxDbSize);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    app::experiments::resultSizesExp(logSrcIStar.get(), maxDbSize);
+    app::experiments::result_sizes::run(logSrcIStar.get(), maxDbSize);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    app::experiments::resultSizesExp(sdaPiBas.get(), maxDbSize);
+    app::experiments::result_sizes::run(sdaPiBas.get(), maxDbSize);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    app::experiments::resultSizesExp(sdaNLogN.get(), maxDbSize);
+    app::experiments::result_sizes::run(sdaNLogN.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    app::experiments::resultSizesExp(sdaLogSrcPiBas.get(), maxDbSize);
+    app::experiments::result_sizes::run(sdaLogSrcPiBas.get(), maxDbSize);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    app::experiments::resultSizesExp(sdaLogSrcNLogN.get(), maxDbSize);
+    app::experiments::result_sizes::run(sdaLogSrcNLogN.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    app::experiments::resultSizesExp(sdaLogSrcIPiBas.get(), maxDbSize);
+    app::experiments::result_sizes::run(sdaLogSrcIPiBas.get(), maxDbSize);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    app::experiments::resultSizesExp(sdaLogSrcINLogN.get(), maxDbSize);
+    app::experiments::result_sizes::run(sdaLogSrcINLogN.get(), maxDbSize);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    app::experiments::resultSizesExp(sdaLogSrcIStar.get(), maxDbSize);
+    app::experiments::result_sizes::run(sdaLogSrcIStar.get(), maxDbSize);
     
     //--------------------------------------------------------------------------
     // false positives experiment
 
-    std::cout << std::endl;
-    std::cout << "========================== False Positives Experiment =========================="
-              << std::endl;
-    std::cout << "Varied DB size up to 2^" << maxDbSizeExp << std::endl;
-    std::cout << "High false positives query" << std::endl;
-    std::cout << "================================================================================"
-              << std::endl;
-    std::cout << std::endl << std::endl;
+    app::experiments::false_pos::printHeader(maxDbSizeExp);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::falsePosExp(logSrcPiBas.get(), maxDbSize);
+    app::experiments::false_pos::run(logSrcPiBas.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::falsePosExp(logSrcIPiBas.get(), maxDbSize);
+    app::experiments::false_pos::run(logSrcIPiBas.get(), maxDbSize);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::falsePosExp(logSrcNLogN.get(), maxDbSize);
+    app::experiments::false_pos::run(logSrcNLogN.get(), maxDbSize);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::falsePosExp(logSrcINLogN.get(), maxDbSize);
+    app::experiments::false_pos::run(logSrcINLogN.get(), maxDbSize);
 
     //--------------------------------------------------------------------------
     // updates experiment
 
     if (config::DSSE_SHOULD_BENCHMARK_UPDTS) {
-        std::cout << std::endl;
-        std::cout << "============================== Updates Experiment =============================="
-                  << std::endl;
-        std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
-        std::cout << "One update at a time" << std::endl;
-        std::cout << "================================================================================"
-                  << std::endl;
-        std::cout << std::endl << std::endl;
+        app::experiments::updates::printHeader(maxDbSizeExp);
 
         std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-        app::experiments::updatesExp(sdaPiBas.get(), maxDbSize);
+        app::experiments::updates::run(sdaPiBas.get(), maxDbSize);
 
         std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-        app::experiments::updatesExp(sdaNLogN.get(), maxDbSize);
+        app::experiments::updates::run(sdaNLogN.get(), maxDbSize);
 
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-        app::experiments::updatesExp(sdaLogSrcPiBas.get(), maxDbSize);
+        app::experiments::updates::run(sdaLogSrcPiBas.get(), maxDbSize);
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        app::experiments::updatesExp(sdaLogSrcNLogN.get(), maxDbSize);
+        app::experiments::updates::run(sdaLogSrcNLogN.get(), maxDbSize);
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-        app::experiments::updatesExp(sdaLogSrcIPiBas.get(), maxDbSize);
+        app::experiments::updates::run(sdaLogSrcIPiBas.get(), maxDbSize);
 
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        app::experiments::updatesExp(sdaLogSrcINLogN.get(), maxDbSize);
+        app::experiments::updates::run(sdaLogSrcINLogN.get(), maxDbSize);
 
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-        app::experiments::updatesExp(sdaLogSrcIStar.get(), maxDbSize);
+        app::experiments::updates::run(sdaLogSrcIStar.get(), maxDbSize);
     }
 }

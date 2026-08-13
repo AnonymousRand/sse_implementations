@@ -18,10 +18,22 @@
 #include "utils/types.h"
 
 
-namespace app::experiments {
+namespace app::experiments::search_sizes {
 
 
-void searchSizesExp(ISse<>* sse, int64_t dbSize) {
+void printHeader(int64_t maxDbSizeExp) {
+    std::cout << std::endl;
+    std::cout << "=========================== Search Sizes Experiment ============================"
+              << std::endl;
+    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
+    std::cout << "Varied query range size" << std::endl;
+    std::cout << "================================================================================"
+              << std::endl;
+    std::cout << std::endl << std::endl;
+}
+
+
+void run(ISse<>* sse, int64_t dbSize) {
     if (dbSize == 0) {
         return;
     }
@@ -47,4 +59,4 @@ void searchSizesExp(ISse<>* sse, int64_t dbSize) {
 }
 
 
-} // namespace `app::experiments`
+} // namespace `app::experiments::search_sizes`

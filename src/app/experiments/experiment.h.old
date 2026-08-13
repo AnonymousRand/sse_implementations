@@ -1,0 +1,15 @@
+#pragma once
+
+#include <cstdint>
+
+
+namespace app::experiments {
+
+
+class IExperiment {
+public:
+    virtual void printHeader(int64_t maxDbSizeExp) = 0;
+};
+
+
+} // namespace `app::experiments`

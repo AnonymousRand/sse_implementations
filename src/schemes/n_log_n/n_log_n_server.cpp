@@ -28,6 +28,11 @@ int64_t calcAllEncIndLvlsBytes(const std::vector<EncInd*>& encIndLvls) {
 } // anonymous namespace
 
 
+//==============================================================================
+// `NLogNServer`
+//==============================================================================
+
+
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
 NLogNServer<DbTuple, DbKw>::~NLogNServer() {
     this->clear();

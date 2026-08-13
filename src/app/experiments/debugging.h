@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 
@@ -13,13 +14,36 @@
 #include "utils/types.h"
 
 
-namespace app::experiments {
+namespace app::experiments::debugging {
+
+
+// use a pointer so that 
+const Db<>* db;
+const Range<Kw> query;
+
+
+void init(Db<>* db, Range<Kw> query) {
+    db = db;
+    query = query;
+}
+
+
+void printHeader(int64_t maxDbSizeExp) {
+    std::cout << std::endl;
+    std::cout << "============================= Debugging Experiment ============================="
+              << std::endl;
+    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
+    std::cout << "Fixed query " << query << std::endl;
+    std::cout << "================================================================================"
+              << std::endl;
+    std::cout << std::endl << std::endl;
+}
 
 
 // experiment for debugging with fixed query and printed results
-void debuggingExp(ISse<>* sse, const Db<>& db, Range<Kw> query) {
+void run(ISse<>* sse) {
     // setup
-    sse->setup(utils::KEY_LEN, db);
+    sse->setup(utils::KEY_LEN, *db);
 
     // search
     std::vector<Tuple<>> results = sse->search(query);
@@ -44,4 +68,4 @@ void debuggingExp(ISse<>* sse, const Db<>& db, Range<Kw> query) {
 }
 
 
-} // namespace `app::experiments`
+} // namespace `app::experiments::debugging`

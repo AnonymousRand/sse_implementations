@@ -17,10 +17,22 @@
 #include "utils/types.h"
 
 
-namespace app::experiments {
+namespace app::experiments::false_pos {
 
 
-void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
+void printHeader(int64_t maxDbSizeExp) {
+    std::cout << std::endl;
+    std::cout << "========================== False Positives Experiment =========================="
+              << std::endl;
+    std::cout << "Varied DB size up to 2^" << maxDbSizeExp << std::endl;
+    std::cout << "High false positives query" << std::endl;
+    std::cout << "================================================================================"
+              << std::endl;
+    std::cout << std::endl << std::endl;
+}
+
+
+void run(ISse<>* sse, int64_t maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
@@ -77,4 +89,4 @@ void falsePosExp(ISse<>* sse, int64_t maxDbSize) {
 }
 
 
-} // namespace `app::experiments`
+} // namespace `app::experiments::false_pos`

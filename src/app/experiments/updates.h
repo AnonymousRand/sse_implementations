@@ -15,10 +15,22 @@
 #include "utils/types.h"
 
 
-namespace app::experiments {
+namespace app::experiments::updates {
 
 
-void updatesExp(IDsse<>* dsse, int64_t dbSize) {
+void printHeader(int64_t maxDbSizeExp) {
+    std::cout << std::endl;
+    std::cout << "============================== Updates Experiment =============================="
+              << std::endl;
+    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
+    std::cout << "One update at a time" << std::endl;
+    std::cout << "================================================================================"
+              << std::endl;
+    std::cout << std::endl << std::endl;
+}
+
+
+void run(IDsse<>* dsse, int64_t dbSize) {
     if (dbSize == 0) {
         return;
     }
@@ -40,4 +52,4 @@ void updatesExp(IDsse<>* dsse, int64_t dbSize) {
 }
 
 
-} // namespace `app::experiments`
+} // namespace `app::experiments::updates`
