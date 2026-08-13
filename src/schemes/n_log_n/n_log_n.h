@@ -15,10 +15,13 @@
 #include "utils/ustring.h"
 
 
-template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
-class NLogN : public IStaticPointSse<DbTuple, DbKw>, public ISdUnderly<DbTuple, DbKw> {
+template <IsDbTuple DbTuple = Tuple<>>
+class NLogN : public IStaticPointSse<DbTuple>, public ISdUnderly<DbTuple> {
+protected:
+    using DbKw = typename IStaticPointSse<DbTuple>::DbKw;
+
 public:
-    using IStaticPointSse<DbTuple, DbKw>::IStaticPointSse;
+    using IStaticPointSse<DbTuple>::IStaticPointSse;
 
     ~NLogN();
 
@@ -34,7 +37,7 @@ public:
     void getDb(Db<DbTuple>& ret) const override;
 
 protected:
-    NLogNServer<DbTuple, DbKw>* server = new NLogNServer<DbTuple, DbKw>(this->benchmark);
+    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
     int64_t numLvls;
 
     //----------------------------------------------------------------------

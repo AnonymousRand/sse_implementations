@@ -13,8 +13,11 @@
 struct Benchmark;
 
 
-template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
+template <IsDbTuple DbTuple = Tuple<>>
 class ISse {
+protected:
+    using DbKw = typename DbTuple::DbKwType;
+
 public:
     std::shared_ptr<Benchmark> benchmark;
 

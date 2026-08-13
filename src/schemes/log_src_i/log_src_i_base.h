@@ -14,10 +14,13 @@
 
 
 // common code between `LogSrcI` and `LogSrcIStar`
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-class LogSrcIBase : public ISdUnderly<Tuple<>, Kw> {
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
+class LogSrcIBase : public ISdUnderly<Tuple<>> {
+protected:
+    using DbKw = typename ISdUnderly<Tuple<>>::DbKw;
+
 public:
-    using ISdUnderly<Tuple<>, Kw>::ISdUnderly;
+    using ISdUnderly<Tuple<>>::ISdUnderly;
 
     virtual ~LogSrcIBase();
 
@@ -35,8 +38,8 @@ public:
     void getDb(Db<Tuple<>>& ret) const override;
 
 protected:
-    Underly<SrcIDb1Tuple, Kw>* underly1 = new Underly<SrcIDb1Tuple, Kw>(this->benchmark);
-    Underly<Tuple<IdAlias>, IdAlias>* underly2 = new Underly<Tuple<IdAlias>, IdAlias>(this->benchmark);
+    Underly<SrcIDb1Tuple>* underly1 = new Underly<SrcIDb1Tuple>(this->benchmark);
+    Underly<Tuple<IdAlias>>* underly2 = new Underly<Tuple<IdAlias>>(this->benchmark);
     TdagNode<Kw>* tdag1 = nullptr;
     TdagNode<IdAlias>* tdag2 = nullptr;
 

@@ -19,8 +19,8 @@
 #include "utils/ustring.h"
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-PiBas<DbTuple, DbKw>::~PiBas() {
+template <IsDbTuple DbTuple>
+PiBas<DbTuple>::~PiBas() {
     this->clear();
     if (this->server != nullptr) {
         delete this->server;
@@ -33,8 +33,8 @@ PiBas<DbTuple, DbKw>::~PiBas() {
 // `ISse`
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void PiBas<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
+template <IsDbTuple DbTuple>
+void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -55,7 +55,7 @@ void PiBas<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     // and randomly permute documents associated with same keyword, required by
     // some schemes on top of PiBas (e.g. Log-SRC)
-    Ind<DbKw, DbTuple> ind = utils::genInd(db, true);
+    Ind<DbTuple> ind = utils::genInd(db, true);
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);
@@ -89,10 +89,10 @@ void PiBas<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void PiBas<DbTuple, DbKw>::clear() {
-    IStaticPointSse<DbTuple, DbKw>::clear();
-    ISdUnderly<DbTuple, DbKw>::clear();
+template <IsDbTuple DbTuple>
+void PiBas<DbTuple>::clear() {
+    IStaticPointSse<DbTuple>::clear();
+    ISdUnderly<DbTuple>::clear();
 
     this->server->clear();
 }
@@ -102,8 +102,8 @@ void PiBas<DbTuple, DbKw>::clear() {
 // `ISdUnderly`
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void PiBas<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
+template <IsDbTuple DbTuple>
+void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
     EncInd* encInd = this->server->getEncInd();
     // don't use `this->size()` as the bound here as that doesn't include padding
     // while `encInd` does (this should all be client-side anyway so not leaking anything)
@@ -128,8 +128,8 @@ void PiBas<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
 // `IStaticPointSse`
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-std::vector<DbTuple> PiBas<DbTuple, DbKw>::searchBase(const Range<DbKw>& query) const {
+template <IsDbTuple DbTuple>
+std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbTuple> results;
 
     // PRF(K_1, w)
@@ -148,15 +148,15 @@ std::vector<DbTuple> PiBas<DbTuple, DbKw>::searchBase(const Range<DbKw>& query) 
 // other
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-ustring PiBas<DbTuple, DbKw>::genQueryToken(const Range<DbKw>& query) const {
+template <IsDbTuple DbTuple>
+ustring PiBas<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
     return crypto::prf(this->prfKey, query.toUstr());
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-uint64_t PiBas<DbTuple, DbKw>::map(
+template <IsDbTuple DbTuple>
+uint64_t PiBas<DbTuple>::map(
     const ustring& queryToken, int64_t dbKwCounter, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w) || c)
@@ -171,6 +171,6 @@ uint64_t PiBas<DbTuple, DbKw>::map(
 // explicit template instantiations
 
 
-template class PiBas<Tuple<>, Kw>;               // default/standalone
-template class PiBas<SrcIDb1Tuple, Kw>;          // Log-SRC-i index 1
-//template class PiBas<Tuple<IdAlias>, IdAlias>;   // Log-SRC-i index 2
+template class PiBas<Tuple<>>;        // default/standalone
+template class PiBas<SrcIDb1Tuple>;   // Log-SRC-i index 1
+//template class PiBas<Tuple<IdAlias>>; // Log-SRC-i index 2

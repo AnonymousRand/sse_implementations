@@ -26,7 +26,7 @@
 //==============================================================================
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 LogSrcIBase<Underly>::~LogSrcIBase() {
     this->clear();
     if (this->underly1 != nullptr) {
@@ -44,7 +44,7 @@ LogSrcIBase<Underly>::~LogSrcIBase() {
 // `ISse`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 std::vector<Tuple<>> LogSrcIBase<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
@@ -92,7 +92,7 @@ std::vector<Tuple<>> LogSrcIBase<Underly>::search(
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrcIBase<Underly>::clear() {
     this->underly1->clear();
     this->underly2->clear();
@@ -112,7 +112,7 @@ void LogSrcIBase<Underly>::clear() {
 // `ISdUnderly`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
     // reconstruct the original DB passed to `setup()` from Log-SRC-i's two indexes
     // (an alternative is to store the original DB in a separate PiBas instance and call
@@ -122,7 +122,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
     Db<Tuple<IdAlias>> db2;
     this->underly1->getDb(db1);
     this->underly2->getDb(db2);
-    Ind<IdAlias, Tuple<IdAlias>> ind2 = utils::genInd(db2);
+    Ind<Tuple<IdAlias>> ind2 = utils::genInd(db2);
 
     for (SrcIDb1Tuple db1Tuple : db1) {
         Range<Kw> kwRange = db1Tuple.getDbKwRange();
@@ -158,7 +158,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
 // other
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 Db<Tuple<>> LogSrcIBase<Underly>::sortInputDb(const Db<Tuple<>>& db) {
     Db<Tuple<>> sortedDb = db;
     auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
@@ -169,7 +169,7 @@ Db<Tuple<>> LogSrcIBase<Underly>::sortInputDb(const Db<Tuple<>>& db) {
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrcIBase<Underly>::initDbsLeaves(
     const Db<Tuple<>>& sortedDb,
     Db<Tuple<IdAlias>>& db2,

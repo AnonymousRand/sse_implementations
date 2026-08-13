@@ -21,11 +21,11 @@ namespace log_src_i_star {
 // `ISse`
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void Underly<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
+template <IsDbTuple DbTuple>
+void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     Range<DbKw> dbKwBounds = utils::findDbKwBounds(db);
     this->leafCount = dbKwBounds.size();
-    NLogN<DbTuple, DbKw>::setup(secParam, db);
+    NLogN<DbTuple>::setup(secParam, db);
 }
 
 
@@ -33,8 +33,8 @@ void Underly<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
 // `IStaticPointSse`
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-std::vector<DbTuple> Underly<DbTuple, DbKw>::searchBase(const Range<DbKw>& query) const {
+template <IsDbTuple DbTuple>
+std::vector<DbTuple> Underly<DbTuple>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbTuple> results;
 
     // PRF(K_1, w)
@@ -70,8 +70,8 @@ std::vector<DbTuple> Underly<DbTuple, DbKw>::searchBase(const Range<DbKw>& query
 // other
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-int64_t Underly<DbTuple, DbKw>::computeNumLvls() const {
+template <IsDbTuple DbTuple>
+int64_t Underly<DbTuple>::computeNumLvls() const {
     // the key to avoiding the blowup of using NLogN as a black box is by using
     // `leafCount` instead of `this->size` here, since `this->size` includes the
     // replicated tuples and using it sort of assumes those are only the "raw" tuples
@@ -79,8 +79,8 @@ int64_t Underly<DbTuple, DbKw>::computeNumLvls() const {
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-int64_t Underly<DbTuple, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
+template <IsDbTuple DbTuple>
+int64_t Underly<DbTuple>::computeBcktCountOnLvl(int64_t lvlNum) const {
     if (lvlNum == 0) {
         return this->leafCount;
     } else {
@@ -94,9 +94,9 @@ int64_t Underly<DbTuple, DbKw>::computeBcktCountOnLvl(int64_t lvlNum) const {
 // explicit template instantiations
 
 
-template class Underly<Tuple<>, Kw>;       
-template class Underly<SrcIDb1Tuple, Kw>;
-//template class Underly<Tuple<IdAlias>, IdAlias>;
+template class Underly<Tuple<>>;       
+template class Underly<SrcIDb1Tuple>;
+//template class Underly<Tuple<IdAlias>>;
 
 
 } // namespace `log_src_i_star`

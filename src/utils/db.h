@@ -67,14 +67,6 @@ concept IsDbTuple = requires(T t) {
 };
 
 
-// this enforces the above plus that `T` uses `DbKw` as its second template param, e.g.
-// `IsDbTuple<IDbTuple<A, Kw>, Kw>` passes but not `IsDbTuple<IDbTuple<A, Kw>, char>`
-template <class DbTuple, class DbKw>
-concept IsValidDbParams = requires(DbTuple t) {
-    []<class T2>(IDbTuple<T2, DbKw>&){}(t);
-};
-
-
 //==============================================================================
 // `Tuple`
 //==============================================================================
@@ -142,5 +134,5 @@ private:
 template <IsDbTuple DbTuple = Tuple<>>
 using Db = std::vector<DbTuple>;
 
-template <class DbKw = Kw, class DbTuple = Tuple<>> requires IsValidDbParams<DbTuple, DbKw>
-using Ind = std::unordered_map<Range<DbKw>, Db<DbTuple>>;
+template <IsDbTuple DbTuple = Tuple<>>
+using Ind = std::unordered_map<Range<typename DbTuple::DbKwType>, Db<DbTuple>>;

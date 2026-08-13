@@ -21,10 +21,10 @@ namespace utils {
 
 
 template <IsDbTuple DbTuple>
-Ind<typename DbTuple::DbKwType, DbTuple> genInd(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
+Ind<DbTuple> genInd(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
     using DbKw = typename DbTuple::DbKwType;
 
-    Ind<DbKw, DbTuple> ind;
+    Ind<DbTuple> ind;
     for (DbTuple dbTuple : db) {
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
         if (ind.count(dbKwRange) == 0) {
@@ -145,9 +145,9 @@ uint64_t hashToPos(const ustring& hash) {
 // explicit template instantiations
 
 
-template Ind<Kw, Tuple<>> genInd(const Db<Tuple<>>& db, bool shouldShuffleKwLists);
-template Ind<Kw, SrcIDb1Tuple> genInd(const Db<SrcIDb1Tuple>& db, bool shouldShuffleKwLists);
-//template Ind<IdAlias, Tuple<IdAlias>> genInd(
+template Ind<Tuple<>> genInd(const Db<Tuple<>>& db, bool shouldShuffleKwLists);
+template Ind<SrcIDb1Tuple> genInd(const Db<SrcIDb1Tuple>& db, bool shouldShuffleKwLists);
+//template Ind<Tuple<IdAlias>> genInd(
 //    const Db<Tuple<IdAlias>>& db, bool shouldShuffleKwLists
 //);
 

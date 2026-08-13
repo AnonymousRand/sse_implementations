@@ -12,10 +12,13 @@
 #include "utils/types.h"
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-class LogSrc : public ISdUnderly<Tuple<>, Kw> {
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
+class LogSrc : public ISdUnderly<Tuple<>> {
+private:
+    using DbKw = typename ISdUnderly<Tuple<>>::DbKw;
+
 public:
-    using ISdUnderly<Tuple<>, Kw>::ISdUnderly;
+    using ISdUnderly<Tuple<>>::ISdUnderly;
 
     ~LogSrc();
 
@@ -34,6 +37,6 @@ public:
     void getDb(Db<Tuple<>>& ret) const override;
 
 private:
-    Underly<Tuple<>, Kw>* underly = new Underly<Tuple<>, Kw>(this->benchmark);
+    Underly<Tuple<>>* underly = new Underly<Tuple<>>(this->benchmark);
     TdagNode<Kw>* tdag = nullptr;
 };

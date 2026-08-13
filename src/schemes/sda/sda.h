@@ -16,9 +16,12 @@
 // underlying schemes (e.g. `Sda<LogSrcI<PiBas>>`) and it gets complicated, so instead
 // just specify all template params for `Underly` fully
 template <IsSdUnderly Underly>
-class Sda : public IDsse<Tuple<>, Kw> {
+class Sda : public IDsse<Tuple<>> {
+private:
+    using DbKw = typename IDsse<Tuple<>>::DbKw;
+
 public:
-    using IDsse<Tuple<>, Kw>::IDsse;
+    using IDsse<Tuple<>>::IDsse;
 
     ~Sda();
 

@@ -15,7 +15,7 @@
 #include "utils/types.h"
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 LogSrc<Underly>::~LogSrc() {
     this->clear();
     if (this->underly != nullptr) {
@@ -29,7 +29,7 @@ LogSrc<Underly>::~LogSrc() {
 // `ISse`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
 
@@ -50,7 +50,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 std::vector<Tuple<>> LogSrc<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
@@ -62,7 +62,7 @@ std::vector<Tuple<>> LogSrc<Underly>::search(
 }
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrc<Underly>::clear() {
     this->underly->clear();
     // delete TDAG fully since it is reallocated with `new` in `setup()`
@@ -78,7 +78,7 @@ void LogSrc<Underly>::clear() {
 // `ISdUnderly`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrc<Underly>::getDb(Db<Tuple<>>& ret) const {
     // need to exclude replicated tuples: assume any tuples with `DbKw` range size >1 is replicated
     // (this doesn't seem to incur noticeable performance overhead with compiler optimizations)

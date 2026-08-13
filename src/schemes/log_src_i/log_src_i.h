@@ -11,8 +11,11 @@
 #include "utils/types.h"
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 class LogSrcI : public LogSrcIBase<Underly> {
+private:
+    using DbKw = typename LogSrcIBase<Underly>::DbKw;
+
 public:
     using LogSrcIBase<Underly>::LogSrcIBase;
 

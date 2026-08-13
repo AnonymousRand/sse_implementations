@@ -20,7 +20,7 @@
 // `ISse`
 
 
-template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
+template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
 

@@ -17,10 +17,13 @@ namespace log_src_i_star {
 // this is specifcally designed to avoid using NLogN as a black box for Log-SRC-i*
 // (the same way one may use PiBas) which blows up the storage unnecessarily,
 // as observed in the TODS'18 paper (Section 7.1)
-template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
-class Underly : public NLogN<DbTuple, DbKw> {
+template <IsDbTuple DbTuple = Tuple<>>
+class Underly : public NLogN<DbTuple> {
+private:
+    using DbKw = typename NLogN<DbTuple>::DbKw;
+
 public:
-    using NLogN<DbTuple, DbKw>::NLogN;
+    using NLogN<DbTuple>::NLogN;
 
     //----------------------------------------------------------------------
     // `ISse`

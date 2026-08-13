@@ -23,8 +23,8 @@
 #include "utils/ustring.h"
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-NLogN<DbTuple, DbKw>::~NLogN() {
+template <IsDbTuple DbTuple>
+NLogN<DbTuple>::~NLogN() {
     this->clear();
     if (this->server != nullptr) {
         delete this->server;
@@ -37,8 +37,8 @@ NLogN<DbTuple, DbKw>::~NLogN() {
 // `ISse`
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
+template <IsDbTuple DbTuple>
+void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -66,7 +66,7 @@ void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
     // build index
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    Ind<DbKw, DbTuple> ind = utils::genInd(db);
+    Ind<DbTuple> ind = utils::genInd(db);
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);
@@ -125,10 +125,10 @@ void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void NLogN<DbTuple, DbKw>::clear() {
-    IStaticPointSse<DbTuple, DbKw>::clear();
-    ISdUnderly<DbTuple, DbKw>::clear();
+template <IsDbTuple DbTuple>
+void NLogN<DbTuple>::clear() {
+    IStaticPointSse<DbTuple>::clear();
+    ISdUnderly<DbTuple>::clear();
 
     this->server->clear();
     this->numLvls = 0;
@@ -139,8 +139,8 @@ void NLogN<DbTuple, DbKw>::clear() {
 // `ISdUnderly`
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void NLogN<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
+template <IsDbTuple DbTuple>
+void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
     std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
 
     for (int64_t lvl = 0; lvl < this->numLvls; lvl++) {
@@ -175,8 +175,8 @@ void NLogN<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
 // `IStaticPointSse`
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-std::vector<DbTuple> NLogN<DbTuple, DbKw>::searchBase(const Range<DbKw>& query) const {
+template <IsDbTuple DbTuple>
+std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const {
     std::vector<DbTuple> results;
 
     // PRF(K_1, w)
@@ -223,23 +223,23 @@ std::vector<DbTuple> NLogN<DbTuple, DbKw>::searchBase(const Range<DbKw>& query) 
 // other
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-ustring NLogN<DbTuple, DbKw>::genQueryToken(const Range<DbKw>& query) const {
+template <IsDbTuple DbTuple>
+ustring NLogN<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
     return crypto::prf(this->prfKey, query.toUstr());
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-uint64_t NLogN<DbTuple, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
+template <IsDbTuple DbTuple>
+uint64_t NLogN<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
     retLabel = crypto::hash(crypto::HASH_FUNC, crypto::HASH_OUTPUT_LEN, queryToken);
     return utils::hashToPos(retLabel); // no modulus
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-std::pair<uint64_t, uint64_t> NLogN<DbTuple, DbKw>::map(
+template <IsDbTuple DbTuple>
+std::pair<uint64_t, uint64_t> NLogN<DbTuple>::map(
     const ustring& queryToken, int64_t dbKwPaddedCount, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w))
@@ -251,21 +251,21 @@ std::pair<uint64_t, uint64_t> NLogN<DbTuple, DbKw>::map(
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-int64_t NLogN<DbTuple, DbKw>::computeNumLvls() const {
+template <IsDbTuple DbTuple>
+int64_t NLogN<DbTuple>::computeNumLvls() const {
     return std::ceil(std::log2(this->size)) + 1;
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-int64_t NLogN<DbTuple, DbKw>::computeBcktCountOnLvl(int64_t lvl) const {
+template <IsDbTuple DbTuple>
+int64_t NLogN<DbTuple>::computeBcktCountOnLvl(int64_t lvl) const {
     // 2^{lvlCount - lvl + 1} is number of buckets on level `lvl`
     return std::pow(2, this->numLvls - lvl - 1);
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-int64_t NLogN<DbTuple, DbKw>::computeBcktSizeOnLvl(int64_t lvl) const {
+template <IsDbTuple DbTuple>
+int64_t NLogN<DbTuple>::computeBcktSizeOnLvl(int64_t lvl) const {
     return std::pow(2, lvl);
 }
 
@@ -274,6 +274,6 @@ int64_t NLogN<DbTuple, DbKw>::computeBcktSizeOnLvl(int64_t lvl) const {
 // explicit template instantiations
 
 
-template class NLogN<Tuple<>, Kw>;
-template class NLogN<SrcIDb1Tuple, Kw>;
-//template class NLogN<Tuple<IdAlias>, IdAlias>;
+template class NLogN<Tuple<>>;
+template class NLogN<SrcIDb1Tuple>;
+//template class NLogN<Tuple<IdAlias>>;

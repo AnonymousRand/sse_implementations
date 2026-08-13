@@ -16,10 +16,13 @@
 
 // subclasses of this include `PiBas`, `NLogN`, and `log_src_i_star::Underly`
 // provide shared code for `search()` (depending on `searchBase()`)
-template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
-class IStaticPointSse : public virtual ISse<DbTuple, DbKw> {
+template <IsDbTuple DbTuple = Tuple<>>
+class IStaticPointSse : public virtual ISse<DbTuple> {
+protected:
+    using DbKw = typename ISse<DbTuple>::DbKw;
+
 public:
-    using ISse<DbTuple, DbKw>::ISse;
+    using ISse<DbTuple>::ISse;
 
     //----------------------------------------------------------------------
     // shared code

@@ -15,13 +15,16 @@ struct Benchmark;
 
 // (note: no virtual inheritance here as otherwise things extending `IDsse` will skip over `IDsse`'s
 // constructors, leading to the explicit constructor below with `useShortcutSetup` to not be seen)
-template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
-class IDsse : public ISse<DbTuple, DbKw> {
+template <IsDbTuple DbTuple = Tuple<>>
+class IDsse : public ISse<DbTuple> {
+protected:
+    using DbKw = typename ISse<DbTuple>::DbKw;
+
 public:
-    using ISse<DbTuple, DbKw>::ISse;
+    using ISse<DbTuple>::ISse;
 
     IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup) :
-        ISse<DbTuple, DbKw>(benchmark), useShortcutSetup(useShortcutSetup) {}
+        ISse<DbTuple>(benchmark), useShortcutSetup(useShortcutSetup) {}
 
     //----------------------------------------------------------------------
     // methods to implement

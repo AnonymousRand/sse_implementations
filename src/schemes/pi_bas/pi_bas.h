@@ -16,10 +16,13 @@
 
 // note that we use the result-hiding variant of PiBas from figure 12 of NDSS'20
 // (SDa paper) since SDa wants that
-template <class DbTuple = Tuple<>, class DbKw = Kw> requires IsValidDbParams<DbTuple, DbKw>
-class PiBas : public IStaticPointSse<DbTuple, DbKw>, public ISdUnderly<DbTuple, DbKw> {
+template <IsDbTuple DbTuple = Tuple<>>
+class PiBas : public IStaticPointSse<DbTuple>, public ISdUnderly<DbTuple> {
+private:
+    using DbKw = typename IStaticPointSse<DbTuple>::DbKw;
+
 public:
-    using IStaticPointSse<DbTuple, DbKw>::IStaticPointSse;
+    using IStaticPointSse<DbTuple>::IStaticPointSse;
 
     ~PiBas();
 
@@ -35,7 +38,7 @@ public:
     void getDb(Db<DbTuple>& ret) const override;
 
 private:
-    PiBasServer<DbTuple, DbKw>* server = new PiBasServer<DbTuple, DbKw>(this->benchmark);
+    PiBasServer<DbTuple>* server = new PiBasServer<DbTuple>(this->benchmark);
 
     //----------------------------------------------------------------------
     // `IStaticPointSse`
