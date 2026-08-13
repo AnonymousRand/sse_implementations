@@ -20,7 +20,8 @@ public:
      * construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up up to and
      * including the given max leaf value, with consecutive size 1 ranges as leaves.
      */
-    TdagNode(const Range<T>& leafValRange);
+    TdagNode(const Range<T>& leafRange);
+    TdagNode(T leafRangeStart, T leafRangeEnd);
 
     ~TdagNode();
 

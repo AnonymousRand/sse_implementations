@@ -102,8 +102,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
             db2.push_back(dummyTuple);
         }
     }
-    // TODO make another constructor for tdagnode that just takes the start and end instead of range?
-    this->tdag2 = new TdagNode<IdAlias>(Range<IdAlias> {0, maxIdAlias});
+    this->tdag2 = new TdagNode<IdAlias>(0, maxIdAlias);
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     db2Size = db2.size();
@@ -165,7 +164,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
             db1.push_back(dummyTuple);
         }
     }
-    this->tdag1 = new TdagNode<Kw>(Range {db1KwBounds.first, maxDb1Kw});
+    this->tdag1 = new TdagNode<Kw>(db1KwBounds.first, maxDb1Kw);
 
     // replicate every document (in this case `SrcIDb1Tuple`s) to all keyword ranges/
     // TDAG 1 nodes that cover it

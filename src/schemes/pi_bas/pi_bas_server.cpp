@@ -68,8 +68,8 @@ std::vector<EncIndVal> PiBasServer<DbTuple, DbKw>::searchEncInd(const ustring& q
     while (true) {
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
         // (same as client's `setup()`)
-        ustring label = utils::hash(
-            utils::HASH_FUNC, utils::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
+        ustring label = crypto::hash(
+            crypto::HASH_FUNC, crypto::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
         );
         uint64_t pos = utils::hashToPos(label);
         // res <- encInd.get(l)

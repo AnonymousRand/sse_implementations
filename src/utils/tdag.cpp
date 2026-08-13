@@ -24,31 +24,31 @@ TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
 
 
 template <class T>
-TdagNode<T>::TdagNode(const Range<T>& leafValRange) {
-    if (leafValRange.size() < 1) {
+TdagNode<T>::TdagNode(const Range<T>& leafRange) {
+    if (leafRange.size() < 1) {
         return;
     }
 
     // if leaf node
-    if (leafValRange.size() == 1) {
-        this->range = leafValRange;
+    if (leafRange.size() == 1) {
+        this->range = leafRange;
         this->left = nullptr;
         this->right = nullptr;
         this->extraParent = nullptr;
         return;
     }
 
-    std::vector<Range<T>> leafVals;
-    for (T i = leafValRange.first; i <= leafValRange.second; i++) {
-        leafVals.push_back(Range<T> {i, i});
+    std::vector<Range<T>> leafs;
+    for (T i = leafRange.first; i <= leafRange.second; i++) {
+        leafs.push_back(Range<T> {i, i});
     }
 
     // array to hold nodes while building; initialize with leaves
     // (`deque` seems to perform marginally better than `list` or `vector` and seems to be
     // the most natural choice here)
     std::deque<TdagNode<T>*> l;
-    for (Range<T> leafVal : leafVals) {
-        l.push_back(new TdagNode<T>(leafVal));
+    for (Range<T> leaf : leafs) {
+        l.push_back(new TdagNode<T>(leaf));
     }
 
     // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)
@@ -114,6 +114,11 @@ TdagNode<T>::TdagNode(const Range<T>& leafValRange) {
 
     *this = *tdag;
 }
+
+
+template <class T>
+TdagNode<T>::TdagNode(T leafRangeStart, T leafRangeEnd) :
+    TdagNode<T>(Range {leafRangeStart, leafRangeEnd}) {}
 
 
 template <class T>

@@ -48,8 +48,8 @@ void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
     this->size = db.size();
     this->numLvls = this->computeNumLvls();
 
-    this->prfKey = utils::genKey(secParam);
-    this->encKey = utils::genKey(secParam);
+    this->prfKey = crypto::genKey(secParam);
+    this->encKey = crypto::genKey(secParam);
     
     std::vector<EncInd*> encIndLvls;
     for (int64_t lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
@@ -106,9 +106,9 @@ void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
 
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
-        ustring ivDict = utils::genIv(utils::IV_LEN);
-        ustring encDbKwCount = utils::padAndEncrypt(
-            utils::ENC_CIPHER, this->encKey, utils::toUstr(dbKwCount), ivDict, EncInd::DATA_LEN - 1
+        ustring ivDict = crypto::genIv(crypto::IV_LEN);
+        ustring encDbKwCount = crypto::padAndEncrypt(
+            crypto::ENC_CIPHER, this->encKey, utils::toUstr(dbKwCount), ivDict, EncInd::DATA_LEN - 1
         );
         uint64_t posDict = this->mapNoMod(queryToken, labelDict);
         dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
@@ -118,9 +118,9 @@ void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
         for (int64_t dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
-            ustring iv = utils::genIv(utils::IV_LEN);
-            ustring encDbTuple = utils::padAndEncrypt(
-                utils::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
+            ustring iv = crypto::genIv(crypto::IV_LEN);
+            ustring encDbTuple = crypto::padAndEncrypt(
+                crypto::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encIndLvls[lvl]->write(
@@ -167,19 +167,23 @@ void NLogN<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
             // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
             // to easily access these `DbKw` ranges in plaintext
             Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
-            // TODO: is this differentiation required? what happens if we filter out all dummies,
+            // >TODO: is this differentiation required? what happens if we filter out all dummies,
             // by filling everything with dummies even in upstream? or will that affect the TDAG,
             // so try what happens if we remove all dummies here (e.g. checking kw/id instead of
             // range, and if works, outsource that to a method in IDbTuple?)
             // also if doing that, consider changing back the for loops above to use this->size,
             // maybe also checking explicitly that it equals db->size?
 
-            // exclude dummies/padding (that are from NLogN's `setup()`, but not from
-            // an upstream SSE scheme which is using NLogN as an underlying scheme)
             if (dbKwRange != DUMMY_RANGE<DbKw>()) {
                 DbTuple newDbTuple(dbTuple.getDbDoc(), dbKwRange);
                 ret.push_back(newDbTuple);
             }
+            //// exclude dummies/padding (that are from NLogN's `setup()`, but not from
+            //// an upstream SSE scheme which is using NLogN as an underlying scheme)
+            //if (dbKwRange != DUMMY_RANGE<DbKw>()) {
+            //    DbTuple newDbTuple(dbTuple.getDbDoc(), dbKwRange);
+            //    ret.push_back(newDbTuple);
+            //}
         }
     }
 }
@@ -207,8 +211,8 @@ std::vector<DbTuple> NLogN<DbTuple, DbKw>::searchBase(const Range<DbKw>& query) 
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
-    ustring decDbKwCount = utils::decryptAndUnpad(
-        utils::ENC_CIPHER, this->encKey, encDbKwCount, ivDict
+    ustring decDbKwCount = crypto::decryptAndUnpad(
+        crypto::ENC_CIPHER, this->encKey, encDbKwCount, ivDict
     );
     int64_t dbKwCount = utils::fromUstr(decDbKwCount);
     int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
@@ -240,14 +244,14 @@ std::vector<DbTuple> NLogN<DbTuple, DbKw>::searchBase(const Range<DbKw>& query) 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
 ustring NLogN<DbTuple, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
-    return utils::prf(this->prfKey, query.toUstr());
+    return crypto::prf(this->prfKey, query.toUstr());
 }
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
 uint64_t NLogN<DbTuple, DbKw>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
-    retLabel = utils::hash(utils::HASH_FUNC, utils::HASH_OUTPUT_LEN, queryToken);
+    retLabel = crypto::hash(crypto::HASH_FUNC, crypto::HASH_OUTPUT_LEN, queryToken);
     return utils::hashToPos(retLabel); // no modulus
 }
 

@@ -41,7 +41,7 @@ void run(ISse<>* sse, int64_t dbSize) {
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     // setup
-    sse->setup(utils::KEY_LEN, db);
+    sse->setup(crypto::KEY_LEN, db);
     sse->benchmark->print(config::SHOULD_BENCHMARK, "Setup");
 
     // searches

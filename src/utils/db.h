@@ -3,7 +3,6 @@
 
 #pragma once
 
-// TODO what is cstddef for
 #include <concepts>
 #include <cstddef>
 #include <iostream>

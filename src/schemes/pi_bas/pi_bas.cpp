@@ -43,8 +43,8 @@ void PiBas<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
     this->secParam = secParam;
     this->size = db.size();
 
-    this->prfKey = utils::genKey(secParam);
-    this->encKey = utils::genKey(secParam);
+    this->prfKey = crypto::genKey(secParam);
+    this->encKey = crypto::genKey(secParam);
 
     EncInd* encInd = new EncInd();
     encInd->init(this->size);
@@ -76,9 +76,9 @@ void PiBas<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
             ustring label;
             uint64_t pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
-            ustring iv = utils::genIv(utils::IV_LEN);
-            ustring encDbTuple = utils::padAndEncrypt(
-                utils::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
+            ustring iv = crypto::genIv(crypto::IV_LEN);
+            ustring encDbTuple = crypto::padAndEncrypt(
+                crypto::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->write(pos, std::pair {label, std::pair {encDbTuple, iv}});
@@ -151,7 +151,7 @@ std::vector<DbTuple> PiBas<DbTuple, DbKw>::searchBase(const Range<DbKw>& query) 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
 ustring PiBas<DbTuple, DbKw>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
-    return utils::prf(this->prfKey, query.toUstr());
+    return crypto::prf(this->prfKey, query.toUstr());
 }
 
 
@@ -160,8 +160,8 @@ uint64_t PiBas<DbTuple, DbKw>::map(
     const ustring& queryToken, int64_t dbKwCounter, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w) || c)
-    retLabel = utils::hash(
-        utils::HASH_FUNC, utils::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
+    retLabel = crypto::hash(
+        crypto::HASH_FUNC, crypto::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
     );
     return utils::hashToPos(retLabel);
 }

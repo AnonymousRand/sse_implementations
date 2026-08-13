@@ -96,7 +96,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
             maxIdAlias = idAlias;
         }
     }
-    this->tdag2 = new TdagNode<IdAlias>(Range<IdAlias> {0, maxIdAlias});
+    this->tdag2 = new TdagNode<IdAlias>(0, maxIdAlias);
 
     // replicate every document to all id alias ranges/TDAG 2 nodes that cover it
     int64_t db2Size = db2.size();

@@ -32,7 +32,7 @@ void handleErrors() {
 //==============================================================================
 
 
-namespace utils {
+namespace crypto {
 
 
 ustring genKey(int keyLen) {
@@ -41,7 +41,7 @@ ustring genKey(int keyLen) {
     if (res != 1) {
         handleErrors();
     }
-    ustring ustrKey = toUstr(key, keyLen);
+    ustring ustrKey = ::utils::toUstr(key, keyLen);
     delete[] key;
     return ustrKey;
 }
@@ -53,7 +53,7 @@ ustring genIv(int ivLen) {
     if (res != 1) {
         handleErrors();
     }
-    ustring ustrIv = toUstr(iv, ivLen);
+    ustring ustrIv = ::utils::toUstr(iv, ivLen);
     delete[] iv;
     return ustrIv;
 }
@@ -95,7 +95,7 @@ ustring prf(const ustring& key, const ustring& input) {
     uchar* output = HMAC(
         EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen
     );
-    return toUstr(output, outputLen);
+    return ::utils::toUstr(output, outputLen);
 }
 
 
@@ -119,7 +119,7 @@ ustring encrypt(const EVP_CIPHER* cipher, const ustring& key, const ustring& pte
     // perform encryption
     int ctextLen1, ctextLen2;
     ustring ctext;
-    ctext.resize(ptext.length() + utils::BLOCK_SIZE); // need to allocate worst-case size first
+    ctext.resize(ptext.length() + BLOCK_SIZE); // need to allocate worst-case size first
     if (EVP_EncryptUpdate(ctx, &ctext[0], &ctextLen1, &ptext[0], ptext.length()) != 1) {
         handleErrors();
     }
@@ -201,4 +201,4 @@ ustring decryptAndUnpad(
 }
 
 
-} // namespace `utils`
+} // namespace `crypto`

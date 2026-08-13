@@ -33,7 +33,7 @@ void printHeader(int64_t maxDbSizeExp, const Range<Kw>& query) {
 // experiment for debugging with fixed query and printed results
 void run(ISse<>* sse, const Db<>& db, const Range<Kw>& query) {
     // setup
-    sse->setup(utils::KEY_LEN, db);
+    sse->setup(crypto::KEY_LEN, db);
 
     // search
     std::vector<Tuple<>> results = sse->search(query);

@@ -44,4 +44,3 @@ int64_t fromUstr(const ustring& ustr) {
 std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
     return os << utils::toStr(ustr);
 }
-

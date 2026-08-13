@@ -158,7 +158,7 @@ bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
     }
 
     ret.first = ustring(&entry[EncInd::KEY_LEN], EncInd::DATA_LEN);
-    ret.second = ustring(&entry[EncInd::KEY_LEN + EncInd::DATA_LEN], utils::IV_LEN);
+    ret.second = ustring(&entry[EncInd::KEY_LEN + EncInd::DATA_LEN], crypto::IV_LEN);
     return true;
 }
 
@@ -242,7 +242,7 @@ EncIndEntry EncInd::get(uint64_t pos) const {
 
     ustring key = ustring(&entry[0], EncInd::KEY_LEN);
     ustring tuple = ustring(&entry[EncInd::KEY_LEN], EncInd::DATA_LEN);
-    ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DATA_LEN], utils::IV_LEN);
+    ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DATA_LEN], crypto::IV_LEN);
     return EncIndEntry {key, EncIndVal {tuple, iv}};
 };
 
