@@ -5,11 +5,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <random>
 #include <string>
 
 #include "utils/debugging.h"
-#include "utils/random.h"
 #include "utils/ustring.h"
 
 
@@ -51,25 +49,9 @@ EncInd::~EncInd() {
 
 void EncInd::init(int64_t size) {
     this->clear();
-    this->size = size;
 
-    // avoid naming clashes if multiple indexes are active at the same time (e.g. Log-SRC-i, SDa)
-    // I spent like four hours trying to debug Log-SRC-i without realizing that its second index
-    // was just overwriting the same file its first index was being stored in...
-    std::uniform_int_distribution dist(100000000, 999999999);
-    this->filename = "out/enc_ind_" + std::to_string(dist(utils::RNG)) + ".dat";
-    FILE* fileTmp = std::fopen(this->filename.c_str(), "r");
-    // while file exists (or any other error occurs on open), create new random filename
-    while (fileTmp != nullptr) {
-        std::fclose(fileTmp);
-        this->filename = "out/enc_ind_" + std::to_string(dist(utils::RNG)) + ".dat";
-        fileTmp = std::fopen(this->filename.c_str(), "r");
-    }
-    this->file = std::fopen(this->filename.c_str(), "wb+");
-    if (this->file == nullptr) {
-        std::cerr << "Error: EncInd::init(): error opening file" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    this->initFile();
+    this->size = size;
 
     // fill file with zero bits
     for (int64_t i = 0; i < size; i++) {
@@ -84,16 +66,7 @@ void EncInd::init(int64_t size) {
 
 
 void EncInd::clear() {
-    // close encrypted index file descriptors
-    if (this->file != nullptr) {
-        std::fclose(this->file);
-        this->file = nullptr;
-    }
-    // delete encrypted index files
-    if (this->filename != "") {
-        std::remove(this->filename.c_str());
-        this->filename = "";
-    }
+    this->clearFile();
     this->size = 0;
 }
 

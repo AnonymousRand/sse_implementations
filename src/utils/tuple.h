@@ -123,15 +123,3 @@ private:
     static const std::string REGEX_STR;
     static const std::regex REGEX;
 };
-
-
-//==============================================================================
-// `Db` and `Ind`
-//==============================================================================
-
-
-template <IsDbTuple DbTuple = Tuple<>>
-using Db = std::vector<DbTuple>;
-
-template <IsDbTuple DbTuple = Tuple<>>
-using Ind = std::unordered_map<Range<typename DbTuple::DbKwType>, Db<DbTuple>>;

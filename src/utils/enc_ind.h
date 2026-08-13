@@ -7,13 +7,13 @@
 
 #include <cmath>
 #include <cstdint>
-#include <cstdio>
 #include <string>
 #include <utility>
 
 #include "config.h"
 
 #include "utils/crypto.h"
+#include "utils/disk_storage.h"
 #include "utils/ustring.h"
 
 
@@ -40,7 +40,7 @@ ustring toUstr(const EncIndEntry& encIndEntry);
 //==============================================================================
 
 
-class EncInd {
+class EncInd : public IDiskStorage {
 public:
     // (both PRF (default) and hash (res-hiding) have 512 bit output)
     inline static constexpr int KEY_LEN   = crypto::HASH_OUTPUT_LEN;
@@ -50,7 +50,7 @@ public:
     // must restrict our plaintexts by one more byte or else AES' PCKS #7 padding will generate
     // an extra block if our plaintext is exactly an integer number of blocks long, thus the `+8`.
     // finally we round up to the next block
-    inline static const int DATA_LEN      = std::ceil(
+    inline static const int     DATA_LEN  = std::ceil(
         (4 * config::MAX_VALUE_DIGITS + 8) / (float)crypto::BLOCK_SIZE
     ) * crypto::BLOCK_SIZE;
     inline static constexpr int VAL_LEN   = DATA_LEN + crypto::IV_LEN;
@@ -97,9 +97,11 @@ public:
 private:
     static const uchar NULL_ENTRY[ENTRY_LEN];
 
-    FILE* file = nullptr;
-    std::string filename = "";
-    int64_t size;
+    int64_t size = 0;
+
+    const std::string FILENAME_PREFIX() const override = {
+        return "out/server/enc_ind_";
+    }
 
     //----------------------------------------------------------------------
     // debugging
