@@ -136,6 +136,7 @@ int main() {
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
     app::experiments::debuggingExp(sdaLogSrcIStar.get(), db, query);
 
+    /*
     //--------------------------------------------------------------------------
     // DB sizes experiment
 
@@ -356,4 +357,5 @@ int main() {
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
         app::experiments::updatesExp(sdaLogSrcIStar.get(), maxDbSize);
     }
+    */
 }

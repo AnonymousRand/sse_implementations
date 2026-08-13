@@ -82,7 +82,9 @@ std::unordered_set<Range<typename DbTuple::DbKwType>> getUniqDbKwRanges(const Db
 // (we need the general case of this function to be able to call it from within the general context
 // of `IStaticPointSse`; it just does nothing except in the template specialization below)
 template <IsDbTuple DbTuple>
-std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples) {}
+std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples) {
+    return dbTuples;
+}
 
 
 // template specialize this method for just `Tuple<>` instead of all

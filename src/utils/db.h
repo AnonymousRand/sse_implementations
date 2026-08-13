@@ -40,8 +40,6 @@ public:
     using DbDocType = DbDoc;
     using DbKwType  = DbKw;
 
-    // TODO are these default constructors still necessary?
-    IDbTuple() = default;
     IDbTuple(const DbDoc& val, const Range<DbKw>& dbKwRange);
 
     DbDoc getDbDoc() const;
@@ -89,7 +87,6 @@ class Tuple : public IDbTuple<std::tuple<Id, Kw, Op>, DbKw> {
 public:
     using IDbTuple<std::tuple<Id, Kw, Op>, DbKw>::IDbTuple;
 
-    Tuple() = default;
     Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange);
 
     Id getId() const;
@@ -108,8 +105,8 @@ private:
 
 template <class DbKw>
 struct std::hash<Tuple<DbKw>> {
-    inline std::size_t operator ()(const Tuple<DbKw>& defaultDbTuple) const noexcept {
-        return std::hash<std::string>{}(defaultDbTuple.toStr());
+    inline std::size_t operator ()(const Tuple<DbKw>& tuple) const noexcept {
+        return std::hash<std::string>{}(tuple.toStr());
     }
 };
 
@@ -123,7 +120,6 @@ class SrcIDb1Tuple : public IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw> {
 public:
     using IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>::IDbTuple;
 
-    SrcIDb1Tuple() = default;
     SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange);
 
     Kw getKw() const;

@@ -129,7 +129,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
             continue;
         }
 
-        for (IdAlias idAlias = idAliasRange.first; idAlias < idAliasRange.second; idAlias++) {
+        for (IdAlias idAlias = idAliasRange.first; idAlias <= idAliasRange.second; idAlias++) {
             auto iter = ind2.find(Range<IdAlias> {idAlias, idAlias});
             if (iter == ind2.end()) {
                 std::cerr << "Error: LogSrcIBase::getDb(): "
@@ -137,8 +137,8 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
                 std::exit(EXIT_FAILURE);
             }
 
-            std::vector<Tuple<IdAlias>> kwList = iter->second;
-            for (Tuple<IdAlias> db2Tuple : kwList) {
+            std::vector<Tuple<IdAlias>> dbKwList = iter->second;
+            for (Tuple<IdAlias> db2Tuple : dbKwList) {
                 Tuple<> newTuple(db2Tuple.getDbDoc(), kwRange);
                 ret.push_back(newTuple);
             }
