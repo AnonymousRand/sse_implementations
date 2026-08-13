@@ -151,17 +151,21 @@ template Ind<SrcIDb1Tuple> genInd(const Db<SrcIDb1Tuple>& db, bool shouldShuffle
 //    const Db<Tuple<IdAlias>>& db, bool shouldShuffleKwLists
 //);
 
+
 template Range<Kw> findDbKwBounds(const Db<Tuple<>>& db);
 template Range<Kw> findDbKwBounds(const Db<SrcIDb1Tuple>& db);
 //template Range<Kw> findDbKwBounds(const Db<Tuple<IdAlias>>& db);
+
 
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<Tuple<>>& db);
 template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Tuple>& db);
 //template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Tuple<IdAlias>>& db);
 
+
 template void padDb(Db<Tuple<>>& db, Kw& currMaxDbKw);
 template void padDb(Db<SrcIDb1Tuple>& db, Kw& currMaxDbKw);
 //template void padDb(Db<Tuple<IdAlias>>& db, IdAlias& currMaxDbKw);
+
 
 // remaining explicit template specializations beyond the one earlier
 template std::vector<SrcIDb1Tuple> cleanUpResults(const std::vector<SrcIDb1Tuple>& tuples);

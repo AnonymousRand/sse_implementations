@@ -16,7 +16,7 @@ const std::string Range<T>::REGEX_STR = "(-?[0-9]+)-(-?[0-9]+)";
 
 
 template <class T>
-const std::regex Range<T>::REGEX(Range<T>::REGEX_STR);
+const std::regex Range<T>::REGEX(REGEX_STR);
 
 
 template <class T>
@@ -64,9 +64,9 @@ ustring Range<T>::toUstr() const {
 template <class T>
 Range<T> Range<T>::fromStr(const std::string& str) {
     std::smatch matches;
-    if (!std::regex_search(str, matches, Range<T>::REGEX) || matches.size() != 3) {
+    if (!std::regex_search(str, matches, REGEX) || matches.size() != 3) {
         std::cerr << "Error: Range::fromStr(): bad string \"" << str << "\" passed" << std::endl
-                  << "Regex to match is \"" << Range<T>::REGEX_STR << "\"; matched groups are:"
+                  << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                   << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
@@ -93,6 +93,7 @@ std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
 
 template class Range<Kw>;
 //template class Range<IdAlias>;
+
 
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);
 //template std::ostream& operator <<(std::ostream& os, const Range<IdAlias>& range);

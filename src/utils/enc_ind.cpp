@@ -38,10 +38,10 @@ ustring toUstr(const EncIndEntry& encIndEntry) {
 
 // this initializes `NULL_ENTRY` to a contiguous block of zero bits
 // (technically it is possible that some encrypted tuple happened to be all `0` bytes
-// and thus get mistaken for a null kv pair, but currently `EncInd::ENTRY_LEN` is
-// 1536 bits so there's a 2^1536 chance of this happening...and USENIX'24's
+// and thus get mistaken for a null kv pair, but currently `ENTRY_LEN` is in the
+// thousands of bits so there's a 2^{>1000} chance of this happening...and USENIX'24's
 // implementation seems to just do this too)
-const uchar EncInd::NULL_ENTRY[EncInd::ENTRY_LEN] = {};
+const uchar EncInd::NULL_ENTRY[ENTRY_LEN] = {};
 
 
 EncInd::~EncInd() {
@@ -73,7 +73,7 @@ void EncInd::init(int64_t size) {
 
     // fill file with zero bits
     for (int64_t i = 0; i < size; i++) {
-        int itemsWritten = std::fwrite(EncInd::NULL_ENTRY, EncInd::ENTRY_LEN, 1, this->file);
+        int itemsWritten = std::fwrite(NULL_ENTRY, ENTRY_LEN, 1, this->file);
         if (itemsWritten != 1) {
             std::cerr << "Error: EncInd::init(): error initializing file (nothing written)"
                       << std::endl;
@@ -102,9 +102,9 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
     pos %= this->size;
 
     // get entry at `pos`
-    uchar currTuple[EncInd::ENTRY_LEN];
-    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
-    int itemsRead = std::fread(currTuple, EncInd::ENTRY_LEN, 1, this->file);
+    uchar currTuple[ENTRY_LEN];
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    int itemsRead = std::fread(currTuple, ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
         std::cerr << "Error: EncInd::find(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -114,7 +114,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
     // first), scan subsequent locations for where the target `key` could've overflowed to
     const uchar* targetKeyCStr = key.c_str();
     int64_t numPositionsChecked = 1;
-    while (std::memcmp(currTuple, targetKeyCStr, EncInd::KEY_LEN) != 0
+    while (std::memcmp(currTuple, targetKeyCStr, KEY_LEN) != 0
            && numPositionsChecked < this->size)
     {
         numPositionsChecked++;
@@ -122,7 +122,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsRead = std::fread(currTuple, EncInd::ENTRY_LEN, 1, this->file);
+        itemsRead = std::fread(currTuple, ENTRY_LEN, 1, this->file);
         if (itemsRead != 1) {
             std::cerr << "Error: EncInd::find(): error reading from file (nothing read)"
                       << std::endl;
@@ -130,7 +130,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         }
     }
     // if not found
-    if (std::memcmp(currTuple, targetKeyCStr, EncInd::KEY_LEN) != 0) {
+    if (std::memcmp(currTuple, targetKeyCStr, KEY_LEN) != 0) {
         return false;
     }
 
@@ -145,20 +145,20 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
 bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
     pos %= this->size;
 
-    uchar entry[EncInd::ENTRY_LEN];
-    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
-    int itemsRead = std::fread(entry, EncInd::ENTRY_LEN, 1, this->file);
+    uchar entry[ENTRY_LEN];
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    int itemsRead = std::fread(entry, ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
         std::cerr << "Error: EncInd::read(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    if (std::memcmp(entry, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) == 0) {
+    if (std::memcmp(entry, NULL_ENTRY, ENTRY_LEN) == 0) {
         // if `pos` contains `NULL_ENTRY`
         return false;
     }
 
-    ret.first = ustring(&entry[EncInd::KEY_LEN], EncInd::DATA_LEN);
-    ret.second = ustring(&entry[EncInd::KEY_LEN + EncInd::DATA_LEN], crypto::IV_LEN);
+    ret.first = ustring(&entry[KEY_LEN], DATA_LEN);
+    ret.second = ustring(&entry[KEY_LEN + DATA_LEN], crypto::IV_LEN);
     return true;
 }
 
@@ -167,9 +167,9 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     pos %= this->size;
 
     // check if location at `pos` is already filled
-    uchar currTuple[EncInd::ENTRY_LEN];
-    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
-    int itemsReadOrWritten = std::fread(currTuple, EncInd::ENTRY_LEN, 1, this->file);
+    uchar currTuple[ENTRY_LEN];
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    int itemsReadOrWritten = std::fread(currTuple, ENTRY_LEN, 1, this->file);
     if (itemsReadOrWritten != 1) {
         std::cerr << "Error: EncInd::write(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -177,7 +177,7 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
 
     // if location is already filled (because of modulo), find next available location
     int64_t numPositionsChecked = 1;
-    while (std::memcmp(currTuple, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0
+    while (std::memcmp(currTuple, NULL_ENTRY, ENTRY_LEN) != 0
            && numPositionsChecked < this->size)
     {
         numPositionsChecked++;
@@ -185,14 +185,14 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsReadOrWritten = std::fread(currTuple, EncInd::ENTRY_LEN, 1, this->file); 
+        itemsReadOrWritten = std::fread(currTuple, ENTRY_LEN, 1, this->file); 
         if (itemsReadOrWritten != 1) {
             std::cerr << "Error: EncInd::write(): error reading from file (nothing read)"
                       << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
-    if (std::memcmp(currTuple, EncInd::NULL_ENTRY, EncInd::ENTRY_LEN) != 0) {
+    if (std::memcmp(currTuple, NULL_ENTRY, ENTRY_LEN) != 0) {
         std::cerr << "Error: EncInd::write(): ran out of space writing!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -201,16 +201,16 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     ustring key = encIndEntry.first;
     EncIndVal val = encIndEntry.second;
     ustring entry = key + val.first + val.second;
-    if (entry.length() != EncInd::ENTRY_LEN) {
+    if (entry.length() != ENTRY_LEN) {
         std::cerr << "Error: EncInd::write(): write of length " << entry.length()
                   << " bytes is not allowed! "
-                  << "(want " << EncInd::ENTRY_LEN << " bytes)" << std::endl;
+                  << "(want " << ENTRY_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
     // go back to the correct spot, undoing last `fread`
-    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
-    int itemsWritten = std::fwrite(entry.c_str(), EncInd::ENTRY_LEN, 1, this->file);
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    int itemsWritten = std::fwrite(entry.c_str(), ENTRY_LEN, 1, this->file);
     if (itemsWritten != 1) {
         std::cerr << "Error: EncInd::write(): error writing to file (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -232,17 +232,17 @@ int64_t EncInd::getSize() const {
 EncIndEntry EncInd::get(uint64_t pos) const {
     pos %= this->size;
 
-    uchar entry[EncInd::ENTRY_LEN];
-    std::fseek(this->file, pos * EncInd::ENTRY_LEN, SEEK_SET);
-    int itemsRead = std::fread(entry, EncInd::ENTRY_LEN, 1, this->file);
+    uchar entry[ENTRY_LEN];
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    int itemsRead = std::fread(entry, ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
         std::cerr << "Error: EncInd::get(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
-    ustring key = ustring(&entry[0], EncInd::KEY_LEN);
-    ustring tuple = ustring(&entry[EncInd::KEY_LEN], EncInd::DATA_LEN);
-    ustring iv = ustring(&entry[EncInd::KEY_LEN + EncInd::DATA_LEN], crypto::IV_LEN);
+    ustring key = ustring(&entry[0], KEY_LEN);
+    ustring tuple = ustring(&entry[KEY_LEN], DATA_LEN);
+    ustring iv = ustring(&entry[KEY_LEN + DATA_LEN], crypto::IV_LEN);
     return EncIndEntry {key, EncIndVal {tuple, iv}};
 };
 

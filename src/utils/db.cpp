@@ -60,7 +60,7 @@ const std::string Tuple<DbKw>::REGEX_STR =
 
 
 template <class DbKw>
-const std::regex Tuple<DbKw>::REGEX(Tuple<DbKw>::REGEX_STR);
+const std::regex Tuple<DbKw>::REGEX(REGEX_STR);
 
 
 template <class DbKw>
@@ -99,10 +99,10 @@ template <class DbKw>
 Tuple<DbKw> Tuple<DbKw>::fromUstr(const ustring& ustr) {
     std::string str = ::utils::toStr(ustr);
     std::smatch matches;
-    if (!std::regex_search(str, matches, Tuple<DbKw>::REGEX) || matches.size() != 5) {
+    if (!std::regex_search(str, matches, REGEX) || matches.size() != 5) {
         std::cerr << "Error: Tuple::fromUstr(): bad string \"" << str << "\" passed"
                   << std::endl
-                  << "Regex to match is \"" << Tuple<DbKw>::REGEX_STR << "\"; "
+                  << "Regex to match is \"" << REGEX_STR << "\"; "
                   << "matched groups are:"
                   << std::endl;
         for (auto match : matches) {
@@ -132,8 +132,10 @@ Tuple<DbKw> Tuple<DbKw>::genDummy(const Range<DbKw>& dbKwRange) {
 template class IDbTuple<std::tuple<Id, Kw, Op>, Kw>;
 //template class IDbTuple<std::tuple<Id, Kw, Op>, IdAlias>;
 
+
 template class Tuple<Kw>;
 //template class Tuple<IdAlias>;
+
 
 template std::ostream& operator <<(
     std::ostream& os, const IDbTuple<std::tuple<Id, Kw, Op>, Kw>& iDbTuple
@@ -152,7 +154,7 @@ const std::string SrcIDb1Tuple::REGEX_STR =
     "\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(-?[0-9]+--?[0-9]+)";
 
 
-const std::regex SrcIDb1Tuple::REGEX(SrcIDb1Tuple::REGEX_STR);
+const std::regex SrcIDb1Tuple::REGEX(REGEX_STR);
 
 
 SrcIDb1Tuple::SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange) :
@@ -179,10 +181,10 @@ std::string SrcIDb1Tuple::toStr() const {
 SrcIDb1Tuple SrcIDb1Tuple::fromUstr(const ustring& ustr) {
     std::string str = ::utils::toStr(ustr);
     std::smatch matches;
-    if (!std::regex_search(str, matches, SrcIDb1Tuple::REGEX) || matches.size() != 4) {
+    if (!std::regex_search(str, matches, REGEX) || matches.size() != 4) {
         std::cerr << "Error: SrcIDb1Tuple::fromUstr(): bad string \"" << ustr << "\" passed"
                   << std::endl
-                  << "Regex to match is \"" << SrcIDb1Tuple::REGEX_STR << "\"; matched groups are:"
+                  << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                   << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
@@ -207,6 +209,7 @@ SrcIDb1Tuple SrcIDb1Tuple::genDummy(const Range<Kw>& kwRange) {
 
 
 template class IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>;
+
 
 template std::ostream& operator <<(
     std::ostream& os, const IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>& iDbTuple

@@ -392,6 +392,7 @@ template void buildTdag(TdagNode<Kw>*& tdag, Db<Tuple<>>& db, bool shouldPadDb);
 template void buildTdag(TdagNode<Kw>*& tdag, Db<SrcIDb1Tuple>& db, bool shouldPadDb);
 //template void buildTdag(TdagNode<IdAlias>*& tdag, Db<Tuple<IdAlias>>& db, bool shouldPadDb);
 
+
 template void replDbForTdag(Db<Tuple<>>& db, const TdagNode<Kw>* tdag);
 template void replDbForTdag(Db<SrcIDb1Tuple>& db, const TdagNode<Kw>* tdag);
 //template void replDbForTdag(Db<Tuple<IdAlias>>& db, const TdagNode<IdAlias>* tdag);

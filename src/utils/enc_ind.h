@@ -53,8 +53,8 @@ public:
     inline static const int DATA_LEN      = std::ceil(
         (4 * config::MAX_VALUE_DIGITS + 8) / (float)crypto::BLOCK_SIZE
     ) * crypto::BLOCK_SIZE;
-    inline static constexpr int VAL_LEN   = EncInd::DATA_LEN + crypto::IV_LEN;
-    inline static constexpr int ENTRY_LEN = EncInd::KEY_LEN + EncInd::VAL_LEN;
+    inline static constexpr int VAL_LEN   = DATA_LEN + crypto::IV_LEN;
+    inline static constexpr int ENTRY_LEN = KEY_LEN + VAL_LEN;
 
     ~EncInd();
 
@@ -95,7 +95,7 @@ public:
     int64_t getSize() const;
 
 private:
-    static const uchar NULL_ENTRY[EncInd::ENTRY_LEN];
+    static const uchar NULL_ENTRY[ENTRY_LEN];
 
     FILE* file = nullptr;
     std::string filename = "";
