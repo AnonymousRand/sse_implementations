@@ -30,8 +30,8 @@ void updatesExp(IDsse<>* dsse, int64_t dbSize) {
 
     // updates
     for (int64_t i = 0; i < db.size(); i++) {
-        DbTuple<> dbTuple = db[i];
-        dsse->update(dbTuple);
+        Tuple<> tuple = db[i];
+        dsse->update(tuple);
         dsse->benchmark->print(config::SHOULD_BENCHMARK, "Update", std::to_string(i));
     }
     std::cout << std::endl;

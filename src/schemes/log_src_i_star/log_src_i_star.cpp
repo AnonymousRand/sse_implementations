@@ -34,7 +34,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
 
     // sort documents by keyword
     auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
-        return tuple1.first.getKw() < tuple2.first.getKw();
+        return tuple1.getKw() < tuple2.getKw();
     };
     Db<Tuple<>> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
@@ -86,7 +86,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // build TDAG 2 over id aliases
     IdAlias maxIdAlias = 0;
     for (Tuple<IdAlias> tuple: db2) {
-        IdAlias idAlias = dbTuple.getDbKwRange().first; // must be size 1 range
+        IdAlias idAlias = tuple.getDbKwRange().first; // must be size 1 range
         if (idAlias > maxIdAlias) {
             maxIdAlias = idAlias;
         }
@@ -174,8 +174,8 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     db1Size = db1.size();
     db1.reserve(utils::calcTdagTupleCount(db1Size));
     for (int64_t i = 0; i < db1Size; i++) {
-        SrcIDb1Tuple tuple = db[i];
-        Range<Kw> kwRange = tuple.getDbKwTuple();
+        SrcIDb1Tuple tuple = db1[i];
+        Range<Kw> kwRange = tuple.getDbKwRange();
         std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {
             if (ancestor == kwRange) {

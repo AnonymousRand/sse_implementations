@@ -78,7 +78,7 @@ void PiBas<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
             // d <- Enc(K_2, w, id)
             ustring iv = utils::genIv(utils::IV_LEN);
             ustring encDbTuple = utils::padAndEncrypt(
-                utils::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DOC_LEN - 1
+                utils::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->write(pos, std::pair {label, std::pair {encDbTuple, iv}});

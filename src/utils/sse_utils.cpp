@@ -18,8 +18,10 @@
 namespace utils {
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-Ind<DbKw, DbTuple> genInd(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
+template <IsDbTuple DbTuple>
+Ind<typename DbTuple::DbKwType, DbTuple> genInd(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
+    using DbKw = typename DbTuple::DbKwType;
+
     Ind<DbKw, DbTuple> ind;
     for (DbTuple dbTuple : db) {
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
@@ -41,8 +43,10 @@ Ind<DbKw, DbTuple> genInd(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-Range<DbKw> findDbKwBounds(const Db<DbTuple>& db) {
+template <IsDbTuple DbTuple>
+Range<typename DbTuple::DbKwType> findDbKwBounds(const Db<DbTuple>& db) {
+    using DbKw = typename DbTuple::DbKwType;
+
     if (db.empty()) {
         return DUMMY_RANGE<DbKw>();
     }
@@ -62,8 +66,10 @@ Range<DbKw> findDbKwBounds(const Db<DbTuple>& db) {
 }
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbTuple>& db) {
+template <IsDbTuple DbTuple>
+std::unordered_set<Range<typename DbTuple::DbKwType>> getUniqDbKwRanges(const Db<DbTuple>& db) {
+    using DbKw = typename DbTuple::DbKwType;
+
     std::unordered_set<Range<DbKw>> uniqDbKwRanges;
     for (DbTuple dbTuple : db) {
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
@@ -73,16 +79,16 @@ std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbTuple>& db) {
 }
 
 
-// (note we still need the general case of this function to be able to call it from within
-// `IStaticPointSse`; it just does nothing except in the template specialization below)
+// (we need the general case of this function to be able to call it from within the general context
+// of `IStaticPointSse`; it just does nothing except in the template specialization below)
 template <IsDbTuple DbTuple>
-void cleanUpResults(std::vector<DbTuple>& dbTuples) {}
+std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples) {}
 
 
 // template specialize this method for just `Tuple<>` instead of all
 // SSE classes that use it
 template <>
-void cleanUpResults(std::vector<Tuple<>>& tuples) {
+std::vector<Tuple<>> cleanUpResults(const std::vector<Tuple<>>& tuples) {
     std::vector<Tuple<>> newTuples;
     std::unordered_set<Id> deletedIds;
 
@@ -103,7 +109,7 @@ void cleanUpResults(std::vector<Tuple<>>& tuples) {
         }
     }
 
-    tuples = newTuples;
+    return newTuples;
 }
 
 
@@ -132,8 +138,8 @@ template std::unordered_set<Range<Kw>> getUniqDbKwRanges(const Db<SrcIDb1Tuple>&
 //template std::unordered_set<Range<IdAlias>> getUniqDbKwRanges(const Db<Tuple<IdAlias>>& db);
 
 // remaining explicit template specializations beyond the one earlier
-template void cleanUpResults(std::vector<SrcIDb1Tuple>& tuples);
-//template void cleanUpResults(std::vector<Tuple<IdAlias>>& tuples);
+template std::vector<SrcIDb1Tuple> cleanUpResults(const std::vector<SrcIDb1Tuple>& tuples);
+//template std::vector<Tuple<IdAlias>> cleanUpResults(const std::vector<Tuple<IdAlias>>& tuples);
 
 
 } // namespace `utils`

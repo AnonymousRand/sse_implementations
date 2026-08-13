@@ -95,7 +95,7 @@ void LogSrc<Underly>::clear() {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrc<Underly>::getDb(Db<Tuple<>, Kw>& ret) const {
+void LogSrc<Underly>::getDb(Db<Tuple<>>& ret) const {
     // need to exclude replicated tuples: assume any tuples with `DbKw` range size >1 is replicated
     // (this doesn't seem to incur noticeable performance overhead with compiler optimizations)
     Db<Tuple<>> retWithRepls;

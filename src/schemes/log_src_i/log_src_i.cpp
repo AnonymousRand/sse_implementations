@@ -39,7 +39,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
     // sort documents by keyword
     auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
-        return tuple1.first.getKw() < tuple2.first.getKw();
+        return tuple1.getKw() < tuple2.getKw();
     };
     Db<Tuple<>> dbSorted = db;
     std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
@@ -91,7 +91,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // TODO move this process to a util (tdag util even? or no) function?
     // maybe even some padding stuff like nlogn or log src i* setup?
     IdAlias maxIdAlias = 0;
-    for (Tuple<IdAlias>> tuple : db2) {
+    for (Tuple<IdAlias> tuple : db2) {
         IdAlias idAlias = tuple.getDbKwRange().first; // must be size 1 range
         if (idAlias > maxIdAlias) {
             maxIdAlias = idAlias;
@@ -130,7 +130,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     int64_t db1Size = db1.size();
     db1.reserve(utils::calcTdagTupleCount(db1Size));
     for (int64_t i = 0; i < db1Size; i++) {
-        SrcIDb1Tuple tuple = db[i];
+        SrcIDb1Tuple tuple = db1[i];
         Range<Kw> kwRange = tuple.getDbKwRange();
         std::list<Range<Kw>> ancestors = this->tdag1->getLeafAncestors(kwRange);
         for (Range<Kw> ancestor : ancestors) {

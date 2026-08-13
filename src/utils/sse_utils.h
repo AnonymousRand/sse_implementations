@@ -14,20 +14,23 @@
 namespace utils {
 
 
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-Ind<DbKw, DbTuple> genInd(const Db<DbTuple>& db, bool shouldShuffleKwLists = false);
-
-
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-Range<DbKw> findDbKwBounds(const Db<DbTuple>& db);
-
-
-template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-std::unordered_set<Range<DbKw>> getUniqDbKwRanges(const Db<DbTuple>& db);
+// yes, i know the template syntax is kinda cursed >_<
+template <IsDbTuple DbTuple>
+Ind<typename DbTuple::DbKwType, DbTuple> genInd(
+    const Db<DbTuple>& db, bool shouldShuffleKwLists = false
+);
 
 
 template <IsDbTuple DbTuple>
-void cleanUpResults(std::vector<DbTuple>& dbTuples);
+Range<typename DbTuple::DbKwType> findDbKwBounds(const Db<DbTuple>& db);
+
+
+template <IsDbTuple DbTuple>
+std::unordered_set<Range<typename DbTuple::DbKwType>> getUniqDbKwRanges(const Db<DbTuple>& db);
+
+
+template <IsDbTuple DbTuple>
+std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples);
 
 
 uint64_t hashToPos(const ustring& hash);

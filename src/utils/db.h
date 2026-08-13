@@ -37,6 +37,9 @@
 template <class DbDoc, class DbKw>
 class IDbTuple {
 public:
+    using DbDocType = DbDoc;
+    using DbKwType  = DbKw;
+
     // TODO are these default constructors still necessary?
     IDbTuple() = default;
     IDbTuple(const DbDoc& val, const Range<DbKw>& dbKwRange);

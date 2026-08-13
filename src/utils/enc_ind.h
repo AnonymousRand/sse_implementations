@@ -1,6 +1,6 @@
 /**
- * indexes are abstractly a ccllection of `std::pair<ustring, std::pair<ustring, ustring>>` (aka
- * `EncIndVal`) pairs, each of which correspond to `std::pair<key, std::pair<encrypted tuple, IV>>`.
+ * indexes are abstractly a collection of `std::pair<ustring, std::pair<ustring, ustring>>`
+ * (aka `EncIndEntry`) pairs, corresponding to `std::pair<key, std::pair<encrypted data, IV>>`.
  */
 
 #pragma once
@@ -46,8 +46,8 @@ public:
     // so if this is limited to the below number of characters/bytes, there are 57 chars for `id`,
     // `kw`, and 2 instances of `dbKw` in total. if we assume they are all about the same size,
     // this means a max keyword/id size of ~10^14 for the encoding to fit)
-    static constexpr int TUPLE_LEN = 4 * utils::BLOCK_SIZE;
-    static constexpr int VAL_LEN   = EncInd::TUPLE_LEN + utils::IV_LEN;
+    static constexpr int DATA_LEN  = 4 * utils::BLOCK_SIZE;
+    static constexpr int VAL_LEN   = EncInd::DATA_LEN + utils::IV_LEN;
     static constexpr int ENTRY_LEN = EncInd::KEY_LEN + EncInd::VAL_LEN;
 
     ~EncInd();

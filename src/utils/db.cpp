@@ -19,14 +19,14 @@
 
 
 template <class DbDoc, class DbKw>
-IDbTuple<DbDoc, DbKw>::IDbTuple(const T& dbDoc, const Range<DbKw>& dbKwRange) {
+IDbTuple<DbDoc, DbKw>::IDbTuple(const DbDoc& dbDoc, const Range<DbKw>& dbKwRange) {
     this->dbDoc = dbDoc;
     this->dbKwRange = dbKwRange;
 }
 
 
 template <class DbDoc, class DbKw>
-T IDbTuple<DbDoc, DbKw>::getDbDoc() const {
+DbDoc IDbTuple<DbDoc, DbKw>::getDbDoc() const {
     return this->dbDoc;
 }
 
@@ -64,8 +64,8 @@ const std::regex Tuple<DbKw>::REGEX(Tuple<DbKw>::REGEX_STR);
 
 
 template <class DbKw>
-DbTuple<DbKw>::Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) :
-    DbTuple<DbKw>(std::tuple {id, kw, op}, dbKwRange) {}
+Tuple<DbKw>::Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) :
+    Tuple<DbKw>(std::tuple {id, kw, op}, dbKwRange) {}
 
 
 template <class DbKw>
@@ -96,7 +96,7 @@ std::string Tuple<DbKw>::toStr() const {
 
 
 template <class DbKw>
-DbTuple<DbKw> Tuple<DbKw>::fromUstr(const ustring& ustr) {
+Tuple<DbKw> Tuple<DbKw>::fromUstr(const ustring& ustr) {
     std::string str = ::utils::toStr(ustr);
     std::smatch matches;
     if (!std::regex_search(str, matches, Tuple<DbKw>::REGEX) || matches.size() != 5) {
@@ -120,7 +120,7 @@ DbTuple<DbKw> Tuple<DbKw>::fromUstr(const ustring& ustr) {
 
 
 template <class DbKw>
-DbTuple<DbKw> Tuple<DbKw>::genDummy(const Range<DbKw>& dbKwRange) {
+Tuple<DbKw> Tuple<DbKw>::genDummy(const Range<DbKw>& dbKwRange) {
     return Tuple<DbKw> {DUMMY, DUMMY, Op::DUMMY, dbKwRange};
 }
 
