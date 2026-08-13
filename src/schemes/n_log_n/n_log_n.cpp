@@ -77,22 +77,12 @@ void NLogN<DbTuple, DbKw>::setup(int secParam, const Db<DbTuple>& db) {
         }
 
         // pad keyword list to the next power of two
+        // >>if so, change Ind to store a Db in the values, and make dbKwLists explicitly Db
         std::vector<DbTuple> dbKwList = iter->second;
         int64_t dbKwCount = dbKwList.size();
-        if (!std::has_single_bit((uint64_t)dbKwCount)) {
-            int64_t amountToPad = std::pow(2, std::ceil(std::log2(dbKwCount))) - dbKwCount;
-            dbKwList.reserve(dbKwCount + amountToPad);
-            // notice we even use dummy range for the db keyword (i.e. `Range<DbKw>`)
-            // to differentiate from dummies originating upstream in Log-SRC-i* padding
-            // etc. (needed for `getDb()`)
-            // (and this doesn't affect the correctness of NLogN or the purpose of the dummies)
-            // >TODO test if this can be dummy using real dbKwRange still, and if so,
-            // using sse_utils' padDb()
-            DbTuple dummyDbTuple = DbTuple::genDummy(DUMMY_RANGE<DbKw>());
-            for (int64_t i = 0; i < amountToPad; i++) {
-                dbKwList.push_back(dummyDbTuple);
-            }
-        }
+        Range<DbKw> dbKwBounds = utils::findDbKwBounds(db);
+        DbKw maxDbKw = dbKwBounds.second;
+        utils::padDb(dbKwList, maxDbKw);
         // randomly permute documents associated with same keyword, i.e. shuffle within bucket
         std::shuffle(dbKwList.begin(), dbKwList.end(), utils::RNG);
 
