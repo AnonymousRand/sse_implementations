@@ -5,10 +5,13 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <string>
 #include <utility>
+
+#include "config.h"
 
 #include "utils/crypto.h"
 #include "utils/ustring.h"
@@ -41,12 +44,17 @@ class EncInd {
 public:
     // (both PRF (default) and hash (res-hiding) have 512 bit output)
     static constexpr int KEY_LEN   = utils::HASH_OUTPUT_LEN;
-    // (currently, encoding a `Tuple<>` is of the form `(id,kw,op),dbKw-dbKw` (and encrypting an
+    // currently, encoding a `Tuple<>` is of the form `(id,kw,op),dbKw-dbKw` (and encrypting an
     // exactly n block length plaintext with AES should produce the exact same block ciphertext),
-    // so if this is limited to the below number of characters/bytes, there are 57 chars for `id`,
-    // `kw`, and 2 instances of `dbKw` in total. if we assume they are all about the same size,
-    // this means a max keyword/id size of ~10^14 for the encoding to fit)
-    static constexpr int DATA_LEN  = 4 * utils::BLOCK_SIZE;
+    // so all but 7 bytes are divided up between `id`, `kw`, and 2 `dbKw`s. however, we actually
+    // must restrict our plaintexts by one more byte or else AES' PCKS #7 padding will generate
+    // an extra block if our plaintext is exactly an integer number of blocks long, thus the `+8`.
+    // finally we round up to the next block
+    // TODO a util for rounding up to nearest power of 2 for like padding?
+    // TODO do have a utils::crypto?
+    static const int DATA_LEN      = std::ceil(
+        (4 * config::MAX_VALUE_DIGITS + 8) / (float)utils::BLOCK_SIZE
+    ) * utils::BLOCK_SIZE;
     static constexpr int VAL_LEN   = EncInd::DATA_LEN + utils::IV_LEN;
     static constexpr int ENTRY_LEN = EncInd::KEY_LEN + EncInd::VAL_LEN;
 
