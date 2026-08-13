@@ -1,11 +1,6 @@
 #include "schemes/log_src_i_star/log_src_i_star.h"
 
-#include <algorithm>
-#include <bit>
-#include <cmath>
 #include <cstdint>
-#include <list>
-#include <utility>
 
 #include "schemes/log_src_i_star/underly.h" 
 
@@ -20,7 +15,7 @@
 // `ISse`
 
 
-void LogSrcIStar::setup(int secParam, Db<Tuple<>>const Db<Tuple<>>& db) { db) {
+void LogSrcIStar::setup(int secParam, Db<Tuple<>>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -33,21 +28,21 @@ void LogSrcIStar::setup(int secParam, Db<Tuple<>>const Db<Tuple<>>& db) { db) {
     // init sub-DBs
 
     // sort documents by keyword
-    Db<Tuple<>> dbSorted = this->sortInputDb(db);
+    sortInputDb(db);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
     Db<SrcIDb1Tuple> db1;
     Db<Tuple<IdAlias>> db2;
-    db1.reserve(dbSorted.size());
-    db2.reserve(dbSorted.size());
+    db1.reserve(db.size());
+    db2.reserve(db.size());
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
         db1.push_back(newTuple);
     };
-    this->initDbsLeaves(dbSorted, db2, addDb1Leaf);
+    initDbsLeaves(db, db2, addDb1Leaf);
 
     //--------------------------------------------------------------------------
     // build index 2
@@ -68,11 +63,11 @@ void LogSrcIStar::setup(int secParam, Db<Tuple<>>const Db<Tuple<>>& db) { db) {
     // Log-SRC-i since tuples are placed pseudorandomly in the index, but here we
     // have to pad to avoid empty buckets in the index that the server knows
     // corresponds to a lack of tuples with that keyword)
-    if (dbSorted.size() > 0) {
-        Tuple<> tuple = dbSorted[0];
+    if (db.size() > 0) {
+        Tuple<> tuple = db[0];
         prevKw = tuple.getKw();
-        for (int64_t i = 1; i < dbSorted.size(); i++) {
-            tuple = dbSorted[i];
+        for (int64_t i = 1; i < db.size(); i++) {
+            tuple = db[i];
             Kw kw = tuple.getKw();
             // if non-contiguous `Kw`s detected, fill in the gap with dummies
             if (kw - prevKw > 1) {

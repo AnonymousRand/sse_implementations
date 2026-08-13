@@ -1,8 +1,6 @@
 #include "schemes/log_src_i/log_src_i_base.h"
 
 #include <algorithm>
-#include <bit>
-#include <cmath>
 #include <concepts>
 #include <cstdlib>
 #include <functional>
@@ -161,19 +159,17 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-Db<Tuple<>> LogSrcIBase<Underly>::sortInputDb(const Db<Tuple<>>& db) const {
-    Db<Tuple<>> dbSorted = db;
+void LogSrcIBase<Underly>::sortInputDb(Db<Tuple<>>& db) {
     auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
         return tuple1.getKw() < tuple2.getKw();
     };
-    std::sort(dbSorted.begin(), dbSorted.end(), sortByKw);
-    return dbSorted;
+    std::sort(db.begin(), db.end(), sortByKw);
 }
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
 void LogSrcIBase<Underly>::initDbsLeaves(
-    const Db<Tuple<>>& dbSorted,
+    const Db<Tuple<>>& sortedDb,
     Db<Tuple<IdAlias>>& db2,
     const std::function<
         void(Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw)
@@ -183,8 +179,8 @@ void LogSrcIBase<Underly>::initDbsLeaves(
     IdAlias firstIdAliasWithKw;
     IdAlias lastIdAliasWithKw;
 
-    for (int64_t idAlias = 0; idAlias < dbSorted.size(); idAlias++) {
-        Tuple<> tuple = dbSorted[idAlias];
+    for (int64_t idAlias = 0; idAlias < sortedDb.size(); idAlias++) {
+        Tuple<> tuple = sortedDb[idAlias];
         // populate `db2` leaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};
         Tuple<IdAlias> newTuple(tuple.getDbDoc(), idAliasRange);

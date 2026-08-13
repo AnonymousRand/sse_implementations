@@ -34,7 +34,7 @@ PiBas<DbTuple, DbKw>::~PiBas() {
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void PiBas<DbTuple, DbKw>::setup(int secParam, Db<DbTuple>const Db<DbTuple>& db) { db) {
+void PiBas<DbTuple, DbKw>::setup(int secParam, Db<DbTuple>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------

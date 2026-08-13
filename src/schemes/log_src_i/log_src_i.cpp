@@ -1,10 +1,6 @@
 #include "schemes/log_src_i/log_src_i.h"
 
-#include <algorithm>
 #include <concepts>
-#include <cstdint>
-#include <list>
-#include <utility>
 
 #include "schemes/interfaces/sse.h"
 #include "schemes/log_src_i/log_src_i_base.h"
@@ -25,7 +21,7 @@
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrcI<Underly>::setup(int secParam, Db<Tuple<>>const Db<Tuple<>>& db) { db) {
+void LogSrcI<Underly>::setup(int secParam, Db<Tuple<>>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -38,21 +34,21 @@ void LogSrcI<Underly>::setup(int secParam, Db<Tuple<>>const Db<Tuple<>>& db) { d
     // init sub-DBs
 
     // sort documents by keyword
-    Db<Tuple<>> dbSorted = this->sortInputDb(db);
+    sortInputDb(db);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
     Db<SrcIDb1Tuple> db1;
     Db<Tuple<IdAlias>> db2;
-    db1.reserve(dbSorted.size());
-    db2.reserve(dbSorted.size());
+    db1.reserve(db.size());
+    db2.reserve(db.size());
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
         db1.push_back(newTuple);
     };
-    this->initDbsLeaves(dbSorted, db2, addDb1Leaf);
+    initDbsLeaves(db, db2, addDb1Leaf);
 
     //--------------------------------------------------------------------------
     // build index 2

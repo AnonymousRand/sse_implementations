@@ -38,7 +38,7 @@ NLogN<DbTuple, DbKw>::~NLogN() {
 
 
 template <class DbTuple, class DbKw> requires IsValidDbParams<DbTuple, DbKw>
-void NLogN<DbTuple, DbKw>::setup(int secParam, Db<DbTuple>const Db<DbTuple>& db) { db) {
+void NLogN<DbTuple, DbKw>::setup(int secParam, Db<DbTuple>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------

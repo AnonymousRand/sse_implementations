@@ -41,12 +41,12 @@ protected:
     TdagNode<IdAlias>* tdag2 = nullptr;
 
     //--------------------------------------------------------------------------
-    // other (mostly shared code between all Log-SRC-i-type schemes' `setup()`)
+    // other (mostly shared code/utils between all Log-SRC-i-type schemes' `setup()`)
 
-    Db<Tuple<>> sortInputDb(const Db<Tuple<>>& db) const;
+    static sortInputDb(Db<Tuple<>>& db);
 
-    void initDbsLeaves(
-        const Db<Tuple<>>& dbSorted,
+    static void initDbsLeaves(
+        const Db<Tuple<>>& sortedDb,
         Db<Tuple<IdAlias>>& db2,
         const std::function<
             void(Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw)
