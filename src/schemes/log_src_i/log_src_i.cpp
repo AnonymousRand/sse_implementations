@@ -51,21 +51,20 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     LogSrcIBase<Underly>::initDbsLeaves(sortedDb, db2, addDb1Leaf);
 
     //--------------------------------------------------------------------------
-    // build index 2
-
-    // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately
-    // >>TODO can swap index 1 and 2 creation??
-    utils::buildTdag(this->tdag2, db2);
-
-    this->underly2->setup(secParam, db2);
-
-    //--------------------------------------------------------------------------
     // build index 1
 
     // build TDAG 1 over `Kw`s and replicate `db1` appropriately
     utils::buildTdag(this->tdag1, db1);
 
     this->underly1->setup(secParam, db1);
+
+    //--------------------------------------------------------------------------
+    // build index 2
+
+    // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately
+    utils::buildTdag(this->tdag2, db2);
+
+    this->underly2->setup(secParam, db2);
 }
 
 

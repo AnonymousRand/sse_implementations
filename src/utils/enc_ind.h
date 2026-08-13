@@ -50,7 +50,6 @@ public:
     // must restrict our plaintexts by one more byte or else AES' PCKS #7 padding will generate
     // an extra block if our plaintext is exactly an integer number of blocks long, thus the `+8`.
     // finally we round up to the next block
-    // TODO a util for rounding up to nearest power of 2 for like padding?
     inline static const int DATA_LEN      = std::ceil(
         (4 * config::MAX_VALUE_DIGITS + 8) / (float)crypto::BLOCK_SIZE
     ) * crypto::BLOCK_SIZE;

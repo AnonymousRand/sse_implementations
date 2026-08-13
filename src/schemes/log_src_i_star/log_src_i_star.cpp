@@ -45,15 +45,6 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     LogSrcIBase<log_src_i_star::Underly>::initDbsLeaves(sortedDb, db2, addDb1Leaf);
 
     //--------------------------------------------------------------------------
-    // build index 2
-
-    // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately, and padding
-    // the leaf count to the next power of 2 as is required for Log-SRC-i*
-    utils::buildTdag(this->tdag2, db2, true);
-
-    this->underly2->setup(secParam, db2);
-
-    //--------------------------------------------------------------------------
     // build index 1
 
     // first ensure (leaf) `Kw`s are contiguous:
@@ -87,4 +78,13 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     utils::buildTdag(this->tdag1, db1, true);
 
     this->underly1->setup(secParam, db1);
+
+    //--------------------------------------------------------------------------
+    // build index 2
+
+    // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately, and padding
+    // the leaf count to the next power of 2 as is required for Log-SRC-i*
+    utils::buildTdag(this->tdag2, db2, true);
+
+    this->underly2->setup(secParam, db2);
 }
