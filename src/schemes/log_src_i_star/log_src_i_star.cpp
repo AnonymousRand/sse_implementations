@@ -15,7 +15,7 @@
 // `ISse`
 
 
-void LogSrcIStar::setup(int secParam, Db<Tuple<>>& db) {
+void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -28,21 +28,21 @@ void LogSrcIStar::setup(int secParam, Db<Tuple<>>& db) {
     // init sub-DBs
 
     // sort documents by keyword
-    sortInputDb(db);
+    Db<Tuple<>> sortedDb = LogSrcIBase<log_src_i_star::Underly>::sortInputDb(db);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
     Db<SrcIDb1Tuple> db1;
     Db<Tuple<IdAlias>> db2;
-    db1.reserve(db.size());
-    db2.reserve(db.size());
+    db1.reserve(sortedDb.size());
+    db2.reserve(sortedDb.size());
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
         db1.push_back(newTuple);
     };
-    initDbsLeaves(db, db2, addDb1Leaf);
+    LogSrcIBase<log_src_i_star::Underly>::initDbsLeaves(sortedDb, db2, addDb1Leaf);
 
     //--------------------------------------------------------------------------
     // build index 2
@@ -63,11 +63,11 @@ void LogSrcIStar::setup(int secParam, Db<Tuple<>>& db) {
     // Log-SRC-i since tuples are placed pseudorandomly in the index, but here we
     // have to pad to avoid empty buckets in the index that the server knows
     // corresponds to a lack of tuples with that keyword)
-    if (db.size() > 0) {
-        Tuple<> tuple = db[0];
-        prevKw = tuple.getKw();
-        for (int64_t i = 1; i < db.size(); i++) {
-            tuple = db[i];
+    if (sortedDb.size() > 0) {
+        Tuple<> tuple = sortedDb[0];
+        Kw prevKw = tuple.getKw();
+        for (int64_t i = 1; i < sortedDb.size(); i++) {
+            tuple = sortedDb[i];
             Kw kw = tuple.getKw();
             // if non-contiguous `Kw`s detected, fill in the gap with dummies
             if (kw - prevKw > 1) {

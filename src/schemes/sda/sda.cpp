@@ -32,7 +32,7 @@ Sda<Underly>::~Sda() {
 
 
 template <IsSdUnderly Underly>
-void Sda<Underly>::setup(int secParam, Db<Tuple<>>& db) {
+void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
     this->secParam = secParam;
 

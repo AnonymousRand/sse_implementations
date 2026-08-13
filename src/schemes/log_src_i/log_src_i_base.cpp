@@ -159,11 +159,13 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrcIBase<Underly>::sortInputDb(Db<Tuple<>>& db) {
+Db<Tuple<>> LogSrcIBase<Underly>::sortInputDb(const Db<Tuple<>>& db) {
+    Db<Tuple<>> sortedDb = db;
     auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
         return tuple1.getKw() < tuple2.getKw();
     };
-    std::sort(db.begin(), db.end(), sortByKw);
+    std::sort(sortedDb.begin(), sortedDb.end(), sortByKw);
+    return sortedDb;
 }
 
 

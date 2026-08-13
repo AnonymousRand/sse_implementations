@@ -58,8 +58,10 @@ private:
     /**
      * traverse subtree of `this` and return all traversed nodes in preorder.
      */
-    std::list<TdagNode<T>*> traverse() const;
-    std::list<TdagNode<T>*> traverseHelper(std::unordered_set<TdagNode<T>*>& extraParents) const;
+    std::list<const TdagNode<T>*> traverse() const;
+    std::list<const TdagNode<T>*> traverseHelper(
+        std::unordered_set<TdagNode<T>*>& extraParents
+    ) const;
 
     Range<T> findSrcHelper(const Range<T>& targetRange) const;
 };
@@ -78,7 +80,7 @@ int64_t calcTdagTupleCount(int64_t leafCount);
 
 template <IsDbTuple DbTuple>
 void buildTdag(
-    TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db1, bool shouldPadDb = false
+    TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, bool shouldPadDb = false
 );
 
 

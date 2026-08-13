@@ -11,6 +11,7 @@
 
 #include "utils/db.h"
 #include "utils/range.h"
+#include "utils/sse_utils.h"
 #include "utils/types.h"
 
 
@@ -93,9 +94,9 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
 
     // add extra TDAG nodes
     TdagNode<T>* tdag = l.front();
-    std::list<TdagNode<T>*> nodes = tdag->traverse();
+    std::list<const TdagNode<T>*> nodes = tdag->traverse();
     while (!nodes.empty()) {
-        TdagNode<T>* node = nodes.front();
+        const TdagNode<T>* node = nodes.front();
         nodes.pop_front();
         if (node->left == nullptr
             || node->right == nullptr
@@ -156,17 +157,17 @@ TdagNode<T>::~TdagNode() {
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
 // track `extraParent` nodes in an `unordered_set` to prevent duplicates
 template <class T>
-std::list<TdagNode<T>*> TdagNode<T>::traverse() const {
+std::list<const TdagNode<T>*> TdagNode<T>::traverse() const {
     std::unordered_set<TdagNode<T>*> extraParents;
     return this->traverseHelper(extraParents);
 }
 
 
 template <class T>
-std::list<TdagNode<T>*> TdagNode<T>::traverseHelper(
+std::list<const TdagNode<T>*> TdagNode<T>::traverseHelper(
     std::unordered_set<TdagNode<T>*>& extraParents
 ) const {
-    std::list<TdagNode<T>*> nodes;
+    std::list<const TdagNode<T>*> nodes;
     nodes.push_front(this);
 
     // `list` returned so this splicing is fast
@@ -289,9 +290,9 @@ std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) const 
 
 
 template <class T>
-std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) const {
-    std::list<TdagNode<T>*> nodes = node->traverse();
-    for (TdagNode<T>* node : nodes) {
+std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
+    std::list<const TdagNode<T>*> nodes = node->traverse();
+    for (const TdagNode<T>* node : nodes) {
         os << node->range << std::endl;
     }
     return os;
@@ -351,14 +352,14 @@ void buildTdag(TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, boo
 
     // pad if necessary
     if (shouldPadDb) {
-        padDb<>(db, maxDbKw);
+        padDb(db, maxDbKw);
     }
 
     // construct TDAG
     tdag = new TdagNode<DbKw>(dbKwBounds.first, maxDbKw);
     
     // replicate every (leaf node) DB tuple to all TDAG nodes that cover it
-    replDbForTdag(db, this->tdag);
+    replDbForTdag(db, tdag);
 }
 
 
@@ -387,13 +388,13 @@ void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* 
 // explicit template instantiations
 
 
-template void buildTdag(const TdagNode<Kw>* tdag, const Db<Tuple<>>& db);
-template void buildTdag(const TdagNode<Kw>* tdag, const Db<SrcIDb1Tuple>& db);
-//template void buildTdag(const TdagNode<IdAlias>* tdag, const Db<Tuple<IdAlias>>& db);
+template void buildTdag(TdagNode<Kw>*& tdag, Db<Tuple<>>& db, bool shouldPadDb);
+template void buildTdag(TdagNode<Kw>*& tdag, Db<SrcIDb1Tuple>& db, bool shouldPadDb);
+//template void buildTdag(TdagNode<IdAlias>*& tdag, Db<Tuple<IdAlias>>& db, bool shouldPadDb);
 
-template void replDbForTdag(const Db<Tuple<>>& db, const TdagNode<Kw>* tdag);
-template void replDbForTdag(const Db<SrcIDb1Tuple>& db, const TdagNode<Kw>* tdag);
-//template void replDbForTdag(const Db<Tuple<IdAlias>>& db, const TdagNode<IdAlias>* tdag);
+template void replDbForTdag(Db<Tuple<>>& db, const TdagNode<Kw>* tdag);
+template void replDbForTdag(Db<SrcIDb1Tuple>& db, const TdagNode<Kw>* tdag);
+//template void replDbForTdag(Db<Tuple<IdAlias>>& db, const TdagNode<IdAlias>* tdag);
 
 
 } // namespace `utils`

@@ -1,9 +1,6 @@
 #include "schemes/log_src/log_src.h"
 
 #include <concepts>
-#include <list>
-#include <utility>
-#include <vector>
 
 #include "schemes/interfaces/sse.h"
 
@@ -33,7 +30,7 @@ LogSrc<Underly>::~LogSrc() {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrc<Underly>::setup(int secParam, Db<Tuple<>>& db) {
+void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -46,9 +43,10 @@ void LogSrc<Underly>::setup(int secParam, Db<Tuple<>>& db) {
     // build index
 
     // build TDAG over `Kw`s and replicate `db` appropriately
-    utils::buildTdag(this->tdag, db);
+    Db<Tuple<>> dbWithRepls = db;
+    utils::buildTdag(this->tdag, dbWithRepls);
 
-    this->underly->setup(secParam, db);
+    this->underly->setup(secParam, dbWithRepls);
 }
 
 

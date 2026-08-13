@@ -23,7 +23,7 @@ public:
 
     ISse(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
-    virtual void setup(int secParam, Db<DbTuple>& db) = 0;
+    virtual void setup(int secParam, const Db<DbTuple>& db) = 0;
     
     /**
      * params:

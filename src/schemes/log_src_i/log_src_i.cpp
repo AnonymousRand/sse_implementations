@@ -21,7 +21,7 @@
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>, Kw>>
-void LogSrcI<Underly>::setup(int secParam, Db<Tuple<>>& db) {
+void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -34,21 +34,21 @@ void LogSrcI<Underly>::setup(int secParam, Db<Tuple<>>& db) {
     // init sub-DBs
 
     // sort documents by keyword
-    sortInputDb(db);
+    Db<Tuple<>> sortedDb = LogSrcIBase<Underly>::sortInputDb(db);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
     Db<SrcIDb1Tuple> db1;
     Db<Tuple<IdAlias>> db2;
-    db1.reserve(db.size());
-    db2.reserve(db.size());
+    db1.reserve(sortedDb.size());
+    db2.reserve(sortedDb.size());
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
         db1.push_back(newTuple);
     };
-    initDbsLeaves(db, db2, addDb1Leaf);
+    LogSrcIBase<Underly>::initDbsLeaves(sortedDb, db2, addDb1Leaf);
 
     //--------------------------------------------------------------------------
     // build index 2

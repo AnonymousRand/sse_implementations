@@ -43,7 +43,7 @@ protected:
     //--------------------------------------------------------------------------
     // other (mostly shared code/utils between all Log-SRC-i-type schemes' `setup()`)
 
-    static sortInputDb(Db<Tuple<>>& db);
+    static Db<Tuple<>> sortInputDb(const Db<Tuple<>>& db);
 
     static void initDbsLeaves(
         const Db<Tuple<>>& sortedDb,
