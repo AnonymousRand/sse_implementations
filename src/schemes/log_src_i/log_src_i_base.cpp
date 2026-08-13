@@ -117,14 +117,14 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
     this->underly2->getDb(db2);
     Ind<IdAlias, Tuple<IdAlias>> ind2 = utils::genInd(db2);
 
-    for (SrcIDb1Tuple srcIDb1Tuple : db1) {
-        Range<Kw> kwRange = srcIDb1Tuple.getDbKwRange();
+    for (SrcIDb1Tuple db1Tuple : db1) {
+        Range<Kw> kwRange = db1Tuple.getDbKwRange();
         // only iterate through leaf nodes in DB 1
         if (kwRange.size() > 1) {
             continue;
         }
         // also exclude ALL types of dummies (this is done client-side so it's fine to reveal sizes)
-        Range<IdAlias> idAliasRange = srcIDb1Tuple.getIdAliasRange();
+        Range<IdAlias> idAliasRange = db1Tuple.getIdAliasRange();
         if (idAliasRange == DUMMY_RANGE<IdAlias>()) {
             continue;
         }
@@ -139,8 +139,8 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
 
             std::vector<Tuple<IdAlias>> kwList = iter->second;
             for (Tuple<IdAlias> db2Tuple : kwList) {
-                Tuple<IdAlias> newDb2Tuple(db2Tuple.getDbDoc(), kwRange);
-                ret.push_back(newDb2Tuple);
+                Tuple<> newTuple(db2Tuple.getDbDoc(), kwRange);
+                ret.push_back(newTuple);
             }
         }
     }
