@@ -167,23 +167,14 @@ void NLogN<DbTuple, DbKw>::getDb(Db<DbTuple>& ret) const {
             // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
             // to easily access these `DbKw` ranges in plaintext
             Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
-            // >TODO: is this differentiation required? what happens if we filter out all dummies,
-            // by filling everything with dummies even in upstream? or will that affect the TDAG,
-            // so try what happens if we remove all dummies here (e.g. checking kw/id instead of
-            // range, and if works, outsource that to a method in IDbTuple?)
-            // also if doing that, consider changing back the for loops above to use this->size,
-            // maybe also checking explicitly that it equals db->size?
-
+            // exclude dummies/padding (that are from NLogN's `setup()`, but not from any upstream
+            // SSE scheme which is using NLogN as an underlying scheme. while deleting those dummies
+            // too seems to work fine, we don't since we don't have an easy, general way to check
+            // for those here, and that should be the upstream scheme's concern anyway.)
             if (dbKwRange != DUMMY_RANGE<DbKw>()) {
                 DbTuple newDbTuple(dbTuple.getDbDoc(), dbKwRange);
                 ret.push_back(newDbTuple);
             }
-            //// exclude dummies/padding (that are from NLogN's `setup()`, but not from
-            //// an upstream SSE scheme which is using NLogN as an underlying scheme)
-            //if (dbKwRange != DUMMY_RANGE<DbKw>()) {
-            //    DbTuple newDbTuple(dbTuple.getDbDoc(), dbKwRange);
-            //    ret.push_back(newDbTuple);
-            //}
         }
     }
 }
