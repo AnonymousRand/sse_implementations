@@ -68,7 +68,6 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         db2.push_back(newTuple);
 
         // populate `db1` leaves
-        // TODO this may? need to be getDbKwRange().first
         Kw kw = tuple.getKw();
         if (kw != prevKw) {
             if (prevKw != DUMMY) {
