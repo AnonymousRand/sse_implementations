@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 #include "app/db_factory.h"
@@ -17,18 +18,7 @@
 namespace app::experiments::debugging {
 
 
-// use a pointer so that 
-const Db<>* db;
-const Range<Kw> query;
-
-
-void init(Db<>* db, Range<Kw> query) {
-    db = db;
-    query = query;
-}
-
-
-void printHeader(int64_t maxDbSizeExp) {
+void printHeader(int64_t maxDbSizeExp, const Range<Kw>& query) {
     std::cout << std::endl;
     std::cout << "============================= Debugging Experiment ============================="
               << std::endl;
@@ -41,9 +31,9 @@ void printHeader(int64_t maxDbSizeExp) {
 
 
 // experiment for debugging with fixed query and printed results
-void run(ISse<>* sse) {
+void run(ISse<>* sse, const Db<>& db, const Range<Kw>& query) {
     // setup
-    sse->setup(utils::KEY_LEN, *db);
+    sse->setup(utils::KEY_LEN, db);
 
     // search
     std::vector<Tuple<>> results = sse->search(query);
@@ -58,6 +48,7 @@ void run(ISse<>* sse) {
         }
     }
     std::cout << std::endl;
+
     std::cout << "False positives ((id,kw,op),kwrange):" << std::endl;
     for (Tuple<> result : falsePositives) {
         std::cout << result << " with keyword " << result.getKw() << std::endl;

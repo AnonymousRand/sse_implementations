@@ -84,52 +84,51 @@ int main() {
     // during any one program execution, between different SSE schemes/calls to `run()`
     // adjust at will here!
     Db<> debuggingDb = app::createDb(maxDbSize, true, true);
-    Range<Kw> debuggingQuery {3, 5};
-    app::experiments::debugging::init(&debuggingDb, debuggingQuery);
+    const Range<Kw> debuggingQuery {3, 5};
 
-    app::experiments::debugging::printHeader(maxDbSizeExp);
+    app::experiments::debugging::printHeader(maxDbSizeExp, debuggingQuery);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::debugging::run(piBas.get());
+    app::experiments::debugging::run(piBas.get(), debuggingDb, debuggingQuery);
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::debugging::run(nLogN.get());
+    app::experiments::debugging::run(nLogN.get(), debuggingDb, debuggingQuery);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcPiBas.get());
+    app::experiments::debugging::run(logSrcPiBas.get(), debuggingDb, debuggingQuery);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcNLogN.get());
+    app::experiments::debugging::run(logSrcNLogN.get(), debuggingDb, debuggingQuery);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcIPiBas.get());
+    app::experiments::debugging::run(logSrcIPiBas.get(), debuggingDb, debuggingQuery);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcINLogN.get());
+    app::experiments::debugging::run(logSrcINLogN.get(), debuggingDb, debuggingQuery);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcIStar.get());
+    app::experiments::debugging::run(logSrcIStar.get(), debuggingDb, debuggingQuery);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaPiBas.get());
+    app::experiments::debugging::run(sdaPiBas.get(), debuggingDb, debuggingQuery);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaNLogN.get());
+    app::experiments::debugging::run(sdaNLogN.get(), debuggingDb, debuggingQuery);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcPiBas.get());
+    app::experiments::debugging::run(sdaLogSrcPiBas.get(), debuggingDb, debuggingQuery);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcNLogN.get());
+    app::experiments::debugging::run(sdaLogSrcNLogN.get(), debuggingDb, debuggingQuery);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcIPiBas.get());
+    app::experiments::debugging::run(sdaLogSrcIPiBas.get(), debuggingDb, debuggingQuery);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcINLogN.get());
+    app::experiments::debugging::run(sdaLogSrcINLogN.get(), debuggingDb, debuggingQuery);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcIStar.get());
+    app::experiments::debugging::run(sdaLogSrcIStar.get(), debuggingDb, debuggingQuery);
 
     // to save memory
     debuggingDb.clear();
