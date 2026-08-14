@@ -1,6 +1,5 @@
 #include "sse_utils.h"
 
-#include <algorithm>
 #include <bit>
 #include <cmath>
 #include <concepts>
@@ -36,9 +35,9 @@ Ind<DbTuple> genInd(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
     }
 
     if (shouldShuffleKwLists) {
-        for (std::pair pair : ind) {
-            Db<DbTuple> dbKwList = pair.second;
-            std::shuffle(dbKwList.begin(), dbKwList.end(), RNG);
+        for (std::pair& pair : ind) {
+            Db<DbTuple>& dbKwList = pair.second;
+            pair.second = dbKwList.shuffle();
         }
     }
 

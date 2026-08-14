@@ -84,7 +84,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         DbKw maxDbKw = dbKwBounds.second;
         utils::padDb(dbKwList, maxDbKw);
         // randomly permute documents associated with same keyword, i.e. shuffle within bucket
-        std::shuffle(dbKwList.begin(), dbKwList.end(), utils::RNG);
+        dbKwList.shuffle();
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         int64_t dbKwPaddedCount = dbKwList.size();

@@ -1,16 +1,23 @@
 #include "utils/db.h"
 
+#include <algorithm>
 #include <concepts>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <functional>
 #include <initializer_list>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "utils/disk_storage.h"
 #include "utils/tuple.h"
+
+
+//------------------------------------------------------------------------------
+// constructors/destructors
 
 
 template <IsDbTuple DbTuple>
@@ -57,6 +64,10 @@ Db<DbTuple>::Db(std::initializer_list<DbTuple> initList) : Db<DbTuple>() {
         this->push_back(dbTuple);
     }
 }
+
+
+//------------------------------------------------------------------------------
+// interface
 
 
 template <IsDbTuple DbTuple>
@@ -106,6 +117,10 @@ DbTuple Db<DbTuple>::operator [](int64_t index) const {
 }
 
 
+//--------------------------------------------------------------------------
+// helpers
+
+
 template <IsDbTuple DbTuple>
 std::string Db<DbTuple>::readRaw(int64_t index) const {
     if (index >= this->_size) {
@@ -136,6 +151,46 @@ void Db<DbTuple>::writeRaw(const std::string& dbTupleStr) {
     }
 
     this->_size++;
+}
+
+
+template <IsDbTuple DbTuple>
+Db<DbTuple> Db<DbTuple>::applyAlgoViaIndices(
+    const std::function<void(const std::vector<int64_t>& dbIndices)>& algoOnIndices
+) const {
+    std::vector<int64_t> dbIndices;
+    dbIndices.reserve(this->_size);
+    for (int64_t index = 0; index < this->_size; index++) {
+        dbIndices.push_back(index);
+    }
+
+    algo(dbIndices);
+
+    // now build output DB using this vector of indices
+    Db<DbTuple> outputDb;
+    for (int64_t index : dbIndices) {
+        outputDb.push_back((*this)[index]);
+    }
+    return outputDb;
+}
+
+
+
+template <IsDbTuple DbTuple>
+void Db<DbTuple>::shuffle() {
+    auto shuffle = [&RNG](const std::vector<int64_t>& dbIndices) {
+        std::shuffle(dbIndices.begin(), dbIndices.end(), RNG);
+    };
+    *this = this->applyAlgoViaIndices(shuffle);
+}
+
+
+template <IsDbTuple DbTuple>
+void Db<DbTuple>::sort(const std::function<void(int64_t index1, int64_t index2)>& compare) {
+    auto sort = [&compare](const std::vector<int64_t>& dbIndices) {
+        std::sort(dbIndices.begin(), dbIndices.end(), compare);
+    };
+    *this = this->applyAlgoViaIndices(sort);
 }
 
 

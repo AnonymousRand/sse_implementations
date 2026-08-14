@@ -26,14 +26,36 @@ std::uniform_int_distribution<uint64_t> dist;
 //==============================================================================
 
 
+//------------------------------------------------------------------------------
+// constructors/destructors
+
+
 IDiskStorage::IDiskStorage() {
     this->initFile();
+}
+
+
+IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
+    // important self-assignment safety check!
+    if (this != &other) {
+        this->clear();
+        this->file = other.file;
+        // important: set all pointer fields in `other` to `nullptr` so that its destructoru
+        // doesn't try to delete the same resource that `this`'s pointer fields now point to
+        this->other.file = nullptr;
+        this->filename = other.filename;
+    }
+    return *this;
 }
 
 
 IDiskStorage::~IDiskStorage() {
     this->clear();
 }
+
+
+//------------------------------------------------------------------------------
+// interface
 
 
 void IDiskStorage::clear() {
@@ -52,7 +74,7 @@ void IDiskStorage::clear() {
 
 
 //--------------------------------------------------------------------------
-// other
+// helpers
 
 
 std::string IDiskStorage::genFilename() const {

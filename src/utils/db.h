@@ -4,10 +4,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <functional>
 #include <initializer_list>
-#include <iterator>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "utils/disk_storage.h"
 #include "utils/enc_ind.h"
@@ -26,7 +27,14 @@ class Db : public IDiskStorage {
 public:
     inline static const int TUPLE_LEN = EncInd::DATA_LEN;
 
+    //--------------------------------------------------------------------------
+    // constructors/destructors
+
     Db();
+
+    /**
+     * copy constructor (that should avoid encoding and de-encoding each tuple as it is moved).
+     */
     Db(const Db& db);
 
     /**
@@ -38,9 +46,23 @@ public:
     Db(const Db& db, int64_t startIndex, int64_t endIndex);
 
     /**
-     * initialize with the raw values contained in the brace-enclosed initializer list `initList`.
+     * initialize a `Db` with the raw values in the brace-enclosed initializer list `initList`.
      */
     Db(std::initializer_list<DbTuple> initList);
+
+    /**
+     * move assignment operator that allows cheap moving instead of expensive copying of
+     * `Db` rvalues when they are assigned to an existing variable, e.g. `*this = ...`.
+     */
+    // (currently, this is `= default` to force the compiler to generate a default one, which is
+    // needed to make sure parent class move assignment operators are also called. normally the
+    // compiler autogenerates such default constructors, but i've manually implemented other special
+    // constructors like the copy constructor in this class, which prevents this autogeneration.)
+    // TODO: test performance vs. without this!
+    Db& operator =(Db&& other) noexcept = default;
+
+    //--------------------------------------------------------------------------
+    // interface
 
     void clear() override;
     void push_back(const DbTuple& dbTuple);
@@ -52,11 +74,34 @@ public:
     // read-only accessing using `[]`
     DbTuple operator [](int64_t index) const;
 
+    /**
+     * wrapper for algorithms (e.g. from `<algorithms>`) to make them work when a `Db` isn't
+     * actually storing any of its entries as actual `DbTuple` elements anywhere.
+     *
+     * instead, perform the algorithm on a vector of indices (which should be significantly
+     * smaller than the `Db` itself) and then using that to build and return a new output `Db`.
+     */
+    Db<DbTuple> applyAlgoViaIndices(
+        const std::function<void(const std::vector<int64_t>& dbIndices)>& algoOnIndices
+    ) const;
+
+    /**
+     * instantiations of `applyAlgoViaIndices()` using specific common `algoOnIndices` functions.
+     * additionally, these methods replace `*this` with the output `Db`.
+     */
+    void shuffle();
+    void sort(const std::function<void(int64_t index1, int64_t index2)>& compare);
+
 private:
     constexpr std::string FILE_DIR() const override { return "out/client"; }
     constexpr std::string FILENAME_PREFIX() const override { return "db_"; }
 
     int64_t _size = 0;
+
+    // TODO rename "other" section to "helpers" everywhere?
+    // TODO add more of these sections (e.g. tdag) for grouping?
+    //--------------------------------------------------------------------------
+    // helpers
 
     // helpers that don't do encoding/decoding (e.g. also good for faster copy constructors)
     std::string readRaw(int64_t index) const;
