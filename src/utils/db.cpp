@@ -24,25 +24,40 @@
 
 template <IsDbTuple DbTuple>
 Db<DbTuple>::Db() {
-    this->initFile();
+    //std::cerr << "db default constructor" << std::endl;
+    IDiskStorage::init();
 }
 
 
+// TODO minor: make sure other copy constructors have param name "other" too
 template <IsDbTuple DbTuple>
-Db<DbTuple>::Db(const Db& db) {
+Db<DbTuple>::Db(const Db& other) {
+    //std::cerr << "db copy constructor" << std::endl;
     this->filename = this->genFilename();
-    this->_size = db._size;
+    this->_size = other._size;
+    //std::cerr << "other.filename is " << other.filename << "; this->filename is " << this->filename << std::endl;
 
+    // flush to make sure `other.file` has written everything
+    std::fflush(other.file);
     try {
-        std::filesystem::copy_file(db.filename, this->filename);
+        std::filesystem::copy_file(other.filename, this->filename);
     } catch (const std::filesystem::filesystem_error& e) {
-        std::cerr << "Error: Db::Db(const Db& db): error copying file: " << e.what() << std::endl;
+        std::cerr << "Error: Db::Db(const Db&): error copying file: " << e.what() << std::endl;
         std::exit(EXIT_FAILURE);
     }
+    //std::cerr << "copied to " << this->filename << "; our size is " << this->_size << std::endl;
 
-    this->file = std::fopen(this->filename.c_str(), "wb+");
+    //FILE* tmp = std::fopen(this->filename.c_str(), "ab+");
+    //FILE* tmpOther = std::fopen(other.filename.c_str(), "ab+");
+    //std::fseek(tmp, 0, SEEK_END);
+    //std::fseek(tmpOther, 0, SEEK_END);
+    //std::cerr << "other.file has real size " << std::ftell(tmpOther) << "; copied file has real size " << std::ftell(tmp) << std::endl;
+    //std::fclose(tmp);
+    //std::fclose(tmpOther);
+
+    this->file = std::fopen(this->filename.c_str(), "ab+");
     if (this->file == nullptr) {
-        std::cerr << "Error: Db::Db(const Db& db): error opening file" << std::endl;
+        std::cerr << "Error: Db::Db(const Db&): error opening file" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 }
@@ -50,6 +65,7 @@ Db<DbTuple>::Db(const Db& db) {
 
 template <IsDbTuple DbTuple>
 Db<DbTuple>::Db(const Db& db, int64_t startIndex, int64_t endIndex) {
+    //std::cerr << "db range constructor" << std::endl;
     this->filename = this->genFilename();
     this->_size = endIndex - startIndex;
 
@@ -61,10 +77,15 @@ Db<DbTuple>::Db(const Db& db, int64_t startIndex, int64_t endIndex) {
 
 
 template <IsDbTuple DbTuple>
-Db<DbTuple>::Db(std::initializer_list<DbTuple> initList) : Db<DbTuple>() {
+Db<DbTuple>::Db(std::initializer_list<DbTuple> initList) {
+    //std::cerr << "db init list constructor" << std::endl;
+    IDiskStorage::init();
+    //std::cerr << "db init list constructor done init" << std::endl;
     for (DbTuple dbTuple : initList) {
+        //std::cerr << "db init list constructor pushing back" << std::endl;
         this->push_back(dbTuple);
     }
+    //std::cerr << "done init list constructor" << std::endl;
 }
 
 
@@ -141,7 +162,8 @@ std::string Db<DbTuple>::readRaw(int64_t index) const {
     std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
     int itemsRead = std::fread(dbTupleCstr, TUPLE_LEN, 1, this->file);
     if (itemsRead != 1) {
-        std::cerr << "Error: Db::readRaw(): error reading from file (nothing read)" << std::endl;
+        std::cerr << "Error: Db::readRaw(): error reading from file " << this->filename
+                  << " (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -154,9 +176,18 @@ void Db<DbTuple>::writeRaw(const std::string& dbTupleStr) {
     std::fseek(this->file, 0, SEEK_END);
     int itemsWritten = std::fwrite(dbTupleStr.c_str(), TUPLE_LEN, 1, this->file);
     if (itemsWritten != 1) {
-        std::cerr << "Error: Db::writeRaw(): error writing to file (nothing written)" << std::endl;
+        std::cerr << "Error: Db::writeRaw(): error writing to file " << this->filename
+                  << " (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
+    //std::cerr << "db writeRaw wrote to " << this->filename << ", pointer " << this->file << std::endl;
+    // >TODO: may need alternate solution to ensure flush when switching from writing to reading,
+    // like holding two separate filestreams for reading and writing (or this still doesn't work?)
+    // probably instead try having a flush() function here and just manually calling it when writes
+    // end?? but even then still don't know exactly when that is right e.g. in genInd
+    // but might not have another option, so might just need to manually flush everything when done
+    // writing?
+    std::fflush(this->file);
 
     this->_size++;
 }

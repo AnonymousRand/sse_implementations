@@ -9,8 +9,6 @@ public:
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    IDiskStorage();
-
     /**
      * move assignment operator that allows cheap moving instead of expensive copying of
      * `IDiskStorage` rvalues when they are assigned to an existing variable, e.g. `*this = ...`.
@@ -37,7 +35,15 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
+    virtual void init();
     virtual void clear();
+
+    //--------------------------------------------------------------------------
+    // debugging
+
+    std::string getFilename() const {
+        return this->filename;
+    }
 
 protected:
     FILE* file = nullptr;
@@ -53,5 +59,4 @@ protected:
     // helpers
 
     std::string genFilename() const;
-    void initFile();
 };

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "utils/db.h"
-#include "utils/random.h"
 #include "utils/range.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
@@ -28,17 +27,21 @@ Ind<DbTuple> genInd(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
     for (DbTuple dbTuple : db) {
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
         if (ind.count(dbKwRange) == 0) {
-            ind[dbKwRange] = std::vector {dbTuple};
+            //std::cerr << "++ creating new db in genind" << std::endl;
+            ind[dbKwRange] = Db<DbTuple> {dbTuple};
+            //std::cerr << "++ done creating new db in genind" << std::endl;
         } else {
             ind[dbKwRange].push_back(dbTuple);
         }
     }
 
     if (shouldShuffleKwLists) {
-        for (std::pair& pair : ind) {
+        //std::cerr << "----BEGIN shuffle" << std::endl;
+        for (auto& pair : ind) {
             Db<DbTuple>& dbKwList = pair.second;
-            pair.second = dbKwList.shuffle();
+            dbKwList.shuffle();
         }
+        //std::cerr << "----END shuffle" << std::endl;
     }
 
     return ind;

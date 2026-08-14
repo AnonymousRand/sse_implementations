@@ -35,7 +35,7 @@ public:
     /**
      * copy constructor (that should avoid encoding and de-encoding each tuple as it is moved).
      */
-    Db(const Db& db);
+    Db(const Db& other);
 
     /**
      * copy `db` from `startIndex` (inclusive) to `endIndex` (exclusive).

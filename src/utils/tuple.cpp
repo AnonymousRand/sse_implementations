@@ -181,7 +181,7 @@ std::string SrcIDb1Tuple::toStr() const {
 }
 
 
-SrcIDb1Tuple ScrIDb1Tuple::fromUstr(const ustring& ustr) {
+SrcIDb1Tuple SrcIDb1Tuple::fromUstr(const ustring& ustr) {
     return SrcIDb1Tuple::fromStr(::utils::toStr(ustr));
 }
 
@@ -189,7 +189,7 @@ SrcIDb1Tuple ScrIDb1Tuple::fromUstr(const ustring& ustr) {
 SrcIDb1Tuple SrcIDb1Tuple::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, REGEX) || matches.size() != 4) {
-        std::cerr << "Error: SrcIDb1Tuple::fromUstr(): bad string \"" << ustr << "\" passed"
+        std::cerr << "Error: SrcIDb1Tuple::fromUstr(): bad string \"" << str << "\" passed"
                   << std::endl
                   << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                   << std::endl;

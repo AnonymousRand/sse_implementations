@@ -43,9 +43,7 @@ const uchar EncInd::NULL_ENTRY[ENTRY_LEN] = {};
 
 
 void EncInd::init(int64_t size) {
-    this->clear();
-
-    this->initFile();
+    IDiskStorage::init();
     this->size = size;
 
     // fill file with zero bits
@@ -75,7 +73,8 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     int itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
-        std::cerr << "Error: EncInd::find(): error reading from file (nothing read)" << std::endl;
+        std::cerr << "Error: EncInd::find(): error reading from file " << this->filename
+                  << " (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -93,8 +92,8 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         }
         itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
         if (itemsRead != 1) {
-            std::cerr << "Error: EncInd::find(): error reading from file (nothing read)"
-                      << std::endl;
+            std::cerr << "Error: EncInd::find(): error reading from file " << this->filename
+                      << " (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -118,7 +117,8 @@ bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     int itemsRead = std::fread(entry, ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
-        std::cerr << "Error: EncInd::read(): error reading from file (nothing read)" << std::endl;
+        std::cerr << "Error: EncInd::read(): error reading from file " << this->filename
+                  << " (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
     if (std::memcmp(entry, NULL_ENTRY, ENTRY_LEN) == 0) {
@@ -138,9 +138,10 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     // check if location at `pos` is already filled
     uchar currEntry[ENTRY_LEN];
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    int itemsReadOrWritten = std::fread(currEntry, ENTRY_LEN, 1, this->file);
-    if (itemsReadOrWritten != 1) {
-        std::cerr << "Error: EncInd::write(): error reading from file (nothing read)" << std::endl;
+    int itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
+    if (itemsRead != 1) {
+        std::cerr << "Error: EncInd::write(): error reading from file " << this->filename
+                  << " (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -155,10 +156,10 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsReadOrWritten = std::fread(currEntry, ENTRY_LEN, 1, this->file); 
-        if (itemsReadOrWritten != 1) {
-            std::cerr << "Error: EncInd::write(): error reading from file (nothing read)"
-                      << std::endl;
+        itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file); 
+        if (itemsRead != 1) {
+            std::cerr << "Error: EncInd::write(): error reading from file " << this->filename
+                      << " (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -182,7 +183,8 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     int itemsWritten = std::fwrite(entry.c_str(), ENTRY_LEN, 1, this->file);
     if (itemsWritten != 1) {
-        std::cerr << "Error: EncInd::write(): error writing to file (nothing written)" << std::endl;
+        std::cerr << "Error: EncInd::write(): error writing to file " << this->filename
+                  << " (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
     // flush immediately to mark space as occupied
@@ -206,7 +208,8 @@ EncIndEntry EncInd::get(uint64_t pos) const {
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     int itemsRead = std::fread(entry, ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
-        std::cerr << "Error: EncInd::get(): error reading from file (nothing read)" << std::endl;
+        std::cerr << "Error: EncInd::get(): error reading from file " << this->filename
+                  << " (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
