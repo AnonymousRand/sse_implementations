@@ -25,8 +25,8 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
     if (hasDeletions) {
         // delete the document with keyword 4
         Range<Kw> kwRangeDel {4, 4};
-        db.append(Tuple<> {0, 4, Op::INS, kwRangeDel});
-        db.append(Tuple<> {0, 4, Op::DEL, kwRangeDel});
+        db.push_back(Tuple<> {0, 4, Op::INS, kwRangeDel});
+        db.push_back(Tuple<> {0, 4, Op::DEL, kwRangeDel});
         maxId -= 2;
     }
 
@@ -35,7 +35,7 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
         for (Id id = minId; id <= maxId; id++) {
             Kw kw = dist(utils::RNG);
             Range<Kw> kwRange {kw, kw};
-            db.append(Tuple<> {id, kw, Op::INS, kwRange});
+            db.push_back(Tuple<> {id, kw, Op::INS, kwRange});
         }
     } else {
         for (Id id = minId; id <= maxId; id++) {
@@ -43,7 +43,7 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
             // and make them non-contiguous to test Log-SRC as well
             Kw kw = (dbSize - id) * 2;
             Range<Kw> kwRange {kw, kw};
-            db.append(Tuple<> {id, kw, Op::INS, kwRange});
+            db.push_back(Tuple<> {id, kw, Op::INS, kwRange});
         }
     }
 

@@ -52,7 +52,7 @@ void IDiskStorage::clear() {
 
 
 //--------------------------------------------------------------------------
-// helpers
+// other
 
 
 std::string IDiskStorage::genFilename() const {

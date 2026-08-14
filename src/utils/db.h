@@ -10,6 +10,7 @@
 
 #include "utils/disk_storage.h"
 #include "utils/enc_ind.h"
+#include "utils/range.h"
 #include "utils/tuple.h"
 
 
@@ -35,10 +36,10 @@ public:
     }
 
     // read-only accessing using `[]`
-    const DbTuple& operator [](int64_t index) const;
+    DbTuple& operator [](int64_t index) const;
 
 private:
-    constexpr std::string FILENAME_DIR() const override { return "out/client"; }
+    constexpr std::string FILE_DIR() const override { return "out/client"; }
     constexpr std::string FILENAME_PREFIX() const override { return "db_"; }
 
     int64_t _size = 0;
@@ -147,7 +148,7 @@ public:
     }
 
     Iter end() {
-        return Iter(this, this->size);
+        return Iter(this, this->_size);
     }
 };
 
@@ -158,4 +159,4 @@ public:
 
 
 template <IsDbTuple DbTuple>
-using Ind = std::unordered_map<DbTuple, Db<DbTuple>>;
+using Ind = std::unordered_map<Range<typename DbTuple::DbKwType>, Db<DbTuple>>;

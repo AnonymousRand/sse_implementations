@@ -97,7 +97,7 @@ private:
 
     int64_t size = 0;
 
-    constexpr std::string FILENAME_DIR() const override { return "out/server"; }
+    constexpr std::string FILE_DIR() const override { return "out/server"; }
     constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
 
     //----------------------------------------------------------------------

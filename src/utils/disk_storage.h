@@ -19,7 +19,7 @@ protected:
     virtual constexpr std::string FILENAME_PREFIX() const = 0;
 
     //--------------------------------------------------------------------------
-    // helpers
+    // other
 
     std::string genFilename() const;
     void initFile();
