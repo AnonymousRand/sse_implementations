@@ -72,11 +72,11 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         ustring queryToken = this->genQueryToken(dbKwRange);
         // TODO std::move here as well? should just need std::move(iter->second)?
         Db<DbTuple> dbKwList = iter->second;
-        std::cout << "Pibas dbKwList assigned; its filename is " << dbKwList.getFilename() << std::endl;
+        //std::cerr << "Pibas dbKwList assigned; its filename is " << dbKwList.getFilename() << std::endl;
 
         // for each id in DB(w)
         for (int64_t dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
-            std::cout << "Pibas about to read; dbKwList size is " << dbKwList.size() << std::endl;
+            //std::cerr << "Pibas about to read; dbKwList size is " << dbKwList.size() << std::endl;
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
             ustring label;
