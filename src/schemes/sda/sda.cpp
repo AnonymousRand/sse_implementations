@@ -50,9 +50,13 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
             Db<Tuple<>> indDb;
             if (dbPos < db.size()) {
                 if (dbPos + indSize < db.size()) {
-                    indDb = Db<Tuple<>>(db.begin() + dbPos, db.begin() + dbPos + indSize);
+                    indDb = Db<Tuple<>>(db, dbPos, dbPos + indSize);
+                    // note: `std::vector` version of `Db` uses the below:
+                    //indDb = Db<Tuple<>>(db.begin() + dbPos, db.begin() + dbPos + indSize);
                 } else {
-                    indDb = Db<Tuple<>>(db.begin() + dbPos, db.end());
+                    indDb = Db<Tuple<>>(db, dbPos, db.size());
+                    // note: `std::vector` version of `Db` uses the below:
+                    //indDb = Db<Tuple<>>(db.begin() + dbPos, db.end());
                 }
             } else {
                 indDb = Db<Tuple<>> {};

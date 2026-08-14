@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <initializer_list>
 #include <iterator>
 #include <string>
 #include <unordered_map>
@@ -28,6 +29,19 @@ public:
     Db();
     Db(const Db& db);
 
+    /**
+     * copy `db` from `startIndex` (inclusive) to `endIndex` (exclusive).
+     *
+     * (this does not match an `std::vector` constructor since the iterator range one would require
+     * decoding and re-encoding every tuple without change, and that has some expensive regex.)
+     */
+    Db(const Db& db, int64_t startIndex, int64_t endIndex);
+
+    /**
+     * initialize with the raw values contained in the brace-enclosed initializer list `initList`.
+     */
+    Db(std::initializer_list<DbTuple> initList);
+
     void clear() override;
     void push_back(const DbTuple& dbTuple);
 
@@ -36,13 +50,17 @@ public:
     }
 
     // read-only accessing using `[]`
-    DbTuple& operator [](int64_t index) const;
+    DbTuple operator [](int64_t index) const;
 
 private:
     constexpr std::string FILE_DIR() const override { return "out/client"; }
     constexpr std::string FILENAME_PREFIX() const override { return "db_"; }
 
     int64_t _size = 0;
+
+    // helpers that don't do encoding/decoding (e.g. also good for faster copy constructors)
+    std::string readRaw(int64_t index) const;
+    void writeRaw(const std::string& dbTupleStr);
 
 public:
     //--------------------------------------------------------------------------

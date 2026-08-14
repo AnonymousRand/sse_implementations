@@ -1,5 +1,3 @@
-// >>TODO: eventually make Db also be stored on disk like EncInds?
-
 #pragma once
 
 #include <concepts>

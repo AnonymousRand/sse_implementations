@@ -1,10 +1,11 @@
-#include "utils/db.cpp"
+#include "utils/db.h"
 
 #include <concepts>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <initializer_list>
 #include <iostream>
 #include <string>
 
@@ -21,7 +22,7 @@ Db<DbTuple>::Db() {
 template <IsDbTuple DbTuple>
 Db<DbTuple>::Db(const Db& db) {
     this->filename = this->genFilename();
-    this->_size = db->_size;
+    this->_size = db._size;
 
     try {
         std::filesystem::copy_file(db.filename, this->filename);
@@ -34,6 +35,26 @@ Db<DbTuple>::Db(const Db& db) {
     if (this->file == nullptr) {
         std::cerr << "Error: Db::Db(const Db& db): error opening file" << std::endl;
         std::exit(EXIT_FAILURE);
+    }
+}
+
+
+template <IsDbTuple DbTuple>
+Db<DbTuple>::Db(const Db& db, int64_t startIndex, int64_t endIndex) {
+    this->filename = this->genFilename();
+    this->_size = endIndex - startIndex;
+
+    for (int64_t index = startIndex; index < endIndex; index++) {
+        std::string dbTupleStr = db.readRaw(index);
+        this->writeRaw(dbTupleStr);
+    }
+}
+
+
+template <IsDbTuple DbTuple>
+Db<DbTuple>::Db(std::initializer_list<DbTuple> initList) : Db<DbTuple>() {
+    for (DbTuple dbTuple : initList) {
+        this->push_back(dbTuple);
     }
 }
 
@@ -63,32 +84,13 @@ void Db<DbTuple>::push_back(const DbTuple& dbTuple) {
         dbTupleStr += padding;
     }
 
-    std::fseek(this->file, 0, SEEK_END);
-    int itemsWritten = std::fwrite(dbTupleStr.c_str(), TUPLE_LEN, 1, this->file);
-    if (itemsWritten != 1) {
-        std::cerr << "Error: Db::push_back(): error writing to file (nothing written)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    this->_size++;
+    this->writeRaw(dbTupleStr);
 }
 
 
 template <IsDbTuple DbTuple>
-const DbTuple& Db<DbTuple>::operator [](int64_t index) const {
-    if (index >= this->_size) {
-        std::cerr << "Error: Db::operator []: index out of bounds "
-                  << "(index is " << index << ", size is " << this->_size << ")" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    char dbTupleCstr[TUPLE_LEN];
-    std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
-    int itemsWritten = std::fread(dbTupleCstr, TUPLE_LEN, 1, this->file);
-    if (itemsWritten != 1) {
-        std::cerr << "Error: Db::operator []: error writing to file (nothing written)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+DbTuple Db<DbTuple>::operator [](int64_t index) const {
+    std::string dbTupleStr = this->readRaw(index);
 
     // unpad as necessary so that decoding works properly
     int paddingStart;
@@ -97,10 +99,43 @@ const DbTuple& Db<DbTuple>::operator [](int64_t index) const {
             break;
         }
     }
-    std::string dbTupleStr(dbTupleCstr, paddingStart);
+    dbTupleStr.resize(paddingStart + 1); // (`+ 1` for null terminator)
 
     // decode and return
     return DbTuple::fromStr(dbTupleStr);
+}
+
+
+template <IsDbTuple DbTuple>
+std::string Db<DbTuple>::readRaw(int64_t index) const {
+    if (index >= this->_size) {
+        std::cerr << "Error: Db::readRaw(): index out of bounds "
+                  << "(index is " << index << ", size is " << this->_size << ")" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    char dbTupleCstr[TUPLE_LEN];
+    std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
+    int itemsRead = std::fread(dbTupleCstr, TUPLE_LEN, 1, this->file);
+    if (itemsRead != 1) {
+        std::cerr << "Error: Db::readRaw(): error reading from file (nothing read)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    return std::string(dbTupleCstr);
+}
+
+
+template <IsDbTuple DbTuple>
+void Db<DbTuple>::writeRaw(const std::string& dbTupleStr) {
+    std::fseek(this->file, 0, SEEK_END);
+    int itemsWritten = std::fwrite(dbTupleStr.c_str(), TUPLE_LEN, 1, this->file);
+    if (itemsWritten != 1) {
+        std::cerr << "Error: Db::writeRaw(): error writing to file (nothing written)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    this->_size++;
 }
 
 
