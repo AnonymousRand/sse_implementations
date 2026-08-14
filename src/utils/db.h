@@ -66,9 +66,12 @@ public:
     //--------------------------------------------------------------------------
     // iterator
 
-    // this allows iterating using range-based `for` loop or iterators, as well as `std::sort()`
-    // (specifically, `std::sort()` requires this to be a `LegacyRandomAccessIterator`, which
-    // requires us to implement all the methods, operator overloads, and aliases below)
+    // this allows us to iterate through a `Db` using range-based `for` loop or iterators
+    // (note this is not a `LegacyRandomAccessIterator`, meaning things like `std::sort()`
+    // which need to modify it in place will not work. this is because that requires dereferencing
+    // the iterator to return a reference to a `DbTuple` object, but `DbTuple` objects are only
+    // constructed on the fly when reading from a `Db`, so this is basically impossible.)
+
     // the template allows `DbTuple2` to be either `DbTuple` or `const DbTuple` so we can have both
     // non-const (e.g. for `std::sort()`) and const iterators (e.g. for iterating a `const Db<>&`)
     template <class DbTuple2> requires std::is_same_v<std::remove_cv_t<DbTuple2>, DbTuple>
@@ -76,103 +79,20 @@ public:
         const Db<DbTuple>* db = nullptr;
         int64_t index;
 
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type        = DbTuple;
-        using pointer           = DbTuple2*;
-        using reference         = DbTuple2&;
-        using difference_type   = int64_t;
-
         Iter(const Db<DbTuple>* db, int64_t index) : db(db), index(index) {}
 
-        // dereferencing
-        reference operator *() const {
+        DbTuple2 operator *() const {
             return (*this->db)[this->index];
         }
-        pointer operator ->() const {
-            return &((*this->db)[this->index]);
-        }
-        reference operator [](difference_type n) const {
-            return (*this->db)[this->index + n];
-        }
 
-        // incrementing/decrementing
         Iter<DbTuple2>& operator ++() {
             this->index++;
             return *this;
         }
-        Iter<DbTuple2> operator ++(int) {
-            Iter<DbTuple2> tmpIter = *this;
-            ++(*this);
-            return tmpIter;
-        }
-        Iter<DbTuple2>& operator --() {
-            this->index--;
-            return *this;
-        }
-        Iter<DbTuple2> operator --(int) {
-            Iter<DbTuple2> tmpIter = *this;
-            --(*this);
-            return tmpIter;
-        }
 
-        // compound assignment
-        Iter<DbTuple2>& operator +=(difference_type n) {
-            this->index += n;
-            return *this;
-        }
-        Iter<DbTuple2>& operator -=(difference_type n) {
-            this->index -= n;
-            return *this;
-        }
-
-        // arithmetic
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend Iter<DbTuple3> operator +(Iter<DbTuple3> lhs, difference_type n) {
-            lhs += n;
-            return lhs;
-        }
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend Iter<DbTuple3> operator +(difference_type n, Iter<DbTuple3> rhs) {
-            return rhs + n;
-        }
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend Iter<DbTuple3> operator -(Iter<DbTuple3> lhs, difference_type n) {
-            lhs -= n;
-            return lhs;
-        }
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend difference_type operator -(
-            const Iter<DbTuple3>& iter1, const Iter<DbTuple3>& iter2
-        ) {
-            return iter1.index - iter2.index;
-        }
-
-        // equality
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend bool operator ==(const Iter<DbTuple3>& iter1, const Iter<DbTuple3>& iter2) {
-            return iter1.db == iter2.db && iter1.index == iter2.index;
-        }
         template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
         friend bool operator !=(const Iter<DbTuple3>& iter1, const Iter<DbTuple3>& iter2) {
-            return !(iter1 == iter2);
-        }
-
-        // inequalities
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend bool operator <(const Iter<DbTuple3>& iter1, const Iter<DbTuple3>& iter2) {
-            return iter1.db == iter2.db && iter1.index < iter2.index;
-        }
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend bool operator <=(const Iter<DbTuple3>& iter1, const Iter<DbTuple3>& iter2) {
-            return iter1 < iter2 || iter1 == iter2;
-        }
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend bool operator >(const Iter<DbTuple3>& iter1, const Iter<DbTuple3>& iter2) {
-            return !(iter1 <= iter2);
-        }
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend bool operator >=(const Iter<DbTuple3>& iter1, const Iter<DbTuple3>& iter2) {
-            return !(iter1 < iter2);
+            return !(iter1.db == iter2.db && iter1.index == iter2.index);
         }
     };
 

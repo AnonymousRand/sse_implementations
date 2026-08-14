@@ -159,13 +159,30 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
 // other
 
 
+// TODO put this into sse utils?
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 Db<Tuple<>> LogSrcIBase<Underly>::sortInputDb(const Db<Tuple<>>& db) {
-    Db<Tuple<>> sortedDb = db;
-    auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
-        return tuple1.getKw() < tuple2.getKw();
+    // sort this vector of indices in memory instead of the actual tuples on disk, which is
+    // probably a lot faster and also avoids having to make a random-access iterator for `Db`
+    // (which is basically impossible since that requires dereferencing the iterator to return
+    // a reference to a tuple object, but tuple objects are only constructed on the fly and are
+    // not actually stored anywhere; they are encoded into a string when stored on the disk)
+    std::vector<int64_t> dbIndices;
+    dbIndices.reserve(db.size());
+    for (int64_t index = 0; index < db.size(); index++) {
+        dbIndices.push_back(index);
+    }
+
+    auto sortIndicesByKw = [&db](int64_t index1, int64_t index2) {
+        return db[index1].getKw() < db[index2].getKw();
     };
-    std::sort(sortedDb.begin(), sortedDb.end(), sortByKw);
+    std::sort(dbIndices.begin(), dbIndices.end(), sortIndicesByKw);
+
+    // now build new sorted DB using this sorted vector of indices
+    Db<Tuple<>> sortedDb;
+    for (int64_t index : dbIndices) {
+        sortedDb.push_back(db[index]);
+    }
     return sortedDb;
 }
 
