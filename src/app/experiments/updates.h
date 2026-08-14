@@ -12,6 +12,8 @@
 
 #include "utils/benchmark.h"
 #include "utils/crypto.h"
+#include "utils/db.h"
+#include "utils/tuple.h"
 #include "utils/types.h"
 
 

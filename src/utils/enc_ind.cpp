@@ -211,9 +211,9 @@ EncIndEntry EncInd::get(uint64_t pos) const {
     }
 
     ustring key = ustring(&entry[0], KEY_LEN);
-    ustring tuple = ustring(&entry[KEY_LEN], DATA_LEN);
+    ustring data = ustring(&entry[KEY_LEN], DATA_LEN);
     ustring iv = ustring(&entry[KEY_LEN + DATA_LEN], crypto::IV_LEN);
-    return EncIndEntry {key, EncIndVal {tuple, iv}};
+    return EncIndEntry {key, EncIndVal {data, iv}};
 };
 
 

@@ -9,8 +9,9 @@
 #include "schemes/interfaces/static_point_sse.h"
 #include "schemes/n_log_n/n_log_n_server.h"
 
-#include "utils/tuple.h"
+#include "utils/db.h"
 #include "utils/range.h"
+#include "utils/tuple.h"
 #include "utils/types.h"
 #include "utils/ustring.h"
 
