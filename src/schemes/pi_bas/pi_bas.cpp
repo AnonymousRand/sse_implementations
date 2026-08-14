@@ -171,6 +171,6 @@ uint64_t PiBas<DbTuple>::map(
 // explicit template instantiations
 
 
-template class PiBas<Tuple<>>;        // default/standalone
-template class PiBas<SrcIDb1Tuple>;   // Log-SRC-i index 1
-//template class PiBas<Tuple<IdAlias>>; // Log-SRC-i index 2
+template class PiBas<Tuple<>>;
+template class PiBas<SrcIDb1Tuple>;
+//template class PiBas<Tuple<IdAlias>>;

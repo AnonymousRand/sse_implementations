@@ -42,11 +42,6 @@ ustring toUstr(const EncIndEntry& encIndEntry) {
 const uchar EncInd::NULL_ENTRY[ENTRY_LEN] = {};
 
 
-EncInd::~EncInd() {
-    this->clear();
-}
-
-
 void EncInd::init(int64_t size) {
     this->clear();
 
@@ -66,7 +61,8 @@ void EncInd::init(int64_t size) {
 
 
 void EncInd::clear() {
-    this->clearFile();
+    IDiskStorage::clear();
+
     this->size = 0;
 }
 
@@ -75,9 +71,9 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
     pos %= this->size;
 
     // get entry at `pos`
-    uchar currTuple[ENTRY_LEN];
+    uchar currEntry[ENTRY_LEN];
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    int itemsRead = std::fread(currTuple, ENTRY_LEN, 1, this->file);
+    int itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
         std::cerr << "Error: EncInd::find(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -87,7 +83,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
     // first), scan subsequent locations for where the target `key` could've overflowed to
     const uchar* targetKeyCStr = key.c_str();
     int64_t numPositionsChecked = 1;
-    while (std::memcmp(currTuple, targetKeyCStr, KEY_LEN) != 0
+    while (std::memcmp(currEntry, targetKeyCStr, KEY_LEN) != 0
            && numPositionsChecked < this->size)
     {
         numPositionsChecked++;
@@ -95,7 +91,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsRead = std::fread(currTuple, ENTRY_LEN, 1, this->file);
+        itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
         if (itemsRead != 1) {
             std::cerr << "Error: EncInd::find(): error reading from file (nothing read)"
                       << std::endl;
@@ -103,7 +99,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
         }
     }
     // if not found
-    if (std::memcmp(currTuple, targetKeyCStr, KEY_LEN) != 0) {
+    if (std::memcmp(currEntry, targetKeyCStr, KEY_LEN) != 0) {
         return false;
     }
 
@@ -140,9 +136,9 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     pos %= this->size;
 
     // check if location at `pos` is already filled
-    uchar currTuple[ENTRY_LEN];
+    uchar currEntry[ENTRY_LEN];
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    int itemsReadOrWritten = std::fread(currTuple, ENTRY_LEN, 1, this->file);
+    int itemsReadOrWritten = std::fread(currEntry, ENTRY_LEN, 1, this->file);
     if (itemsReadOrWritten != 1) {
         std::cerr << "Error: EncInd::write(): error reading from file (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -151,7 +147,7 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
     // if location is already filled (because of modulo), find next available location
     // (this is what USENIX'24's implementation does)
     int64_t numPositionsChecked = 1;
-    while (std::memcmp(currTuple, NULL_ENTRY, ENTRY_LEN) != 0
+    while (std::memcmp(currEntry, NULL_ENTRY, ENTRY_LEN) != 0
            && numPositionsChecked < this->size)
     {
         numPositionsChecked++;
@@ -159,14 +155,14 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
         }
-        itemsReadOrWritten = std::fread(currTuple, ENTRY_LEN, 1, this->file); 
+        itemsReadOrWritten = std::fread(currEntry, ENTRY_LEN, 1, this->file); 
         if (itemsReadOrWritten != 1) {
             std::cerr << "Error: EncInd::write(): error reading from file (nothing read)"
                       << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
-    if (std::memcmp(currTuple, NULL_ENTRY, ENTRY_LEN) != 0) {
+    if (std::memcmp(currEntry, NULL_ENTRY, ENTRY_LEN) != 0) {
         std::cerr << "Error: EncInd::write(): ran out of space writing!" << std::endl;
         std::exit(EXIT_FAILURE);
     }

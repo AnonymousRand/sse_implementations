@@ -147,7 +147,8 @@ ustring padAndEncrypt(
                   << " bytes is too long! " << "(want " << targetLenBytes << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    ustring padding(targetLenBytes - ptext.length(), '\0');
+    int amountToPad = targetLenBytes - ptext.length();
+    ustring padding(amountToPad, '\0');
     return encrypt(cipher, key, ptext + padding, iv);
 }
 
@@ -194,13 +195,13 @@ ustring decryptAndUnpad(
     const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv
 ) {
     ustring ptext = decrypt(cipher, key, ctext, iv);
-    int paddingStartInd;
-    for (paddingStartInd = ptext.length() - 1; paddingStartInd >= 0; paddingStartInd--) {
-        if (ptext[paddingStartInd] != '\0') {
+    int paddingStart;
+    for (paddingStart = ptext.length() - 1; paddingStart >= 0; paddingStart--) {
+        if (ptext[paddingStart] != '\0') {
             break;
         }
     }
-    ptext.resize(paddingStartInd + 1); // (`+ 1` for null terminator)
+    ptext.resize(paddingStart + 1); // (`+ 1` for null terminator)
     return ptext;
 }
 

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <format>
 #include <iostream>
 #include <random>
@@ -31,20 +32,49 @@ IDiskStorage::IDiskStorage() {
 
 
 IDiskStorage::~IDiskStorage() {
-    this->clearFile();
+    this->clear();
 }
+
+
+void IDiskStorage::clear() {
+    // close file descriptors
+    if (this->file != nullptr) {
+        std::fclose(this->file);
+        this->file = nullptr;
+    }
+
+    // delete file from disk
+    if (this->filename != "") {
+        std::remove(this->filename.c_str());
+        this->filename = "";
+    }
+}
+
+
+//--------------------------------------------------------------------------
+// helpers
 
 
 std::string IDiskStorage::genFilename() const {
     // avoid naming clashes by generating a random 8 byte (16 char) hex string
     uint64_t randomHex = ::dist(utils::RNG);
     std::string randomHexStr = std::format("{:016x}", randomHex);
-    return this->FILENAME_PREFIX() + randomHexStr + ".dat";
+    return std::format("{}/{}{}.dat", this->FILE_DIR(), this->FILENAME_PREFIX(), randomHexStr);
 }
 
 
 void IDiskStorage::initFile() {
     this->filename = this->genFilename();
+
+    // first make sure base directory exists
+    try {
+        std::filesystem::create_directories(this->FILE_DIR());
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Error: IDiskStorage::initFile(): error creating path " << this->FILE_DIR()
+                  << ": " << e.what() << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     FILE* fileTmp = std::fopen(this->filename.c_str(), "r");
     // while file exists (or any other error occurs on open), create new random filename
     while (fileTmp != nullptr) {
@@ -58,20 +88,5 @@ void IDiskStorage::initFile() {
     if (this->file == nullptr) {
         std::cerr << "Error: IDiskStorage::initFile(): error opening file" << std::endl;
         std::exit(EXIT_FAILURE);
-    }
-}
-
-
-void IDiskStorage::clearFile() {
-    // close file descriptors
-    if (this->file != nullptr) {
-        std::fclose(this->file);
-        this->file = nullptr;
-    }
-
-    // delete file from disk
-    if (this->filename != "") {
-        std::remove(this->filename.c_str());
-        this->filename = "";
     }
 }

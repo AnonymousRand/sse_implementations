@@ -56,10 +56,8 @@ public:
     inline static constexpr int VAL_LEN   = DATA_LEN + crypto::IV_LEN;
     inline static constexpr int ENTRY_LEN = KEY_LEN + VAL_LEN;
 
-    ~EncInd();
-
     void init(int64_t size);
-    void clear();
+    void clear() override;
 
     /**
      * tries to find `key` starting at `pos` and iterating linearly if not matching
@@ -99,9 +97,8 @@ private:
 
     int64_t size = 0;
 
-    const std::string FILENAME_PREFIX() const override = {
-        return "out/server/enc_ind_";
-    }
+    constexpr std::string FILENAME_DIR() const override { return "out/server"; }
+    constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
 
     //----------------------------------------------------------------------
     // debugging

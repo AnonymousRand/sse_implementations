@@ -88,7 +88,6 @@ void padDb(Db<DbTuple>& db, typename DbTuple::DbKwType& currMaxDbKw) {
     int64_t dbSize = db.size();
     if (!std::has_single_bit((uint64_t)dbSize)) {
         int64_t amountToPad = std::pow(2, std::ceil(std::log2(dbSize))) - dbSize;
-        db.reserve(dbSize + amountToPad);
         for (int64_t i = 0; i < amountToPad; i++) {
             currMaxDbKw++;
             Range<DbKw> dbKwRange {currMaxDbKw, currMaxDbKw};

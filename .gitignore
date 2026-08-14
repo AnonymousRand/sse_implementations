@@ -1,5 +1,5 @@
 # generated program files
-out/enc_ind_*
+out/*
 *.out
 
 # build

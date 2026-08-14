@@ -48,13 +48,13 @@ void run(ISse<>* sse, int64_t maxDbSize) {
         Kw kw1 = 0;
         Kw kw2 = dbSize - 1;
         Range<Kw> kwRange1 {kw1, kw1};
-        int64_t id;
         Range<Kw> kwRange2 {kw2, kw2};
+        int64_t id;
         for (id = 0; id < dbSize / 2; id++) {
-            db.push_back(Tuple<> {id, kw1, Op::INS, kwRange1});
+            db.append(Tuple<> {id, kw1, Op::INS, kwRange1});
         }
         for (; id < dbSize; id++) {
-            db.push_back(Tuple<> {id, kw2, Op::INS, kwRange2});
+            db.append(Tuple<> {id, kw2, Op::INS, kwRange2});
         }
 
         /*
@@ -67,9 +67,9 @@ void run(ISse<>* sse, int64_t maxDbSize) {
         Range<Kw> kwRange1 {kw1, kw1};
         Range<Kw> kwRange2 {kw2, kw2};
         for (int64_t i = 0; i < dbSize - 1; i++) {
-            db.push_back(Tuple<> {i, kw1, Op::INS, kwRange1});
+            db.append(Tuple<> {i, kw1, Op::INS, kwRange1});
         }
-        db.push_back(Tuple<> {dbSize - 1, kw2, Op::INS, kwRange2});
+        db.append(Tuple<> {dbSize - 1, kw2, Op::INS, kwRange2});
         */
 
         // setup

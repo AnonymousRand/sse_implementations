@@ -368,7 +368,6 @@ void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* 
     using DbKw = typename DbTuple::DbKwType;
 
     int64_t dbSize = db.size();
-    db.reserve(calcTdagTupleCount(dbSize));
     for (int64_t i = 0; i < dbSize; i++) {
         DbTuple tuple = db[i];
         Range<DbKw> dbKwRange = tuple.getDbKwRange();

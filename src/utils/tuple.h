@@ -84,6 +84,7 @@ public:
     Op getOp() const;
 
     std::string toStr() const override;
+    static Tuple<DbKw> fromStr(const std::string& str);
     static Tuple<DbKw> fromUstr(const ustring& ustr);
     static Tuple<DbKw> genDummy(const Range<DbKw>& dbKwRange);
 
@@ -116,6 +117,7 @@ public:
     Range<IdAlias> getIdAliasRange() const;
 
     std::string toStr() const override;
+    static SrcIDb1Tuple fromStr(const std::string& str);
     static SrcIDb1Tuple fromUstr(const ustring& ustr);
     static SrcIDb1Tuple genDummy(const Range<Kw>& kwRange);
 
