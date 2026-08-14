@@ -9,10 +9,12 @@
 #include <functional>
 #include <initializer_list>
 #include <iostream>
+#include <random>
 #include <string>
 #include <vector>
 
 #include "utils/disk_storage.h"
+#include "utils/random.h"
 #include "utils/tuple.h"
 
 
@@ -100,6 +102,12 @@ void Db<DbTuple>::push_back(const DbTuple& dbTuple) {
 
 
 template <IsDbTuple DbTuple>
+bool Db<DbTuple>::empty() const {
+    return this->_size == 0;
+}
+
+
+template <IsDbTuple DbTuple>
 DbTuple Db<DbTuple>::operator [](int64_t index) const {
     std::string dbTupleStr = this->readRaw(index);
 
@@ -156,7 +164,7 @@ void Db<DbTuple>::writeRaw(const std::string& dbTupleStr) {
 
 template <IsDbTuple DbTuple>
 Db<DbTuple> Db<DbTuple>::applyAlgoViaIndices(
-    const std::function<void(const std::vector<int64_t>& dbIndices)>& algoOnIndices
+    const std::function<void(std::vector<int64_t>& dbIndices)>& algoOnIndices
 ) const {
     std::vector<int64_t> dbIndices;
     dbIndices.reserve(this->_size);
@@ -164,7 +172,7 @@ Db<DbTuple> Db<DbTuple>::applyAlgoViaIndices(
         dbIndices.push_back(index);
     }
 
-    algo(dbIndices);
+    algoOnIndices(dbIndices);
 
     // now build output DB using this vector of indices
     Db<DbTuple> outputDb;
@@ -178,16 +186,16 @@ Db<DbTuple> Db<DbTuple>::applyAlgoViaIndices(
 
 template <IsDbTuple DbTuple>
 void Db<DbTuple>::shuffle() {
-    auto shuffle = [&RNG](const std::vector<int64_t>& dbIndices) {
-        std::shuffle(dbIndices.begin(), dbIndices.end(), RNG);
+    auto shuffle = [](std::vector<int64_t>& dbIndices) {
+        std::shuffle(dbIndices.begin(), dbIndices.end(), utils::RNG);
     };
     *this = this->applyAlgoViaIndices(shuffle);
 }
 
 
 template <IsDbTuple DbTuple>
-void Db<DbTuple>::sort(const std::function<void(int64_t index1, int64_t index2)>& compare) {
-    auto sort = [&compare](const std::vector<int64_t>& dbIndices) {
+void Db<DbTuple>::sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) {
+    auto sort = [&compare](std::vector<int64_t>& dbIndices) {
         std::sort(dbIndices.begin(), dbIndices.end(), compare);
     };
     *this = this->applyAlgoViaIndices(sort);

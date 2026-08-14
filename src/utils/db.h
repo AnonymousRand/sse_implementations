@@ -71,6 +71,8 @@ public:
         return this->_size;
     }
 
+    bool empty() const;
+
     // read-only accessing using `[]`
     DbTuple operator [](int64_t index) const;
 
@@ -82,7 +84,7 @@ public:
      * smaller than the `Db` itself) and then using that to build and return a new output `Db`.
      */
     Db<DbTuple> applyAlgoViaIndices(
-        const std::function<void(const std::vector<int64_t>& dbIndices)>& algoOnIndices
+        const std::function<void(std::vector<int64_t>& dbIndices)>& algoOnIndices
     ) const;
 
     /**
@@ -90,7 +92,7 @@ public:
      * additionally, these methods replace `*this` with the output `Db`.
      */
     void shuffle();
-    void sort(const std::function<void(int64_t index1, int64_t index2)>& compare);
+    void sort(const std::function<bool(int64_t index1, int64_t index2)>& compare);
 
 private:
     constexpr std::string FILE_DIR() const override { return "out/client"; }
