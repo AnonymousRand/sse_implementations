@@ -95,6 +95,7 @@ public:
 private:
     constexpr std::string FILE_DIR() const override { return "out/server"; }
     constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
+    // (note: this does not work correctly using `ab+`)
 
     static const uchar NULL_ENTRY[ENTRY_LEN];
 

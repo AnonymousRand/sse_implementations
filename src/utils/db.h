@@ -101,7 +101,7 @@ private:
     int64_t _size = 0;
 
     // TODO rename "other" section to "helpers" everywhere?
-    // TODO add more of these sections (e.g. tdag) for grouping?
+    // TODO add more of these sections (e.g. in tdag) for grouping?
     //--------------------------------------------------------------------------
     // helpers
 

@@ -55,6 +55,7 @@ Db<DbTuple>::Db(const Db& other) {
     //std::fclose(tmp);
     //std::fclose(tmpOther);
 
+    // note: use `a` instead of `w` mode always here to not overwrite the file we just copied
     this->file = std::fopen(this->filename.c_str(), "ab+");
     if (this->file == nullptr) {
         std::cerr << "Error: Db::Db(const Db&): error opening file" << std::endl;

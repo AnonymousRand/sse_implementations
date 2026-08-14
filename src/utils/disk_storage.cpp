@@ -76,10 +76,7 @@ void IDiskStorage::init() {
         this->filename = this->genFilename();
     }
     
-    // note: use `a` instead of `w` mode since there can be times (e.g. `fopen()`ing in a copy
-    // constructor after using `std::filesystem::copy_file()`) where we want to `fopen()` an
-    // existing file and NOT overwrite it
-    this->file = std::fopen(this->filename.c_str(), "ab+");
+    this->file = std::fopen(this->filename.c_str(), "wb+");
     if (this->file == nullptr) {
         std::cerr << "Error: IDiskStorage::init(): error opening file" << std::endl;
         std::exit(EXIT_FAILURE);
