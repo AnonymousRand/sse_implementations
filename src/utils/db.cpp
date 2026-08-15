@@ -96,6 +96,7 @@ void Db<DbTuple>::push_back(const DbTuple& dbTuple) {
                   << " bytes is not allowed! "
                   << "(want " << TUPLE_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
+    // >TODO make this use utils::padStr() once sse_utils changed enough for no circular include
     } else if (dbTupleStr.length() < TUPLE_LEN) {
         int amountToPad = TUPLE_LEN - dbTupleStr.length();
         std::string padding(amountToPad, '\0');

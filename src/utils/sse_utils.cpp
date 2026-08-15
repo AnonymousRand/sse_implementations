@@ -5,6 +5,7 @@
 #include <concepts>
 #include <cstdint>
 #include <iostream>
+#include <string>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -139,6 +140,16 @@ uint64_t hashToPos(const ustring& hash) {
 }
 
 
+template <class CharType>
+void padStr(std::basic_string<CharType>& str, int targetLen) {
+    if (str.length() < targetLen) {
+        int amountToPad = targetLen - str.length();
+        std::basic_string<CharType> padding(amountToPad, '\0');
+        str += padding;
+    }
+}
+
+
 //------------------------------------------------------------------------------
 // explicit template instantiations
 
@@ -168,6 +179,10 @@ template void padDb(Db<SrcIDb1Tuple>& db, Kw& currMaxDbKw);
 // remaining explicit template specializations beyond the one earlier
 template std::vector<SrcIDb1Tuple> cleanUpResults(const std::vector<SrcIDb1Tuple>& tuples);
 //template std::vector<Tuple<IdAlias>> cleanUpResults(const std::vector<Tuple<IdAlias>>& tuples);
+
+
+template void padStr(std::basic_string<char>& str, int targetLen);
+template void padStr(std::basic_string<uchar>& str, int targetLen);
 
 
 } // namespace `utils`

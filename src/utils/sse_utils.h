@@ -3,6 +3,7 @@
 #include <concepts>
 #include <cstdint>
 #include <iostream>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -38,6 +39,10 @@ std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples);
 
 
 uint64_t hashToPos(const ustring& hash);
+
+
+template <class CharType>
+void padStr(std::basic_string<CharType>& str, int targetLen);
 
 
 } // namespace `utils`

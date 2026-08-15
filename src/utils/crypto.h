@@ -31,14 +31,13 @@ ustring encrypt(
 );
 
 /**
- * pad `ptext` to `targetLenBytes` before encrypting.
+ * pad `ptext` to `targetLen` before encrypting.
  *
  * IMPORTANT: for some reason padding to exactly n blocks generates n + 1 blocks,
  * so always pad to one less byte!
  */
 ustring padAndEncrypt(
-    const EVP_CIPHER* cipher,
-    const ustring& key, const ustring& ptext, const ustring& iv, int targetLenBytes
+    const EVP_CIPHER* cipher, const ustring& key, ustring ptext, const ustring& iv, int targetLen
 );
 
 ustring decrypt(
