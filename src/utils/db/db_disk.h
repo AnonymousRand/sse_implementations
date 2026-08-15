@@ -1,41 +1,30 @@
 #pragma once
 
 #include <concepts>
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <functional>
 #include <initializer_list>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "utils/db/db_interface.h"
 #include "utils/disk_storage.h"
 #include "utils/enc_ind.h"
 #include "utils/range.h"
 #include "utils/tuple.h"
 
 
-//==============================================================================
-// `Db`
-//==============================================================================
-
-
 // this is essentially a vector but stored on disk, hence we match `std::vector`'s method names
-template <IsDbTuple DbTuple = Tuple<>>
-class Db : public IDiskStorage {
+template <IsDbTuple DbTuple>
+class DbDisk : public IDb<DbTuple>, public IDiskStorage {
 public:
     inline static const int TUPLE_LEN = EncInd::DATA_LEN;
 
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    Db();
-
-    /**
-     * copy constructor (that should avoid encoding and de-encoding each tuple as it is moved).
-     */
-    Db(const Db& other);
+    DbDisk();
 
     /**
      * copy `db` from `startIndex` (inclusive) to `endIndex` (exclusive).
@@ -43,56 +32,50 @@ public:
      * (this does not match an `std::vector` constructor since the iterator range one would require
      * decoding and re-encoding every tuple without change, and that has some expensive regex.)
      */
-    Db(const Db& db, int64_t startIndex, int64_t endIndex);
+    DbDisk(const DbDisk& db, int64_t startIndex, int64_t endIndex);
 
     /**
-     * initialize a `Db` with the raw values in the brace-enclosed initializer list `initList`.
+     * initialize a `DbDisk` with the raw values in the brace-enclosed initializer list `initList`.
      */
-    Db(std::initializer_list<DbTuple> initList);
+    DbDisk(std::initializer_list<DbTuple> initList);
+
+    /**
+     * copy constructor (that should avoid encoding and de-encoding each tuple as it is moved).
+     */
+    DbDisk(const DbDisk& other);
 
     /**
      * move assignment operator that allows cheap moving instead of expensive copying of
-     * `Db` rvalues when they are assigned to an existing variable, e.g. `*this = ...`.
+     * `DbDisk` rvalues when they are assigned to an existing variable, e.g. `*this = ...`.
      */
     // (currently, this is `= default` to force the compiler to generate a default one, which is
     // needed to make sure parent class move assignment operators are also called. normally the
     // compiler autogenerates such default constructors, but i've manually implemented other special
     // constructors like the copy constructor in this class, which prevents this autogeneration.)
     // TODO: test performance vs. without this!
-    Db& operator =(Db&& other) noexcept = default;
+    DbDisk& operator =(DbDisk&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
-    // interface
+    // `IDb`
 
     void clear() override;
-    void push_back(const DbTuple& dbTuple);
+    void push_back(const DbTuple& dbTuple) override;
 
-    int64_t size() const {
+    int64_t size() const override {
         return this->_size;
     }
 
-    bool empty() const;
+    bool empty() const override;
 
     // read-only accessing using `[]`
-    DbTuple operator [](int64_t index) const;
+    // TODO test what if this is const DbTuple&
+    DbTuple operator [](int64_t index) const override;
 
-    /**
-     * wrapper for algorithms (e.g. from `<algorithms>`) to make them work when a `Db` isn't
-     * actually storing any of its entries as actual `DbTuple` elements anywhere.
-     *
-     * instead, perform the algorithm on a vector of indices (which should be significantly
-     * smaller than the `Db` itself) and then using that to build and return a new output `Db`.
-     */
-    Db<DbTuple> applyAlgoViaIndices(
-        const std::function<void(std::vector<int64_t>& dbIndices)>& algoOnIndices
-    ) const;
-
-    /**
-     * instantiations of `applyAlgoViaIndices()` using specific common `algoOnIndices` functions.
-     * additionally, these methods replace `*this` with the output `Db`.
-     */
-    void shuffle();
-    void sort(const std::function<bool(int64_t index1, int64_t index2)>& compare);
+    // these are instantiations of `applyAlgoViaIndices()` (see below) using specific common
+    // `algoOnIndices` functions
+    // additionally, these methods replace `*this` with the output `DbDisk`
+    void shuffle() override;
+    void sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) override;
 
 private:
     constexpr std::string FILE_DIR() const override { return "out/client"; }
@@ -109,24 +92,37 @@ private:
     void readRaw(int64_t index, char* ret) const;
     void appendRaw(const char* dbTupleCstr);
 
+    /**
+     * wrapper for algorithms (e.g. from `<algorithms>`) to make them work when a `DbDisk` isn't
+     * actually storing any of its entries as actual `DbTuple` elements anywhere.
+     *
+     * instead, perform the algorithm on a vector of indices (which should be significantly
+     * smaller than the `DbDisk` itself) and then using that to build and return a new output `DbDisk`.
+     */
+    DbDisk<DbTuple> applyAlgoViaIndices(
+        const std::function<void(std::vector<int64_t>& dbIndices)>& algoOnIndices
+    ) const;
+
 public:
     //--------------------------------------------------------------------------
     // iterator
 
-    // this allows us to iterate through a `Db` using range-based `for` loop or iterators
+    // this allows us to iterate through a `DbDisk` using range-based `for` loop or iterators,
+    // implementing the bare minimum operator overloads necessary to do so
+    // 
     // (note this is not a `LegacyRandomAccessIterator`, meaning things like `std::sort()`
     // which need to modify it in place will not work. this is because that requires dereferencing
     // the iterator to return a reference to a `DbTuple` object, but `DbTuple` objects are only
-    // constructed on the fly when reading from a `Db`, so this is basically impossible.)
+    // constructed on the fly when reading from a `DbDisk`, so this is basically impossible.)
 
     // the template allows `DbTuple2` to be either `DbTuple` or `const DbTuple` so we can have both
-    // non-const (e.g. for `std::sort()`) and const iterators (e.g. for iterating a `const Db<>&`)
+    // non-const (e.g. for `std::sort()`) and const iterators (e.g. for iterating a `const DbDisk<>&`)
     template <class DbTuple2> requires std::is_same_v<std::remove_cv_t<DbTuple2>, DbTuple>
     struct Iter {
-        const Db<DbTuple>* db = nullptr;
+        const DbDisk<DbTuple>* db = nullptr;
         int64_t index;
 
-        Iter(const Db<DbTuple>* db, int64_t index) : db(db), index(index) {}
+        Iter(const DbDisk<DbTuple>* db, int64_t index) : db(db), index(index) {}
 
         DbTuple2 operator *() const {
             return (*this->db)[this->index];
@@ -161,12 +157,3 @@ public:
         return Iter<const DbTuple>(this, this->_size);
     }
 };
-
-
-//==============================================================================
-// `Ind`
-//==============================================================================
-
-
-template <IsDbTuple DbTuple>
-using Ind = std::unordered_map<Range<typename DbTuple::DbKwType>, Db<DbTuple>>;

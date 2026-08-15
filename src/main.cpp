@@ -15,7 +15,7 @@
 #include "schemes/pi_bas/pi_bas.h"
 #include "schemes/sda/sda.h"
 
-#include "utils/db.h"
+#include "utils/db/db.h"
 #include "utils/range.h"
 #include "utils/types.h"
 

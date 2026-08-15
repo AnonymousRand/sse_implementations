@@ -6,7 +6,7 @@
 #include <list>
 #include <unordered_set>
 
-#include "utils/db.h"
+#include "utils/db/db.h"
 #include "utils/range.h"
 #include "utils/tuple.h"
 

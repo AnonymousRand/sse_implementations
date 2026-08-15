@@ -6,7 +6,7 @@
 
 #include "schemes/n_log_n/n_log_n.h" 
 
-#include "utils/db.h"
+#include "utils/db/db.h"
 #include "utils/range.h"
 #include "utils/tuple.h"
 #include "utils/types.h"

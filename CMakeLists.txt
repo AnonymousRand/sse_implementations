@@ -27,7 +27,8 @@ add_executable(
     src/schemes/sda/sda.cpp
 
     src/utils/crypto.cpp
-    src/utils/db.cpp
+    src/utils/db/db_disk.cpp
+    src/utils/db/db_ram.cpp
     src/utils/debugging.cpp
     src/utils/disk_storage.cpp
     src/utils/enc_ind.cpp

@@ -11,7 +11,7 @@
 #include "schemes/interfaces/dsse.h"
 #include "schemes/interfaces/sse.h"
 
-#include "utils/db.h"
+#include "utils/db/db.h"
 #include "utils/range.h"
 #include "utils/tuple.h"
 #include "utils/types.h"

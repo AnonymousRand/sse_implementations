@@ -5,7 +5,7 @@
 #include "schemes/interfaces/sse.h"
 #include "schemes/log_src_i/log_src_i_base.h"
 
-#include "utils/db.h"
+#include "utils/db/db.h"
 #include "utils/range.h"
 #include "utils/tdag.h"
 #include "utils/tuple.h"

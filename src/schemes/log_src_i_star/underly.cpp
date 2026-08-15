@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "utils/db.h"
+#include "utils/db/db.h"
 #include "utils/enc_ind.h"
 #include "utils/range.h"
 #include "utils/sse_utils.h"
