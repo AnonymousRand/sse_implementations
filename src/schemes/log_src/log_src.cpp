@@ -44,7 +44,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
     // build TDAG over `Kw`s and replicate `db` appropriately
     Db<Tuple<>> dbWithRepls = db;
-    utils::buildTdagAndDb(this->tdag, dbWithRepls);
+    utils::buildTdagAndDb<Tuple<>>(this->tdag, dbWithRepls);
 
     this->underly->setup(secParam, dbWithRepls);
 }

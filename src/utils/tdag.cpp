@@ -343,7 +343,9 @@ int64_t calcTdagTupleCount(int64_t leafCount) {
 
 
 template <IsDbTuple DbTuple>
-void buildTdagAndDb(TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, bool shouldPadDb) {
+void buildTdagAndDb(
+    TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, bool shouldPadDb
+) {
     using DbKw = typename DbTuple::DbKwType;
 
     // obtain TDAG leaf bounds

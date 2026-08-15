@@ -52,7 +52,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // build index 1
 
     // build TDAG 1 over `Kw`s and replicate `db1` appropriately
-    utils::buildTdagAndDb(this->tdag1, db1);
+    utils::buildTdagAndDb<SrcIDb1Tuple>(this->tdag1, db1);
 
     this->underly1->setup(secParam, db1);
 
@@ -60,7 +60,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // build index 2
 
     // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately
-    utils::buildTdagAndDb(this->tdag2, db2);
+    utils::buildTdagAndDb<Tuple<IdAlias>>(this->tdag2, db2);
 
     this->underly2->setup(secParam, db2);
 }

@@ -1,9 +1,15 @@
 #pragma once
 
+#include <concepts>
+#include <cstdint>
+#include <unordered_map>
+
 #include "utils/db/db.h"
+#include "utils/range.h"
+#include "utils/tuple.h"
 
 
-template <IsDbTuple DbTuple = DbTuple<>>
+template <IsDbTuple DbTuple = Tuple<>>
 class Ind {
 private:
     using DbKw      = typename DbTuple::DbKwType;

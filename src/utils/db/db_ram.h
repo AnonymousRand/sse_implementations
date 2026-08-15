@@ -49,7 +49,7 @@ public:
     void sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) override;
 
 private:
-    InnerType<DbTuple> vec;
+    InnerType vec;
 
 //------------------------------------------------------------------------------
 // iterator
