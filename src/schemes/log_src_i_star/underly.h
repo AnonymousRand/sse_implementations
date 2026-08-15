@@ -40,7 +40,7 @@ private:
     std::vector<DbTuple> searchBase(const Range<DbKw>& query) const override;
 
     //----------------------------------------------------------------------
-    // other
+    // helpers
 
     int64_t computeNumLvls() const override;
     int64_t computeBcktCountOnLvl(int64_t lvlNum) const override;

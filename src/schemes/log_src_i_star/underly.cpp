@@ -68,7 +68,7 @@ std::vector<DbTuple> Underly<DbTuple>::searchBase(const Range<DbKw>& query) cons
 
 
 //------------------------------------------------------------------------------
-// other
+// helpers
 
 
 template <IsDbTuple DbTuple>

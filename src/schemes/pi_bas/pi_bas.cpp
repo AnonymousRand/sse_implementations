@@ -147,7 +147,7 @@ std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const 
 
 
 //------------------------------------------------------------------------------
-// other
+// helpers
 
 
 template <IsDbTuple DbTuple>

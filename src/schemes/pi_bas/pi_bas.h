@@ -47,7 +47,7 @@ private:
     std::vector<DbTuple> searchBase(const Range<DbKw>& query) const override;
 
     //----------------------------------------------------------------------
-    // other
+    // helpers
 
     ustring genQueryToken(const Range<DbKw>& query) const;
 

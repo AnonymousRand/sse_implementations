@@ -45,7 +45,7 @@ protected:
     TdagNode<IdAlias>* tdag2 = nullptr;
 
     //--------------------------------------------------------------------------
-    // other (mostly shared code/utils between all Log-SRC-i-type schemes' `setup()`)
+    // helpers (mostly shared code/utils between all Log-SRC-i-type schemes' `setup()`)
 
     static Db<Tuple<>> sortInputDb(const Db<Tuple<>>& db);
 

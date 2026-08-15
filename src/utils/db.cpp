@@ -125,7 +125,7 @@ DbTuple Db<DbTuple>::operator [](int64_t index) const {
             break;
         }
     }
-    dbTupleStr.resize(paddingStart + 1); // (`+ 1` for null terminator)
+    dbTupleStr.resize(paddingStart + 1); // (`+ 1` to add back first null terminator)
 
     // decode and return
     return DbTuple::fromStr(dbTupleStr);

@@ -39,7 +39,7 @@ void PiBasServer<DbTuple>::clear() {
 
 
 //------------------------------------------------------------------------------
-// other
+// helpers
 
 
 template <IsDbTuple DbTuple>

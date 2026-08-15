@@ -24,7 +24,7 @@ public:
     void clear() override;
 
     //----------------------------------------------------------------------
-    // other
+    // helpers
 
     void setEncInd(EncInd* encInd);
     EncInd* getEncInd() const;

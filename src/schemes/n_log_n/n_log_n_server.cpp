@@ -63,7 +63,7 @@ void NLogNServer<DbTuple>::clear() {
 
 
 //------------------------------------------------------------------------------
-// other
+// helpers
 
 
 template <IsDbTuple DbTuple>

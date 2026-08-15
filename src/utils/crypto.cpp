@@ -201,8 +201,7 @@ ustring decryptAndUnpad(
             break;
         }
     }
-    // TODO test if +1 needed
-    ptext.resize(paddingStart + 1); // (`+ 1` for null terminator)
+    ptext.resize(paddingStart + 1); // (`+ 1` to add back first null terminator)
     return ptext;
 }
 

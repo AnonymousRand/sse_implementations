@@ -25,7 +25,7 @@ public:
     void clear() override;
 
     //----------------------------------------------------------------------
-    // other
+    // helpers
 
     void setEncIndLvls(const std::vector<EncInd*>& encIndLvls);
     std::vector<EncInd*> getEncIndLvls() const;
@@ -43,7 +43,7 @@ private:
     EncInd* dbKwCountsDict = nullptr;
 
     //--------------------------------------------------------------------------
-    // other
+    // helpers
 
     int64_t calcAllEncIndLvlsBytes() const;
 };

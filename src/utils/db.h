@@ -102,8 +102,6 @@ private:
     // (`mutable` allows this to be modified in `const` contexts still)
     mutable bool isFlushed = true;
 
-    // TODO rename "other" section to "helpers" everywhere?
-    // TODO add more of these sections (e.g. in tdag) for grouping?
     //--------------------------------------------------------------------------
     // helpers
 
