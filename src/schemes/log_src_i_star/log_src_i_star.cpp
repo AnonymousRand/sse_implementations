@@ -6,7 +6,6 @@
 
 #include "utils/db/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tdag.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
@@ -76,7 +75,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // after guaranteeing contiguous-ness of `Kw`s, build TDAG 1 over `Kw`s and replicate
     // `db1` appropriately, again padding the leaf count to the next power of 2 as is
     // required for Log-SRC-i*
-    utils::buildTdag(this->tdag1, db1, true);
+    utils::buildTdagAndDb(this->tdag1, db1, true);
 
     this->underly1->setup(secParam, db1);
 
@@ -85,7 +84,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
 
     // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately, and padding
     // the leaf count to the next power of 2 as is required for Log-SRC-i*
-    utils::buildTdag(this->tdag2, db2, true);
+    utils::buildTdagAndDb(this->tdag2, db2, true);
 
     this->underly2->setup(secParam, db2);
 }

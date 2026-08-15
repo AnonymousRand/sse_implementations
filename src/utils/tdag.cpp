@@ -11,7 +11,6 @@
 
 #include "utils/db/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
 
@@ -344,16 +343,16 @@ int64_t calcTdagTupleCount(int64_t leafCount) {
 
 
 template <IsDbTuple DbTuple>
-void buildTdag(TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, bool shouldPadDb) {
+void buildTdagAndDb(TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, bool shouldPadDb) {
     using DbKw = typename DbTuple::DbKwType;
 
     // obtain TDAG leaf bounds
-    Range<DbKw> dbKwBounds = findDbKwBounds(db);
+    Range<DbKw> dbKwBounds = db.findDbKwBounds();
     DbKw maxDbKw = dbKwBounds.second;
 
     // pad if necessary
     if (shouldPadDb) {
-        padDb(db, maxDbKw);
+        db.pad(maxDbKw);
     }
 
     // construct TDAG
@@ -388,9 +387,9 @@ void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* 
 // explicit template instantiations
 
 
-template void buildTdag(TdagNode<Kw>*& tdag, Db<Tuple<>>& db, bool shouldPadDb);
-template void buildTdag(TdagNode<Kw>*& tdag, Db<SrcIDb1Tuple>& db, bool shouldPadDb);
-//template void buildTdag(TdagNode<IdAlias>*& tdag, Db<Tuple<IdAlias>>& db, bool shouldPadDb);
+template void buildTdagAndDb(TdagNode<Kw>*& tdag, Db<Tuple<>>& db, bool shouldPadDb);
+template void buildTdagAndDb(TdagNode<Kw>*& tdag, Db<SrcIDb1Tuple>& db, bool shouldPadDb);
+//template void buildTdagAndDb(TdagNode<IdAlias>*& tdag, Db<Tuple<IdAlias>>& db, bool shouldPadDb);
 
 
 template void replDbForTdag(Db<Tuple<>>& db, const TdagNode<Kw>* tdag);

@@ -68,7 +68,8 @@ public:
     bool empty() const override;
 
     // read-only accessing using `[]`
-    // TODO test what if this is const DbTuple&
+    // >TODO test what if this is const DbTuple&? same with Ind. maybe just implement both const
+    // and non-const reference versions?
     DbTuple operator [](int64_t index) const override;
 
     // these are instantiations of `applyAlgoViaIndices()` (see below) using specific common
@@ -103,20 +104,21 @@ private:
         const std::function<void(std::vector<int64_t>& dbIndices)>& algoOnIndices
     ) const;
 
+//------------------------------------------------------------------------------
+// iterator
+
+// this allows us to iterate through a `DbDisk` using range-based `for` loop or iterators,
+// implementing the bare minimum operator overloads necessary to do so
+// 
+// (note this is not a `LegacyRandomAccessIterator`, meaning things like `std::sort()`
+// which need to modify it in place will not work. this is because that requires dereferencing
+// the iterator to return a reference to a `DbTuple` object, but `DbTuple` objects are only
+// constructed on the fly when reading from a `DbDisk`, so this is basically impossible.)
+
+// the template allows `DbTuple2` to be either `DbTuple` or `const DbTuple` so we can have both
+// non-const (e.g. for `std::sort()`) and const iterators (e.g. for iterating a `const DbDisk<>&`)
+
 public:
-    //--------------------------------------------------------------------------
-    // iterator
-
-    // this allows us to iterate through a `DbDisk` using range-based `for` loop or iterators,
-    // implementing the bare minimum operator overloads necessary to do so
-    // 
-    // (note this is not a `LegacyRandomAccessIterator`, meaning things like `std::sort()`
-    // which need to modify it in place will not work. this is because that requires dereferencing
-    // the iterator to return a reference to a `DbTuple` object, but `DbTuple` objects are only
-    // constructed on the fly when reading from a `DbDisk`, so this is basically impossible.)
-
-    // the template allows `DbTuple2` to be either `DbTuple` or `const DbTuple` so we can have both
-    // non-const (e.g. for `std::sort()`) and const iterators (e.g. for iterating a `const DbDisk<>&`)
     template <class DbTuple2> requires std::is_same_v<std::remove_cv_t<DbTuple2>, DbTuple>
     struct Iter {
         const DbDisk<DbTuple>* db = nullptr;

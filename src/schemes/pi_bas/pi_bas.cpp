@@ -13,8 +13,9 @@
 #include "utils/crypto.h"
 #include "utils/db/db.h"
 #include "utils/enc_ind.h"
+#include "utils/ind.h"
+#include "utils/misc.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
 #include "utils/ustring.h"
@@ -56,10 +57,10 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     // and randomly permute documents associated with same keyword, required by
     // some schemes on top of PiBas (e.g. Log-SRC)
-    Ind<DbTuple> ind = utils::genInd(db, true);
+    Ind<DbTuple> ind(db, true);
 
     // for each w in W
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {

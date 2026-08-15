@@ -15,8 +15,8 @@
 #include "schemes/pi_bas/pi_bas.h"
 
 #include "utils/db/db.h"
+#include "utils/ind.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tdag.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
@@ -123,7 +123,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
     Db<Tuple<IdAlias>> db2;
     this->underly1->getDb(db1);
     this->underly2->getDb(db2);
-    Ind<Tuple<IdAlias>> ind2 = utils::genInd(db2);
+    Ind<Tuple<IdAlias>> ind2(db2);
 
     for (SrcIDb1Tuple db1Tuple : db1) {
         Range<Kw> kwRange = db1Tuple.getDbKwRange();

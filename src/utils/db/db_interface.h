@@ -3,13 +3,25 @@
 #include <concepts>
 #include <cstdint>
 #include <functional>
+#include <unordered_set>
 
+#include "utils/range.h"
 #include "utils/tuple.h"
 
 
 template <IsDbTuple DbTuple = Tuple<>>
 class IDb {
 public:
+    // note: currently, iterator `.begin()` and `.end()` are not enforced here because i
+    // don't know if there's an easy way to do that (given the different types of iterators
+    // possible; and since custom iterators are declared as nested classes of `IDb` classes,
+    // passing this type as a template param might not work)
+    // 
+    // constructors are also not enforced since you can't really make them virtual/pure virtual
+
+    //--------------------------------------------------------------------------
+    // methods to implement
+
     virtual void clear() = 0;
     virtual void push_back(const DbTuple& dbTuple) = 0;
     virtual int64_t size() const = 0;
@@ -19,11 +31,11 @@ public:
 
     virtual void shuffle() = 0;
     virtual void sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) = 0;
-    
-    // note: currently, iterator `.begin()` and `.end()` are not enforced here because i
-    // don't know if there's an easy way to do that (given the different types of iterators
-    // possible; and since custom iterators are declared as nested classes of `IDb` classes,
-    // passing this type as a template param might not work)
-    // 
-    // constructors are also not enforced since you can't really make them virtual/pure virtual
+
+    //--------------------------------------------------------------------------
+    // utils
+
+    Range<typename DbTuple::DbKwType> findDbKwBounds() const;
+    std::unordered_set<Range<typename DbTuple::DbKwType>> getUniqDbKwRanges() const;
+    void pad(typename DbTuple::DbKwType& currMaxDbKw);
 };

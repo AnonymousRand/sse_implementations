@@ -123,3 +123,18 @@ private:
     static const std::string REGEX_STR;
     static const std::regex REGEX;
 };
+
+
+//==============================================================================
+// utils
+//==============================================================================
+
+
+namespace utils {
+
+
+template <IsDbTuple DbTuple>
+std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples);
+
+
+} // namespace `utils`

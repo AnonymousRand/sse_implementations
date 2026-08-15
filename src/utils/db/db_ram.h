@@ -12,6 +12,9 @@
 
 template <IsDbTuple DbTuple>
 class DbRam : public IDb<DbTuple> {
+private:
+    using InnerType = std::vector<DbTuple>;
+
 public:
     //--------------------------------------------------------------------------
     // constructors/destructors
@@ -45,12 +48,18 @@ public:
     void shuffle() override;
     void sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) override;
 
-    //--------------------------------------------------------------------------
-    // iterator
+private:
+    InnerType<DbTuple> vec;
 
-    using Iter      = std::vector<DbTuple>::iterator;
-    //using ConstIter = std::vector<DbTuple>::const_iterator;
+//------------------------------------------------------------------------------
+// iterator
 
+private:
+    using Iter      = InnerType::iterator;
+    using ConstIter = InnerType::const_iterator;
+
+public:
+    // non-const iterators
     Iter begin() {
         return this->vec.begin();
     }
@@ -59,6 +68,12 @@ public:
         return this->vec.end();
     }
 
-private:
-    std::vector<DbTuple> vec;
+    // const iterators
+    ConstIter begin() const {
+        return this->vec.begin();
+    }
+
+    ConstIter end() const {
+        return this->vec.end();
+    }
 };

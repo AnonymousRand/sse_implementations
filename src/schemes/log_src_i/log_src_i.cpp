@@ -11,7 +11,6 @@
 
 #include "utils/db/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tdag.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
@@ -53,7 +52,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // build index 1
 
     // build TDAG 1 over `Kw`s and replicate `db1` appropriately
-    utils::buildTdag(this->tdag1, db1);
+    utils::buildTdagAndDb(this->tdag1, db1);
 
     this->underly1->setup(secParam, db1);
 
@@ -61,7 +60,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // build index 2
 
     // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately
-    utils::buildTdag(this->tdag2, db2);
+    utils::buildTdagAndDb(this->tdag2, db2);
 
     this->underly2->setup(secParam, db2);
 }

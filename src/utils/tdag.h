@@ -80,7 +80,7 @@ int64_t calcTdagTupleCount(int64_t leafCount);
 
 
 template <IsDbTuple DbTuple>
-void buildTdag(
+void buildTdagAndDb(
     TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, bool shouldPadDb = false
 );
 

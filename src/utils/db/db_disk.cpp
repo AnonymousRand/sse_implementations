@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "utils/disk_storage.h"
+#include "utils/misc.h"
 #include "utils/random.h"
 #include "utils/tuple.h"
 
@@ -88,12 +89,8 @@ void DbDisk<DbTuple>::push_back(const DbTuple& dbTuple) {
                   << " bytes is not allowed! "
                   << "(want " << TUPLE_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
-    // >TODO make this use utils::padStr() once sse_utils changed enough for no circular include
-    } else if (dbTupleStr.length() < TUPLE_LEN) {
-        int amountToPad = TUPLE_LEN - dbTupleStr.length();
-        std::string padding(amountToPad, '\0');
-        dbTupleStr += padding;
     }
+    utils::padStr(dbTupleStr, TUPLE_LEN);
 
     this->appendRaw(dbTupleStr.c_str());
 }
@@ -212,6 +209,6 @@ DbDisk<DbTuple> DbDisk<DbTuple>::applyAlgoViaIndices(
 
 
 // >TODO: can move these into db.cpp? using just Db<...>
-template class DbDisk<Tuple<>>;        // default/input DBs
-template class DbDisk<SrcIDb1Tuple>;   // Log-SRC-i index 1 DBs
-//template class DbDisk<Tuple<IdAlias>>; // Log-SRC-i index 2 DBs
+template class DbDisk<Tuple<>>;
+template class DbDisk<SrcIDb1Tuple>;
+//template class DbDisk<Tuple<IdAlias>>;

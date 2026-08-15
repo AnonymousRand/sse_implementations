@@ -7,7 +7,7 @@
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 
-#include "utils/sse_utils.h"
+#include "utils/misc.h"
 #include "utils/ustring.h"
 
 

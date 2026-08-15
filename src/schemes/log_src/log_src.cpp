@@ -10,7 +10,6 @@
 
 #include "utils/db/db.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tdag.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
@@ -45,7 +44,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
     // build TDAG over `Kw`s and replicate `db` appropriately
     Db<Tuple<>> dbWithRepls = db;
-    utils::buildTdag(this->tdag, dbWithRepls);
+    utils::buildTdagAndDb(this->tdag, dbWithRepls);
 
     this->underly->setup(secParam, dbWithRepls);
 }

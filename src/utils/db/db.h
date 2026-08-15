@@ -2,7 +2,6 @@
 
 #include <concepts>
 #include <type_traits>
-#include <unordered_map>
 
 #include "config.h"
 
@@ -17,7 +16,3 @@ template <IsDbTuple DbTuple = Tuple<>>
 using Db = std::conditional<
     config::SHOULD_STORE_DBS_ON_DISK, DbDisk<DbTuple>, DbRam<DbTuple>
 >::type;
-
-
-template <IsDbTuple DbTuple = Tuple<>>
-using Ind = std::unordered_map<Range<typename DbTuple::DbKwType>, Db<DbTuple>>;

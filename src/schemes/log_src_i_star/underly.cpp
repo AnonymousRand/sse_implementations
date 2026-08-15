@@ -9,7 +9,6 @@
 #include "utils/db/db.h"
 #include "utils/enc_ind.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
 #include "utils/ustring.h"
@@ -24,7 +23,7 @@ namespace log_src_i_star {
 
 template <IsDbTuple DbTuple>
 void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
-    Range<DbKw> dbKwBounds = utils::findDbKwBounds(db);
+    Range<DbKw> dbKwBounds = db.findDbKwBounds();
     this->leafCount = dbKwBounds.size();
     NLogN<DbTuple>::setup(secParam, db);
 }

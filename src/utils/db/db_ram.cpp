@@ -74,6 +74,6 @@ void DbRam<DbTuple>::sort(const std::function<bool(int64_t index1, int64_t index
 // explicit template instantiations
 
 
-template class DbRam<Tuple<>>;        // default/input DBs
-template class DbRam<SrcIDb1Tuple>;   // Log-SRC-i index 1 DBs
-//template class DbRam<Tuple<IdAlias>>; // Log-SRC-i index 2 DBs
+template class DbRam<Tuple<>>;
+template class DbRam<SrcIDb1Tuple>;
+//template class DbRam<Tuple<IdAlias>>;

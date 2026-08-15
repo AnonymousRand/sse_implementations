@@ -16,9 +16,10 @@
 #include "utils/crypto.h"
 #include "utils/db/db.h"
 #include "utils/enc_ind.h"
+#include "utils/ind.h"
+#include "utils/misc.h"
 #include "utils/random.h"
 #include "utils/range.h"
-#include "utils/sse_utils.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
 #include "utils/ustring.h"
@@ -67,10 +68,10 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     // build index
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    Ind<DbTuple> ind = utils::genInd(db);
+    Ind<DbTuple> ind(db);
 
     // for each w in W
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);
+    std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
@@ -80,9 +81,9 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         // pad keyword list to the next power of two
         Db<DbTuple> dbKwList = iter->second;
         int64_t dbKwCount = dbKwList.size();
-        Range<DbKw> dbKwBounds = utils::findDbKwBounds(db);
+        Range<DbKw> dbKwBounds = db.findDbKwBounds();
         DbKw maxDbKw = dbKwBounds.second;
-        utils::padDb(dbKwList, maxDbKw);
+        dbKwList.pad(maxDbKw);
         // randomly permute documents associated with same keyword, i.e. shuffle within bucket
         dbKwList.shuffle();
 

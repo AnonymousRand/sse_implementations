@@ -28,12 +28,14 @@ add_executable(
 
     src/utils/crypto.cpp
     src/utils/db/db_disk.cpp
+    src/utils/db/db_interface.cpp
     src/utils/db/db_ram.cpp
     src/utils/debugging.cpp
     src/utils/disk_storage.cpp
     src/utils/enc_ind.cpp
+    src/utils/ind.cpp
+    src/utils/misc.cpp
     src/utils/range.cpp
-    src/utils/sse_utils.cpp
     src/utils/tdag.cpp
     src/utils/tuple.cpp
     src/utils/ustring.cpp
