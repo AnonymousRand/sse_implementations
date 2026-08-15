@@ -40,8 +40,6 @@ public:
 
     void clear() override;
     void push_back(const DbTuple& dbTuple) override;
-    bigint size() const override;
-    bool empty() const override;
 
     DbTuple operator [](bigint index) const override;
 
@@ -50,30 +48,4 @@ public:
 
 private:
     InnerType vec;
-
-//------------------------------------------------------------------------------
-// iterator
-
-private:
-    using Iter      = InnerType::iterator;
-    using ConstIter = InnerType::const_iterator;
-
-public:
-    // non-const iterators
-    Iter begin() {
-        return this->vec.begin();
-    }
-
-    Iter end() {
-        return this->vec.end();
-    }
-
-    // const iterators
-    ConstIter begin() const {
-        return this->vec.begin();
-    }
-
-    ConstIter end() const {
-        return this->vec.end();
-    }
 };

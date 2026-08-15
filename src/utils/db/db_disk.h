@@ -15,12 +15,9 @@
 #include "utils/types.h"
 
 
-// this is essentially a vector but stored on disk, hence we match `std::vector`'s method names
 template <IsDbTuple DbTuple>
 class DbDisk : public IDb<DbTuple>, public IDiskStorage {
 public:
-    inline static const int TUPLE_LEN = EncInd::DATA_LEN;
-
     //--------------------------------------------------------------------------
     // constructors/destructors
 
@@ -61,15 +58,6 @@ public:
     void clear() override;
     void push_back(const DbTuple& dbTuple) override;
 
-    bigint size() const override {
-        return this->_size;
-    }
-
-    bool empty() const override;
-
-    // read-only accessing using `[]`
-    // >TODO test what if this is const DbTuple&? same with Ind. maybe just implement both const
-    // and non-const reference versions?
     DbTuple operator [](bigint index) const override;
 
     // these are instantiations of `applyAlgoViaIndices()` (see below) using specific common
@@ -82,7 +70,8 @@ private:
     constexpr std::string FILE_DIR() const override { return "out/client"; }
     constexpr std::string FILENAME_PREFIX() const override { return "db_"; }
 
-    bigint _size = 0;
+    inline static const int TUPLE_LEN = EncInd::DATA_LEN;
+
     // (`mutable` allows this to be modified in `const` contexts still)
     mutable bool isFlushed = true;
 
@@ -103,59 +92,4 @@ private:
     DbDisk<DbTuple> applyAlgoViaIndices(
         const std::function<void(std::vector<bigint>& dbIndices)>& algoOnIndices
     ) const;
-
-//------------------------------------------------------------------------------
-// iterator
-
-// this allows us to iterate through a `DbDisk` using range-based `for` loop or iterators,
-// implementing the bare minimum operator overloads necessary to do so
-// 
-// (note this is not a `LegacyRandomAccessIterator`, meaning things like `std::sort()`
-// which need to modify it in place will not work. this is because that requires dereferencing
-// the iterator to return a reference to a `DbTuple` object, but `DbTuple` objects are only
-// constructed on the fly when reading from a `DbDisk`, so this is basically impossible.)
-
-// the template allows `DbTuple2` to be either `DbTuple` or `const DbTuple` so we can have both
-// non-const (e.g. for `std::sort()`) and const iterators (e.g. for iterating a `const DbDisk<>&`)
-
-public:
-    template <class DbTuple2> requires std::is_same_v<std::remove_cv_t<DbTuple2>, DbTuple>
-    struct Iter {
-        const DbDisk<DbTuple>* db = nullptr;
-        bigint index;
-
-        Iter(const DbDisk<DbTuple>* db, bigint index) : db(db), index(index) {}
-
-        DbTuple2 operator *() const {
-            return (*this->db)[this->index];
-        }
-
-        Iter<DbTuple2>& operator ++() {
-            this->index++;
-            return *this;
-        }
-
-        template <class DbTuple3> requires std::is_same_v<std::remove_cv_t<DbTuple3>, DbTuple>
-        friend bool operator !=(const Iter<DbTuple3>& iter1, const Iter<DbTuple3>& iter2) {
-            return !(iter1.db == iter2.db && iter1.index == iter2.index);
-        }
-    };
-
-    // non-const iterators
-    Iter<DbTuple> begin() {
-        return Iter<DbTuple>(this, 0);
-    }
-
-    Iter<DbTuple> end() {
-        return Iter<DbTuple>(this, this->_size);
-    }
-
-    // const iterators
-    Iter<const DbTuple> begin() const {
-        return Iter<const DbTuple>(this, 0);
-    }
-
-    Iter<const DbTuple> end() const {
-        return Iter<const DbTuple>(this, this->_size);
-    }
 };

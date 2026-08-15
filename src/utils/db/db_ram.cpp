@@ -1,4 +1,4 @@
-#include "utils/db_ram.h"
+#include "utils/db/db_ram.h"
 
 #include <algorithm>
 #include <concepts>
@@ -30,6 +30,10 @@ DbRam<DbTuple>::DbRam(std::initializer_list<DbTuple> initList) : vec(initList) {
 
 template <IsDbTuple DbTuple>
 void DbRam<DbTuple>::clear() {
+    // clears `this->_size`
+    IDb<DbTuple>::clear();
+
+    // clears DB vector
     this->vec.clear();
 }
 
@@ -41,18 +45,6 @@ void DbRam<DbTuple>::push_back(const DbTuple& dbTuple) {
 
 
 template <IsDbTuple DbTuple>
-bigint DbRam<DbTuple>::size() const {
-    return this->vec.size();
-}
-
-
-template <IsDbTuple DbTuple>
-bool DbRam<DbTuple>::empty() const {
-    return this->vec.empty();
-}
-
-
-template <IsDbTuple DbTuple>
 DbTuple DbRam<DbTuple>::operator [](bigint index) const {
     return this->vec[index];
 }
@@ -60,13 +52,15 @@ DbTuple DbRam<DbTuple>::operator [](bigint index) const {
 
 template <IsDbTuple DbTuple>
 void DbRam<DbTuple>::shuffle() {
-    std::shuffle(this->begin(), this->end(), utils::RNG);
+    // (note: not using `this->begin()` and `this->end()` here to avoid needing to make
+    // `IDb::Iter` a fully fledged `LegacyRandomAccessIterator`)
+    std::shuffle(this->vec.begin(), this->vec.end(), utils::RNG);
 }
 
 
 template <IsDbTuple DbTuple>
 void DbRam<DbTuple>::sort(const std::function<bool(bigint index1, bigint index2)>& compare) {
-    std::sort(this->begin(), this->end(), compare);
+    std::sort(this->vec.begin(), this->vec.end(), compare);
 }
 
 

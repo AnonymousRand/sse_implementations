@@ -360,7 +360,7 @@ void buildTdagAndDb(
     tdag = new TdagNode<DbKw>(dbKwBounds.first, maxDbKw);
     
     // replicate every (leaf node) DB tuple to all TDAG nodes that cover it
-    replDbForTdag(db, tdag);
+    replDbForTdag<DbTuple>(db, tdag);
 }
 
 
@@ -388,14 +388,22 @@ void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* 
 // explicit template instantiations
 
 
-template void buildTdagAndDb(TdagNode<Kw>*& tdag, Db<Tuple<>>& db, bool shouldPadDb);
-template void buildTdagAndDb(TdagNode<Kw>*& tdag, Db<SrcIDb1Tuple>& db, bool shouldPadDb);
-//template void buildTdagAndDb(TdagNode<IdAlias>*& tdag, Db<Tuple<IdAlias>>& db, bool shouldPadDb);
+template void buildTdagAndDb<Tuple<>>(
+    TdagNode<Kw>*& tdag, Db<Tuple<>>& db, bool shouldPadDb
+);
+template void buildTdagAndDb<SrcIDb1Tuple>(
+    TdagNode<Kw>*& tdag, Db<SrcIDb1Tuple>& db, bool shouldPadDb
+);
+//template void buildTdagAndDb<Tuple<IdAlias>>(
+//    TdagNode<IdAlias>*& tdag, Db<Tuple<IdAlias>>& db, bool shouldPadDb
+//);
 
 
-template void replDbForTdag(Db<Tuple<>>& db, const TdagNode<Kw>* tdag);
-template void replDbForTdag(Db<SrcIDb1Tuple>& db, const TdagNode<Kw>* tdag);
-//template void replDbForTdag(Db<Tuple<IdAlias>>& db, const TdagNode<IdAlias>* tdag);
+template void replDbForTdag<Tuple<>>(Db<Tuple<>>& db, const TdagNode<Kw>* tdag);
+template void replDbForTdag<SrcIDb1Tuple>(Db<SrcIDb1Tuple>& db, const TdagNode<Kw>* tdag);
+//template void replDbForTdag<Tuple<IdAlias>>(
+//    Db<Tuple<IdAlias>>& db, const TdagNode<IdAlias>* tdag
+//);
 
 
 } // namespace `utils`

@@ -59,6 +59,7 @@ void DbDisk<DbTuple>::shuffle() {
 
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::sort(const std::function<bool(bigint index1, bigint index2)>& compare) {
+    this->
     auto sort = [&compare](std::vector<bigint>& dbIndices) {
         std::sort(dbIndices.begin(), dbIndices.end(), compare);
     };
@@ -72,9 +73,11 @@ void DbDisk<DbTuple>::sort(const std::function<bool(bigint index1, bigint index2
 
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::clear() {
-    IDiskStorage::clear();
+    // clears `this->_size`
+    IDb<DbTuple>::clear();
 
-    this->_size = 0;
+    // clears DB file and file pointer
+    IDiskStorage::clear();
 }
 
 
@@ -97,12 +100,6 @@ void DbDisk<DbTuple>::push_back(const DbTuple& dbTuple) {
 
 
 template <IsDbTuple DbTuple>
-bool DbDisk<DbTuple>::empty() const {
-    return this->_size == 0;
-}
-
-
-template <IsDbTuple DbTuple>
 DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     char dbTupleCstr[TUPLE_LEN];
     this->readRaw(index, dbTupleCstr);
@@ -119,24 +116,6 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
 
     // decode and return
     return DbTuple::fromStr(dbTupleStr);
-}
-
-
-template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::shuffle() {
-    auto shuffle = [](std::vector<bigint>& dbIndices) {
-        std::shuffle(dbIndices.begin(), dbIndices.end(), utils::RNG);
-    };
-    *this = this->applyAlgoViaIndices(shuffle);
-}
-
-
-template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::sort(const std::function<bool(bigint index1, bigint index2)>& compare) {
-    auto sort = [&compare](std::vector<bigint>& dbIndices) {
-        std::sort(dbIndices.begin(), dbIndices.end(), compare);
-    };
-    *this = this->applyAlgoViaIndices(sort);
 }
 
 
