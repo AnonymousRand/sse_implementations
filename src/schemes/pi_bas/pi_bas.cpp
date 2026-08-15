@@ -56,9 +56,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     // and randomly permute documents associated with same keyword, required by
     // some schemes on top of PiBas (e.g. Log-SRC)
-    //std::cerr << "Pibas about to genind" << std::endl;
     Ind<DbTuple> ind = utils::genInd(db, true);
-    //std::cerr << "Pibas finished genind" << std::endl;
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = utils::getUniqDbKwRanges(db);
@@ -72,11 +70,9 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         ustring queryToken = this->genQueryToken(dbKwRange);
         // TODO std::move here as well? should just need std::move(iter->second)?
         Db<DbTuple> dbKwList = iter->second;
-        //std::cerr << "Pibas dbKwList assigned; its filename is " << dbKwList.getFilename() << std::endl;
 
         // for each id in DB(w)
         for (int64_t dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
-            //std::cerr << "Pibas about to read; dbKwList size is " << dbKwList.size() << std::endl;
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
             ustring label;

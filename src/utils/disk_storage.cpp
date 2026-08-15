@@ -31,11 +31,9 @@ std::uniform_int_distribution<uint64_t> dist;
 
 
 IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
-    //std::cerr << "move assignment constructor" << std::endl;
     // important self-assignment safety check!
     if (this != &other) {
         this->clear();
-        //std::cerr << "move assignment constructor cleared `this`" << std::endl;
         this->file = other.file;
         // important: set all fields in `other` that have non-default destruction/clear above
         // to a null value so that its destructor doesn't try to delete the same resource (e.g.
@@ -81,7 +79,6 @@ void IDiskStorage::init() {
         std::cerr << "Error: IDiskStorage::init(): error opening file" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    //std::cerr << "file opened at " << this->filename.c_str() << ", pointer " << this->file << std::endl;
 }
 
 
@@ -94,7 +91,6 @@ void IDiskStorage::clear() {
 
     // delete file from disk
     if (this->filename != "") {
-        //std::cerr << "clear() called, clearing " << this->filename << std::endl;
         std::remove(this->filename.c_str());
         this->filename = "";
     }
@@ -109,6 +105,5 @@ std::string IDiskStorage::genFilename() const {
     // avoid naming clashes by generating a random 8 byte (16 char) hex string
     uint64_t randomHex = ::dist(utils::RNG);
     std::string randomHexStr = std::format("{:016x}", randomHex);
-    //std::cerr << "genFilename called, output is " << randomHexStr << std::endl;
     return std::format("{}/{}{}.dat", this->FILE_DIR(), this->FILENAME_PREFIX(), randomHexStr);
 }

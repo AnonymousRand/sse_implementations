@@ -27,21 +27,17 @@ Ind<DbTuple> genInd(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
     for (DbTuple dbTuple : db) {
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
         if (ind.count(dbKwRange) == 0) {
-            //std::cerr << "++ creating new db in genind" << std::endl;
             ind[dbKwRange] = Db<DbTuple> {dbTuple};
-            //std::cerr << "++ done creating new db in genind" << std::endl;
         } else {
             ind[dbKwRange].push_back(dbTuple);
         }
     }
 
     if (shouldShuffleKwLists) {
-        //std::cerr << "----BEGIN shuffle" << std::endl;
         for (auto& pair : ind) {
             Db<DbTuple>& dbKwList = pair.second;
             dbKwList.shuffle();
         }
-        //std::cerr << "----END shuffle" << std::endl;
     }
 
     return ind;

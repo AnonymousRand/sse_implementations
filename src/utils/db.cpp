@@ -24,7 +24,6 @@
 
 template <IsDbTuple DbTuple>
 Db<DbTuple>::Db() {
-    //std::cerr << "db default constructor" << std::endl;
     IDiskStorage::init();
 }
 
@@ -32,10 +31,8 @@ Db<DbTuple>::Db() {
 // TODO minor: make sure other copy constructors have param name "other" too
 template <IsDbTuple DbTuple>
 Db<DbTuple>::Db(const Db& other) {
-    //std::cerr << "db copy constructor" << std::endl;
     this->filename = this->genFilename();
     this->_size = other._size;
-    //std::cerr << "other.filename is " << other.filename << "; this->filename is " << this->filename << std::endl;
 
     // flush to make sure `other.file` has written everything
     std::fflush(other.file);
@@ -45,7 +42,6 @@ Db<DbTuple>::Db(const Db& other) {
         std::cerr << "Error: Db::Db(const Db&): error copying file: " << e.what() << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    //std::cerr << "copied to " << this->filename << "; our size is " << this->_size << std::endl;
 
     // note: use `a` instead of `w` mode always here to not overwrite the file we just copied
     this->file = std::fopen(this->filename.c_str(), "ab+");
@@ -58,28 +54,19 @@ Db<DbTuple>::Db(const Db& other) {
 
 template <IsDbTuple DbTuple>
 Db<DbTuple>::Db(const Db& db, int64_t startIndex, int64_t endIndex) : Db<DbTuple>() {
-    //std::cerr << "db range constructor from " << db.filename << " to " << this->filename << std::endl;
-    //std::cerr << "size is " << this->_size << "; original db size was " << db.size() << "; file is " << this->file << ", " << this->filename << std::endl;
-
     for (int64_t index = startIndex; index < endIndex; index++) {
-        //std::cerr << "writing " << index << std::endl;
         char dbTupleCstr[TUPLE_LEN];
         db.readRaw(index, dbTupleCstr);
-        //std::cerr << "writing2 " << dbTupleCstr << std::endl;
         this->appendRaw(dbTupleCstr);
     }
-    //std::cerr << "done writing " << std::endl;
 }
 
 
 template <IsDbTuple DbTuple>
 Db<DbTuple>::Db(std::initializer_list<DbTuple> initList) : Db<DbTuple>() {
-    //std::cerr << "db init list constructor" << std::endl;
     for (DbTuple dbTuple : initList) {
-        //std::cerr << "db init list constructor pushing back" << std::endl;
         this->push_back(dbTuple);
     }
-    //std::cerr << "done init list constructor" << std::endl;
 }
 
 
@@ -148,7 +135,6 @@ DbTuple Db<DbTuple>::operator [](int64_t index) const {
 
 template <IsDbTuple DbTuple>
 void Db<DbTuple>::readRaw(int64_t index, char* ret) const {
-    //std::cerr << "readRaw " << index << ", this->size is " << this->_size << "; file is " << this->file << ", " << this->filename << std::endl;
     if (index >= this->_size) {
         std::cerr << "Error: Db::readRaw(): index out of bounds "
                   << "(index is " << index << ", size is " << this->_size << ")" << std::endl;
@@ -157,7 +143,6 @@ void Db<DbTuple>::readRaw(int64_t index, char* ret) const {
 
     std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
     int itemsRead = std::fread(ret, TUPLE_LEN, 1, this->file);
-    //std::cerr << "done read" << std::endl;
     if (itemsRead != 1) {
         std::cerr << "Error: Db::readRaw(): error reading from file " << this->filename
                   << " (nothing read)" << std::endl;
@@ -168,16 +153,13 @@ void Db<DbTuple>::readRaw(int64_t index, char* ret) const {
 
 template <IsDbTuple DbTuple>
 void Db<DbTuple>::appendRaw(const char* dbTupleCstr) {
-    //std::cerr << "appendRaw " << dbTupleStr << "; this->file is " << this->file << std::endl;
     std::fseek(this->file, 0, SEEK_END);
-    //std::cerr << "appendRaw 2" << dbTupleStr << std::endl;
     int itemsWritten = std::fwrite(dbTupleCstr, TUPLE_LEN, 1, this->file);
     if (itemsWritten != 1) {
         std::cerr << "Error: Db::appendRaw(): error writing to file " << this->filename
                   << " (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    //std::cerr << "db appendRaw wrote to " << this->filename << ", pointer " << this->file << std::endl;
     std::fflush(this->file);
 
     this->_size++;

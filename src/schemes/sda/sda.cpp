@@ -48,35 +48,24 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         for (int64_t i = lastFilledInd; i >= 0; i--) {
             int64_t indSize = (int64_t)std::pow(2, i);
             Db<Tuple<>> indDb;
-            //std::cerr << "----- sda: db.file is " << db.getFile() << std::endl;
             if (dbPos < db.size()) {
                 if (dbPos + indSize < db.size()) {
-                    //std::cerr << "----- sda 1" << std::endl;
                     indDb = Db<Tuple<>>(db, dbPos, dbPos + indSize);
                     // note: `std::vector` version of `Db` uses the below:
                     //indDb = Db<Tuple<>>(db.begin() + dbPos, db.begin() + dbPos + indSize);
                 } else {
-                    //std::cerr << "----- sda 2" << std::endl;
                     indDb = Db<Tuple<>>(db, dbPos, db.size());
                     // note: `std::vector` version of `Db` uses the below:
                     //indDb = Db<Tuple<>>(db.begin() + dbPos, db.end());
                 }
             } else {
-                //std::cerr << "----- sda 3" << std::endl;
                 indDb = Db<Tuple<>> {};
             }
 
             Underly* newUnderly = new Underly(this->benchmark);
-            //std::cerr << "indDb is" << std::endl;
-            //for (auto tuple : indDb) {
-            //    std::cerr << tuple << std::endl;
-            //}
-            //std::cerr << "----- sda 3.5" << std::endl;
             newUnderly->setup(this->secParam, indDb);
-            //std::cerr << "----- sda 3.6" << std::endl;
             this->underlys.push_back(newUnderly);
             dbPos += indSize;
-            //std::cerr << "----- sda 4" << std::endl;
         }
         // reverse the vector at the end as we had pushed smaller subindexes to the back
         if (this->underlys.size() > 0) {

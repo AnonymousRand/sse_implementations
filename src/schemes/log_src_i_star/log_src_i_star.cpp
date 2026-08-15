@@ -16,6 +16,8 @@
 // `ISse`
 
 
+// TODO there's maybe a bug where on DbDisk this can result in 0 disk size
+// (check if same with DbRam)
 void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     this->clear();
 

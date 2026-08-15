@@ -15,7 +15,6 @@
 namespace utils {
 
 
-// yes, i know the template syntax is kinda cursed >_<
 template <IsDbTuple DbTuple>
 Ind<DbTuple> genInd(
     const Db<DbTuple>& db, bool shouldShuffleKwLists = false
