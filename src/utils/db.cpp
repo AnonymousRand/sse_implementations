@@ -34,8 +34,11 @@ Db<DbTuple>::Db(const Db& other) {
     this->filename = this->genFilename();
     this->_size = other._size;
 
-    // flush to make sure `other.file` has written everything
-    std::fflush(other.file);
+    // flush if needed to make sure `other.file` has written everything
+    if (!other.isFlushed) {
+        std::fflush(other.file);
+        other.isFlushed = true;
+    }
     try {
         std::filesystem::copy_file(other.filename, this->filename);
     } catch (const std::filesystem::filesystem_error& e) {
@@ -141,6 +144,12 @@ void Db<DbTuple>::readRaw(int64_t index, char* ret) const {
         std::exit(EXIT_FAILURE);
     }
 
+    // make sure to flush if more writes have been done since the last manual flush
+    if (!this->isFlushed) {
+        std::fflush(this->file);
+        this->isFlushed = true;
+    }
+
     std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
     int itemsRead = std::fread(ret, TUPLE_LEN, 1, this->file);
     if (itemsRead != 1) {
@@ -160,7 +169,7 @@ void Db<DbTuple>::appendRaw(const char* dbTupleCstr) {
                   << " (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    std::fflush(this->file);
+    this->isFlushed = false;
 
     this->_size++;
 }

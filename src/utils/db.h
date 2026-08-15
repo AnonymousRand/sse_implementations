@@ -99,6 +99,8 @@ private:
     constexpr std::string FILENAME_PREFIX() const override { return "db_"; }
 
     int64_t _size = 0;
+    // (`mutable` allows this to be modified in `const` contexts still)
+    mutable bool isFlushed = true;
 
     // TODO rename "other" section to "helpers" everywhere?
     // TODO add more of these sections (e.g. in tdag) for grouping?
