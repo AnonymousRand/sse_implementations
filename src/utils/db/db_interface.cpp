@@ -2,11 +2,11 @@
 
 #include <cmath>
 #include <concepts>
-#include <cstdint>
 #include <unordered_set>
 
 #include "utils/range.h"
 #include "utils/tuple.h"
+#include "utils/types.h"
 
 
 //------------------------------------------------------------------------------
@@ -53,10 +53,10 @@ template <IsDbTuple DbTuple>
 void IDb<DbTuple>::pad(typename DbTuple::DbKwType& currMaxDbKw) {
     using DbKw = typename DbTuple::DbKwType;
 
-    int64_t dbSize = this->size();
-    if (!std::has_single_bit((uint64_t)dbSize)) {
-        int64_t amountToPad = std::pow(2, std::ceil(std::log2(dbSize))) - dbSize;
-        for (int64_t i = 0; i < amountToPad; i++) {
+    bigint dbSize = this->size();
+    if (!std::has_single_bit((ubigint)dbSize)) {
+        bigint amountToPad = std::pow(2, std::ceil(std::log2(dbSize))) - dbSize;
+        for (bigint i = 0; i < amountToPad; i++) {
             currMaxDbKw++;
             Range<DbKw> dbKwRange {currMaxDbKw, currMaxDbKw};
             DbTuple dummyTuple = DbTuple::genDummy(dbKwRange);

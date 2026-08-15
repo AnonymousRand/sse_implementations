@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <concepts>
-#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -43,17 +42,17 @@ std::vector<DbTuple> Underly<DbTuple>::searchBase(const Range<DbKw>& query) cons
     // for Log-SRC-i*, the number of results from either index and hence the level
     // to search is exactly the size of the queried range/SRC node, so we don't have to
     // additionally store an encrypted map (and result size is leaked to server anyway)
-    int64_t dbKwCount = query.size();
-    int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
+    bigint dbKwCount = query.size();
+    bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
-    std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
-    uint64_t lvl = lvlAndPos.first;
-    uint64_t pos = lvlAndPos.second;
+    std::pair<ubigint, ubigint> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
+    ubigint lvl = lvlAndPos.first;
+    ubigint pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
-    uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
+    ubigint startPos = pos * this->computeBcktSizeOnLvl(lvl);
     std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
@@ -71,7 +70,7 @@ std::vector<DbTuple> Underly<DbTuple>::searchBase(const Range<DbKw>& query) cons
 
 
 template <IsDbTuple DbTuple>
-int64_t Underly<DbTuple>::computeNumLvls() const {
+bigint Underly<DbTuple>::computeNumLvls() const {
     // the key to avoiding the blowup of using NLogN as a black box is by using
     // `leafCount` instead of `this->size` here, since `this->size` includes the
     // replicated tuples and using it sort of assumes those are only the "raw" tuples
@@ -80,7 +79,7 @@ int64_t Underly<DbTuple>::computeNumLvls() const {
 
 
 template <IsDbTuple DbTuple>
-int64_t Underly<DbTuple>::computeBcktCountOnLvl(int64_t lvlNum) const {
+bigint Underly<DbTuple>::computeBcktCountOnLvl(bigint lvlNum) const {
     if (lvlNum == 0) {
         return this->leafCount;
     } else {

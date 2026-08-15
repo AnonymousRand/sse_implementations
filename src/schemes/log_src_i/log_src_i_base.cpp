@@ -164,7 +164,7 @@ template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 Db<Tuple<>> LogSrcIBase<Underly>::sortInputDb(const Db<Tuple<>>& db) {
     Db<Tuple<>> sortedDb = db;
 
-    auto sortIndicesByKw = [&db](int64_t index1, int64_t index2) {
+    auto sortIndicesByKw = [&db](bigint index1, bigint index2) {
         return db[index1].getKw() < db[index2].getKw();
     };
     sortedDb.sort(sortIndicesByKw);
@@ -184,7 +184,7 @@ void LogSrcIBase<Underly>::initDbsLeaves(
     IdAlias firstIdAliasWithKw;
     IdAlias lastIdAliasWithKw;
 
-    for (int64_t idAlias = 0; idAlias < sortedDb.size(); idAlias++) {
+    for (bigint idAlias = 0; idAlias < sortedDb.size(); idAlias++) {
         Tuple<> tuple = sortedDb[idAlias];
         // populate `db2` leaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};

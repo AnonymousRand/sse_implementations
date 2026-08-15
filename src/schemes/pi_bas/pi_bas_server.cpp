@@ -1,7 +1,6 @@
 #include "schemes/pi_bas/pi_bas_server.h"
 
 #include <concepts>
-#include <cstdint>
 #include <vector>
 
 #include "schemes/interfaces/sse_server.h"
@@ -44,7 +43,7 @@ void PiBasServer<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void PiBasServer<DbTuple>::setEncInd(EncInd* encInd) {
-    int64_t encIndBytes = encInd->getSize() * EncInd::ENTRY_LEN;
+    bigint encIndBytes = encInd->getSize() * EncInd::ENTRY_LEN;
     this->benchmark->diskSize += encIndBytes;
     this->benchmark->network += encIndBytes;
     this->encInd = encInd;
@@ -64,14 +63,14 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
     std::vector<EncIndVal> encResults;
 
     // for c = 0 until `Get` returns error
-    int64_t dbKwCounter = 0;
+    bigint dbKwCounter = 0;
     while (true) {
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
         // (same as client's `setup()`)
         ustring label = crypto::hash(
             crypto::HASH_FUNC, crypto::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
         );
-        uint64_t pos = utils::hashToPos(label);
+        ubigint pos = utils::hashToPos(label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;
         bool isFound = this->encInd->find(pos, label, encIndVal);

@@ -1,7 +1,5 @@
 #include "schemes/log_src_i_star/log_src_i_star.h"
 
-#include <cstdint>
-
 #include "schemes/log_src_i_star/underly.h" 
 
 #include "utils/db/db.h"
@@ -57,7 +55,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     if (sortedDb.size() > 0) {
         Tuple<> tuple = sortedDb[0];
         Kw prevKw = tuple.getKw();
-        for (int64_t i = 1; i < sortedDb.size(); i++) {
+        for (bigint i = 1; i < sortedDb.size(); i++) {
             tuple = sortedDb[i];
             Kw kw = tuple.getKw();
             // if non-contiguous `Kw`s detected, fill in the gap with dummies

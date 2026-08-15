@@ -1,6 +1,5 @@
 #include "utils/enc_ind.h"
 
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -8,6 +7,7 @@
 #include <string>
 
 #include "utils/debugging.h"
+#include "utils/types.h"
 #include "utils/ustring.h"
 
 
@@ -42,12 +42,12 @@ ustring toUstr(const EncIndEntry& encIndEntry) {
 const uchar EncInd::NULL_ENTRY[ENTRY_LEN] = {};
 
 
-void EncInd::init(int64_t size) {
+void EncInd::init(bigint size) {
     IDiskStorage::init();
     this->size = size;
 
     // fill file with zero bits
-    for (int64_t i = 0; i < size; i++) {
+    for (bigint i = 0; i < size; i++) {
         int itemsWritten = std::fwrite(NULL_ENTRY, ENTRY_LEN, 1, this->file);
         if (itemsWritten != 1) {
             std::cerr << "Error: EncInd::init(): error initializing file (nothing written)"
@@ -65,7 +65,7 @@ void EncInd::clear() {
 }
 
 
-bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* posFoundAt) const {
+bool EncInd::find(ubigint pos, const ustring& key, EncIndVal& ret, ubigint* posFoundAt) const {
     pos %= this->size;
 
     // get entry at `pos`
@@ -81,7 +81,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
     // if entry at `pos` did not match the target `key` (i.e. another kv pair overflowed here
     // first), scan subsequent locations for where the target `key` could've overflowed to
     const uchar* targetKeyCStr = key.c_str();
-    int64_t numPositionsChecked = 1;
+    bigint numPositionsChecked = 1;
     while (std::memcmp(currEntry, targetKeyCStr, KEY_LEN) != 0
            && numPositionsChecked < this->size)
     {
@@ -110,7 +110,7 @@ bool EncInd::find(uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* po
 }
 
 
-bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
+bool EncInd::read(ubigint pos, EncIndVal& ret) const {
     pos %= this->size;
 
     uchar entry[ENTRY_LEN];
@@ -132,7 +132,7 @@ bool EncInd::read(uint64_t pos, EncIndVal& ret) const {
 }
 
 
-void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
+void EncInd::write(ubigint pos, const EncIndEntry& encIndEntry) {
     pos %= this->size;
 
     // check if location at `pos` is already filled
@@ -147,7 +147,7 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
 
     // if location is already filled (because of modulo), find next available location
     // (this is what USENIX'24's implementation does)
-    int64_t numPositionsChecked = 1;
+    bigint numPositionsChecked = 1;
     while (std::memcmp(currEntry, NULL_ENTRY, ENTRY_LEN) != 0
            && numPositionsChecked < this->size)
     {
@@ -192,7 +192,7 @@ void EncInd::write(uint64_t pos, const EncIndEntry& encIndEntry) {
 }
 
 
-int64_t EncInd::getSize() const {
+bigint EncInd::getSize() const {
     return this->size;
 }
 
@@ -201,7 +201,7 @@ int64_t EncInd::getSize() const {
 // debugging
 
 
-EncIndEntry EncInd::get(uint64_t pos) const {
+EncIndEntry EncInd::get(ubigint pos) const {
     pos %= this->size;
 
     uchar entry[ENTRY_LEN];
@@ -221,7 +221,7 @@ EncIndEntry EncInd::get(uint64_t pos) const {
 
 
 void EncInd::print() const {
-    for (int64_t pos = 0; pos < this->size; pos++) {
+    for (bigint pos = 0; pos < this->size; pos++) {
         EncIndEntry entry = this->get(pos);
         std::cerr << pos << ": " << utils::ustrToHex(utils::toUstr(entry))
                   << std::endl << std::endl;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <vector>
 
 #include "schemes/n_log_n/n_log_n.h" 
@@ -32,7 +31,7 @@ public:
     void setup(int secParam, const Db<DbTuple>& db) override;
 
 private:
-    int64_t leafCount;
+    bigint leafCount;
 
     //----------------------------------------------------------------------
     // `IStaticPointSse`
@@ -42,8 +41,8 @@ private:
     //----------------------------------------------------------------------
     // helpers
 
-    int64_t computeNumLvls() const override;
-    int64_t computeBcktCountOnLvl(int64_t lvlNum) const override;
+    bigint computeNumLvls() const override;
+    bigint computeBcktCountOnLvl(bigint lvlNum) const override;
 };
 
 

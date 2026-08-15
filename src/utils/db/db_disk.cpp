@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <concepts>
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
@@ -16,6 +15,7 @@
 #include "utils/misc.h"
 #include "utils/random.h"
 #include "utils/tuple.h"
+#include "utils/types.h"
 
 
 //------------------------------------------------------------------------------
@@ -29,10 +29,10 @@ DbDisk<DbTuple>::DbDisk() {
 
 
 template <IsDbTuple DbTuple>
-DbDisk<DbTuple>::DbDisk(const DbDisk& db, int64_t startIndex, int64_t endIndex) :
+DbDisk<DbTuple>::DbDisk(const DbDisk& db, bigint startIndex, bigint endIndex) :
     DbDisk<DbTuple>()
 {
-    for (int64_t index = startIndex; index < endIndex; index++) {
+    for (bigint index = startIndex; index < endIndex; index++) {
         char dbTupleCstr[TUPLE_LEN];
         db.readRaw(index, dbTupleCstr);
         this->appendRaw(dbTupleCstr);
@@ -50,7 +50,7 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) : DbDisk<DbTupl
 
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::shuffle() {
-    auto shuffle = [](std::vector<int64_t>& dbIndices) {
+    auto shuffle = [](std::vector<bigint>& dbIndices) {
         std::shuffle(dbIndices.begin(), dbIndices.end(), utils::RNG);
     };
     *this = this->applyAlgoViaIndices(shuffle);
@@ -58,8 +58,8 @@ void DbDisk<DbTuple>::shuffle() {
 
 
 template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) {
-    auto sort = [&compare](std::vector<int64_t>& dbIndices) {
+void DbDisk<DbTuple>::sort(const std::function<bool(bigint index1, bigint index2)>& compare) {
+    auto sort = [&compare](std::vector<bigint>& dbIndices) {
         std::sort(dbIndices.begin(), dbIndices.end(), compare);
     };
     *this = this->applyAlgoViaIndices(sort);
@@ -103,7 +103,7 @@ bool DbDisk<DbTuple>::empty() const {
 
 
 template <IsDbTuple DbTuple>
-DbTuple DbDisk<DbTuple>::operator [](int64_t index) const {
+DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     char dbTupleCstr[TUPLE_LEN];
     this->readRaw(index, dbTupleCstr);
     std::string dbTupleStr(dbTupleCstr, TUPLE_LEN);
@@ -124,7 +124,7 @@ DbTuple DbDisk<DbTuple>::operator [](int64_t index) const {
 
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::shuffle() {
-    auto shuffle = [](std::vector<int64_t>& dbIndices) {
+    auto shuffle = [](std::vector<bigint>& dbIndices) {
         std::shuffle(dbIndices.begin(), dbIndices.end(), utils::RNG);
     };
     *this = this->applyAlgoViaIndices(shuffle);
@@ -132,8 +132,8 @@ void DbDisk<DbTuple>::shuffle() {
 
 
 template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) {
-    auto sort = [&compare](std::vector<int64_t>& dbIndices) {
+void DbDisk<DbTuple>::sort(const std::function<bool(bigint index1, bigint index2)>& compare) {
+    auto sort = [&compare](std::vector<bigint>& dbIndices) {
         std::sort(dbIndices.begin(), dbIndices.end(), compare);
     };
     *this = this->applyAlgoViaIndices(sort);
@@ -145,7 +145,7 @@ void DbDisk<DbTuple>::sort(const std::function<bool(int64_t index1, int64_t inde
 
 
 template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::readRaw(int64_t index, char* ret) const {
+void DbDisk<DbTuple>::readRaw(bigint index, char* ret) const {
     if (index >= this->_size) {
         std::cerr << "Error: DbDisk::readRaw(): index out of bounds "
                   << "(index is " << index << ", size is " << this->_size << ")" << std::endl;
@@ -185,11 +185,11 @@ void DbDisk<DbTuple>::appendRaw(const char* dbTupleCstr) {
 
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple> DbDisk<DbTuple>::applyAlgoViaIndices(
-    const std::function<void(std::vector<int64_t>& dbIndices)>& algoOnIndices
+    const std::function<void(std::vector<bigint>& dbIndices)>& algoOnIndices
 ) const {
-    std::vector<int64_t> dbIndices;
+    std::vector<bigint> dbIndices;
     dbIndices.reserve(this->_size);
-    for (int64_t index = 0; index < this->_size; index++) {
+    for (bigint index = 0; index < this->_size; index++) {
         dbIndices.push_back(index);
     }
 
@@ -197,7 +197,7 @@ DbDisk<DbTuple> DbDisk<DbTuple>::applyAlgoViaIndices(
 
     // now build output DB using this vector of indices
     DbDisk<DbTuple> outputDbDisk;
-    for (int64_t index : dbIndices) {
+    for (bigint index : dbIndices) {
         outputDbDisk.push_back((*this)[index]);
     }
     return outputDbDisk;

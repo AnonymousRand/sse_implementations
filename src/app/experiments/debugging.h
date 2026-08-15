@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -19,7 +18,7 @@
 namespace app::experiments::debugging {
 
 
-void printHeader(int64_t maxDbSizeExp, const Range<Kw>& query) {
+void printHeader(bigint maxDbSizeExp, const Range<Kw>& query) {
     std::cout << std::endl;
     std::cout << "============================= Debugging Experiment ============================="
               << std::endl;

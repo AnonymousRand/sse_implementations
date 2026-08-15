@@ -1,7 +1,6 @@
 #include "schemes/pi_bas/pi_bas.h"
 
 #include <concepts>
-#include <cstdint>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -73,11 +72,11 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         Db<DbTuple> dbKwList = iter->second;
 
         // for each id in DB(w)
-        for (int64_t dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
+        for (bigint dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
             ustring label;
-            uint64_t pos = this->map(queryToken, dbKwCounter, label);
+            ubigint pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
             ustring iv = crypto::genIv(crypto::IV_LEN);
             ustring encDbTuple = crypto::padAndEncrypt(
@@ -110,7 +109,7 @@ void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
     EncInd* encInd = this->server->getEncInd();
     // don't use `this->size()` as the bound here as that doesn't include padding
     // while `encInd` does (this should all be client-side anyway so not leaking anything)
-    for (int64_t pos = 0; pos < encInd->getSize(); pos++) {
+    for (bigint pos = 0; pos < encInd->getSize(); pos++) {
         EncIndVal encIndVal;
         bool isValidVal = encInd->read(pos, encIndVal);
         if (!isValidVal) {
@@ -159,8 +158,8 @@ ustring PiBas<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
 
 
 template <IsDbTuple DbTuple>
-uint64_t PiBas<DbTuple>::map(
-    const ustring& queryToken, int64_t dbKwCounter, ustring& retLabel
+ubigint PiBas<DbTuple>::map(
+    const ustring& queryToken, bigint dbKwCounter, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w) || c)
     retLabel = crypto::hash(

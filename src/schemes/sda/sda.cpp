@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <concepts>
 #include <cmath>
-#include <cstdint>
 #include <vector>
 
 #include "schemes/interfaces/sd_underly.h"
@@ -37,15 +36,15 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->secParam = secParam;
 
     if (this->useShortcutSetup) {
-        int64_t lastFilledInd = db.size() > 0 ? (int64_t)std::log2(db.size()) : -1;
+        bigint lastFilledInd = db.size() > 0 ? (bigint)std::log2(db.size()) : -1;
 
         // this is the shortcut way: simply initialize and fill in all subindexes in one go
         // (note that the non-shortcut `setup()` places earlier items in `db` into larger
         // subindexes, so we preserve that behavior here by starting from the earlier tuples
         // in `db` up the largest subindexes first (this was needed anyway))
-        int64_t dbPos = 0;
-        for (int64_t i = lastFilledInd; i >= 0; i--) {
-            int64_t indSize = (int64_t)std::pow(2, i);
+        bigint dbPos = 0;
+        for (bigint i = lastFilledInd; i >= 0; i--) {
+            bigint indSize = (bigint)std::pow(2, i);
             Db<Tuple<>> indDb;
             if (dbPos < db.size()) {
                 if (dbPos + indSize < db.size()) {
@@ -72,7 +71,7 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         }
 
         // update the pointer to the first empty index as usual (like in `update()`)
-        int64_t newFirstEmpty = 0;
+        bigint newFirstEmpty = 0;
         while (newFirstEmpty < this->underlys.size()
                && this->underlys[newFirstEmpty]->getSize() > 0)
         {
@@ -145,7 +144,7 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`
     Db<Tuple<>> mergedDb;
-    for (int64_t i = 0; i < this->firstEmptyInd; i++) {
+    for (bigint i = 0; i < this->firstEmptyInd; i++) {
         // (`getDb()` appends to the passed-in container)
         this->underlys[i]->getDb(mergedDb);
     }
@@ -160,12 +159,12 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
     }
 
     // clear all EDB_<j
-    for (int64_t i = 0; i < this->firstEmptyInd; i++) {
+    for (bigint i = 0; i < this->firstEmptyInd; i++) {
         this->underlys[i]->clear();
     }
 
     // update the pointer to the first empty index
-    int64_t newFirstEmpty = 0;
+    bigint newFirstEmpty = 0;
     while (newFirstEmpty < this->underlys.size() && this->underlys[newFirstEmpty]->getSize() > 0) {
         newFirstEmpty++;
     }

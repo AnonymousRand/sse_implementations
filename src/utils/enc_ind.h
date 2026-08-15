@@ -6,7 +6,6 @@
 #pragma once
 
 #include <cmath>
-#include <cstdint>
 #include <string>
 #include <utility>
 
@@ -14,6 +13,7 @@
 
 #include "utils/crypto.h"
 #include "utils/disk_storage.h"
+#include "utils/types.h"
 #include "utils/ustring.h"
 
 
@@ -56,7 +56,7 @@ public:
     inline static constexpr int VAL_LEN   = DATA_LEN + crypto::IV_LEN;
     inline static constexpr int ENTRY_LEN = KEY_LEN + VAL_LEN;
 
-    void init(int64_t size);
+    void init(bigint size);
     void clear() override;
 
     /**
@@ -73,7 +73,7 @@ public:
      *     - `false` if the kv pair corresponding to `key` was never found in the entire index.
      */
     bool find(
-        uint64_t pos, const ustring& key, EncIndVal& ret, uint64_t* posFoundAt = nullptr
+        ubigint pos, const ustring& key, EncIndVal& ret, ubigint* posFoundAt = nullptr
     ) const;
 
     /**
@@ -83,14 +83,14 @@ public:
      *     - `true` if the kv pair at `pos` is valid.
      *     - `false` if the kv pair at `pos` is the null kv pair.
      */
-    bool read(uint64_t pos, EncIndVal& ret) const;
+    bool read(ubigint pos, EncIndVal& ret) const;
 
     /**
      * write to first empty location starting at `pos` (may not be at `pos` if hash collision).
      */
-    void write(uint64_t pos, const EncIndEntry& encIndEntry);
+    void write(ubigint pos, const EncIndEntry& encIndEntry);
 
-    int64_t getSize() const;
+    bigint getSize() const;
 
 private:
     constexpr std::string FILE_DIR() const override { return "out/server"; }
@@ -99,11 +99,11 @@ private:
 
     static const uchar NULL_ENTRY[ENTRY_LEN];
 
-    int64_t size = 0;
+    bigint size = 0;
 
     //----------------------------------------------------------------------
     // debugging
 
-    EncIndEntry get(uint64_t pos) const;
+    EncIndEntry get(ubigint pos) const;
     void print() const; // warning: this can be, like, a LOT of stuff!!
 };

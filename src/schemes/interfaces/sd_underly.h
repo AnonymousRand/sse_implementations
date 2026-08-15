@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 
 #include "schemes/interfaces/sse.h"
 
@@ -36,12 +35,12 @@ public:
         this->size = 0;
     }
 
-    int64_t getSize() const {
+    bigint getSize() const {
         return this->size;
     }
 
 protected:
-    int64_t size;
+    bigint size;
 };
 
 

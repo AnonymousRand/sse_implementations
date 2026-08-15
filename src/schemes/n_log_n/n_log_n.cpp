@@ -4,7 +4,6 @@
 #include <bit>
 #include <cmath>
 #include <concepts>
-#include <cstdint>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -54,10 +53,10 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->encKey = crypto::genKey(secParam);
     
     std::vector<EncInd*> encIndLvls;
-    for (int64_t lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
+    for (bigint lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
         EncInd* lvl = new EncInd();
-        int64_t bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
-        int64_t bcktSizeOnLvl = this->computeBcktSizeOnLvl(lvlNum);
+        bigint bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
+        bigint bcktSizeOnLvl = this->computeBcktSizeOnLvl(lvlNum);
         lvl->init(bcktCountOnLvl * bcktSizeOnLvl);
         encIndLvls.push_back(lvl);
     }
@@ -80,7 +79,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
         // pad keyword list to the next power of two
         Db<DbTuple> dbKwList = iter->second;
-        int64_t dbKwCount = dbKwList.size();
+        bigint dbKwCount = dbKwList.size();
         Range<DbKw> dbKwBounds = db.findDbKwBounds();
         DbKw maxDbKw = dbKwBounds.second;
         dbKwList.pad(maxDbKw);
@@ -88,14 +87,14 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         dbKwList.shuffle();
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
-        int64_t dbKwPaddedCount = dbKwList.size();
+        bigint dbKwPaddedCount = dbKwList.size();
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
         ustring label;
-        std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
-        uint64_t lvl = lvlAndPos.first;
-        uint64_t pos = lvlAndPos.second;
+        std::pair<ubigint, ubigint> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
+        ubigint lvl = lvlAndPos.first;
+        ubigint pos = lvlAndPos.second;
 
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
@@ -103,12 +102,12 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         ustring encDbKwCount = crypto::padAndEncrypt(
             crypto::ENC_CIPHER, this->encKey, utils::toUstr(dbKwCount), ivDict, EncInd::DATA_LEN - 1
         );
-        uint64_t posDict = this->mapNoMod(queryToken, labelDict);
+        ubigint posDict = this->mapNoMod(queryToken, labelDict);
         dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
-        uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
-        for (int64_t dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
+        ubigint startPos = pos * this->computeBcktSizeOnLvl(lvl);
+        for (bigint dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
             ustring iv = crypto::genIv(crypto::IV_LEN);
@@ -145,11 +144,11 @@ template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
     std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
 
-    for (int64_t lvl = 0; lvl < this->numLvls; lvl++) {
+    for (bigint lvl = 0; lvl < this->numLvls; lvl++) {
         EncInd* encIndLvl = encIndLvls[lvl];
         // don't use `this->size()` as the bound here as that doesn't include padding
         // while `encIndLvl` does (this should all be client-side anyway so not leaking anything)
-        for (int64_t pos = 0; pos < encIndLvl->getSize(); pos++) {
+        for (bigint pos = 0; pos < encIndLvl->getSize(); pos++) {
             EncIndVal encIndVal;
             bool isValidVal = encIndLvl->read(pos, encIndVal);
             if (!isValidVal) {
@@ -187,7 +186,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     // first retrieve the number of results/`dbKwCount` to know what level to search
     // (and how many dummies there are)
     ustring labelDict;
-    uint64_t posDict = this->mapNoMod(queryToken, labelDict);
+    ubigint posDict = this->mapNoMod(queryToken, labelDict);
     EncIndVal encIndValDict;
     bool isFoundDict = this->server->getDbKwCount(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
@@ -198,17 +197,17 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     ustring decDbKwCount = crypto::decryptAndUnpad(
         crypto::ENC_CIPHER, this->encKey, encDbKwCount, ivDict
     );
-    int64_t dbKwCount = utils::fromUstr(decDbKwCount);
-    int64_t dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
+    bigint dbKwCount = utils::fromUstr(decDbKwCount);
+    bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
-    std::pair<uint64_t, uint64_t> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
-    uint64_t lvl = lvlAndPos.first;
-    uint64_t pos = lvlAndPos.second;
+    std::pair<ubigint, ubigint> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
+    ubigint lvl = lvlAndPos.first;
+    ubigint pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
-    uint64_t startPos = pos * this->computeBcktSizeOnLvl(lvl);
+    ubigint startPos = pos * this->computeBcktSizeOnLvl(lvl);
     std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
@@ -233,7 +232,7 @@ ustring NLogN<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
 
 
 template <IsDbTuple DbTuple>
-uint64_t NLogN<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
+ubigint NLogN<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
     retLabel = crypto::hash(crypto::HASH_FUNC, crypto::HASH_OUTPUT_LEN, queryToken);
     return utils::hashToPos(retLabel); // no modulus
@@ -241,33 +240,33 @@ uint64_t NLogN<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) 
 
 
 template <IsDbTuple DbTuple>
-std::pair<uint64_t, uint64_t> NLogN<DbTuple>::map(
-    const ustring& queryToken, int64_t dbKwPaddedCount, ustring& retLabel
+std::pair<ubigint, ubigint> NLogN<DbTuple>::map(
+    const ustring& queryToken, bigint dbKwPaddedCount, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w))
-    uint64_t pos = this->mapNoMod(queryToken, retLabel);
+    ubigint pos = this->mapNoMod(queryToken, retLabel);
     // (note bottommost level is level 0)
-    uint64_t lvl = std::log2(dbKwPaddedCount);
-    pos %= (uint64_t)this->computeBcktCountOnLvl(lvl);
+    ubigint lvl = std::log2(dbKwPaddedCount);
+    pos %= (ubigint)this->computeBcktCountOnLvl(lvl);
     return std::pair {lvl, pos};
 }
 
 
 template <IsDbTuple DbTuple>
-int64_t NLogN<DbTuple>::computeNumLvls() const {
+bigint NLogN<DbTuple>::computeNumLvls() const {
     return std::ceil(std::log2(this->size)) + 1;
 }
 
 
 template <IsDbTuple DbTuple>
-int64_t NLogN<DbTuple>::computeBcktCountOnLvl(int64_t lvl) const {
+bigint NLogN<DbTuple>::computeBcktCountOnLvl(bigint lvl) const {
     // 2^{lvlCount - lvl + 1} is number of buckets on level `lvl`
     return std::pow(2, this->numLvls - lvl - 1);
 }
 
 
 template <IsDbTuple DbTuple>
-int64_t NLogN<DbTuple>::computeBcktSizeOnLvl(int64_t lvl) const {
+bigint NLogN<DbTuple>::computeBcktSizeOnLvl(bigint lvl) const {
     return std::pow(2, lvl);
 }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <cstdint>
 #include <format>
 #include <iostream>
 
@@ -21,7 +20,7 @@
 namespace app::experiments::result_sizes {
 
 
-void printHeader(int64_t maxDbSizeExp) {
+void printHeader(bigint maxDbSizeExp) {
     std::cout << std::endl;
     std::cout << "=========================== Result Sizes Experiment ============================"
               << std::endl;
@@ -33,7 +32,7 @@ void printHeader(int64_t maxDbSizeExp) {
 }
 
 
-void run(ISse<>* sse, int64_t dbSize) {
+void run(ISse<>* sse, bigint dbSize) {
     if (dbSize == 0) {
         return;
     }
@@ -46,8 +45,8 @@ void run(ISse<>* sse, int64_t dbSize) {
     sse->benchmark->print(config::SHOULD_BENCHMARK, "Setup");
 
     // searches
-    for (int64_t resultSizeExp = 0; resultSizeExp <= std::log2(dbSize); resultSizeExp++) {
-        int64_t resultSize = std::pow(2, resultSizeExp);
+    for (bigint resultSizeExp = 0; resultSizeExp <= std::log2(dbSize); resultSizeExp++) {
+        bigint resultSize = std::pow(2, resultSizeExp);
         // (referencing `createDb()`'s logic, this query should return exactly `resultSize`
         // results, not including false positives)
         Range<Kw> query {0, 2 * (resultSize - 1)};

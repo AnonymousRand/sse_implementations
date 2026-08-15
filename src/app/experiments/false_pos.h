@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <cstdint>
 #include <iostream>
 
 #include "config.h"
@@ -21,7 +20,7 @@
 namespace app::experiments::false_pos {
 
 
-void printHeader(int64_t maxDbSizeExp) {
+void printHeader(bigint maxDbSizeExp) {
     std::cout << std::endl;
     std::cout << "========================== False Positives Experiment =========================="
               << std::endl;
@@ -33,14 +32,14 @@ void printHeader(int64_t maxDbSizeExp) {
 }
 
 
-void run(ISse<>* sse, int64_t maxDbSize) {
+void run(ISse<>* sse, bigint maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
-    for (int64_t i = 2; i <= std::log2(maxDbSize); i++) {
-        int64_t dbSize = std::pow(2, i);
+    for (bigint i = 2; i <= std::log2(maxDbSize); i++) {
+        bigint dbSize = std::pow(2, i);
 
         // two unique keywords, with half being 0 and the other half being the max
         // thus using Log-SRC, half the tuples will be returned as false positives on a
@@ -50,7 +49,7 @@ void run(ISse<>* sse, int64_t maxDbSize) {
         Kw kw2 = dbSize - 1;
         Range<Kw> kwRange1 {kw1, kw1};
         Range<Kw> kwRange2 {kw2, kw2};
-        int64_t id;
+        bigint id;
         for (id = 0; id < dbSize / 2; id++) {
             db.push_back(Tuple<> {id, kw1, Op::INS, kwRange1});
         }
@@ -67,7 +66,7 @@ void run(ISse<>* sse, int64_t maxDbSize) {
         Kw kw2 = dbSize - 1;
         Range<Kw> kwRange1 {kw1, kw1};
         Range<Kw> kwRange2 {kw2, kw2};
-        for (int64_t i = 0; i < dbSize - 1; i++) {
+        for (bigint i = 0; i < dbSize - 1; i++) {
             db.push_back(Tuple<> {i, kw1, Op::INS, kwRange1});
         }
         db.push_back(Tuple<> {dbSize - 1, kw2, Op::INS, kwRange2});

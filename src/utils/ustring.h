@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cstddef>
-#include <cstdint>
 #include <iostream>
 #include <string>
+
+#include "utils/types.h"
 
 
 using uchar   = unsigned char;
@@ -14,11 +15,11 @@ using ustring = std::basic_string<uchar>;
 namespace utils {
 
 
-ustring toUstr(int64_t n);
+ustring toUstr(bigint n);
 ustring toUstr(const std::string& s);
 ustring toUstr(uchar* ucstr, int len);
 std::string toStr(const ustring& ustr);
-int64_t fromUstr(const ustring& ustr);
+bigint fromUstr(const ustring& ustr);
 
 
 } // namespace `utils`

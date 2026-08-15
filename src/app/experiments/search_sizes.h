@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <cstdint>
 #include <format>
 #include <iostream>
 
@@ -21,7 +20,7 @@
 namespace app::experiments::search_sizes {
 
 
-void printHeader(int64_t maxDbSizeExp) {
+void printHeader(bigint maxDbSizeExp) {
     std::cout << std::endl;
     std::cout << "=========================== Search Sizes Experiment ============================"
               << std::endl;
@@ -33,7 +32,7 @@ void printHeader(int64_t maxDbSizeExp) {
 }
 
 
-void run(ISse<>* sse, int64_t dbSize) {
+void run(ISse<>* sse, bigint dbSize) {
     if (dbSize == 0) {
         return;
     }
@@ -45,8 +44,8 @@ void run(ISse<>* sse, int64_t dbSize) {
     sse->benchmark->print(config::SHOULD_BENCHMARK, "Setup");
 
     // searches
-    for (int64_t i = 0; i <= std::log2(dbSize); i++) {
-        Range<Kw> query {0, (int64_t)std::pow(2, i) - 1};
+    for (bigint i = 0; i <= std::log2(dbSize); i++) {
+        Range<Kw> query {0, (bigint)std::pow(2, i) - 1};
         sse->search(query);
         sse->benchmark->print(
             config::SHOULD_BENCHMARK, "Search",

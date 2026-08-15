@@ -1,5 +1,4 @@
 #include <cmath>
-#include <cstdint>
 #include <iostream>
 #include <memory>
 
@@ -21,10 +20,10 @@
 
 
 int main() {
-    int64_t maxDbSizeExp;
+    bigint maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
-    const int64_t maxDbSize = std::pow(2, maxDbSizeExp);
+    const bigint maxDbSize = std::pow(2, maxDbSizeExp);
     std::cout << std::endl;
 
     std::unique_ptr<PiBas<>> piBas               = app::createSse<PiBas<>>(

@@ -1,13 +1,13 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <vector>
 
 #include "utils/db/db_interface.h"
 #include "utils/tuple.h"
+#include "utils/types.h"
 
 
 template <IsDbTuple DbTuple>
@@ -24,7 +24,7 @@ public:
     /**
      * copy `db` from `startIndex` (inclusive) to `endIndex` (exclusive).
      */
-    DbRam(const DbRam& db, int64_t startIndex, int64_t endIndex);
+    DbRam(const DbRam& db, bigint startIndex, bigint endIndex);
 
     /**
      * initialize a `DbRam` with the raw values in the brace-enclosed initializer list `initList`.
@@ -40,13 +40,13 @@ public:
 
     void clear() override;
     void push_back(const DbTuple& dbTuple) override;
-    int64_t size() const override;
+    bigint size() const override;
     bool empty() const override;
 
-    DbTuple operator [](int64_t index) const override;
+    DbTuple operator [](bigint index) const override;
 
     void shuffle() override;
-    void sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) override;
+    void sort(const std::function<bool(bigint index1, bigint index2)>& compare) override;
 
 private:
     InnerType vec;

@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <concepts>
-#include <cstdint>
 #include <format>
 #include <iostream>
 #include <string>
@@ -19,8 +18,8 @@
 
 struct Benchmark {
     double time = 0;
-    int64_t diskSize = 0;
-    int64_t network = 0;
+    bigint diskSize = 0;
+    bigint network = 0;
 
     void resetAll() {
         this->time = 0;

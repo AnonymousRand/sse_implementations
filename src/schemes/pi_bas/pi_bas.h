@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <vector>
 
 #include "schemes/interfaces/sd_underly.h"
@@ -55,5 +54,5 @@ private:
      * generate encrypted label to store in encrypted index, and also return
      * numerical position at which to place it in the index (pseudorandomly).
      */
-    uint64_t map(const ustring& queryToken, int64_t dbKwListSize, ustring& retLabel) const;
+    ubigint map(const ustring& queryToken, bigint dbKwListSize, ustring& retLabel) const;
 };

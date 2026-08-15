@@ -1,17 +1,17 @@
 #include "utils/misc.h"
 
-#include <cstdint>
 #include <string>
 
+#include "utils/types.h"
 #include "utils/ustring.h"
 
 
 namespace utils {
 
 
-uint64_t hashToPos(const ustring& hash) {
+ubigint hashToPos(const ustring& hash) {
     // this conversion mess is from USENIX'24
-    return (*((uint64_t*)hash.c_str()));
+    return (*((ubigint*)hash.c_str()));
 }
 
 

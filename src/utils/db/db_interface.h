@@ -1,12 +1,12 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <functional>
 #include <unordered_set>
 
 #include "utils/range.h"
 #include "utils/tuple.h"
+#include "utils/types.h"
 
 
 template <IsDbTuple DbTuple = Tuple<>>
@@ -24,13 +24,13 @@ public:
 
     virtual void clear() = 0;
     virtual void push_back(const DbTuple& dbTuple) = 0;
-    virtual int64_t size() const = 0;
+    virtual bigint size() const = 0;
     virtual bool empty() const = 0;
 
-    virtual DbTuple operator [](int64_t index) const = 0;
+    virtual DbTuple operator [](bigint index) const = 0;
 
     virtual void shuffle() = 0;
-    virtual void sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) = 0;
+    virtual void sort(const std::function<bool(bigint index1, bigint index2)>& compare) = 0;
 
     //--------------------------------------------------------------------------
     // utils

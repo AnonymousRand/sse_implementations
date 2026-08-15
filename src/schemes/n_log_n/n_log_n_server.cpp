@@ -1,7 +1,6 @@
 #include "schemes/n_log_n/n_log_n_server.h"
 
 #include <concepts>
-#include <cstdint>
 #include <vector>
 
 #include "schemes/interfaces/sse_server.h"
@@ -16,8 +15,8 @@
 namespace {
 
 
-int64_t calcAllEncIndLvlsBytes(const std::vector<EncInd*>& encIndLvls) {
-    int64_t bytes = 0;
+bigint calcAllEncIndLvlsBytes(const std::vector<EncInd*>& encIndLvls) {
+    bigint bytes = 0;
     for (EncInd* encIndLvl : encIndLvls) {
         bytes += encIndLvl->getSize() * EncInd::ENTRY_LEN;
     }
@@ -68,7 +67,7 @@ void NLogNServer<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls) {
-    int64_t allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(encIndLvls);
+    bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(encIndLvls);
     this->benchmark->diskSize += allEncIndLvlsBytes;
     this->benchmark->network += allEncIndLvlsBytes;
 
@@ -78,7 +77,7 @@ void NLogNServer<DbTuple>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls)
 
 template <IsDbTuple DbTuple>
 std::vector<EncInd*> NLogNServer<DbTuple>::getEncIndLvls() const {
-    int64_t allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(this->encIndLvls);
+    bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(this->encIndLvls);
     this->benchmark->diskSize += allEncIndLvlsBytes;
     this->benchmark->network += allEncIndLvlsBytes;
 
@@ -88,13 +87,13 @@ std::vector<EncInd*> NLogNServer<DbTuple>::getEncIndLvls() const {
 
 template <IsDbTuple DbTuple>
 std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
-    int64_t lvl, uint64_t startPos, int64_t bcktSize, const ustring& label
+    bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
 ) const {
     this->benchmark->network +=
-        sizeof(int64_t) + sizeof(uint64_t) + sizeof(int64_t) + label.length();
+        sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + label.length();
     std::vector<EncIndVal> encResults;
 
-    for (int64_t dbKwCounter = 0; dbKwCounter < bcktSize; dbKwCounter++) {
+    for (bigint dbKwCounter = 0; dbKwCounter < bcktSize; dbKwCounter++) {
         EncIndVal encIndVal;
         bool isFound;
         if (dbKwCounter == 0) {
@@ -122,7 +121,7 @@ std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
 
 template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::setDbKwCountsDict(EncInd* dbKwCountsDict) {
-    int64_t dbKwCountsDictBytes = dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
+    bigint dbKwCountsDictBytes = dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
     this->benchmark->diskSize += dbKwCountsDictBytes;
     this->benchmark->network += dbKwCountsDictBytes;
     this->dbKwCountsDict = dbKwCountsDict;
@@ -131,9 +130,9 @@ void NLogNServer<DbTuple>::setDbKwCountsDict(EncInd* dbKwCountsDict) {
 
 template <IsDbTuple DbTuple>
 bool NLogNServer<DbTuple>::getDbKwCount(
-    uint64_t pos, const ustring& label, EncIndVal& ret
+    ubigint pos, const ustring& label, EncIndVal& ret
 ) const {
-    this->benchmark->network += sizeof(uint64_t) + label.length() + EncInd::VAL_LEN;
+    this->benchmark->network += sizeof(ubigint) + label.length() + EncInd::VAL_LEN;
     return this->dbKwCountsDict->find(pos, label, ret);
 }
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 #include "utils/db/db.h"
 #include "utils/random.h"
 #include "utils/range.h"
@@ -12,7 +10,7 @@
 namespace app {
 
 
-Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
+Db<> createDb(bigint dbSize, bool isRandom, bool hasDeletions) {
     Db<> db {};
     if (dbSize == 0) {
         // TODO do the same for e.g. returning empty vectors during search!
@@ -20,7 +18,7 @@ Db<> createDb(int64_t dbSize, bool isRandom, bool hasDeletions) {
         // compiler does named return value optimization)
         return db;
     }
-    std::uniform_int_distribution<int64_t> dist(0, dbSize - 1);
+    std::uniform_int_distribution<bigint> dist(0, dbSize - 1);
 
     Id minId = 0;
     Id maxId = dbSize - 1;

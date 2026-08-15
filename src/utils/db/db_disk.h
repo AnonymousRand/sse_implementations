@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <cstdio>
 #include <functional>
 #include <initializer_list>
@@ -13,6 +12,7 @@
 #include "utils/enc_ind.h"
 #include "utils/range.h"
 #include "utils/tuple.h"
+#include "utils/types.h"
 
 
 // this is essentially a vector but stored on disk, hence we match `std::vector`'s method names
@@ -32,7 +32,7 @@ public:
      * (this does not match an `std::vector` constructor since the iterator range one would require
      * decoding and re-encoding every tuple without change, and that has some expensive regex.)
      */
-    DbDisk(const DbDisk& db, int64_t startIndex, int64_t endIndex);
+    DbDisk(const DbDisk& db, bigint startIndex, bigint endIndex);
 
     /**
      * initialize a `DbDisk` with the raw values in the brace-enclosed initializer list `initList`.
@@ -61,7 +61,7 @@ public:
     void clear() override;
     void push_back(const DbTuple& dbTuple) override;
 
-    int64_t size() const override {
+    bigint size() const override {
         return this->_size;
     }
 
@@ -70,19 +70,19 @@ public:
     // read-only accessing using `[]`
     // >TODO test what if this is const DbTuple&? same with Ind. maybe just implement both const
     // and non-const reference versions?
-    DbTuple operator [](int64_t index) const override;
+    DbTuple operator [](bigint index) const override;
 
     // these are instantiations of `applyAlgoViaIndices()` (see below) using specific common
     // `algoOnIndices` functions
     // additionally, these methods replace `*this` with the output `DbDisk`
     void shuffle() override;
-    void sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) override;
+    void sort(const std::function<bool(bigint index1, bigint index2)>& compare) override;
 
 private:
     constexpr std::string FILE_DIR() const override { return "out/client"; }
     constexpr std::string FILENAME_PREFIX() const override { return "db_"; }
 
-    int64_t _size = 0;
+    bigint _size = 0;
     // (`mutable` allows this to be modified in `const` contexts still)
     mutable bool isFlushed = true;
 
@@ -90,7 +90,7 @@ private:
     // helpers
 
     // helpers that don't do encoding/decoding (e.g. also good for faster copy constructors)
-    void readRaw(int64_t index, char* ret) const;
+    void readRaw(bigint index, char* ret) const;
     void appendRaw(const char* dbTupleCstr);
 
     /**
@@ -101,7 +101,7 @@ private:
      * smaller than the `DbDisk` itself) and then using that to build and return a new output `DbDisk`.
      */
     DbDisk<DbTuple> applyAlgoViaIndices(
-        const std::function<void(std::vector<int64_t>& dbIndices)>& algoOnIndices
+        const std::function<void(std::vector<bigint>& dbIndices)>& algoOnIndices
     ) const;
 
 //------------------------------------------------------------------------------
@@ -122,9 +122,9 @@ public:
     template <class DbTuple2> requires std::is_same_v<std::remove_cv_t<DbTuple2>, DbTuple>
     struct Iter {
         const DbDisk<DbTuple>* db = nullptr;
-        int64_t index;
+        bigint index;
 
-        Iter(const DbDisk<DbTuple>* db, int64_t index) : db(db), index(index) {}
+        Iter(const DbDisk<DbTuple>* db, bigint index) : db(db), index(index) {}
 
         DbTuple2 operator *() const {
             return (*this->db)[this->index];

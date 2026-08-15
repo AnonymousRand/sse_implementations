@@ -2,7 +2,6 @@
 
 #include <concepts>
 #include <cmath>
-#include <cstdint>
 #include <cstdlib>
 #include <deque>
 #include <list>
@@ -318,7 +317,7 @@ template std::ostream& operator <<(std::ostream& os, TdagNode<Kw>* node);
 namespace utils {
 
 
-int64_t calcTdagTupleCount(int64_t leafCount) {
+bigint calcTdagTupleCount(bigint leafCount) {
     // a formula for the total number of tuples above level i, where n = leaf count
     // and m = log_2(n) is the level number of the top level (where bottom level is 0)
     // is (m - i)(2n) - (1 - 2^(i-m)) 2^(m+1):
@@ -335,7 +334,7 @@ int64_t calcTdagTupleCount(int64_t leafCount) {
     //
     // so here we are just calculating the case where i is 0 (so number of tuples
     // above the bottommost level) and then adding the number of leaves
-    int64_t topLevelNum = std::log2(leafCount);
+    bigint topLevelNum = std::log2(leafCount);
     return topLevelNum * (2 * leafCount)
         - (1 - std::pow(2, -topLevelNum)) * std::pow(2, topLevelNum + 1)
         + leafCount;
@@ -369,8 +368,8 @@ template <IsDbTuple DbTuple>
 void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tdag) {
     using DbKw = typename DbTuple::DbKwType;
 
-    int64_t dbSize = db.size();
-    for (int64_t i = 0; i < dbSize; i++) {
+    bigint dbSize = db.size();
+    for (bigint i = 0; i < dbSize; i++) {
         DbTuple tuple = db[i];
         Range<DbKw> dbKwRange = tuple.getDbKwRange();
         std::list<Range<DbKw>> ancestors = tdag->getLeafAncestors(dbKwRange);

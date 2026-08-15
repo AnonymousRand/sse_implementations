@@ -1,12 +1,12 @@
 #include "utils/ind.h"
 
 #include <concepts>
-#include <cstdint>
 #include <unordered_map>
 
 #include "utils/db/db.h"
 #include "utils/range.h"
 #include "utils/tuple.h"
+#include "utils/types.h"
 
 
 //------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ ConstIter Ind<DbTuple>::find(const KeyType& key) const {
 
 
 template <IsDbTuple DbTuple>
-int64_t Ind<DbTuple>::count(const KeyType& key) const {
+bigint Ind<DbTuple>::count(const KeyType& key) const {
     return this->map.count(key);
 }
 

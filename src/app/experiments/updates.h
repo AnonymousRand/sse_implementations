@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <iostream>
 #include <string>
 
@@ -20,7 +19,7 @@
 namespace app::experiments::updates {
 
 
-void printHeader(int64_t maxDbSizeExp) {
+void printHeader(bigint maxDbSizeExp) {
     std::cout << std::endl;
     std::cout << "============================== Updates Experiment =============================="
               << std::endl;
@@ -32,7 +31,7 @@ void printHeader(int64_t maxDbSizeExp) {
 }
 
 
-void run(IDsse<>* dsse, int64_t dbSize) {
+void run(IDsse<>* dsse, bigint dbSize) {
     if (dbSize == 0) {
         return;
     }
@@ -43,7 +42,7 @@ void run(IDsse<>* dsse, int64_t dbSize) {
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     // updates
-    for (int64_t i = 0; i < db.size(); i++) {
+    for (bigint i = 0; i < db.size(); i++) {
         Tuple<> tuple = db[i];
         dsse->update(tuple);
         dsse->benchmark->print(config::SHOULD_BENCHMARK, "Update", std::to_string(i));

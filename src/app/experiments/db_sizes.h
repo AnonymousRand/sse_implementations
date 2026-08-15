@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <cstdint>
 #include <format>
 #include <iostream>
 
@@ -21,7 +20,7 @@
 namespace app::experiments::db_sizes {
 
 
-void printHeader(int64_t maxDbSizeExp) {
+void printHeader(bigint maxDbSizeExp) {
     std::cout << std::endl;
     std::cout << "============================= DB Sizes Experiment =============================="
               << std::endl;
@@ -33,15 +32,15 @@ void printHeader(int64_t maxDbSizeExp) {
 }
 
 
-void run(ISse<>* sse, int64_t maxDbSize) {
+void run(ISse<>* sse, bigint maxDbSize) {
     if (maxDbSize == 0) {
         return;
     }
     Range<Kw> query {0, 3};
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
-    for (int64_t i = 2; i <= std::log2(maxDbSize); i++) {
-        int64_t dbSize = std::pow(2, i);
+    for (bigint i = 2; i <= std::log2(maxDbSize); i++) {
+        bigint dbSize = std::pow(2, i);
         Db<> db = createDb(dbSize, true, true);
 
         // setup

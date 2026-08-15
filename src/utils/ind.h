@@ -1,12 +1,12 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <unordered_map>
 
 #include "utils/db/db.h"
 #include "utils/range.h"
 #include "utils/tuple.h"
+#include "utils/types.h"
 
 
 template <IsDbTuple DbTuple = Tuple<>>
@@ -30,7 +30,7 @@ public:
 
     //find(const KeyType& key);
     ConstIter find(const KeyType& key) const;
-    int64_t count(const KeyType& key) const;
+    bigint count(const KeyType& key) const;
 
     ValType& operator [](const KeyType& key);
     const ValType& operator [](const KeyType& key) const;

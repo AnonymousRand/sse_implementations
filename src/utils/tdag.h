@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <iostream>
 #include <list>
 #include <unordered_set>
@@ -9,6 +8,7 @@
 #include "utils/db/db.h"
 #include "utils/range.h"
 #include "utils/tuple.h"
+#include "utils/types.h"
 
 
 //==============================================================================
@@ -76,7 +76,7 @@ private:
 namespace utils {
 
 
-int64_t calcTdagTupleCount(int64_t leafCount);
+bigint calcTdagTupleCount(bigint leafCount);
 
 
 template <IsDbTuple DbTuple>

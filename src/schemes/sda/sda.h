@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <vector>
 
 #include "schemes/interfaces/dsse.h"
@@ -42,5 +41,5 @@ public:
 
 private:
     std::vector<Underly*> underlys;
-    int64_t firstEmptyInd;
+    bigint firstEmptyInd;
 };

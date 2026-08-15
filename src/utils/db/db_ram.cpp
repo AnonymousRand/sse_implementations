@@ -2,13 +2,13 @@
 
 #include <algorithm>
 #include <concepts>
-#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <vector>
 
 #include "utils/random.h"
 #include "utils/tuple.h"
+#include "utils/types.h"
 
 
 //------------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 
 
 template <IsDbTuple DbTuple>
-DbRam<DbTuple>::DbRam(const DbRam& db, int64_t startIndex, int64_t endIndex) :
+DbRam<DbTuple>::DbRam(const DbRam& db, bigint startIndex, bigint endIndex) :
     vec(db.vec.begin() + startIndex, db.vec.end() + endIndex) {}
 
 
@@ -41,7 +41,7 @@ void DbRam<DbTuple>::push_back(const DbTuple& dbTuple) {
 
 
 template <IsDbTuple DbTuple>
-int64_t DbRam<DbTuple>::size() const {
+bigint DbRam<DbTuple>::size() const {
     return this->vec.size();
 }
 
@@ -53,7 +53,7 @@ bool DbRam<DbTuple>::empty() const {
 
 
 template <IsDbTuple DbTuple>
-DbTuple DbRam<DbTuple>::operator [](int64_t index) const {
+DbTuple DbRam<DbTuple>::operator [](bigint index) const {
     return this->vec[index];
 }
 
@@ -65,7 +65,7 @@ void DbRam<DbTuple>::shuffle() {
 
 
 template <IsDbTuple DbTuple>
-void DbRam<DbTuple>::sort(const std::function<bool(int64_t index1, int64_t index2)>& compare) {
+void DbRam<DbTuple>::sort(const std::function<bool(bigint index1, bigint index2)>& compare) {
     std::sort(this->begin(), this->end(), compare);
 }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -39,7 +38,7 @@ public:
 
 protected:
     NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
-    int64_t numLvls;
+    bigint numLvls;
 
     //----------------------------------------------------------------------
     // `IStaticPointSse`
@@ -55,7 +54,7 @@ protected:
      * generate encrypted label to store in encrypted index, and also return numerical
      * position only at which to place it in the index with no modulo for bucket count.
      */
-    uint64_t mapNoMod(const ustring& queryToken, ustring& retLabel) const;
+    ubigint mapNoMod(const ustring& queryToken, ustring& retLabel) const;
 
     /**
      * generate encrypted label to store in encrypted index, and also return
@@ -66,11 +65,11 @@ protected:
      * preconditions:
      *     - `dbKwListSize` is a power of 2.
      */
-    std::pair<uint64_t, uint64_t> map(
-        const ustring& queryToken, int64_t dbKwPaddedCount, ustring& retLabel
+    std::pair<ubigint, ubigint> map(
+        const ustring& queryToken, bigint dbKwPaddedCount, ustring& retLabel
     ) const;
 
-    virtual int64_t computeNumLvls() const;
-    virtual int64_t computeBcktCountOnLvl(int64_t lvlNum) const;
-    virtual int64_t computeBcktSizeOnLvl(int64_t lvlNum) const;
+    virtual bigint computeNumLvls() const;
+    virtual bigint computeBcktCountOnLvl(bigint lvlNum) const;
+    virtual bigint computeBcktSizeOnLvl(bigint lvlNum) const;
 };

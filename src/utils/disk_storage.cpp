@@ -1,6 +1,5 @@
 #include "utils/disk_storage.h"
 
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
@@ -10,12 +9,13 @@
 #include <string>
 
 #include "utils/random.h"
+#include "utils/types.h"
 
 
 namespace {
 
 
-std::uniform_int_distribution<uint64_t> dist;
+std::uniform_int_distribution<ubigint> dist;
 
 
 } // anonymous namespace
@@ -103,7 +103,7 @@ void IDiskStorage::clear() {
 
 std::string IDiskStorage::genFilename() const {
     // avoid naming clashes by generating a random 8 byte (16 char) hex string
-    uint64_t randomHex = ::dist(utils::RNG);
+    ubigint randomHex = ::dist(utils::RNG);
     std::string randomHexStr = std::format("{:016x}", randomHex);
     return std::format("{}/{}{}.dat", this->FILE_DIR(), this->FILENAME_PREFIX(), randomHexStr);
 }

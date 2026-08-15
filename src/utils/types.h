@@ -3,9 +3,14 @@
 #include <cstdint>
 
 
-using Kw      = int64_t;
-using Id      = int64_t;
-using IdAlias = int64_t; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
+// generic "long" types
+using bigint  = std::int64_t;
+using ubigint = std::uint64_t;
+
+
+using Kw      = bigint;
+using Id      = bigint;
+using IdAlias = bigint; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 
 
 enum class Op : char {
@@ -17,7 +22,7 @@ enum class Op : char {
 
 /**
  * preconditions:
- *     - keywords and ids are both nonnegative integer values (storable by `int64_t`)
+ *     - keywords and ids are both nonnegative integer values (storable by `bigint`)
  *       (as `DUMMY` here is used for both).
  */
-inline constexpr int64_t DUMMY = -1;
+inline constexpr bigint DUMMY = -1;
