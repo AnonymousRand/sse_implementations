@@ -47,14 +47,6 @@ Db<DbTuple>::Db(const Db& other) {
     }
     //std::cerr << "copied to " << this->filename << "; our size is " << this->_size << std::endl;
 
-    //FILE* tmp = std::fopen(this->filename.c_str(), "ab+");
-    //FILE* tmpOther = std::fopen(other.filename.c_str(), "ab+");
-    //std::fseek(tmp, 0, SEEK_END);
-    //std::fseek(tmpOther, 0, SEEK_END);
-    //std::cerr << "other.file has real size " << std::ftell(tmpOther) << "; copied file has real size " << std::ftell(tmp) << std::endl;
-    //std::fclose(tmp);
-    //std::fclose(tmpOther);
-
     // note: use `a` instead of `w` mode always here to not overwrite the file we just copied
     this->file = std::fopen(this->filename.c_str(), "ab+");
     if (this->file == nullptr) {
@@ -65,23 +57,24 @@ Db<DbTuple>::Db(const Db& other) {
 
 
 template <IsDbTuple DbTuple>
-Db<DbTuple>::Db(const Db& db, int64_t startIndex, int64_t endIndex) {
-    //std::cerr << "db range constructor" << std::endl;
-    this->filename = this->genFilename();
-    this->_size = endIndex - startIndex;
+Db<DbTuple>::Db(const Db& db, int64_t startIndex, int64_t endIndex) : Db<DbTuple>() {
+    //std::cerr << "db range constructor from " << db.filename << " to " << this->filename << std::endl;
+    //std::cerr << "size is " << this->_size << "; original db size was " << db.size() << "; file is " << this->file << ", " << this->filename << std::endl;
 
     for (int64_t index = startIndex; index < endIndex; index++) {
-        std::string dbTupleStr = db.readRaw(index);
-        this->writeRaw(dbTupleStr);
+        //std::cerr << "writing " << index << std::endl;
+        char dbTupleCstr[TUPLE_LEN];
+        db.readRaw(index, dbTupleCstr);
+        //std::cerr << "writing2 " << dbTupleCstr << std::endl;
+        this->appendRaw(dbTupleCstr);
     }
+    //std::cerr << "done writing " << std::endl;
 }
 
 
 template <IsDbTuple DbTuple>
-Db<DbTuple>::Db(std::initializer_list<DbTuple> initList) {
+Db<DbTuple>::Db(std::initializer_list<DbTuple> initList) : Db<DbTuple>() {
     //std::cerr << "db init list constructor" << std::endl;
-    IDiskStorage::init();
-    //std::cerr << "db init list constructor done init" << std::endl;
     for (DbTuple dbTuple : initList) {
         //std::cerr << "db init list constructor pushing back" << std::endl;
         this->push_back(dbTuple);
@@ -119,7 +112,7 @@ void Db<DbTuple>::push_back(const DbTuple& dbTuple) {
         dbTupleStr += padding;
     }
 
-    this->writeRaw(dbTupleStr);
+    this->appendRaw(dbTupleStr.c_str());
 }
 
 
@@ -131,7 +124,9 @@ bool Db<DbTuple>::empty() const {
 
 template <IsDbTuple DbTuple>
 DbTuple Db<DbTuple>::operator [](int64_t index) const {
-    std::string dbTupleStr = this->readRaw(index);
+    char dbTupleCstr[TUPLE_LEN];
+    this->readRaw(index, dbTupleCstr);
+    std::string dbTupleStr(dbTupleCstr, TUPLE_LEN);
 
     // unpad as necessary so that decoding works properly
     int paddingStart;
@@ -152,42 +147,37 @@ DbTuple Db<DbTuple>::operator [](int64_t index) const {
 
 
 template <IsDbTuple DbTuple>
-std::string Db<DbTuple>::readRaw(int64_t index) const {
+void Db<DbTuple>::readRaw(int64_t index, char* ret) const {
+    //std::cerr << "readRaw " << index << ", this->size is " << this->_size << "; file is " << this->file << ", " << this->filename << std::endl;
     if (index >= this->_size) {
         std::cerr << "Error: Db::readRaw(): index out of bounds "
                   << "(index is " << index << ", size is " << this->_size << ")" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
-    char dbTupleCstr[TUPLE_LEN];
     std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
-    int itemsRead = std::fread(dbTupleCstr, TUPLE_LEN, 1, this->file);
+    int itemsRead = std::fread(ret, TUPLE_LEN, 1, this->file);
+    //std::cerr << "done read" << std::endl;
     if (itemsRead != 1) {
         std::cerr << "Error: Db::readRaw(): error reading from file " << this->filename
                   << " (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-
-    return std::string(dbTupleCstr);
 }
 
 
 template <IsDbTuple DbTuple>
-void Db<DbTuple>::writeRaw(const std::string& dbTupleStr) {
+void Db<DbTuple>::appendRaw(const char* dbTupleCstr) {
+    //std::cerr << "appendRaw " << dbTupleStr << "; this->file is " << this->file << std::endl;
     std::fseek(this->file, 0, SEEK_END);
-    int itemsWritten = std::fwrite(dbTupleStr.c_str(), TUPLE_LEN, 1, this->file);
+    //std::cerr << "appendRaw 2" << dbTupleStr << std::endl;
+    int itemsWritten = std::fwrite(dbTupleCstr, TUPLE_LEN, 1, this->file);
     if (itemsWritten != 1) {
-        std::cerr << "Error: Db::writeRaw(): error writing to file " << this->filename
+        std::cerr << "Error: Db::appendRaw(): error writing to file " << this->filename
                   << " (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    //std::cerr << "db writeRaw wrote to " << this->filename << ", pointer " << this->file << std::endl;
-    // >TODO: may need alternate solution to ensure flush when switching from writing to reading,
-    // like holding two separate filestreams for reading and writing (or this still doesn't work?)
-    // probably instead try having a flush() function here and just manually calling it when writes
-    // end?? but even then still don't know exactly when that is right e.g. in genInd
-    // but might not have another option, so might just need to manually flush everything when done
-    // writing?
+    //std::cerr << "db appendRaw wrote to " << this->filename << ", pointer " << this->file << std::endl;
     std::fflush(this->file);
 
     this->_size++;

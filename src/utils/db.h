@@ -106,8 +106,8 @@ private:
     // helpers
 
     // helpers that don't do encoding/decoding (e.g. also good for faster copy constructors)
-    std::string readRaw(int64_t index) const;
-    void writeRaw(const std::string& dbTupleStr);
+    void readRaw(int64_t index, char* ret) const;
+    void appendRaw(const char* dbTupleCstr);
 
 public:
     //--------------------------------------------------------------------------
