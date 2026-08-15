@@ -18,9 +18,9 @@ Ind<DbTuple>::Ind(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
     for (DbTuple dbTuple : db) {
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
         if (this->count(dbKwRange) == 0) {
-            this[dbKwRange] = Db<DbTuple> {dbTuple};
+            (*this)[dbKwRange] = Db<DbTuple> {dbTuple};
         } else {
-            this[dbKwRange].push_back(dbTuple);
+            (*this)[dbKwRange].push_back(dbTuple);
         }
     }
 
@@ -38,7 +38,7 @@ Ind<DbTuple>::Ind(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
 
 
 template <IsDbTuple DbTuple>
-ConstIter Ind<DbTuple>::find(const KeyType& key) const {
+Ind<DbTuple>::ConstIter Ind<DbTuple>::find(const KeyType& key) const {
     return this->map.find(key);
 }
 
@@ -50,13 +50,13 @@ bigint Ind<DbTuple>::count(const KeyType& key) const {
 
 
 template <IsDbTuple DbTuple>
-ValType& operator [](const KeyType& key) {
+Ind<DbTuple>::ValType& Ind<DbTuple>::operator [](const KeyType& key) {
     return this->map[key];
 }
 
 
 template <IsDbTuple DbTuple>
-const ValType& operator [](const KeyType& key) const {
+const Ind<DbTuple>::ValType& Ind<DbTuple>::operator [](const KeyType& key) const {
     return this->map.at(key);
 }
 
@@ -66,5 +66,5 @@ const ValType& operator [](const KeyType& key) const {
 
 
 template class Ind<Tuple<>>;
-template class Ind<SrcIDb1Doc>;
+template class Ind<SrcIDb1Tuple>;
 //template class Ind<Tuple<IdAlias>>;

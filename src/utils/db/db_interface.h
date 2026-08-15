@@ -29,7 +29,9 @@ public:
     virtual DbTuple operator [](bigint index) const = 0;
 
     virtual void shuffle() = 0;
-    virtual void sort(const std::function<bool(bigint index1, bigint index2)>& compare) = 0;
+    virtual void sort(
+        const std::function<bool(const DbTuple& dbTuple1, const DbTuple& dbTuple2)>& compare
+    ) = 0;
 
     //--------------------------------------------------------------------------
     // utils

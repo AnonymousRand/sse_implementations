@@ -64,7 +64,9 @@ public:
     // `algoOnIndices` functions
     // additionally, these methods replace `*this` with the output `DbDisk`
     void shuffle() override;
-    void sort(const std::function<bool(bigint index1, bigint index2)>& compare) override;
+    void sort(
+        const std::function<bool(const DbTuple& dbTuple1, const DbTuple& dbTuple2)>& compare
+    ) override;
 
 private:
     constexpr std::string FILE_DIR() const override { return "out/client"; }

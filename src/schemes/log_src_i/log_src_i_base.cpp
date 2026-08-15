@@ -164,10 +164,10 @@ template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 Db<Tuple<>> LogSrcIBase<Underly>::sortInputDb(const Db<Tuple<>>& db) {
     Db<Tuple<>> sortedDb = db;
 
-    auto sortIndicesByKw = [&db](bigint index1, bigint index2) {
-        return db[index1].getKw() < db[index2].getKw();
+    auto sortByKw = [](const Tuple<>& tuple1, const Tuple<>& tuple2) {
+        return tuple1.getKw() < tuple2.getKw();
     };
-    sortedDb.sort(sortIndicesByKw);
+    sortedDb.sort(sortByKw);
     return sortedDb;
 }
 

@@ -59,7 +59,9 @@ void DbRam<DbTuple>::shuffle() {
 
 
 template <IsDbTuple DbTuple>
-void DbRam<DbTuple>::sort(const std::function<bool(bigint index1, bigint index2)>& compare) {
+void DbRam<DbTuple>::sort(
+    const std::function<bool(const DbTuple& dbTuple1, const DbTuple& dbTuple2)>& compare
+) {
     std::sort(this->vec.begin(), this->vec.end(), compare);
 }
 

@@ -29,7 +29,7 @@ DbDisk<DbTuple>::DbDisk() {
 
 
 template <IsDbTuple DbTuple>
-DbDisk<DbTuple>::DbDisk(const DbDisk& db, bigint startIndex, bigint endIndex) :
+DbDisk<DbTuple>::DbDisk(const DbDisk<DbTuple>& db, bigint startIndex, bigint endIndex) :
     DbDisk<DbTuple>()
 {
     for (bigint index = startIndex; index < endIndex; index++) {
@@ -41,7 +41,9 @@ DbDisk<DbTuple>::DbDisk(const DbDisk& db, bigint startIndex, bigint endIndex) :
 
 
 template <IsDbTuple DbTuple>
-DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) : DbDisk<DbTuple>() {
+DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
+    DbDisk<DbTuple>()
+{
     for (DbTuple dbTuple : initList) {
         this->push_back(dbTuple);
     }
@@ -49,21 +51,32 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) : DbDisk<DbTupl
 
 
 template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::shuffle() {
-    auto shuffle = [](std::vector<bigint>& dbIndices) {
-        std::shuffle(dbIndices.begin(), dbIndices.end(), utils::RNG);
-    };
-    *this = this->applyAlgoViaIndices(shuffle);
-}
+DbDisk<DbTuple>::DbDisk(const DbDisk& other) {
+    this->filename = this->genFilename();
+    this->_size = other._size;
 
+    // flush if needed to make sure `other.file` has written everything
+    if (!other.isFlushed) {
+        std::fflush(other.file);
+        other.isFlushed = true;
+    }
 
-template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::sort(const std::function<bool(bigint index1, bigint index2)>& compare) {
-    this->
-    auto sort = [&compare](std::vector<bigint>& dbIndices) {
-        std::sort(dbIndices.begin(), dbIndices.end(), compare);
-    };
-    *this = this->applyAlgoViaIndices(sort);
+    // directly copy the DB file from `other` to `this`'s new filename via system call
+    try {
+        std::filesystem::copy_file(other.filename, this->filename);
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Error: DbDisk::DbDisk(const DbDisk&): error copying file: " << e.what()
+                  << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    // open the file we just copied
+    // (we use `a` instead of `w` mode here to not overwrite the file we just copied)
+    this->file = std::fopen(this->filename.c_str(), "ab+");
+    if (this->file == nullptr) {
+        std::cerr << "Error: DbDisk::DbDisk(const DbDisk&): error opening file" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 }
 
 
@@ -116,6 +129,31 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
 
     // decode and return
     return DbTuple::fromStr(dbTupleStr);
+}
+
+
+template <IsDbTuple DbTuple>
+void DbDisk<DbTuple>::shuffle() {
+    auto shuffle = [](std::vector<bigint>& dbIndices) {
+        std::shuffle(dbIndices.begin(), dbIndices.end(), utils::RNG);
+    };
+    *this = this->applyAlgoViaIndices(shuffle);
+}
+
+
+template <IsDbTuple DbTuple>
+void DbDisk<DbTuple>::sort(
+    const std::function<bool(const DbTuple& dbTuple1, const DbTuple& dbTuple2)>& compare
+) {
+    // since we actually need to sort on the indices in this case
+    auto compareIndices = [this, &compare](bigint index1, bigint index2) {
+        return compare((*this)[index1], (*this)[index2]);
+    };
+
+    auto sort = [&compareIndices](std::vector<bigint>& dbIndices) {
+        std::sort(dbIndices.begin(), dbIndices.end(), compareIndices);
+    };
+    *this = this->applyAlgoViaIndices(sort);
 }
 
 
