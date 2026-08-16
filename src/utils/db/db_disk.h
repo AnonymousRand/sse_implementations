@@ -52,7 +52,6 @@ public:
     DbDisk(DbDisk&& other) noexcept = default;
 
     // move assignment operator
-    // TODO: test performance vs. without this!
     DbDisk& operator =(DbDisk&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
