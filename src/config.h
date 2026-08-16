@@ -16,7 +16,7 @@ inline constexpr int MAX_VALUE_DIGITS = 14;
 
 
 // set this to `true` for truly large (but much slower) DBs; otherwise DBs are stored in RAM
-inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
+inline constexpr bool SHOULD_STORE_DBS_ON_DISK = true;
 
 
 } // namespace `config`

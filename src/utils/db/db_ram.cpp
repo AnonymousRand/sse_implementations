@@ -17,7 +17,7 @@
 
 template <IsDbTuple DbTuple>
 DbRam<DbTuple>::DbRam(const DbRam& db, bigint startIndex, bigint endIndex) :
-    vec(db.vec.begin() + startIndex, db.vec.end() + endIndex)
+    vec(db.vec.begin() + startIndex, db.vec.begin() + endIndex)
 {
    this->_size = this->vec.size();
 }
