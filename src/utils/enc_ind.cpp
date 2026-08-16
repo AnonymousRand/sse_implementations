@@ -43,6 +43,16 @@ const uchar EncInd::NULL_ENTRY[ENTRY_LEN] = {};
 
 
 //------------------------------------------------------------------------------
+// copy/move
+
+
+// copy constructor
+EncInd::EncInd(const EncInd& other) {
+    IDiskStorage::copy(other);
+}
+
+
+//------------------------------------------------------------------------------
 // `IDiskStorage`
 
 

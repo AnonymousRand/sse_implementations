@@ -56,10 +56,19 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
 // copy/move
 
 
+// copy constructor
+template <IsDbTuple DbTuple>
+DbDisk<DbTuple>::DbDisk(const DbDisk& other) :
+    IDb<DbTuple>(other)
+{
+    IDiskStorage::copy(other);
+}
+
+
 // move assignment operator
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple>& DbDisk<DbTuple>::operator =(DbDisk&& other) noexcept {
-    std::cerr << "----- DbDisk move assignment operator from " << other.filename << std::endl;
+    //std::cerr << "----- DbDisk move assignment operator from " << other.filename << std::endl;
     // moves DB file and file pointer
     // (IMPORTANT: must do `IDiskStorage`'s move assignment first since that calls `clear()`!)
     IDiskStorage::operator =(std::move(other));
@@ -67,7 +76,7 @@ DbDisk<DbTuple>& DbDisk<DbTuple>::operator =(DbDisk&& other) noexcept {
     // moves `_size`
     IDb<DbTuple>::operator =(std::move(other));
 
-    std::cerr << "----- this->filename is now " << this->filename << std::endl;
+    //std::cerr << "----- this->filename is now " << this->filename << std::endl;
 
     return *this;
 }
@@ -166,6 +175,7 @@ void DbDisk<DbTuple>::readRaw(bigint index, char* ret) const {
     if (!this->isFlushed) {
         std::fflush(this->file);
         this->isFlushed = true;
+        //std::cerr << "+++++ reading " << this->filename << "; isFlushed is now " << this->isFlushed << std::endl;
     }
 
     std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
@@ -188,6 +198,7 @@ void DbDisk<DbTuple>::appendRaw(const char* dbTupleCstr) {
         std::exit(EXIT_FAILURE);
     }
     this->isFlushed = false;
+    //std::cerr << "===== writing " << this->filename << "; isFlushed is now " << this->isFlushed << std::endl;
 
     this->_size++;
 }

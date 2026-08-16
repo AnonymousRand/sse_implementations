@@ -65,7 +65,7 @@ public:
     // copy/move
 
     // copy constructor
-    EncInd(const EncInd& other) = default;
+    EncInd(const EncInd& other);
 
     // copy assignment operator
     EncInd& operator =(const EncInd& other) = default;

@@ -43,7 +43,7 @@ public:
     ~DbDisk() = default;
 
     // copy constructor
-    DbDisk(const DbDisk& other) = default;
+    DbDisk(const DbDisk& other);
 
     // copy assignment operator
     DbDisk& operator =(const DbDisk& other) = default;

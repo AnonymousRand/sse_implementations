@@ -13,6 +13,10 @@ public:
     // constructors/destructors
 
     // default constructor forced so that children can use a default constructor too
+    // (IMPORTANT: children should call `IDiskStorage::init()` to properly initialize members,
+    // whether it's in its own constructor or `init()` function. the `IDiskStorage` constructors
+    // cannot perform the logic in `init()` automatically as it calls pure virtual functions,
+    // which cannot be done in the base class constructors.)
     IDiskStorage() = default;
 
     ~IDiskStorage();
@@ -21,8 +25,11 @@ public:
     // copy/move
 
     // copy constructor
-    IDiskStorage(const IDiskStorage& other);
+    // (deleted as children MUST call `IDiskStorage::copy()` in their copy constructors instead,
+    // for the same reason as `init()`)
+    IDiskStorage(const IDiskStorage& other) = delete;
 
+public:
     // copy assignment operator
     IDiskStorage& operator =(const IDiskStorage& other) = default;
 
@@ -39,6 +46,7 @@ public:
 
     virtual void init();
     virtual void clear();
+    void copy(const IDiskStorage& other);
 
     //--------------------------------------------------------------------------
     // debugging
