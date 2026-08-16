@@ -13,13 +13,14 @@
 // rule of five
 
 
+// move assignment operator
 template <IsDbTuple DbTuple>
 IDb<DbTuple>& IDb<DbTuple>::operator =(IDb&& other) noexcept {
-    std::cerr << "_____ IDb move assignment operator called!" << std::endl;
     // important self-assignment safety check!
     if (this != &other) {
         this->_size = other._size;
     }
+    return *this;
 }
 
 

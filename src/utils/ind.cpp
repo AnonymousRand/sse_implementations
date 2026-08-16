@@ -15,16 +15,16 @@
 
 template <IsDbTuple DbTuple>
 Ind<DbTuple>::Ind(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
-    std::cerr << "+++++ creating ind from DB of size " << db.size() << " and contents: " << std::endl;
+    //std::cerr << "+++++ creating ind from DB of size " << db.size() << " and contents: " << std::endl;
     for (DbTuple dbTuple : db) {
-        std::cerr << dbTuple << std::endl;
+        //std::cerr << dbTuple << std::endl;
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
         if (this->count(dbKwRange) == 0) {
-            std::cerr << "+++++ creating ind adding " << dbTuple << " to new pair" << std::endl;
+            //std::cerr << "+++++ creating ind adding " << dbTuple << " to new pair" << std::endl;
             (*this)[dbKwRange] = Db<DbTuple> {dbTuple};
-            std::cerr << "+++++ creating ind added " << dbTuple << " to new pair, SIZE is now " << (*this)[dbKwRange].size() << std::endl;
+            //std::cerr << "+++++ creating ind added " << dbTuple << " to new pair, SIZE is now " << (*this)[dbKwRange].size() << std::endl;
         } else {
-            std::cerr << "+++++ creating ind adding " << dbTuple << " to existing pair of size " << (*this)[dbKwRange].size() << std::endl;
+            //std::cerr << "+++++ creating ind adding " << dbTuple << " to existing pair of size " << (*this)[dbKwRange].size() << std::endl;
             (*this)[dbKwRange].push_back(dbTuple);
         }
     }

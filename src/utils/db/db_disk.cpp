@@ -55,6 +55,7 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
 // rule of five
 
 
+// copy constructor
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple>::DbDisk(const DbDisk& other) {
     this->filename = this->genFilename();
@@ -85,6 +86,7 @@ DbDisk<DbTuple>::DbDisk(const DbDisk& other) {
 }
 
 
+// move assignment operator
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple>& DbDisk<DbTuple>::operator =(DbDisk&& other) noexcept {
     // moves DB file and file pointer

@@ -40,9 +40,9 @@ NLogN<DbTuple>::~NLogN() {
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
-    std::cerr << "----- nlogn setup" << std::endl;
+    //std::cerr << "----- nlogn setup" << std::endl;
     this->clear();
-    std::cerr << "----- nlogn cleared" << std::endl;
+    //std::cerr << "----- nlogn cleared" << std::endl;
     
     //--------------------------------------------------------------------------
     // init things
@@ -64,14 +64,14 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     }
     EncInd* dbKwCountsDict = new EncInd();
     dbKwCountsDict->init(this->size);
-    std::cerr << "----- nlogn init stuff done" << std::endl;
+    //std::cerr << "----- nlogn init stuff done" << std::endl;
 
     //--------------------------------------------------------------------------
     // build index
 
     // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
     Ind<DbTuple> ind(db);
-    std::cerr << "----- nlogn index built" << std::endl;
+    //std::cerr << "----- nlogn index built" << std::endl;
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
@@ -84,24 +84,24 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         // pad keyword list to the next power of two
         Db<DbTuple> dbKwList = iter->second;
         bigint dbKwCount = dbKwList.size();
-        std::cerr << "----- nlogn keyword list with size " << dbKwCount << " and contents: " << std::endl;
-        for (auto tuple : dbKwList) {
-            std::cerr << tuple << std::endl;
-        }
+        //std::cerr << "----- nlogn keyword list with size " << dbKwCount << " and contents: " << std::endl;
+        //for (auto tuple : dbKwList) {
+        //    std::cerr << tuple << std::endl;
+        //}
         Range<DbKw> dbKwBounds = db.findDbKwBounds();
         DbKw maxDbKw = dbKwBounds.second;
         dbKwList.pad(maxDbKw);
-        std::cerr << "----- nlogn keyword list padded" << std::endl;
+        //std::cerr << "----- nlogn keyword list padded" << std::endl;
         // randomly permute documents associated with same keyword, i.e. shuffle within bucket
         dbKwList.shuffle();
-        std::cerr << "----- nlogn keyword list shuffled" << std::endl;
+        //std::cerr << "----- nlogn keyword list shuffled" << std::endl;
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         bigint dbKwPaddedCount = dbKwList.size();
-        std::cerr << "----- nlogn keyword list size is " << dbKwList.size() << " and contents are:" << std::endl;
-        for (auto tuple : dbKwList) {
-            std::cerr << tuple << std::endl;
-        }
+        //std::cerr << "----- nlogn keyword list size is " << dbKwList.size() << " and contents are:" << std::endl;
+        //for (auto tuple : dbKwList) {
+        //    std::cerr << tuple << std::endl;
+        //}
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
@@ -133,13 +133,13 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
                 startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
             );
         }
-        std::cerr << "----- nlogn keyword list done" << std::endl;
+        //std::cerr << "----- nlogn keyword list done" << std::endl;
     }
-    std::cerr << "----- nlogn all keyword lists done" << std::endl;
+    //std::cerr << "----- nlogn all keyword lists done" << std::endl;
 
     this->server->setEncIndLvls(encIndLvls);
     this->server->setDbKwCountsDict(dbKwCountsDict);
-    std::cerr << "----- nlogn setup done!!" << std::endl;
+    //std::cerr << "----- nlogn setup done!!" << std::endl;
 }
 
 
@@ -260,7 +260,7 @@ template <IsDbTuple DbTuple>
 std::pair<ubigint, ubigint> NLogN<DbTuple>::map(
     const ustring& queryToken, bigint dbKwPaddedCount, ustring& retLabel
 ) const {
-    std::cerr << "----- nlogn map() called with dbKwPaddedCount " << dbKwPaddedCount << std::endl;
+    //std::cerr << "----- nlogn map() called with dbKwPaddedCount " << dbKwPaddedCount << std::endl;
     // l <- Hash(PRF(K_1, w))
     ubigint pos = this->mapNoMod(queryToken, retLabel);
     // (note bottommost level is level 0)

@@ -39,8 +39,8 @@ IDiskStorage::~IDiskStorage() {
 // rule of five
 
 
+// move assignment operator
 IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
-    std::cerr << "~~~~~ IDiskStorage move assignment operator called" << std::endl;
     // important self-assignment safety check!
     if (this != &other) {
         this->clear();
