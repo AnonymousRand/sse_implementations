@@ -160,7 +160,6 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
 // helpers
 
 
-// TODO: move this to sse utils/db?? since feels general
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 Db<Tuple<>> LogSrcIBase<Underly>::sortInputDb(const Db<Tuple<>>& db) {
     Db<Tuple<>> sortedDb = db;
