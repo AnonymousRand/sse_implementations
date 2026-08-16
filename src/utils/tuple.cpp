@@ -249,7 +249,7 @@ std::vector<Tuple<>> cleanUpResults(const std::vector<Tuple<>>& tuples) {
     std::unordered_set<Id> deletedIds;
 
     // find all cancellation tuples
-    for (Tuple<> tuple : tuples) {
+    for (const Tuple<>& tuple : tuples) {
         Op op = tuple.getOp();
         if (op == Op::DEL) {
             Id id = tuple.getId();
@@ -257,7 +257,7 @@ std::vector<Tuple<>> cleanUpResults(const std::vector<Tuple<>>& tuples) {
         }
     }
     // copy over vector without deleted (or dummy) tuples, as well as no dummy ids
-    for (Tuple<> tuple : tuples) {
+    for (const Tuple<>& tuple : tuples) {
         Id id = tuple.getId();
         Op op = tuple.getOp();
         if (id != DUMMY && op == Op::INS && deletedIds.count(id) == 0) {

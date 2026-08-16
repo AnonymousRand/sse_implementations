@@ -33,7 +33,7 @@ Range<typename DbTuple::DbKwType> IDb<DbTuple>::findDbKwBounds() const {
 
     DbKw minDbKw = DUMMY;
     DbKw maxDbKw = DUMMY;
-    for (DbTuple dbTuple : *this) {
+    for (const DbTuple& dbTuple : *this) {
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
         if (dbKwRange.first < minDbKw || minDbKw == DUMMY) {
             minDbKw = dbKwRange.first;
@@ -51,7 +51,7 @@ std::unordered_set<Range<typename DbTuple::DbKwType>> IDb<DbTuple>::getUniqDbKwR
     using DbKw = typename DbTuple::DbKwType;
 
     std::unordered_set<Range<DbKw>> uniqDbKwRanges;
-    for (DbTuple dbTuple : *this) {
+    for (const DbTuple& dbTuple : *this) {
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
         uniqDbKwRanges.insert(dbKwRange); // `unordered_set` will not insert duplicate elements
     }

@@ -49,7 +49,7 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
     // (`deque` seems to perform marginally better than `list` or `vector` and seems to be
     // the most natural choice here)
     std::deque<TdagNode<T>*> l;
-    for (Range<T> leaf : leafs) {
+    for (const Range<T>& leaf : leafs) {
         l.push_back(new TdagNode<T>(leaf));
     }
 
@@ -373,7 +373,7 @@ void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* 
         DbTuple tuple = db[i];
         Range<DbKw> dbKwRange = tuple.getDbKwRange();
         std::list<Range<DbKw>> ancestors = tdag->getLeafAncestors(dbKwRange);
-        for (Range<DbKw> ancestor : ancestors) {
+        for (const Range<DbKw>& ancestor : ancestors) {
             if (ancestor == dbKwRange) {
                 continue;
             }

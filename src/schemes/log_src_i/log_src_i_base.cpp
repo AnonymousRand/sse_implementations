@@ -65,7 +65,7 @@ std::vector<Tuple<>> LogSrcIBase<Underly>::search(
     // (filter out unnecessary choices and merge remaining ones into a single id range)
     IdAlias minIdAlias = DUMMY;
     IdAlias maxIdAlias = DUMMY;
-    for (SrcIDb1Tuple query1Result : query1Results) {
+    for (const SrcIDb1Tuple& query1Result : query1Results) {
         Kw kw = query1Result.getKw();
         if (!query.contains(kw)) {
             continue;
@@ -125,7 +125,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
     this->underly2->getDb(db2);
     Ind<Tuple<IdAlias>> ind2(db2);
 
-    for (SrcIDb1Tuple db1Tuple : db1) {
+    for (const SrcIDb1Tuple& db1Tuple : db1) {
         Range<Kw> kwRange = db1Tuple.getDbKwRange();
         // only iterate through leaf nodes in DB 1
         if (kwRange.size() > 1) {
@@ -147,7 +147,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
             }
 
             Db<Tuple<IdAlias>> dbKwList = std::move(iter->second);
-            for (Tuple<IdAlias> db2Tuple : dbKwList) {
+            for (const Tuple<IdAlias>& db2Tuple : dbKwList) {
                 Tuple<> newTuple(db2Tuple.getDbDoc(), kwRange);
                 ret.push_back(newTuple);
             }

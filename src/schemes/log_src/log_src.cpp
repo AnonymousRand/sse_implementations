@@ -84,7 +84,7 @@ void LogSrc<Underly>::getDb(Db<Tuple<>>& ret) const {
     // (this doesn't seem to incur noticeable performance overhead with compiler optimizations)
     Db<Tuple<>> retWithRepls;
     this->underly->getDb(retWithRepls);
-    for (Tuple<> tuple : retWithRepls) {
+    for (const Tuple<>& tuple : retWithRepls) {
         Range<Kw> kwRange = tuple.getDbKwRange();
         if (kwRange.size() == 1) {
             ret.push_back(tuple);

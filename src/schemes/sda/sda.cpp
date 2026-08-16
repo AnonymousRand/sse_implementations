@@ -75,7 +75,7 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         }
         this->firstEmptyInd = newFirstEmpty;
     } else {
-        for (Tuple<> tuple : db) {
+        for (const Tuple<>& tuple : db) {
             this->update(tuple);
         }
     }

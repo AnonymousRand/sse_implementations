@@ -56,7 +56,7 @@ std::vector<DbTuple> Underly<DbTuple>::searchBase(const Range<DbKw>& query) cons
     std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
-    for (EncIndVal encResult : encResults) {
+    for (const EncIndVal& encResult : encResults) {
         DbTuple result = this->decryptEncIndVal(encResult);
         results.push_back(result);
     }

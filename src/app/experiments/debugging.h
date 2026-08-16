@@ -39,7 +39,7 @@ void run(ISse<>* sse, const Db<>& db, const Range<Kw>& query) {
     std::vector<Tuple<>> results = sse->search(query);
     std::vector<Tuple<>> falsePositives;
     std::cout << "Results ((id,kw,op),kwrange):" << std::endl;
-    for (Tuple<> result : results) {
+    for (const Tuple<>& result : results) {
         Kw kw = result.getKw();
         if (query.contains(kw)) {
             std::cout << result << " with keyword " << kw << std::endl;
@@ -50,7 +50,7 @@ void run(ISse<>* sse, const Db<>& db, const Range<Kw>& query) {
     std::cout << std::endl;
 
     std::cout << "False positives ((id,kw,op),kwrange):" << std::endl;
-    for (Tuple<> result : falsePositives) {
+    for (const Tuple<>& result : falsePositives) {
         std::cout << result << " with keyword " << result.getKw() << std::endl;
     }
     std::cout << std::endl;

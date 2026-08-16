@@ -62,7 +62,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
-    for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
+    for (const Range<DbKw>& dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
             std::cerr << "Error: PiBas::setup(): DB kw range " << dbKwRange
@@ -140,7 +140,7 @@ std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
     std::vector<EncIndVal> encResults = this->server->searchEncInd(queryToken);
-    for (EncIndVal encResult : encResults) {
+    for (const EncIndVal& encResult : encResults) {
         DbTuple result = this->decryptEncIndVal(encResult);
         results.push_back(result);
     }

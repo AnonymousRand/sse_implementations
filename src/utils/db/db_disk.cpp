@@ -46,7 +46,7 @@ template <IsDbTuple DbTuple>
 DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
     DbDisk<DbTuple>()
 {
-    for (DbTuple dbTuple : initList) {
+    for (const DbTuple& dbTuple : initList) {
         this->push_back(dbTuple);
     }
 }
