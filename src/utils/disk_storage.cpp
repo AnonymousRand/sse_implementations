@@ -7,6 +7,7 @@
 #include <iostream>
 #include <random>
 #include <string>
+#include <utility>
 
 #include "utils/random.h"
 #include "utils/types.h"
@@ -39,22 +40,74 @@ IDiskStorage::~IDiskStorage() {
 // copy/move
 
 
-// move assignment operator
-IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
+void IDiskStorage::copyFrom(const IDiskStorage& other) {
+    this->filename = this->genFilename();
+    // flush if needed to make sure `other.file` has written everything
+    if (!other.isFlushed) {
+        std::fflush(other.file);
+        other.isFlushed = true;
+    }
+
+    // directly copy the DB file from `other` to `this`'s new filename via system call
+    try {
+        std::filesystem::copy_file(other.filename, this->filename);
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Error: IDiskStorage::copyFrom(): error copying file: " << e.what()
+                  << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    // open the file we just copied
+    // (we use `a` instead of `w` mode here to not overwrite the file we just copied)
+    this->file = std::fopen(this->filename.c_str(), "ab+");
+    if (this->file == nullptr) {
+        std::cerr << "Error: IDiskStorage::copyFrom(): error opening file" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+}
+
+
+void IDiskStorage::moveFrom(IDiskStorage&& other) noexcept {
+    // important: set all fields in `other` that have non-default destruction/should not be
+    // double-freed to a null value, so that its destructor doesn't try to delete the same resource
+    // (e.g.  pointer or filename) that `this`'s fields now point to when it goes out of scope
+    this->file = other.file;
+    other.file = nullptr;
+
+    this->filename = other.filename;
+    other.filename = "";
+
+    //std::cerr << "===== this now has " << this << "; " << this->filename << ", " << this->file << "; other now has " << &other << "; " << other.filename << ", " << other.file << std::endl;
+
+    this->isFlushed = other.isFlushed;
+}
+
+
+// copy assignment operator
+IDiskStorage& IDiskStorage::operator =(const IDiskStorage& other) {
     // important self-assignment safety check!
     if (this != &other) {
         this->clear();
+        this->copyFrom(other);
+    }
+    return *this;
+}
 
-        // important: set all fields in `other` that have non-default destruction/clear above
-        // to a null value so that its destructor doesn't try to delete the same resource (e.g.
-        // pointer or filename) that `this`'s fields now point to when it goes out of scope here
-        this->file = other.file;
-        other.file = nullptr;
 
-        this->filename = other.filename;
-        other.filename = "";
+// move constructor
+IDiskStorage::IDiskStorage(IDiskStorage&& other) noexcept {
+    this->moveFrom(std::move(other));
+}
 
-        this->isFlushed = other.isFlushed;
+
+// move assignment operator
+IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
+    //std::cerr << "===== copying to: " << this << "; " << this->filename << ", " << this->file << " from " << &other << "; " << other.filename << ", " << other.file << std::endl;
+    // important self-assignment safety check!
+    if (this != &other) {
+        //std::cerr << "===== clearing " << this->filename << ", " << this->file << std::endl;
+        this->clear();
+        this->moveFrom(std::move(other));
     }
     return *this;
 }
@@ -92,44 +145,20 @@ void IDiskStorage::init() {
 
 
 void IDiskStorage::clear() {
+    //std::cerr << "+++++ clear: " << this << "; " << this->filename << ", " << this->file << std::endl;
     // close file descriptors
     if (this->file != nullptr) {
+        //std::cerr << "+++++ clear " << this->file << std::endl;
         std::fclose(this->file);
         this->file = nullptr;
+        //std::cerr << "+++++ file is now " << this->file << std::endl;
     }
 
     // delete file from disk
     if (this->filename != "") {
+        //std::cerr << "+++++ deleting " << this->filename << std::endl;
         std::remove(this->filename.c_str());
         this->filename = "";
-    }
-}
-
-
-void IDiskStorage::copy(const IDiskStorage& other) {
-    this->filename = this->genFilename();
-    // flush if needed to make sure `other.file` has written everything
-    if (!other.isFlushed) {
-        std::fflush(other.file);
-        other.isFlushed = true;
-    }
-
-    // directly copy the DB file from `other` to `this`'s new filename via system call
-    try {
-        std::filesystem::copy_file(other.filename, this->filename);
-    } catch (const std::filesystem::filesystem_error& e) {
-        std::cerr << "Error: IDiskStorage::IDiskStorage(const DbDisk&): error copying file: "
-                  << e.what() << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    // open the file we just copied
-    // (we use `a` instead of `w` mode here to not overwrite the file we just copied)
-    this->file = std::fopen(this->filename.c_str(), "ab+");
-    if (this->file == nullptr) {
-        std::cerr << "Error: IDiskStorage::IDiskStorage(const DbDisk&): error opening file"
-                  << std::endl;
-        std::exit(EXIT_FAILURE);
     }
 }
 

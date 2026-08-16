@@ -61,21 +61,7 @@ template <IsDbTuple DbTuple>
 DbDisk<DbTuple>::DbDisk(const DbDisk& other) :
     IDb<DbTuple>(other)
 {
-    IDiskStorage::copy(other);
-}
-
-
-// move assignment operator
-template <IsDbTuple DbTuple>
-DbDisk<DbTuple>& DbDisk<DbTuple>::operator =(DbDisk&& other) noexcept {
-    // moves DB file and file pointer
-    // (IMPORTANT: must do `IDiskStorage`'s move assignment first since that calls `clear()`!)
-    IDiskStorage::operator =(std::move(other));
-
-    // moves `_size`
-    IDb<DbTuple>::operator =(std::move(other));
-
-    return *this;
+    IDiskStorage::copyFrom(other);
 }
 
 

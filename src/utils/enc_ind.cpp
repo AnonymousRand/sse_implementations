@@ -48,7 +48,7 @@ const uchar EncInd::NULL_ENTRY[ENTRY_LEN] = {};
 
 // copy constructor
 EncInd::EncInd(const EncInd& other) {
-    IDiskStorage::copy(other);
+    IDiskStorage::copyFrom(other);
 }
 
 

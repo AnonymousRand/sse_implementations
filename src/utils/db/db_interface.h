@@ -42,9 +42,7 @@ public:
     IDb(IDb&& other) noexcept = default;
 
     // move assignment operator
-    // (allows cheap moving instead of expensive copying of `IDb` rvalues when they are
-    // assigned to an existing variable, e.g. `*this = ...`)
-    IDb& operator =(IDb&& other) noexcept;
+    IDb& operator =(IDb&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
     // interface

@@ -24,21 +24,24 @@ public:
     //--------------------------------------------------------------------------
     // copy/move
 
+protected:
+    // unified functions for copying and moving
+    void copyFrom(const IDiskStorage& other);
+    void moveFrom(IDiskStorage&& other) noexcept;
+
+public:
     // copy constructor
     // (deleted as children MUST call `IDiskStorage::copy()` in their copy constructors instead,
     // for the same reason as `init()`)
     IDiskStorage(const IDiskStorage& other) = delete;
 
-public:
     // copy assignment operator
-    IDiskStorage& operator =(const IDiskStorage& other) = default;
+    IDiskStorage& operator =(const IDiskStorage& other);
 
     // move constructor
-    IDiskStorage(IDiskStorage&& other) noexcept = default;
+    IDiskStorage(IDiskStorage&& other) noexcept;
 
     // move assignment operator
-    // (allows cheap moving instead of expensive copying of `IDiskStorage` rvalues when they are
-    // assigned to an existing variable, e.g. `*this = ...`)
     IDiskStorage& operator =(IDiskStorage&& other) noexcept;
 
     //--------------------------------------------------------------------------
@@ -46,7 +49,6 @@ public:
 
     virtual void init();
     virtual void clear();
-    void copy(const IDiskStorage& other);
 
     //--------------------------------------------------------------------------
     // debugging

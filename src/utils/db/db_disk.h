@@ -15,8 +15,11 @@
 #include "utils/types.h"
 
 
+// IMPORTANT: inheritance order must have `IDiskStorage` before `IDb` as its move/copy assignment
+// operators must be called first, as they call `clear()`!
+// (and `= default` calls their parent versions in order of inheritance)
 template <IsDbTuple DbTuple>
-class DbDisk : public IDb<DbTuple>, public IDiskStorage {
+class DbDisk : public IDiskStorage, public IDb<DbTuple> {
 public:
     //--------------------------------------------------------------------------
     // constructors/destructors
@@ -25,9 +28,6 @@ public:
 
     /**
      * copy `db` from `startIndex` (inclusive) to `endIndex` (exclusive).
-     *
-     * (this does not match an `std::vector` constructor since the iterator range one would require
-     * decoding and re-encoding every tuple without change, and that has some expensive regex.)
      */
     DbDisk(const DbDisk& db, bigint startIndex, bigint endIndex);
 
@@ -52,10 +52,8 @@ public:
     DbDisk(DbDisk&& other) noexcept = default;
 
     // move assignment operator
-    // (not `= default` here as we have multiple inheritance, and the order in which parent move
-    // assignment operators are called is very important here)
     // TODO: test performance vs. without this!
-    DbDisk& operator =(DbDisk&& other) noexcept;
+    DbDisk& operator =(DbDisk&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
     // `IDb`
