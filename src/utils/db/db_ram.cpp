@@ -41,6 +41,7 @@ void DbRam<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void DbRam<DbTuple>::push_back(const DbTuple& dbTuple) {
     this->vec.push_back(dbTuple);
+    this->_size++;
 }
 
 

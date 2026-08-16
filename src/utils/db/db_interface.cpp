@@ -10,6 +10,19 @@
 
 
 //------------------------------------------------------------------------------
+// copy/move
+
+
+template <IsDbTuple DbTuple>
+IDb<DbTuple>& IDb<DbTuple>::operator =(IDb&& other) noexcept {
+    // important self-assignment safety check!
+    if (this != &other) {
+        this->_size = other._size;
+    }
+}
+
+
+//------------------------------------------------------------------------------
 // interface
 
 

@@ -28,7 +28,7 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    //find(const KeyType& key);
+    Iter find(const KeyType& key);
     ConstIter find(const KeyType& key) const;
     bigint count(const KeyType& key) const;
 

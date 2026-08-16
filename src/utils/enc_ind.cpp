@@ -42,6 +42,10 @@ ustring toUstr(const EncIndEntry& encIndEntry) {
 const uchar EncInd::NULL_ENTRY[ENTRY_LEN] = {};
 
 
+//------------------------------------------------------------------------------
+// `IDiskStorage`
+
+
 void EncInd::init(bigint size) {
     IDiskStorage::init();
     this->size = size;
@@ -63,6 +67,10 @@ void EncInd::clear() {
 
     this->size = 0;
 }
+
+
+//------------------------------------------------------------------------------
+// other interface
 
 
 bool EncInd::find(ubigint pos, const ustring& key, EncIndVal& ret, ubigint* posFoundAt) const {

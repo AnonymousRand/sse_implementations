@@ -50,6 +50,10 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
 }
 
 
+//------------------------------------------------------------------------------
+// copy/move
+
+
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple>::DbDisk(const DbDisk& other) {
     this->filename = this->genFilename();
@@ -78,6 +82,17 @@ DbDisk<DbTuple>::DbDisk(const DbDisk& other) {
         std::exit(EXIT_FAILURE);
     }
 }
+
+
+//template <IsDbTuple DbTuple>
+//DbDisk<DbTuple>& DbDisk<DbTuple>::operator =(DbDisk&& other) noexcept {
+//    // moves DB file and file pointer
+//    // (must do `IDiskStorage`'s move assignment before others since that calls `clear()`)
+//    IDiskStorage<DbTuple>::operator =(other);
+//
+//    // moves `_size`
+//    IDb<DbTuple>::operator =(other);
+//}
 
 
 //------------------------------------------------------------------------------

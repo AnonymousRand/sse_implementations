@@ -30,7 +30,17 @@ std::uniform_int_distribution<ubigint> dist;
 // constructors/destructors
 
 
+IDiskStorage::~IDiskStorage() {
+    this->clear();
+}
+
+
+//------------------------------------------------------------------------------
+// copy/move
+
+
 IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
+    std::cerr << "~~~~~ IDiskStorage move assignment operator called" << std::endl;
     // important self-assignment safety check!
     if (this != &other) {
         this->clear();
@@ -43,11 +53,6 @@ IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
         other.filename = "";
     }
     return *this;
-}
-
-
-IDiskStorage::~IDiskStorage() {
-    this->clear();
 }
 
 

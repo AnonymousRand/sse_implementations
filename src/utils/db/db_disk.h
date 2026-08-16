@@ -36,19 +36,27 @@ public:
      */
     DbDisk(std::initializer_list<DbTuple> initList);
 
-    /**
-     * copy constructor (that should avoid encoding and de-encoding each tuple as it is moved).
-     */
+    //--------------------------------------------------------------------------
+    // copy/move
+
+    // these are still manually written even though all of them are ` = default` because the
+    // parent `IDb`'s manually declared move assignment operator prevents compiler from
+    // automatically generating all of these
+    //
+    // the default behavior should call the parent(s)' version(s) before doing a per-member
+    // copy/move of the child's members
+
+    // copy constructor
+    // (should avoid decoding and de-encoding each tuple as it is moved)
     DbDisk(const DbDisk& other);
 
-    /**
-     * move assignment operator that allows cheap moving instead of expensive copying of
-     * `DbDisk` rvalues when they are assigned to an existing variable, e.g. `*this = ...`.
-     */
-    // (currently, this is `= default` to force the compiler to generate a default one, which is
-    // needed to make sure parent class move assignment operators are also called. normally the
-    // compiler autogenerates such default constructors, but i've manually implemented other special
-    // constructors like the copy constructor in this class, which prevents this autogeneration.)
+    // copy assignment operator
+    DbDisk& operator =(const DbDisk& other) = default;
+
+    // move constructor
+    DbDisk(DbDisk&& other) noexcept = default;
+
+    // move assignment operator
     // TODO: test performance vs. without this!
     DbDisk& operator =(DbDisk&& other) noexcept = default;
 

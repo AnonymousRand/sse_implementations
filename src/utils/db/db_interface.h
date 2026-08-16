@@ -14,6 +14,31 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class IDb {
 public:
+    // IMPORTANT: constructors/destructors/related methods here should be responsible for
+    // the members *defined by this class*!
+
+    // note: unfortunately most constructors are not currently enforced here since they can't really
+    // be virtual, so just make sure all necessary constructors are implemented in all children
+
+    //--------------------------------------------------------------------------
+    // copy/move
+
+    // copy constructor
+    // (`= default` forces a default one to be automatically generated when e.g. a
+    // manually declared move assignment operator prevents this otherwise)
+    IDb(const IDb& other) = default;
+
+    // copy assignment operator
+    IDb& operator =(const IDb& other) = default;
+
+    // move constructor
+    IDb(IDb&& other) noexcept = default;
+
+    // move assignment operator
+    // (allows cheap moving instead of expensive copying of `IDb` rvalues when they are
+    // assigned to an existing variable, e.g. `*this = ...`)
+    IDb& operator =(IDb&& other) noexcept;
+
     //--------------------------------------------------------------------------
     // interface
 
@@ -23,9 +48,9 @@ public:
     bigint size() const { return this->_size; }
     bool empty() const { return this->_size == 0; }
 
-    // read-only accessing using `[]`
-    // >TODO test what if this is const DbTuple&? same with Ind. maybe just implement both const
-    // and non-const reference versions?
+    // read-only accessing using `[]` (note we don't provide writing capabilities
+    // since that requires returning a reference, but children of `IDb` need not
+    // have persistent `DbTuple` objects physically stored somewhere)
     virtual DbTuple operator [](bigint index) const = 0;
 
     virtual void shuffle() = 0;

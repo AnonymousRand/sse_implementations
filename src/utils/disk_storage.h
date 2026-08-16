@@ -6,15 +6,17 @@
 
 class IDiskStorage {
 public:
+    // IMPORTANT: constructors/destructors/related methods here should be responsible for
+    // the members *defined by this class*!
+
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    /**
-     * move assignment operator that allows cheap moving instead of expensive copying of
-     * `IDiskStorage` rvalues when they are assigned to an existing variable, e.g. `*this = ...`.
-     * (in particular, this is responsible for freeing the old destination's resources
-     * that come from this class.)
-     */
+    ~IDiskStorage();
+
+    //--------------------------------------------------------------------------
+    // copy/move
+
     // summary of special constructors/assignment operators:
     // =======================================================================
     // ‖ assigning \ assigning ‖    new object    |     existing object      ‖
@@ -26,11 +28,25 @@ public:
     // ‖        rvalue         ‖ move constructor | move assignment operator ‖
     // ‖                       ‖  `T obj2 = f()`  |      `obj2 = f()`        ‖
     // =======================================================================
+    //
     // note that starting C++17, move constructors (bottom left) in the case where the rvalue
     // is a function call are replaced by mandatory "copy elision", which also avoids a copy
-    IDiskStorage& operator =(IDiskStorage&& other) noexcept;
 
-    ~IDiskStorage();
+    // copy constructor
+    // (`= default` forces a default one to be automatically generated when e.g. a
+    // manually declared move assignment operator prevents this otherwise)
+    IDiskStorage(const IDiskStorage& other) = default;
+
+    // copy assignment operator
+    IDiskStorage& operator =(const IDiskStorage& other) = default;
+
+    // move constructor
+    IDiskStorage(IDiskStorage&& other) noexcept = default;
+
+    // move assignment operator
+    // (allows cheap moving instead of expensive copying of `IDiskStorage` rvalues when they are
+    // assigned to an existing variable, e.g. `*this = ...`)
+    IDiskStorage& operator =(IDiskStorage&& other) noexcept;
 
     //--------------------------------------------------------------------------
     // interface
