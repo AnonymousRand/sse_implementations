@@ -8,11 +8,11 @@
 #include "schemes/interfaces/static_point_sse.h"
 #include "schemes/n_log_n/n_log_n_server.h"
 
-#include "utils/db/db.h"
-#include "utils/range.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
-#include "utils/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
+#include "utils/types/ustring.h"
 
 
 template <IsDbTuple DbTuple = Tuple<>>

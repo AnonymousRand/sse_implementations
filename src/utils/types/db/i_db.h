@@ -4,9 +4,9 @@
 #include <functional>
 #include <unordered_set>
 
-#include "utils/range.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
 
 
 // implementations of this interface should essentially be `std::vector`s

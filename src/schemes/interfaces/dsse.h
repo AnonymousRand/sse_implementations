@@ -5,8 +5,8 @@
 
 #include "schemes/interfaces/sse.h"
 
-#include "utils/tuple.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/tuple.h"
 
 
 // forward declare instead of include to avoid a circular include with `benchmark.h`

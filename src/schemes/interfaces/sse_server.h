@@ -3,8 +3,8 @@
 #include <concepts>
 #include <memory>
 
-#include "utils/tuple.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/tuple.h"
 
 
 struct Benchmark;

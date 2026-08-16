@@ -1,4 +1,4 @@
-#include "utils/db/db_ram.h"
+#include "utils/types/db/db_ram.h"
 
 #include <algorithm>
 #include <concepts>
@@ -6,10 +6,10 @@
 #include <initializer_list>
 #include <vector>
 
-#include "utils/db/i_db.h"
 #include "utils/random.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/i_db.h"
+#include "utils/types/tuple.h"
 
 
 //------------------------------------------------------------------------------

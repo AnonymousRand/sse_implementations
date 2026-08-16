@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "utils/ustring.h"
+#include "utils/types/ustring.h"
 
 
 namespace utils {

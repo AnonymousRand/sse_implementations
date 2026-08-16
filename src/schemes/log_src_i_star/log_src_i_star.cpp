@@ -2,11 +2,11 @@
 
 #include "schemes/log_src_i_star/underly.h" 
 
-#include "utils/db/db.h"
-#include "utils/range.h"
-#include "utils/tdag.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/range.h"
+#include "utils/types/tdag.h"
+#include "utils/types/tuple.h"
 
 
 //------------------------------------------------------------------------------

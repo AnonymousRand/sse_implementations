@@ -26,18 +26,19 @@ add_executable(main
     src/schemes/sda/sda.cpp
 
     src/utils/crypto.cpp
-    src/utils/db/db_disk.cpp
-    src/utils/db/db_ram.cpp
-    src/utils/db/i_db.cpp
     src/utils/debugging.cpp
-    src/utils/enc_ind.cpp
-    src/utils/i_disk_storage.cpp
-    src/utils/ind.cpp
-    src/utils/misc.cpp
-    src/utils/range.cpp
-    src/utils/tdag.cpp
-    src/utils/tuple.cpp
-    src/utils/ustring.cpp
+    src/utils/string_utils.cpp
+
+    src/utils/types/db/db_disk.cpp
+    src/utils/types/db/db_ram.cpp
+    src/utils/types/db/i_db.cpp
+    src/utils/types/enc_ind.cpp
+    src/utils/types/i_disk_storage.cpp
+    src/utils/types/ind.cpp
+    src/utils/types/range.cpp
+    src/utils/types/tdag.cpp
+    src/utils/types/tuple.cpp
+    src/utils/types/ustring.cpp
 )
 
 # base directories for `#include`

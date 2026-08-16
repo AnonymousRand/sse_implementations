@@ -1,4 +1,4 @@
-#include "utils/tdag.h"
+#include "utils/types/tdag.h"
 
 #include <concepts>
 #include <cmath>
@@ -8,10 +8,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include "utils/db/db.h"
-#include "utils/range.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
 
 
 //==============================================================================

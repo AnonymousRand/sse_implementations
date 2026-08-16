@@ -10,10 +10,10 @@
 #include "schemes/interfaces/dsse.h"
 #include "schemes/interfaces/sse.h"
 
-#include "utils/db/db.h"
-#include "utils/range.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
 
 
 struct Benchmark {

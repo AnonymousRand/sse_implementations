@@ -10,9 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "utils/range.h"
-#include "utils/types.h"
-#include "utils/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/range.h"
+#include "utils/types/ustring.h"
 
 
 //==============================================================================

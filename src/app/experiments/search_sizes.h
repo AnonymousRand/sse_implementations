@@ -12,9 +12,9 @@
 
 #include "utils/benchmark.h"
 #include "utils/crypto.h"
-#include "utils/db/db.h"
-#include "utils/range.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/range.h"
 
 
 namespace app::experiments::search_sizes {

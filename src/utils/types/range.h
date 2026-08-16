@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
-#include "utils/types.h"
-#include "utils/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/ustring.h"
 
 
 /**

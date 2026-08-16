@@ -5,12 +5,12 @@
 #include <utility>
 #include <vector>
 
-#include "utils/db/db.h"
-#include "utils/enc_ind.h"
-#include "utils/range.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
-#include "utils/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/enc_ind.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
+#include "utils/types/ustring.h"
 
 
 namespace log_src_i_star {

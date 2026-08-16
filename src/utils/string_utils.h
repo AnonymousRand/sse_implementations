@@ -2,13 +2,14 @@
 
 #include <string>
 
-#include "utils/types.h"
-#include "utils/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/ustring.h"
 
 
 namespace utils {
 
 
+// (this is not in `ustring.h` since it is less about the `ustring` itself)
 ubigint hashToPos(const ustring& hash);
 
 

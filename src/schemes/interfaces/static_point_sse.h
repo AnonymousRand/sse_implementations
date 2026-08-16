@@ -6,12 +6,12 @@
 #include "schemes/interfaces/sse.h"
 
 #include "utils/crypto.h"
-#include "utils/enc_ind.h"
-#include "utils/misc.h"
-#include "utils/range.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
-#include "utils/ustring.h"
+#include "utils/string_utils.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/enc_ind.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
+#include "utils/types/ustring.h"
 
 
 // subclasses of this include `PiBas`, `NLogN`, and `log_src_i_star::Underly`

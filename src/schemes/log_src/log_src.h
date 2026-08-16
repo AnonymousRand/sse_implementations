@@ -6,11 +6,11 @@
 #include "schemes/interfaces/sd_underly.h"
 #include "schemes/interfaces/sse.h"
 
-#include "utils/db/db.h"
-#include "utils/range.h"
-#include "utils/tdag.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/range.h"
+#include "utils/types/tdag.h"
+#include "utils/types/tuple.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>

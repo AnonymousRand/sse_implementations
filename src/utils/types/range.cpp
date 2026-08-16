@@ -1,4 +1,4 @@
-#include "utils/range.h"
+#include "utils/types/range.h"
 
 #include <concepts>
 #include <cstdlib>
@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "utils/types.h"
-#include "utils/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/ustring.h"
 
 
 template <std::integral T>

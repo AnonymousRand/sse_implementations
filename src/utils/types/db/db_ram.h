@@ -5,9 +5,9 @@
 #include <initializer_list>
 #include <vector>
 
-#include "utils/db/i_db.h"
-#include "utils/tuple.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/i_db.h"
+#include "utils/types/tuple.h"
 
 
 template <IsDbTuple DbTuple>

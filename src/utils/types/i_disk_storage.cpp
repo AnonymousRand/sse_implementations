@@ -1,4 +1,4 @@
-#include "utils/i_disk_storage.h"
+#include "utils/types/i_disk_storage.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "utils/random.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
 
 
 namespace {

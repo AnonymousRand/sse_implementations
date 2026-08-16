@@ -1,4 +1,4 @@
-#include "utils/enc_ind.h"
+#include "utils/types/enc_ind.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -7,9 +7,9 @@
 #include <string>
 
 #include "utils/debugging.h"
-#include "utils/i_disk_storage.h"
-#include "utils/types.h"
-#include "utils/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/i_disk_storage.h"
+#include "utils/types/ustring.h"
 
 
 //==============================================================================

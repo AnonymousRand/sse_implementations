@@ -1,8 +1,3 @@
-/**
- * indexes are abstractly a collection of `std::pair<ustring, std::pair<ustring, ustring>>`
- * (aka `EncIndEntry`) pairs, corresponding to `std::pair<key, std::pair<encrypted data, IV>>`.
- */
-
 #pragma once
 
 #include <cmath>
@@ -12,9 +7,9 @@
 #include "config.h"
 
 #include "utils/crypto.h"
-#include "utils/i_disk_storage.h"
-#include "utils/types.h"
-#include "utils/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/i_disk_storage.h"
+#include "utils/types/ustring.h"
 
 
 //==============================================================================
@@ -40,6 +35,10 @@ ustring toUstr(const EncIndEntry& encIndEntry);
 //==============================================================================
 
 
+/**
+ * encrypted indexes are a collection of `std::pair<ustring, std::pair<ustring, ustring>>`
+ * (aka `EncIndEntry`) pairs, corresponding to `std::pair<key, std::pair<encrypted data, IV>>`.
+ */
 class EncInd : public IDiskStorage {
 public:
     // (both PRF (default) and hash (res-hiding) have 512 bit output)

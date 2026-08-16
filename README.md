@@ -87,6 +87,6 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 
 - uh mostly just keep the existing conventions ig
 - generally, each class should define constructors/destructors/init methods/clear methods etc. that are responsible for the members defined by that class. children inheriting from these classes should call each parent's version of these methods in their own implementation.
-- see [src/utils/MOVE_SEMANTICS.md](src/utils/MOVE_SEMANTICS.md) for notes about move semantics and the big five.
+- see [src/utils/types/MOVE_SEMANTICS.md](src/utils/types/MOVE_SEMANTICS.md) for notes about move semantics and the big five.
 - currently, one-line getters/setters/very simple methods like `bool IDb::empty()` are implemented inside the class declaration in the header. very broad interfaces like in [src/schemes/interfaces/](src/schemes/interfaces/) have all implementations of methods in the header and have no .cpp file, which avoids massive explicit template instantiation.
 - public destructors in classes that are meant to be inherited from should almost always be `virtual`.

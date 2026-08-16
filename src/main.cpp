@@ -14,9 +14,9 @@
 #include "schemes/pi_bas/pi_bas.h"
 #include "schemes/sda/sda.h"
 
-#include "utils/db/db.h"
-#include "utils/range.h"
-#include "utils/types.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/range.h"
 
 
 int main() {
