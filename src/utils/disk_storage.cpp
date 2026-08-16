@@ -52,8 +52,8 @@ void IDiskStorage::copyFrom(const IDiskStorage& other) {
     try {
         std::filesystem::copy_file(other.filename, this->filename);
     } catch (const std::filesystem::filesystem_error& e) {
-        std::cerr << "Error: IDiskStorage::copyFrom(): error copying file: " << e.what()
-                  << std::endl;
+        std::cerr << "Error: IDiskStorage::copyFrom(): error copying file " << this->filename
+                  << ": " << e.what() << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -61,7 +61,8 @@ void IDiskStorage::copyFrom(const IDiskStorage& other) {
     // (we use `a` instead of `w` mode here to not overwrite the file we just copied)
     this->file = std::fopen(this->filename.c_str(), "ab+");
     if (this->file == nullptr) {
-        std::cerr << "Error: IDiskStorage::copyFrom(): error opening file" << std::endl;
+        std::cerr << "Error: IDiskStorage::copyFrom(): error opening file " << this->filename
+                  << std::endl;
         std::exit(EXIT_FAILURE);
     }
 }
@@ -134,7 +135,8 @@ void IDiskStorage::init() {
     
     this->file = std::fopen(this->filename.c_str(), "wb+");
     if (this->file == nullptr) {
-        std::cerr << "Error: IDiskStorage::init(): error opening file" << std::endl;
+        std::cerr << "Error: IDiskStorage::init(): error opening file " << this->filename
+                  << std::endl;
         std::exit(EXIT_FAILURE);
     }
 }
@@ -149,7 +151,13 @@ void IDiskStorage::clear() {
 
     // delete file from disk
     if (this->filename != "") {
-        std::remove(this->filename.c_str());
+        try {
+            std::filesystem::remove(this->filename);
+        } catch (const std::filesystem::filesystem_error& e) {
+            std::cerr << "Error: IDiskStorage::clear(): error removing file " << this->filename
+                      << ": " << e.what() << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
         this->filename = "";
     }
 }
