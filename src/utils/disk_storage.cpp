@@ -100,7 +100,6 @@ void IDiskStorage::clear() {
 
     // delete file from disk
     if (this->filename != "") {
-        //std::cerr << "~~~~~ clearing " << this->filename << std::endl;
         std::remove(this->filename.c_str());
         this->filename = "";
     }
@@ -108,15 +107,12 @@ void IDiskStorage::clear() {
 
 
 void IDiskStorage::copy(const IDiskStorage& other) {
-    //std::cerr << "----- IDiskStorage copy helper from " << other.filename << std::endl;
     this->filename = this->genFilename();
     // flush if needed to make sure `other.file` has written everything
-    //std::cerr << "----- copying, is other at " << other.filename << " flushed?: " << other.isFlushed << std::endl;
     if (!other.isFlushed) {
         std::fflush(other.file);
         other.isFlushed = true;
     }
-    //std::fflush(other.file);
 
     // directly copy the DB file from `other` to `this`'s new filename via system call
     try {
@@ -135,14 +131,6 @@ void IDiskStorage::copy(const IDiskStorage& other) {
                   << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    
-    //FILE* tmp = std::fopen(this->filename.c_str(), "ab+");
-    //FILE* tmp2 = std::fopen(other.filename.c_str(), "ab+");
-    //std::fseek(tmp, 0, SEEK_END);
-    //std::fseek(tmp2, 0, SEEK_END);
-    //std::cerr << "----- this->filename is now " << this->filename << "; size is " << std::ftell(tmp) << "; other.size is " << std::ftell(tmp2) << std::endl;
-    //std::fclose(tmp);
-    //std::fclose(tmp2);
 }
 
 
@@ -154,6 +142,5 @@ std::string IDiskStorage::genFilename() const {
     // avoid naming clashes by generating a random 8 byte (16 char) hex string
     ubigint randomHex = ::dist(utils::RNG);
     std::string randomHexStr = std::format("{:016x}", randomHex);
-    //std::cerr << "generating " << std::format("{}/{}{}.dat", this->FILE_DIR(), this->FILENAME_PREFIX(), randomHexStr) << std::endl;
     return std::format("{}/{}{}.dat", this->FILE_DIR(), this->FILENAME_PREFIX(), randomHexStr);
 }
