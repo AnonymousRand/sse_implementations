@@ -131,21 +131,22 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
         if (kwRange.size() > 1) {
             continue;
         }
-        // also exclude ALL types of dummies (this is done client-side so it's fine to reveal sizes)
+        // also exclude ALL dummies (this is done client-side so it's fine to reveal sizes)
         Range<IdAlias> idAliasRange = db1Tuple.getIdAliasRange();
         if (idAliasRange == DUMMY_RANGE<IdAlias>()) {
             continue;
         }
 
         for (IdAlias idAlias = idAliasRange.first; idAlias <= idAliasRange.second; idAlias++) {
-            auto iter = ind2.find(Range<IdAlias> {idAlias, idAlias});
+            Range<IdAlias> idAliasRange {idAlias, idAlias};
+            auto iter = ind2.find(idAliasRange);
             if (iter == ind2.end()) {
-                std::cerr << "Error: LogSrcIBase::getDb(): "
-                          << "I don't think this is supposed to happen." << std::endl;
+                std::cerr << "Error: LogSrcIBase::getDb(): id alias range " << idAliasRange
+                          << " not found in index 2" << std::endl;
                 std::exit(EXIT_FAILURE);
             }
 
-            Db<Tuple<IdAlias>> dbKwList = iter->second;
+            Db<Tuple<IdAlias>> dbKwList = std::move(iter->second);
             for (Tuple<IdAlias> db2Tuple : dbKwList) {
                 Tuple<> newTuple(db2Tuple.getDbDoc(), kwRange);
                 ret.push_back(newTuple);

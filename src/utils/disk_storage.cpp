@@ -68,7 +68,7 @@ void IDiskStorage::copyFrom(const IDiskStorage& other) {
 
 
 void IDiskStorage::moveFrom(IDiskStorage&& other) noexcept {
-    // important: set all fields in `other` that have non-default destruction/should not be
+    // IMPORTANT: set all fields in `other` that have non-default destruction/should not be
     // double-freed to a null value, so that its destructor doesn't try to delete the same resource
     // (e.g.  pointer or filename) that `this`'s fields now point to when it goes out of scope
     this->file = other.file;
@@ -76,8 +76,6 @@ void IDiskStorage::moveFrom(IDiskStorage&& other) noexcept {
 
     this->filename = other.filename;
     other.filename = "";
-
-    //std::cerr << "===== this now has " << this << "; " << this->filename << ", " << this->file << "; other now has " << &other << "; " << other.filename << ", " << other.file << std::endl;
 
     this->isFlushed = other.isFlushed;
 }
@@ -102,10 +100,8 @@ IDiskStorage::IDiskStorage(IDiskStorage&& other) noexcept {
 
 // move assignment operator
 IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
-    //std::cerr << "===== copying to: " << this << "; " << this->filename << ", " << this->file << " from " << &other << "; " << other.filename << ", " << other.file << std::endl;
     // important self-assignment safety check!
     if (this != &other) {
-        //std::cerr << "===== clearing " << this->filename << ", " << this->file << std::endl;
         this->clear();
         this->moveFrom(std::move(other));
     }
@@ -124,8 +120,8 @@ void IDiskStorage::init() {
     try {
         std::filesystem::create_directories(this->FILE_DIR());
     } catch (const std::filesystem::filesystem_error& e) {
-        std::cerr << "Error: IDiskStorage::init(): error creating path " << this->FILE_DIR()
-                  << ": " << e.what() << std::endl;
+        std::cerr << "Error: IDiskStorage::init(): error creating path " << this->FILE_DIR() << ": "
+                  << e.what() << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -145,18 +141,14 @@ void IDiskStorage::init() {
 
 
 void IDiskStorage::clear() {
-    //std::cerr << "+++++ clear: " << this << "; " << this->filename << ", " << this->file << std::endl;
     // close file descriptors
     if (this->file != nullptr) {
-        //std::cerr << "+++++ clear " << this->file << std::endl;
         std::fclose(this->file);
         this->file = nullptr;
-        //std::cerr << "+++++ file is now " << this->file << std::endl;
     }
 
     // delete file from disk
     if (this->filename != "") {
-        //std::cerr << "+++++ deleting " << this->filename << std::endl;
         std::remove(this->filename.c_str());
         this->filename = "";
     }

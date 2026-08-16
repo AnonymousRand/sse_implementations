@@ -4,6 +4,8 @@
 #include <bit>
 #include <cmath>
 #include <concepts>
+#include <cstdlib>
+#include <iostream>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -66,7 +68,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     //--------------------------------------------------------------------------
     // build index
 
-    // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
+    // generate (plaintext) index of keywords to documents/ids mapping
     Ind<DbTuple> ind(db);
 
     // for each w in W
@@ -74,11 +76,13 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
-            continue;
+            std::cerr << "Error: NLogN::setup(): DB kw range " << dbKwRange
+                      << " not found in index" << std::endl;
+            std::exit(EXIT_FAILURE);
         }
 
         // pad keyword list to the next power of two
-        Db<DbTuple> dbKwList = iter->second;
+        Db<DbTuple> dbKwList = std::move(iter->second);
         bigint dbKwCount = dbKwList.size();
         Range<DbKw> dbKwBounds = db.findDbKwBounds();
         DbKw maxDbKw = dbKwBounds.second;

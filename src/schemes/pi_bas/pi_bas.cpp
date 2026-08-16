@@ -1,6 +1,8 @@
 #include "schemes/pi_bas/pi_bas.h"
 
 #include <concepts>
+#include <cstdlib>
+#include <iostream>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -53,28 +55,24 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     //--------------------------------------------------------------------------
     // build index
 
-    // generate (plaintext) index of keywords to documents/ids mapping and list of unique keywords
-    // and randomly permute documents associated with same keyword, required by
+    // generate (plaintext) index of keywords to documents/ids mapping
+    // also randomly permute documents associated with same keyword, required by
     // some schemes on top of PiBas (e.g. Log-SRC)
     Ind<DbTuple> ind(db, true);
-    //std::cerr << "********** PiBas ind build done " << std::endl;
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
     for (Range<DbKw> dbKwRange : uniqDbKwRanges) {
-        //std::cerr << "********** PiBas finding " << dbKwRange << " in DB" << std::endl;
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
-            //std::cerr << "********** PiBas not found!" << std::endl;
-            continue;
+            std::cerr << "Error: PiBas::setup(): DB kw range " << dbKwRange
+                      << " not found in index" << std::endl;
+            std::exit(EXIT_FAILURE);
         }
 
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
-        // >>TODO std::move here as well? should just need std::move(iter->second)? and compare
-        //std::cerr << "*********** PiBas before move " <<std::endl;
         Db<DbTuple> dbKwList = std::move(iter->second);
-        //std::cerr << "*********** PiBas after move " <<std::endl;
 
         // for each id in DB(w)
         for (bigint dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
@@ -90,11 +88,9 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->write(pos, std::pair {label, std::pair {encDbTuple, iv}});
         }
-        //std::cerr << "********** PiBas loop over" << std::endl;
     }
 
     this->server->setEncInd(encInd);
-    //std::cerr << "********** PiBas setup done" << std::endl;
 }
 
 
