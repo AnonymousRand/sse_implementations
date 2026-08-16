@@ -17,11 +17,18 @@
 
 template <IsDbTuple DbTuple>
 DbRam<DbTuple>::DbRam(const DbRam& db, bigint startIndex, bigint endIndex) :
-    vec(db.vec.begin() + startIndex, db.vec.end() + endIndex) {}
+    vec(db.vec.begin() + startIndex, db.vec.end() + endIndex)
+{
+   this->_size = this->vec.size();
+}
 
 
 template <IsDbTuple DbTuple>
-DbRam<DbTuple>::DbRam(std::initializer_list<DbTuple> initList) : vec(initList) {}
+DbRam<DbTuple>::DbRam(std::initializer_list<DbTuple> initList) :
+    vec(initList)
+{
+    this->_size = this->vec.size();
+}
 
 
 //------------------------------------------------------------------------------

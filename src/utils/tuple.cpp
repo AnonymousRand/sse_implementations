@@ -116,8 +116,8 @@ Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
         std::exit(EXIT_FAILURE);
     }
 
-    Id id = std::stoi(matches[1].str());
-    Kw kw = std::stoi(matches[2].str());
+    Id id = std::stoll(matches[1].str());
+    Kw kw = std::stoll(matches[2].str());
     Op op = static_cast<Op>(matches[3].str()[0]);
     Range<DbKw> dbKwRange = Range<DbKw>::fromStr(matches[4].str());
     return Tuple<DbKw> {id, kw, op, dbKwRange};

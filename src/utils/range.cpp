@@ -74,8 +74,8 @@ Range<T> Range<T>::fromStr(const std::string& str) {
     }
 
     Range<T> range;
-    range.first = T(std::stoi(matches[1].str()));
-    range.second = T(std::stoi(matches[2].str()));
+    range.first = T(std::stoll(matches[1].str()));
+    range.second = T(std::stoll(matches[2].str()));
     return range;
 }
 
