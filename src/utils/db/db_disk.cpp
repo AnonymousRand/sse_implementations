@@ -210,7 +210,6 @@ DbDisk<DbTuple> DbDisk<DbTuple>::applyAlgoViaIndices(
 // explicit template instantiations
 
 
-// >TODO: can move these into db.cpp? using just Db<...>
 template class DbDisk<Tuple<>>;
 template class DbDisk<SrcIDb1Tuple>;
 //template class DbDisk<Tuple<IdAlias>>;

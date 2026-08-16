@@ -182,7 +182,7 @@ void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
 
 template <IsDbTuple DbTuple>
 std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const {
-    std::vector<DbTuple> results;
+    std::vector<DbTuple> results {};
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
@@ -194,7 +194,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     EncIndVal encIndValDict;
     bool isFoundDict = this->server->getDbKwCount(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
-        return std::vector<DbTuple> {};
+        return results;
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;

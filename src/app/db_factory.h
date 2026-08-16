@@ -15,7 +15,6 @@ namespace app {
 Db<> createDb(bigint dbSize, bool isRandom, bool hasDeletions) {
     Db<> db {};
     if (dbSize == 0) {
-        // TODO do the same for e.g. returning empty vectors during search!
         // (note that we return the same `db` variable even with empty so that
         // compiler does named return value optimization)
         return db;
