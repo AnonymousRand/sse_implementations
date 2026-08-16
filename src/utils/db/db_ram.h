@@ -5,7 +5,7 @@
 #include <initializer_list>
 #include <vector>
 
-#include "utils/db/db_interface.h"
+#include "utils/db/i_db.h"
 #include "utils/tuple.h"
 #include "utils/types.h"
 

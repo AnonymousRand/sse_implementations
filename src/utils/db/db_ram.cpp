@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <vector>
 
+#include "utils/db/i_db.h"
 #include "utils/random.h"
 #include "utils/tuple.h"
 #include "utils/types.h"

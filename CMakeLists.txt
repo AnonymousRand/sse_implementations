@@ -6,8 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenSSL REQUIRED CONFIG)
 
-add_executable(
-    main
+add_executable(main
     src/main.cpp
 
     src/schemes/log_src/log_src.cpp
@@ -28,11 +27,11 @@ add_executable(
 
     src/utils/crypto.cpp
     src/utils/db/db_disk.cpp
-    src/utils/db/db_interface.cpp
     src/utils/db/db_ram.cpp
+    src/utils/db/i_db.cpp
     src/utils/debugging.cpp
-    src/utils/disk_storage_interface.cpp
     src/utils/enc_ind.cpp
+    src/utils/i_disk_storage.cpp
     src/utils/ind.cpp
     src/utils/misc.cpp
     src/utils/range.cpp

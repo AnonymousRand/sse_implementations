@@ -12,7 +12,7 @@
 #include "config.h"
 
 #include "utils/crypto.h"
-#include "utils/disk_storage_interface.h"
+#include "utils/i_disk_storage.h"
 #include "utils/types.h"
 #include "utils/ustring.h"
 

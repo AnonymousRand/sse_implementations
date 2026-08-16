@@ -12,7 +12,8 @@
 #include <utility>
 #include <vector>
 
-#include "utils/disk_storage_interface.h"
+#include "utils/db/i_db.h"
+#include "utils/i_disk_storage.h"
 #include "utils/misc.h"
 #include "utils/random.h"
 #include "utils/tuple.h"
