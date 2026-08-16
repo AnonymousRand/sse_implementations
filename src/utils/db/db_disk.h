@@ -37,14 +37,10 @@ public:
     DbDisk(std::initializer_list<DbTuple> initList);
 
     //--------------------------------------------------------------------------
-    // copy/move
+    // rule of five
 
-    // these are still manually written even though all of them are ` = default` because the
-    // parent `IDb`'s manually declared move assignment operator prevents compiler from
-    // automatically generating all of these
-    //
-    // the default behavior should call the parent(s)' version(s) before doing a per-member
-    // copy/move of the child's members
+    // destructor
+    ~DbDisk() = default;
 
     // copy constructor
     // (should avoid decoding and de-encoding each tuple as it is moved)
@@ -57,8 +53,10 @@ public:
     DbDisk(DbDisk&& other) noexcept = default;
 
     // move assignment operator
+    // (not `= default` here as we have multiple inheritance, and the order in which parent move
+    // assignment operators are called is very important here)
     // TODO: test performance vs. without this!
-    DbDisk& operator =(DbDisk&& other) noexcept = default;
+    DbDisk& operator =(DbDisk&& other) noexcept;
 
     //--------------------------------------------------------------------------
     // `IDb`

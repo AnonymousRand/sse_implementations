@@ -68,8 +68,8 @@ public:
     // parent `IDb`'s manually declared move assignment operator prevents compiler from
     // automatically generating all of these
     //
-    // the default behavior should call the parent(s)' version(s) before doing a per-member
-    // copy/move of the child's members
+    // the default behavior should call the parent(s)' version(s), in order of inheritance,
+    // before doing a per-member copy/move of the child's members
 
     // copy constructor
     EncInd(const EncInd& other) = default;

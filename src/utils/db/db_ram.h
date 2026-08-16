@@ -33,14 +33,10 @@ public:
 
 
     //--------------------------------------------------------------------------
-    // copy/move
+    // rule of five
 
-    // these are still manually written even though all of them are ` = default` because the
-    // parent `IDb`'s manually declared move assignment operator prevents compiler from
-    // automatically generating all of these
-    //
-    // the default behavior should call the parent(s)' version(s) before doing a per-member
-    // copy/move of the child's members
+    // destructor
+    ~DbRam() = default;
 
     // copy constructor
     DbRam(const DbRam& other) = default;

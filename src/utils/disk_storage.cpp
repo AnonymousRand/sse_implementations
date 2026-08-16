@@ -36,7 +36,7 @@ IDiskStorage::~IDiskStorage() {
 
 
 //------------------------------------------------------------------------------
-// copy/move
+// rule of five
 
 
 IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {

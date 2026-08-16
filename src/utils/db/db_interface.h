@@ -27,11 +27,12 @@ public:
     IDb() = default;
 
     //--------------------------------------------------------------------------
-    // copy/move
+    // rule of five
+
+    // destructor
+    ~IDb() = default;
 
     // copy constructor
-    // (`= default` forces a default one to be automatically generated when e.g. a
-    // manually declared move assignment operator prevents this otherwise)
     IDb(const IDb& other) = default;
 
     // copy assignment operator

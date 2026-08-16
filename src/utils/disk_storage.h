@@ -18,26 +18,9 @@ public:
     ~IDiskStorage();
 
     //--------------------------------------------------------------------------
-    // copy/move
-
-    // summary of special constructors/assignment operators:
-    // =======================================================================
-    // ‖ assigning \ assigning ‖    new object    |     existing object      ‖
-    // ‖   from:    \    to:   ‖                  |                          ‖
-    // =======================================================================
-    // ‖        lvalue         ‖ copy constructor | copy assignment operator ‖
-    // ‖                       ‖ `T obj2 = obj1`  |      `obj2 = obj1`       ‖
-    // ‖---------------------------------------------------------------------‖
-    // ‖        rvalue         ‖ move constructor | move assignment operator ‖
-    // ‖                       ‖  `T obj2 = f()`  |      `obj2 = f()`        ‖
-    // =======================================================================
-    //
-    // note that starting C++17, move constructors (bottom left) in the case where the rvalue
-    // is a function call are replaced by mandatory "copy elision", which also avoids a copy
+    // rule of five
 
     // copy constructor
-    // (`= default` forces a default one to be automatically generated when e.g. a
-    // manually declared move assignment operator prevents this otherwise)
     IDiskStorage(const IDiskStorage& other) = default;
 
     // copy assignment operator

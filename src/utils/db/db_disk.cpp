@@ -9,6 +9,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "utils/disk_storage.h"
@@ -51,7 +52,7 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
 
 
 //------------------------------------------------------------------------------
-// copy/move
+// rule of five
 
 
 template <IsDbTuple DbTuple>
@@ -84,15 +85,17 @@ DbDisk<DbTuple>::DbDisk(const DbDisk& other) {
 }
 
 
-//template <IsDbTuple DbTuple>
-//DbDisk<DbTuple>& DbDisk<DbTuple>::operator =(DbDisk&& other) noexcept {
-//    // moves DB file and file pointer
-//    // (must do `IDiskStorage`'s move assignment before others since that calls `clear()`)
-//    IDiskStorage<DbTuple>::operator =(other);
-//
-//    // moves `_size`
-//    IDb<DbTuple>::operator =(other);
-//}
+template <IsDbTuple DbTuple>
+DbDisk<DbTuple>& DbDisk<DbTuple>::operator =(DbDisk&& other) noexcept {
+    // moves DB file and file pointer
+    // (IMPORTANT: must do `IDiskStorage`'s move assignment first since that calls `clear()`!)
+    IDiskStorage::operator =(std::move(other));
+
+    // moves `_size`
+    IDb<DbTuple>::operator =(std::move(other));
+
+    return *this;
+}
 
 
 //------------------------------------------------------------------------------
