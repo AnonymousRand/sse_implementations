@@ -58,6 +58,8 @@ public:
 
     DbTuple operator [](bigint index) const override;
 
+    void reserve(bigint size) override;
+
     void shuffle() override;
     void sort(
         const std::function<bool(const DbTuple& dbTuple1, const DbTuple& dbTuple2)>& compare

@@ -32,6 +32,8 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // leaves with this information
     Db<SrcIDb1Tuple> db1;
     Db<Tuple<IdAlias>> db2;
+    db1.reserve(sortedDb.size());
+    db2.reserve(sortedDb.size());
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
@@ -57,6 +59,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
             tuple = sortedDb[i];
             Kw kw = tuple.getKw();
             // if non-contiguous `Kw`s detected, fill in the gap with dummies
+            // (don't `reserve()` here as i feel it can be not really worth it)
             if (kw - prevKw > 1) {
                 for (Kw paddingKw = prevKw + 1; paddingKw < kw; paddingKw++) {
                     Range<Kw> paddingKwRange {paddingKw, paddingKw};

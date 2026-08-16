@@ -119,6 +119,7 @@ void Sda<Underly>::clear() {
         }
     }
     this->underlys.clear();
+
     this->firstEmptyInd = 0;
 }
 

@@ -53,13 +53,8 @@ public:
     //--------------------------------------------------------------------------
     // debugging
 
-    FILE* getFile() const {
-        return this->file;
-    }
-
-    std::string getFilename() const {
-        return this->filename;
-    }
+    FILE* getFile() const { return this->file; }
+    std::string getFilename() const { return this->filename; }
 
 protected:
     FILE* file = nullptr;

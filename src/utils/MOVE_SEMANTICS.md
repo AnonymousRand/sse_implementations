@@ -19,7 +19,7 @@
     
     do note that starting in c++17, move constructors (bottom left) in the case where the rvalue is a function call are replaced by mandatory "copy elision", which also avoids a copy. this is done through return value optimization: the function must construct the return object directly in the caller's memory (yes, even in `-O0`).
 
-- explicitly, these are the function signatures of these four constructors/operations in the table above (which shall now be referred to as "Things"), for a class `T`:
+- explicitly, these are the function signatures of these four constructors/operations in the table above (which shall henceforth be referred to as "Things"), for a class `T`:
 
     ```cpp
     // copy constructor

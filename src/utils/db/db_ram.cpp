@@ -59,6 +59,12 @@ DbTuple DbRam<DbTuple>::operator [](bigint index) const {
 
 
 template <IsDbTuple DbTuple>
+void DbRam<DbTuple>::reserve(bigint size) {
+    this->vec.reserve(size);
+}
+
+
+template <IsDbTuple DbTuple>
 void DbRam<DbTuple>::shuffle() {
     // (note: not using `this->begin()` and `this->end()` here to avoid needing to make
     // `IDb::Iter` a fully fledged `LegacyRandomAccessIterator`)

@@ -109,9 +109,12 @@ void PiBas<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
+    // reserve a lower bound
+    ret.reserve(ret.size() + this->size);
     EncInd* encInd = this->server->getEncInd();
-    // don't use `this->size()` as the bound here as that doesn't include padding
-    // while `encInd` does (this should all be client-side anyway so not leaking anything)
+
+    // don't use `this->size` as the bound here as that doesn't include padding while
+    // `encInd` does (this should all be client-side anyway so not leaking anything)
     for (bigint pos = 0; pos < encInd->getSize(); pos++) {
         EncIndVal encIndVal;
         bool isValidVal = encInd->read(pos, encIndVal);
@@ -140,6 +143,9 @@ std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
     std::vector<EncIndVal> encResults = this->server->searchEncInd(queryToken);
+
+    // decrypt results on the client
+    results.reserve(encResults.size());
     for (const EncIndVal& encResult : encResults) {
         DbTuple result = this->decryptEncIndVal(encResult);
         results.push_back(result);

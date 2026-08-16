@@ -30,6 +30,7 @@
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 LogSrcIBase<Underly>::~LogSrcIBase() {
     this->clear();
+
     if (this->underly1 != nullptr) {
         delete this->underly1;
         this->underly1 = nullptr;
@@ -97,6 +98,7 @@ template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrcIBase<Underly>::clear() {
     this->underly1->clear();
     this->underly2->clear();
+
     if (this->tdag1 != nullptr) {
         delete this->tdag1;
         this->tdag1 = nullptr;
@@ -105,6 +107,7 @@ void LogSrcIBase<Underly>::clear() {
         delete this->tdag2;
         this->tdag2 = nullptr;
     }
+
     this->size = 0;
 }
 

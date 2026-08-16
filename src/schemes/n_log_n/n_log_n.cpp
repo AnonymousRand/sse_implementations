@@ -146,12 +146,14 @@ void NLogN<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
+    // reserve a lower bound
+    ret.reserve(ret.size() + this->numLvls * this->size);
     std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
 
     for (bigint lvl = 0; lvl < this->numLvls; lvl++) {
         EncInd* encIndLvl = encIndLvls[lvl];
-        // don't use `this->size()` as the bound here as that doesn't include padding
-        // while `encIndLvl` does (this should all be client-side anyway so not leaking anything)
+        // don't use `this->size` as the bound here as that doesn't include padding while
+        // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
         for (bigint pos = 0; pos < encIndLvl->getSize(); pos++) {
             EncIndVal encIndVal;
             bool isValidVal = encIndLvl->read(pos, encIndVal);
@@ -215,6 +217,9 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
+
+    // decrypt results on the client
+    results.reserve(encResults.size());
     for (const EncIndVal& encResult : encResults) {
         DbTuple result = this->decryptEncIndVal(encResult);
         results.push_back(result);

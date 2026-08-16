@@ -24,7 +24,7 @@ Since many of these can be instantiated with various underlying schemes, the fol
 - SDa[Logarithmic-SRC-i[NLogN]]
 - SDa[Logarithmic-SRC-i\*]
 
-See [src/main.cpp](src/main.cpp) and [src/core/sse_factory.cpp](src/core/sse_factory.cpp) for usage examples.
+See [src/main.cpp](src/main.cpp), [src/app/sse_factory.cpp](src/app/sse_factory.cpp), and [src/app/experiments/](src/app/experiments/) for usage examples.
 
 # Requirements
 
@@ -78,7 +78,7 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
     - The "client" classes for each scheme also function as the "controller", exposing the SSE API and implementing the client-side logic. These classes in turn may own "server" classes, which mostly serve to just store and perform basic retrieval operations on encrypted indexes.
     - At the moment, only the "most underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep one or more instances of these underlying schemes (specifically, the underlying schemes' client classes, which hence also includes the servers).
 - Ids and keywords MUST be nonnegative integer values. Otherwise, Bad Things may happen.
-- While database tuples eeach possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
+- While database tuples each possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
 - Experiments can be found in [src/app/experiments/](src/app/experiments/).
-- i have pain
+- i have pain.

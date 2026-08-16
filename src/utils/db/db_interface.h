@@ -50,13 +50,14 @@ public:
     virtual void clear();
     virtual void push_back(const DbTuple& dbTuple) = 0;
 
-    bigint size() const { return this->_size; }
-    bool empty() const { return this->_size == 0; }
-
     // read-only accessing using `[]` (note we don't provide writing capabilities
     // since that requires returning a reference, but children of `IDb` need not
     // have persistent `DbTuple` objects physically stored somewhere)
     virtual DbTuple operator [](bigint index) const = 0;
+
+    bigint size() const { return this->_size; }
+    bool empty() const { return this->_size == 0; }
+    virtual void reserve(bigint size) = 0;
 
     virtual void shuffle() = 0;
     virtual void sort(

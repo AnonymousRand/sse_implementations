@@ -359,7 +359,7 @@ void buildTdagAndDb(
     // construct TDAG
     tdag = new TdagNode<DbKw>(dbKwBounds.first, maxDbKw);
     
-    // replicate every (leaf node) DB tuple to all TDAG nodes that cover it
+    // replicate every (leaf) DB tuple to all TDAG nodes that cover it
     replDbForTdag<DbTuple>(db, tdag);
 }
 
@@ -369,6 +369,7 @@ void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* 
     using DbKw = typename DbTuple::DbKwType;
 
     bigint dbSize = db.size();
+    db.reserve(dbSize + calcTdagTupleCount(dbSize));
     for (bigint i = 0; i < dbSize; i++) {
         DbTuple tuple = db[i];
         Range<DbKw> dbKwRange = tuple.getDbKwRange();

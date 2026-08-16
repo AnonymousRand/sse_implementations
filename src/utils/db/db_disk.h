@@ -62,6 +62,9 @@ public:
 
     DbTuple operator [](bigint index) const override;
 
+    // (there's nothing we can do in this case with disk storage)
+    void reserve(bigint size) override {}
+
     // these are instantiations of `applyAlgoViaIndices()` (see below) using specific common
     // `algoOnIndices` functions
     // additionally, these methods replace `*this` with the output `DbDisk`

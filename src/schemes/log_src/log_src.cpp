@@ -65,11 +65,13 @@ std::vector<Tuple<>> LogSrc<Underly>::search(
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrc<Underly>::clear() {
     this->underly->clear();
+
     // delete TDAG fully since it is reallocated with `new` in `setup()`
     if (this->tdag != nullptr) {
         delete this->tdag;
         this->tdag = nullptr;
     }
+
     this->size = 0;
 }
 
@@ -80,11 +82,15 @@ void LogSrc<Underly>::clear() {
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrc<Underly>::getDb(Db<Tuple<>>& ret) const {
-    // need to exclude replicated tuples: assume any tuples with `DbKw` range size >1 is replicated
-    // (this doesn't seem to incur noticeable performance overhead with compiler optimizations)
-    Db<Tuple<>> retWithRepls;
-    this->underly->getDb(retWithRepls);
-    for (const Tuple<>& tuple : retWithRepls) {
+    // reserve leaves
+    ret.reserve(ret.size() + this->size);
+
+    // need to exclude replicated tuples: assume any tuples with `DbKw` range size >1 is replicated,
+    // i.e. not a leaf, and only return leaves
+    Db<Tuple<>> underlyDb;
+    underlyDb.reserve(utils::calcTdagTupleCount(this->size));
+    this->underly->getDb(underlyDb);
+    for (const Tuple<>& tuple : underlyDb) {
         Range<Kw> kwRange = tuple.getDbKwRange();
         if (kwRange.size() == 1) {
             ret.push_back(tuple);

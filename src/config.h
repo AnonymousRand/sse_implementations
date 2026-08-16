@@ -15,7 +15,7 @@ inline constexpr bool DSSE_SHOULD_BENCHMARK_UPDTS = false;
 inline constexpr int MAX_VALUE_DIGITS = 14;
 
 
-// set this to `true` for truly large (but much slower) DBs; otherwise DBs are stored in RAM
+// set this to `true` for truly large (but ~10x slower) DBs; otherwise DBs are stored in RAM
 inline constexpr bool SHOULD_STORE_DBS_ON_DISK = true;
 
 

@@ -63,9 +63,10 @@ template <IsDbTuple DbTuple>
 void IDb<DbTuple>::pad(typename DbTuple::DbKwType& currMaxDbKw) {
     using DbKw = typename DbTuple::DbKwType;
 
-    bigint dbSize = this->size();
+    bigint dbSize = this->_size;
     if (!std::has_single_bit((ubigint)dbSize)) {
         bigint amountToPad = std::pow(2, std::ceil(std::log2(dbSize))) - dbSize;
+        this->reserve(this->_size + amountToPad);
         for (bigint i = 0; i < amountToPad; i++) {
             currMaxDbKw++;
             Range<DbKw> dbKwRange {currMaxDbKw, currMaxDbKw};
