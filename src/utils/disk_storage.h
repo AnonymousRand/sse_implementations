@@ -18,10 +18,10 @@ public:
     ~IDiskStorage();
 
     //--------------------------------------------------------------------------
-    // rule of five
+    // copy/move
 
     // copy constructor
-    IDiskStorage(const IDiskStorage& other) = default;
+    IDiskStorage(const IDiskStorage& other);
 
     // copy assignment operator
     IDiskStorage& operator =(const IDiskStorage& other) = default;
@@ -54,6 +54,8 @@ public:
 protected:
     FILE* file = nullptr;
     std::string filename = "";
+    // (`mutable` allows this to be modified in `const` contexts still)
+    mutable bool isFlushed = true;
 
     //--------------------------------------------------------------------------
     // methods to implement

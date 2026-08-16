@@ -36,6 +36,7 @@ PiBas<DbTuple>::~PiBas() {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
+    std::cerr << "+++++ pibas setup()" << std::endl;
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -49,6 +50,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
     EncInd* encInd = new EncInd();
     encInd->init(this->size);
+    std::cerr << "+++++ pibas done init things" << std::endl;
 
     //--------------------------------------------------------------------------
     // build index
@@ -57,6 +59,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     // and randomly permute documents associated with same keyword, required by
     // some schemes on top of PiBas (e.g. Log-SRC)
     Ind<DbTuple> ind(db, true);
+    std::cerr << "+++++ pibas done build ind" << std::endl;
 
     // for each w in W
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
@@ -68,8 +71,9 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);
-        // TODO std::move here as well? should just need std::move(iter->second)?
+        // >TODO std::move here as well? should just need std::move(iter->second)?
         Db<DbTuple> dbKwList = iter->second;
+        std::cerr << "+++++ pibas iterating dbKwList of size " << dbKwList.size() << std::endl;
 
         // for each id in DB(w)
         for (bigint dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
@@ -88,6 +92,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     }
 
     this->server->setEncInd(encInd);
+    std::cerr << "+++++ pibas done setup()" << std::endl;
 }
 
 

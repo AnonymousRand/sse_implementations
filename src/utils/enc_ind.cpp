@@ -59,6 +59,7 @@ void EncInd::init(bigint size) {
             std::exit(EXIT_FAILURE);
         }
     }
+    std::fflush(this->file);
 }
 
 
@@ -195,7 +196,7 @@ void EncInd::write(ubigint pos, const EncIndEntry& encIndEntry) {
                   << " (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    // flush immediately to mark space as occupied
+    // flush immediately to mark space as occupied (and so we always have `this->isFlushed = true`)
     std::fflush(this->file);
 }
 

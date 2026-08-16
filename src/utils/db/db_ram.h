@@ -33,7 +33,7 @@ public:
 
 
     //--------------------------------------------------------------------------
-    // rule of five
+    // copy/move
 
     // destructor
     ~DbRam() = default;

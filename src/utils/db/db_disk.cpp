@@ -34,6 +34,7 @@ DbDisk<DbTuple>::DbDisk(const DbDisk<DbTuple>& db, bigint startIndex, bigint end
     DbDisk<DbTuple>()
 {
     for (bigint index = startIndex; index < endIndex; index++) {
+        // avoid decoding and re-encoding every tuple, which incurs expensive regex
         char dbTupleCstr[TUPLE_LEN];
         db.readRaw(index, dbTupleCstr);
         this->appendRaw(dbTupleCstr);
@@ -52,49 +53,21 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
 
 
 //------------------------------------------------------------------------------
-// rule of five
-
-
-// copy constructor
-template <IsDbTuple DbTuple>
-DbDisk<DbTuple>::DbDisk(const DbDisk& other) {
-    this->filename = this->genFilename();
-    this->_size = other._size;
-
-    // flush if needed to make sure `other.file` has written everything
-    if (!other.isFlushed) {
-        std::fflush(other.file);
-        other.isFlushed = true;
-    }
-
-    // directly copy the DB file from `other` to `this`'s new filename via system call
-    try {
-        std::filesystem::copy_file(other.filename, this->filename);
-    } catch (const std::filesystem::filesystem_error& e) {
-        std::cerr << "Error: DbDisk::DbDisk(const DbDisk&): error copying file: " << e.what()
-                  << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    // open the file we just copied
-    // (we use `a` instead of `w` mode here to not overwrite the file we just copied)
-    this->file = std::fopen(this->filename.c_str(), "ab+");
-    if (this->file == nullptr) {
-        std::cerr << "Error: DbDisk::DbDisk(const DbDisk&): error opening file" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-}
+// copy/move
 
 
 // move assignment operator
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple>& DbDisk<DbTuple>::operator =(DbDisk&& other) noexcept {
+    std::cerr << "----- DbDisk move assignment operator from " << other.filename << std::endl;
     // moves DB file and file pointer
     // (IMPORTANT: must do `IDiskStorage`'s move assignment first since that calls `clear()`!)
     IDiskStorage::operator =(std::move(other));
 
     // moves `_size`
     IDb<DbTuple>::operator =(std::move(other));
+
+    std::cerr << "----- this->filename is now " << this->filename << std::endl;
 
     return *this;
 }

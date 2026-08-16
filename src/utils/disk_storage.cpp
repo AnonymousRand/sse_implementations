@@ -36,7 +36,39 @@ IDiskStorage::~IDiskStorage() {
 
 
 //------------------------------------------------------------------------------
-// rule of five
+// copy/move
+
+
+// copy constructor
+IDiskStorage::IDiskStorage(const IDiskStorage& other) {
+    std::cerr << "----- IDiskStorage copy constructor from " << other.filename << std::endl;
+    this->filename = this->genFilename();
+    // flush if needed to make sure `other.file` has written everything
+    if (!other.isFlushed) {
+        std::fflush(other.file);
+        other.isFlushed = true;
+    }
+
+    // directly copy the DB file from `other` to `this`'s new filename via system call
+    try {
+        std::filesystem::copy_file(other.filename, this->filename);
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Error: IDiskStorage::IDiskStorage(const DbDisk&): error copying file: "
+                  << e.what() << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    // open the file we just copied
+    // (we use `a` instead of `w` mode here to not overwrite the file we just copied)
+    this->file = std::fopen(this->filename.c_str(), "ab+");
+    if (this->file == nullptr) {
+        std::cerr << "Error: IDiskStorage::IDiskStorage(const DbDisk&): error opening file"
+                  << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    std::cerr << "----- this->filename is now " << this->filename << std::endl;
+}
 
 
 // move assignment operator

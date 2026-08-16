@@ -37,14 +37,13 @@ public:
     DbDisk(std::initializer_list<DbTuple> initList);
 
     //--------------------------------------------------------------------------
-    // rule of five
+    // copy/move
 
     // destructor
     ~DbDisk() = default;
 
     // copy constructor
-    // (should avoid decoding and de-encoding each tuple as it is moved)
-    DbDisk(const DbDisk& other);
+    DbDisk(const DbDisk& other) = default;
 
     // copy assignment operator
     DbDisk& operator =(const DbDisk& other) = default;
@@ -79,9 +78,6 @@ private:
     constexpr std::string FILENAME_PREFIX() const override { return "db_"; }
 
     inline static const int TUPLE_LEN = EncInd::DATA_LEN;
-
-    // (`mutable` allows this to be modified in `const` contexts still)
-    mutable bool isFlushed = true;
 
     //--------------------------------------------------------------------------
     // helpers

@@ -64,13 +64,6 @@ public:
     //--------------------------------------------------------------------------
     // copy/move
 
-    // these are still manually written even though all of them are ` = default` because the
-    // parent `IDb`'s manually declared move assignment operator prevents compiler from
-    // automatically generating all of these
-    //
-    // the default behavior should call the parent(s)' version(s), in order of inheritance,
-    // before doing a per-member copy/move of the child's members
-
     // copy constructor
     EncInd(const EncInd& other) = default;
 
