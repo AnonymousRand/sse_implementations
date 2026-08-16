@@ -12,6 +12,9 @@ public:
     //--------------------------------------------------------------------------
     // constructors/destructors
 
+    // default constructor forced so that children can use a default constructor too
+    IDiskStorage() = default;
+
     ~IDiskStorage();
 
     //--------------------------------------------------------------------------

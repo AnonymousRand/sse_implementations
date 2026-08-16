@@ -21,6 +21,12 @@ public:
     // be virtual, so just make sure all necessary constructors are implemented in all children
 
     //--------------------------------------------------------------------------
+    // constructors/destructors
+
+    // default constructor forced so that children can use a default constructor too
+    IDb() = default;
+
+    //--------------------------------------------------------------------------
     // copy/move
 
     // copy constructor

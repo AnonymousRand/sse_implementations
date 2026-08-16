@@ -57,6 +57,11 @@ public:
     inline static constexpr int ENTRY_LEN = KEY_LEN + VAL_LEN;
 
     //--------------------------------------------------------------------------
+    // constructors/destructors
+
+    EncInd() = default;
+
+    //--------------------------------------------------------------------------
     // copy/move
 
     // these are still manually written even though all of them are ` = default` because the
@@ -123,7 +128,6 @@ public:
 private:
     constexpr std::string FILE_DIR() const override { return "out/server"; }
     constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
-    // (note: this does not work correctly using `ab+`)
 
     static const uchar NULL_ENTRY[ENTRY_LEN];
 
