@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <cstddef>
 #include <iostream>
 #include <regex>
@@ -14,13 +15,13 @@
  * preconditions:
  *     - range end is greater than or equal to range start.
  */
-template <class T>
+template <std::integral T>
 class Range : public std::pair<T, T> {
 public:
-    static const std::string REGEX_STR;
+    inline static const Range<T> DUMMY() { return Range<T> {::DUMMY, ::DUMMY}; }
 
     Range() = default;
-    Range(const T& start, const T& end);
+    Range(T start, T end);
 
     T size() const;
     bool contains(const Range<T>& target) const;
@@ -31,23 +32,18 @@ public:
     ustring toUstr() const;
     static Range<T> fromStr(const std::string& str);
 
-    template <class T2>
+    template <std::integral T2>
     friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 
 private:
+    static const std::string REGEX_STR;
     static const std::regex REGEX;
 };
 
 
-template <class T>
+template <std::integral T>
 struct std::hash<Range<T>> {
     inline std::size_t operator ()(const Range<T>& range) const noexcept {
         return std::hash<std::string>{}(range.toStr());
     }
 };
-
-
-template <class T>
-inline Range<T> DUMMY_RANGE() {
-    return Range<T> {DUMMY, DUMMY};
-}

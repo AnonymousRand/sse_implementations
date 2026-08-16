@@ -16,7 +16,7 @@
 //==============================================================================
 
 
-template <class T>
+template <std::integral T>
 class TdagNode {
 public:
     /**
@@ -40,7 +40,7 @@ public:
      */
     std::list<Range<T>> getLeafAncestors(const Range<T>& target) const;
 
-    template <class T2>
+    template <std::integral T2>
     friend std::ostream& operator <<(std::ostream& os, TdagNode<T2>* node);
 
 private:

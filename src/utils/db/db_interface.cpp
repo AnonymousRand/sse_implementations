@@ -28,7 +28,7 @@ Range<typename DbTuple::DbKwType> IDb<DbTuple>::findDbKwBounds() const {
     using DbKw = typename DbTuple::DbKwType;
 
     if (this->empty()) {
-        return DUMMY_RANGE<DbKw>();
+        return Range<DbKw>::DUMMY();
     }
 
     DbKw minDbKw = DUMMY;
@@ -70,7 +70,7 @@ void IDb<DbTuple>::pad(typename DbTuple::DbKwType& currMaxDbKw) {
         for (bigint i = 0; i < amountToPad; i++) {
             currMaxDbKw++;
             Range<DbKw> dbKwRange {currMaxDbKw, currMaxDbKw};
-            DbTuple dummyTuple = DbTuple::genDummy(dbKwRange);
+            DbTuple dummyTuple = DbTuple::DUMMY(dbKwRange);
             this->push_back(dummyTuple);
         }
     }

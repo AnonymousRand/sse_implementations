@@ -14,9 +14,6 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class IDb {
 public:
-    // IMPORTANT: constructors/destructors/related methods here should be responsible for
-    // the members *defined by this class*!
-
     // note: unfortunately most constructors are not currently enforced here since they can't really
     // be virtual, so just make sure all necessary constructors are implemented in all children
 

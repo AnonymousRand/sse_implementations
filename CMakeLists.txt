@@ -31,7 +31,7 @@ add_executable(
     src/utils/db/db_interface.cpp
     src/utils/db/db_ram.cpp
     src/utils/debugging.cpp
-    src/utils/disk_storage.cpp
+    src/utils/disk_storage_interface.cpp
     src/utils/enc_ind.cpp
     src/utils/ind.cpp
     src/utils/misc.cpp

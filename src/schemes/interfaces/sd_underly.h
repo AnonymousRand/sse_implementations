@@ -22,8 +22,8 @@ public:
     // methods to implement
 
     /**
-     * append the `db` most recently passed to `setup()` (without any replications/
-     * padding/processing) to `ret`.
+     * append the DB most recently passed to `setup()` (WITHOUT any replications/
+     * padding/processing!) to `ret`.
      */
     virtual void getDb(Db<DbTuple>& ret) const = 0;
 
@@ -40,6 +40,10 @@ public:
     }
 
 protected:
+    /**
+     * the size of the DB most recently passed to `setup()` (WITHOUT any replications/
+     * padding/processing!).
+     */
     bigint size;
 };
 

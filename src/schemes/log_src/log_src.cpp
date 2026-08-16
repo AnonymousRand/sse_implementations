@@ -55,7 +55,7 @@ std::vector<Tuple<>> LogSrc<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
     Range<Kw> src = this->tdag->findSrc(query);
-    if (src == DUMMY_RANGE<Kw>()) {
+    if (src == Range<Kw>::DUMMY()) {
         return std::vector<Tuple<>> {};
     }
     return this->underly->search(src, shouldCleanUpResults, false);
@@ -64,6 +64,9 @@ std::vector<Tuple<>> LogSrc<Underly>::search(
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrc<Underly>::clear() {
+    // clears `this->size`
+    ISdUnderly<Tuple<>>::clear();
+
     this->underly->clear();
 
     // delete TDAG fully since it is reallocated with `new` in `setup()`
@@ -71,8 +74,6 @@ void LogSrc<Underly>::clear() {
         delete this->tdag;
         this->tdag = nullptr;
     }
-
-    this->size = 0;
 }
 
 
@@ -82,11 +83,8 @@ void LogSrc<Underly>::clear() {
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrc<Underly>::getDb(Db<Tuple<>>& ret) const {
-    // reserve leaves
-    ret.reserve(ret.size() + this->size);
-
-    // need to exclude replicated tuples: assume any tuples with `DbKw` range size >1 is replicated,
-    // i.e. not a leaf, and only return leaves
+    // we only return leaves as that is what was originally passed to `setup()`, so we exclude
+    // replicated tuples: assume any tuples with `DbKw` range size >1 is replicated and not a leaf
     Db<Tuple<>> underlyDb;
     underlyDb.reserve(utils::calcTdagTupleCount(this->size));
     this->underly->getDb(underlyDb);

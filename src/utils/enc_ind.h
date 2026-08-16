@@ -12,7 +12,7 @@
 #include "config.h"
 
 #include "utils/crypto.h"
-#include "utils/disk_storage.h"
+#include "utils/disk_storage_interface.h"
 #include "utils/types.h"
 #include "utils/ustring.h"
 
@@ -50,9 +50,9 @@ public:
     // must restrict our plaintexts by one more byte or else AES' PCKS #7 padding will generate
     // an extra block if our plaintext is exactly an integer number of blocks long, thus the `+8`.)
     // also round up to the next AES block
-    inline static const int     DATA_LEN  = std::ceil(
-        (4 * config::MAX_VALUE_DIGITS + 8) / (float)crypto::BLOCK_SIZE
-    ) * crypto::BLOCK_SIZE;
+    inline static const int     DATA_LEN  =
+        std::ceil((4 * config::MAX_VALUE_DIGITS + 8) / (float)crypto::BLOCK_SIZE)
+        * crypto::BLOCK_SIZE;
     inline static constexpr int VAL_LEN   = DATA_LEN + crypto::IV_LEN;
     inline static constexpr int ENTRY_LEN = KEY_LEN + VAL_LEN;
 

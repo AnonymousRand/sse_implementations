@@ -7,6 +7,7 @@
 #include <string>
 
 #include "utils/debugging.h"
+#include "utils/disk_storage_interface.h"
 #include "utils/types.h"
 #include "utils/ustring.h"
 
@@ -57,6 +58,7 @@ EncInd::EncInd(const EncInd& other) {
 
 
 void EncInd::init(bigint size) {
+    // inits DB file and file pointer
     IDiskStorage::init();
     this->size = size;
 

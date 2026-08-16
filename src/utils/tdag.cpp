@@ -19,13 +19,13 @@
 //==============================================================================
 
 
-template <class T>
+template <std::integral T>
 TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
     range(Range<T> {left->range.first, right->range.second}),
     left(left), right(right), extraParent(nullptr) {}
 
 
-template <class T>
+template <std::integral T>
 TdagNode<T>::TdagNode(const Range<T>& leafRange) {
     if (leafRange.size() < 1) {
         return;
@@ -41,6 +41,7 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
     }
 
     std::vector<Range<T>> leafs;
+    leafs.reserve(leafRange.size());
     for (T i = leafRange.first; i <= leafRange.second; i++) {
         leafs.push_back(Range<T> {i, i});
     }
@@ -118,12 +119,12 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
 }
 
 
-template <class T>
+template <std::integral T>
 TdagNode<T>::TdagNode(T leafRangeStart, T leafRangeEnd) :
     TdagNode<T>(Range {leafRangeStart, leafRangeEnd}) {}
 
 
-template <class T>
+template <std::integral T>
 TdagNode<T>::~TdagNode() {
     // prevent infinite `delete` recursion where extra parents go back to their children
     // which go back to their extra parents and so on
@@ -155,14 +156,14 @@ TdagNode<T>::~TdagNode() {
 
 // DFS preorder but with additional traversal of TDAG's extra parent nodes
 // track `extraParent` nodes in an `unordered_set` to prevent duplicates
-template <class T>
+template <std::integral T>
 std::list<const TdagNode<T>*> TdagNode<T>::traverse() const {
     std::unordered_set<TdagNode<T>*> extraParents;
     return this->traverseHelper(extraParents);
 }
 
 
-template <class T>
+template <std::integral T>
 std::list<const TdagNode<T>*> TdagNode<T>::traverseHelper(
     std::unordered_set<TdagNode<T>*>& extraParents
 ) const {
@@ -189,7 +190,7 @@ std::list<const TdagNode<T>*> TdagNode<T>::traverseHelper(
 }
 
 
-template <class T>
+template <std::integral T>
 Range<T> TdagNode<T>::findSrc(Range<T> targetRange) const {
     // if target range exceeds this entire tree's range on either side, return what we can
     if (targetRange.first < this->range.first) {
@@ -203,19 +204,19 @@ Range<T> TdagNode<T>::findSrc(Range<T> targetRange) const {
 
 
 // basically traverses tree with DFS and early exits to find best SRC
-template <class T>
+template <std::integral T>
 Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) const {
     // if the current node is disjoint with the target range, it is impossible for
     // its children or extra TDAG parent to be the SRC, so we can early exit
     if (this->range.isDisjointFrom(targetRange)) {
-        return DUMMY_RANGE<T>();
+        return Range<T>::DUMMY();
     }
 
     // else find best SRC between current node, best SRC in left subtree, best SRC in right subtree,
     // and extra TDAG parent 
     std::map<T, Range<T>> candidates;
     auto tryAddCandidate = [&](Range<T> range) {
-        if (range == DUMMY_RANGE<T>() || !range.contains(targetRange)) {
+        if (range == Range<T>::DUMMY() || !range.contains(targetRange)) {
             return T(-1);
         }
 
@@ -238,7 +239,7 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) const {
         // if the earlier `if` case concluded that `extraParent` is not a valid cover,
         // return nothing
         if (diff == -1) {
-            return DUMMY_RANGE<T>();
+            return Range<T>::DUMMY();
         }
         // else if already seen that `extraParent` is valid (just not a perfect cover), return it
         return this->extraParent->range;
@@ -264,13 +265,13 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) const {
     }
 
     if (candidates.empty()) {
-        return DUMMY_RANGE<T>();
+        return Range<T>::DUMMY();
     }
     return candidates.begin()->second; // take advantage of `std::map`s being sorted by key
 }
 
 
-template <class T>
+template <std::integral T>
 std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) const {
     std::list<Range<T>> ancestors {this->range};
 
@@ -288,7 +289,7 @@ std::list<Range<T>> TdagNode<T>::getLeafAncestors(const Range<T>& target) const 
 }
 
 
-template <class T>
+template <std::integral T>
 std::ostream& operator <<(std::ostream& os, TdagNode<T>* node) {
     std::list<const TdagNode<T>*> nodes = node->traverse();
     for (const TdagNode<T>* node : nodes) {

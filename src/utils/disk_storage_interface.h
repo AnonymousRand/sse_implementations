@@ -6,9 +6,6 @@
 
 class IDiskStorage {
 public:
-    // IMPORTANT: constructors/destructors/related methods here should be responsible for
-    // the members *defined by this class*!
-
     //--------------------------------------------------------------------------
     // constructors/destructors
 

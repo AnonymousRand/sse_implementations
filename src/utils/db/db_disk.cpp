@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "utils/disk_storage.h"
+#include "utils/disk_storage_interface.h"
 #include "utils/misc.h"
 #include "utils/random.h"
 #include "utils/tuple.h"
@@ -25,6 +25,7 @@
 
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple>::DbDisk() {
+    // inits DB file and file pointer
     IDiskStorage::init();
 }
 
@@ -110,7 +111,7 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
             break;
         }
     }
-    dbTupleStr.resize(paddingStart + 1); // (`+ 1` to add back first null terminator)
+    dbTupleStr.resize(paddingStart + 1); // (`+ 1` to add back the first null terminator)
 
     // decode and return
     return DbTuple::fromStr(dbTupleStr);

@@ -53,4 +53,4 @@
 
 - thus, if you want to manually define any one of the Things to override the automatically generated default behavior, **you should almost always manually define ALL the Things,** using `= default` for the ones you want to keep the automatically generated behavior of. (this along with the destructor is often called the c++ "rule of five".)
 
-- examples can be found in [src/utils/disk_storage.h](src/utils/disk_storage.h) and [src/utils/db/](src/utils/db/) ("copy/move" methods).
+- examples can be found in [src/utils/i_disk_storage.h](src/utils/i_disk_storage.h) and [src/utils/db/](src/utils/db/) ("copy/move" methods).

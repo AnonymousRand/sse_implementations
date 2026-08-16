@@ -38,8 +38,8 @@ public:
 
     IDbTuple(const DbDoc& val, const Range<DbKw>& dbKwRange);
 
-    DbDoc getDbDoc() const;
-    Range<DbKw> getDbKwRange() const;
+    DbDoc getDbDoc() const { return this->dbDoc; }
+    Range<DbKw> getDbKwRange() const { return this->dbKwRange; }
 
     virtual std::string toStr() const = 0;
     ustring toUstr() const;
@@ -73,6 +73,10 @@ concept IsDbTuple = requires(T t) {
 template <class DbKw = Kw>
 class Tuple : public IDbTuple<std::tuple<Id, Kw, Op>, DbKw> {
 public:
+    inline static const Tuple<DbKw> DUMMY(const Range<DbKw>& dbKwRange) {
+        return Tuple<DbKw> {::DUMMY, ::DUMMY, Op::DUMMY, dbKwRange};
+    }
+
     using IDbTuple<std::tuple<Id, Kw, Op>, DbKw>::IDbTuple;
 
     Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange);
@@ -84,7 +88,6 @@ public:
     std::string toStr() const override;
     static Tuple<DbKw> fromStr(const std::string& str);
     static Tuple<DbKw> fromUstr(const ustring& ustr);
-    static Tuple<DbKw> genDummy(const Range<DbKw>& dbKwRange);
 
 private:
     static const std::string REGEX_STR;
@@ -107,6 +110,10 @@ struct std::hash<Tuple<DbKw>> {
 
 class SrcIDb1Tuple : public IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw> {
 public:
+    inline static const SrcIDb1Tuple DUMMY(const Range<Kw>& kwRange) {
+        return SrcIDb1Tuple {::DUMMY, Range<IdAlias>::DUMMY(), kwRange};
+    }
+
     using IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>::IDbTuple;
 
     SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange);
@@ -117,7 +124,6 @@ public:
     std::string toStr() const override;
     static SrcIDb1Tuple fromStr(const std::string& str);
     static SrcIDb1Tuple fromUstr(const ustring& ustr);
-    static SrcIDb1Tuple genDummy(const Range<Kw>& kwRange);
 
 private:
     static const std::string REGEX_STR;

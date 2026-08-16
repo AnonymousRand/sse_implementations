@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "utils/db/db_interface.h"
-#include "utils/disk_storage.h"
+#include "utils/disk_storage_interface.h"
 #include "utils/enc_ind.h"
 #include "utils/range.h"
 #include "utils/tuple.h"

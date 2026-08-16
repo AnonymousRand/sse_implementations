@@ -50,7 +50,7 @@ public:
         return allResults;
     }
 
-    // handle clearing of `prfKey` and `encKey` member variables belonging to this interface
+    // handle clearing of this class' member variables
     void clear() override {
         this->prfKey = utils::toUstr("");
         this->encKey = utils::toUstr("");

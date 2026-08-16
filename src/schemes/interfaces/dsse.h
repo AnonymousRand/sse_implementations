@@ -31,6 +31,14 @@ public:
 
     virtual void update(const DbTuple& newTuple) = 0;
 
+    //----------------------------------------------------------------------
+    // shared code
+
+    // handle clearing of this class' member variables
+    void clear() override {
+        this->updateCount = 0;
+    }
+
 protected:
     /**
      * whether to use the shortcut `setup()` (non-shortcut is calling `update()`
@@ -38,6 +46,8 @@ protected:
      * for experimental evaluation of searches.
      */
     bool useShortcutSetup = false;
+
+    bigint updateCount = 0;
 };
 
 

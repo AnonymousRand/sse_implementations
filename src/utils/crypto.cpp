@@ -200,7 +200,7 @@ ustring decryptAndUnpad(
             break;
         }
     }
-    ptext.resize(paddingStart + 1); // (`+ 1` to add back first null terminator)
+    ptext.resize(paddingStart + 1); // (`+ 1` to add back the first null terminator)
     return ptext;
 }
 

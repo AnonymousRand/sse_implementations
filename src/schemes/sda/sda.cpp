@@ -68,8 +68,8 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
         // update the pointer to the first empty index as usual (like in `update()`)
         bigint newFirstEmpty = 0;
-        while (newFirstEmpty < this->underlys.size()
-               && this->underlys[newFirstEmpty]->getSize() > 0)
+        while (this->underlys[newFirstEmpty]->getSize() > 0
+               && newFirstEmpty < this->underlys.size())
         {
             newFirstEmpty++;
         }
@@ -110,6 +110,9 @@ std::vector<Tuple<>> Sda<Underly>::search(
 
 template <IsSdUnderly Underly>
 void Sda<Underly>::clear() {
+    // clears `this->updateCount`
+    IDsse<Tuple<>>::clear();
+
     // (apparently vector `clear()` automatically calls the destructor for each element
     // *unless* it is a pointer)
     for (Underly* underly : this->underlys) {
@@ -131,7 +134,7 @@ void Sda<Underly>::clear() {
 template <IsSdUnderly Underly>
 void Sda<Underly>::update(const Tuple<>& newTuple) {
     // if empty, initialize first index
-    if (this->underlys.empty()) {
+    if (this->updateCount == 0) {
         Underly* newUnderly = new Underly(this->benchmark);
         newUnderly->setup(this->secParam, Db<Tuple<>> {newTuple});
         this->underlys.push_back(newUnderly);
@@ -141,6 +144,7 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`
     Db<Tuple<>> mergedDb;
+    mergedDb.reserve(this->updateCount + 1);
     for (bigint i = 0; i < this->firstEmptyInd; i++) {
         // (`getDb()` appends to the passed-in container)
         this->underlys[i]->getDb(mergedDb);
@@ -162,10 +166,12 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
 
     // update the pointer to the first empty index
     bigint newFirstEmpty = 0;
-    while (newFirstEmpty < this->underlys.size() && this->underlys[newFirstEmpty]->getSize() > 0) {
+    while (this->underlys[newFirstEmpty]->getSize() > 0 && newFirstEmpty < this->underlys.size()) {
         newFirstEmpty++;
     }
     this->firstEmptyInd = newFirstEmpty;
+
+    this->updateCount++;
 }
 
 

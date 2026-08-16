@@ -28,18 +28,6 @@ IDbTuple<DbDoc, DbKw>::IDbTuple(const DbDoc& dbDoc, const Range<DbKw>& dbKwRange
 
 
 template <class DbDoc, class DbKw>
-DbDoc IDbTuple<DbDoc, DbKw>::getDbDoc() const {
-    return this->dbDoc;
-}
-
-
-template <class DbDoc, class DbKw>
-Range<DbKw> IDbTuple<DbDoc, DbKw>::getDbKwRange() const {
-    return this->dbKwRange;
-}
-
-
-template <class DbDoc, class DbKw>
 ustring IDbTuple<DbDoc, DbKw>::toUstr() const {
     return ::utils::toUstr(this->toStr());
 }
@@ -124,12 +112,6 @@ Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
 }
 
 
-template <class DbKw>
-Tuple<DbKw> Tuple<DbKw>::genDummy(const Range<DbKw>& dbKwRange) {
-    return Tuple<DbKw> {DUMMY, DUMMY, Op::DUMMY, dbKwRange};
-}
-
-
 //------------------------------------------------------------------------------
 // explicit template instantiations
 
@@ -205,11 +187,6 @@ SrcIDb1Tuple SrcIDb1Tuple::fromStr(const std::string& str) {
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
     Range<Kw> kwRange = Range<Kw>::fromStr(matches[3].str());
     return SrcIDb1Tuple {kw, idAliasRange, kwRange};
-}
-
-
-SrcIDb1Tuple SrcIDb1Tuple::genDummy(const Range<Kw>& kwRange) {
-    return SrcIDb1Tuple {DUMMY, DUMMY_RANGE<IdAlias>(), kwRange};
 }
 
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <cstdint>
 
 
@@ -22,7 +23,11 @@ enum class Op : char {
 
 /**
  * preconditions:
- *     - keywords and ids are both nonnegative integer values (storable by `bigint`)
- *       (as `DUMMY` here is used for both).
+ *     - keywords and ids are both nonnegative integer values (implicitly convertible to `bigint`,
+ *       and satisfies `std::integral`), as `DUMMY` here is used for both.
  */
+static_assert(std::integral<Kw>,      "Error: `Kw` must be an integral type!");
+static_assert(std::integral<Id>,      "Error: `Id` must be an integral type!");
+static_assert(std::integral<IdAlias>, "Error: `IdAlias` must be an integral type!");
+
 inline constexpr bigint DUMMY = -1;

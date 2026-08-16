@@ -59,11 +59,10 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
             tuple = sortedDb[i];
             Kw kw = tuple.getKw();
             // if non-contiguous `Kw`s detected, fill in the gap with dummies
-            // (don't `reserve()` here as i feel it can be not really worth it)
             if (kw - prevKw > 1) {
                 for (Kw paddingKw = prevKw + 1; paddingKw < kw; paddingKw++) {
                     Range<Kw> paddingKwRange {paddingKw, paddingKw};
-                    SrcIDb1Tuple dummyTuple = SrcIDb1Tuple::genDummy(paddingKwRange);
+                    SrcIDb1Tuple dummyTuple = SrcIDb1Tuple::DUMMY(paddingKwRange);
                     db1.push_back(dummyTuple);
                 }
             }

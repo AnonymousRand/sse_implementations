@@ -132,7 +132,10 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::clear() {
+    // clears keys
     IStaticPointSse<DbTuple>::clear();
+
+    // clears `this->size`
     ISdUnderly<DbTuple>::clear();
 
     this->server->clear();
@@ -146,8 +149,6 @@ void NLogN<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
-    // reserve a lower bound
-    ret.reserve(ret.size() + this->numLvls * this->size);
     std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
 
     for (bigint lvl = 0; lvl < this->numLvls; lvl++) {
@@ -169,7 +170,7 @@ void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
             // SSE scheme which is using NLogN as an underlying scheme. while deleting those dummies
             // too seems to work fine, we don't since we don't have an easy, general way to check
             // for those here, and that should be the upstream scheme's concern anyway.)
-            if (dbKwRange != DUMMY_RANGE<DbKw>()) {
+            if (dbKwRange != Range<DbKw>::DUMMY()) {
                 DbTuple newDbTuple(dbTuple.getDbDoc(), dbKwRange);
                 ret.push_back(newDbTuple);
             }
