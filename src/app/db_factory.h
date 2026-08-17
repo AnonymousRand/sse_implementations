@@ -14,7 +14,8 @@ namespace app {
 
 /**
  * add `dbSize` new tuples to the DB `ret`. if `isRandom` is `true`, then the keywords
- * are limited to between `minKw` and `maxKw` (both inclusive).
+ * are limited to between `minKw` and `maxKw` (both inclusive) (do note that `hasDeletions`
+ * should be set to `false` in this case).
  */
 void createDb(
     Db<>& ret, bigint dbSize, bool isRandom, bool hasDeletions,

@@ -65,7 +65,7 @@ Only tested on Linux (NixOS, Ubuntu). To run on Windows, don't. (ok, fine, WSL w
     build_release/main
     ```
 
-Adjust the basic configuration options in [src/config.h](src/config.h) (e.g. whether to enable benchmarking) as desired. Note that currently these values are only applied at compile time, so you must recompile after making changes.
+Adjust the basic configuration options in [src/config.h](src/config.h) (e.g. whether to enable benchmarking), as well as in each experiment in [src/app/experiments/](src/app/experiments/) (when applicable), as desired. Note that currently these values are only applied at compile time, so you must recompile after making changes.
 
 ## NixOS
 

@@ -1,7 +1,7 @@
-#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <memory>
+#include <utility>
 
 #include "config.h"
 
@@ -86,241 +86,242 @@ int main() {
     // adjust at will here!
     Db<> debuggingDb;
     app::createDb(debuggingDb, maxDbSize, true, true);
-    const Range<Kw> debuggingQuery {3, 5};
-
-    app::experiments::debugging::printHeader(maxDbSizeExp, debuggingQuery);
+    app::experiments::Debugging debugging(std::move(debuggingDb), Range<Kw> {3, 5}, maxDbSizeExp);
+    debugging.printHeader(maxDbSizeExp, debuggingQuery);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::debugging::run(piBas.get(), debuggingDb, debuggingQuery);
+    debugging.run(piBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::debugging::run(nLogN.get(), debuggingDb, debuggingQuery);
+    debugging.run(nLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcPiBas.get(), debuggingDb, debuggingQuery);
+    debugging.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcNLogN.get(), debuggingDb, debuggingQuery);
+    debugging.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcIPiBas.get(), debuggingDb, debuggingQuery);
+    debugging.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcINLogN.get(), debuggingDb, debuggingQuery);
+    debugging.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    app::experiments::debugging::run(logSrcIStar.get(), debuggingDb, debuggingQuery);
+    debugging.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaPiBas.get(), debuggingDb, debuggingQuery);
+    debugging.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaNLogN.get(), debuggingDb, debuggingQuery);
+    debugging.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcPiBas.get(), debuggingDb, debuggingQuery);
+    debugging.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcNLogN.get(), debuggingDb, debuggingQuery);
+    debugging.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcIPiBas.get(), debuggingDb, debuggingQuery);
+    debugging.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcINLogN.get(), debuggingDb, debuggingQuery);
+    debugging.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    app::experiments::debugging::run(sdaLogSrcIStar.get(), debuggingDb, debuggingQuery);
+    debugging.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
 
-    // to save memory
-    debuggingDb.clear();
+    // free memory ASAP
+    debugging.clearDb();
 
     //--------------------------------------------------------------------------
-    // DB sizes experiment
+    // all vs. DB size experiment
 
-    const bigint dbSizesExpResultCount = std::min(
-        config::DB_SIZES_EXPERIMENT_RESULT_COUNT, maxDbSize
-    );
-    app::experiments::db_sizes::printHeader(maxDbSizeExp, ,resultCount);
+    app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp);
+    allVsDbSize.printHeader(maxDbSizeExp, ,resultCount);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::db_sizes::run(piBas.get(), maxDbSize, resultCount);
+    allVsDbSize.run(piBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::db_sizes::run(nLogN.get(), maxDbSize, resultCount);
+    allVsDbSize.run(nLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::db_sizes::run(logSrcPiBas.get(), maxDbSize, resultCount);
+    allVsDbSize.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::db_sizes::run(logSrcNLogN.get(), maxDbSize);
+    allVsDbSize.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::db_sizes::run(logSrcIPiBas.get(), maxDbSize);
+    allVsDbSize.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::db_sizes::run(logSrcINLogN.get(), maxDbSize);
+    allVsDbSize.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    app::experiments::db_sizes::run(logSrcIStar.get(), maxDbSize);
+    allVsDbSize.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    app::experiments::db_sizes::run(sdaPiBas.get(), maxDbSize);
+    allVsDbSize.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    app::experiments::db_sizes::run(sdaNLogN.get(), maxDbSize);
+    allVsDbSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    app::experiments::db_sizes::run(sdaLogSrcPiBas.get(), maxDbSize);
+    allVsDbSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    app::experiments::db_sizes::run(sdaLogSrcNLogN.get(), maxDbSize);
+    allVsDbSize.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    app::experiments::db_sizes::run(sdaLogSrcIPiBas.get(), maxDbSize);
+    allVsDbSize.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    app::experiments::db_sizes::run(sdaLogSrcINLogN.get(), maxDbSize);
+    allVsDbSize.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    app::experiments::db_sizes::run(sdaLogSrcIStar.get(), maxDbSize);
+    allVsDbSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
 
     //--------------------------------------------------------------------------
-    // result sizes experiment
+    // search vs. result size experiment
 
-    app::experiments::result_sizes::printHeader(maxDbSizeExp);
+    app::experiments::SearchVsResultSize searchVsResultSize(maxDbSizeExp);
+    searchVsResultSize.printHeader(maxDbSizeExp);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::result_sizes::run(piBas.get(), maxDbSize);
+    searchVsResultSize.run(piBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::result_sizes::run(nLogN.get(), maxDbSize);
+    searchVsResultSize.run(nLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::result_sizes::run(logSrcPiBas.get(), maxDbSize);
+    searchVsResultSize.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::result_sizes::run(logSrcNLogN.get(), maxDbSize);
+    searchVsResultSize.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::result_sizes::run(logSrcIPiBas.get(), maxDbSize);
+    searchVsResultSize.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::result_sizes::run(logSrcINLogN.get(), maxDbSize);
+    searchVsResultSize.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    app::experiments::result_sizes::run(logSrcIStar.get(), maxDbSize);
+    searchVsResultSize.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    app::experiments::result_sizes::run(sdaPiBas.get(), maxDbSize);
+    searchVsResultSize.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    app::experiments::result_sizes::run(sdaNLogN.get(), maxDbSize);
+    searchVsResultSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    app::experiments::result_sizes::run(sdaLogSrcPiBas.get(), maxDbSize);
+    searchVsResultSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    app::experiments::result_sizes::run(sdaLogSrcNLogN.get(), maxDbSize);
+    searchVsResultSize.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    app::experiments::result_sizes::run(sdaLogSrcIPiBas.get(), maxDbSize);
+    searchVsResultSize.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    app::experiments::result_sizes::run(sdaLogSrcINLogN.get(), maxDbSize);
+    searchVsResultSize.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    app::experiments::result_sizes::run(sdaLogSrcIStar.get(), maxDbSize);
+    searchVsResultSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
 
     //--------------------------------------------------------------------------
-    // range sizes experiment
+    // search vs. range size experiment
 
-    app::experiments::range_sizes::printHeader(maxDbSizeExp);
+    app::experiments::SearchVsRangeSize searchVsRangeSize(maxDbSizeExp);
+    searchVsRangeSize.printHeader(maxDbSizeExp);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::range_sizes::run(piBas.get(), maxDbSize);
+    searchVsRangeSize.run(piBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::range_sizes::run(nLogN.get(), maxDbSize);
+    searchVsRangeSize.run(nLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::range_sizes::run(logSrcPiBas.get(), maxDbSize);
+    searchVsRangeSize.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::range_sizes::run(logSrcNLogN.get(), maxDbSize);
+    searchVsRangeSize.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::range_sizes::run(logSrcIPiBas.get(), maxDbSize);
+    searchVsRangeSize.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::range_sizes::run(logSrcINLogN.get(), maxDbSize);
+    searchVsRangeSize.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    app::experiments::range_sizes::run(logSrcIStar.get(), maxDbSize);
+    searchVsRangeSize.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    app::experiments::range_sizes::run(sdaPiBas.get(), maxDbSize);
+    searchVsRangeSize.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    app::experiments::range_sizes::run(sdaNLogN.get(), maxDbSize);
+    searchVsRangeSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    app::experiments::range_sizes::run(sdaLogSrcPiBas.get(), maxDbSize);
+    searchVsRangeSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    app::experiments::range_sizes::run(sdaLogSrcNLogN.get(), maxDbSize);
+    searchVsRangeSize.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    app::experiments::range_sizes::run(sdaLogSrcIPiBas.get(), maxDbSize);
+    searchVsRangeSize.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    app::experiments::range_sizes::run(sdaLogSrcINLogN.get(), maxDbSize);
+    searchVsRangeSize.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    app::experiments::range_sizes::run(sdaLogSrcIStar.get(), maxDbSize);
+    searchVsRangeSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
     
     //--------------------------------------------------------------------------
-    // false positives experiment
+    // search vs. false positives experiment
 
-    app::experiments::false_pos::printHeader(maxDbSizeExp);
+    app::experiments::SearchVsFalsePos searchVsFalsePos(maxDbSizeExp);
+    searchVsFalsePos.printHeader(maxDbSizeExp);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::false_pos::run(logSrcPiBas.get(), maxDbSize);
+    searchVsFalsePos.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    app::experiments::false_pos::run(logSrcIPiBas.get(), maxDbSize);
+    searchVsFalsePos.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    app::experiments::false_pos::run(logSrcNLogN.get(), maxDbSize);
+    searchVsFalsePos.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    app::experiments::false_pos::run(logSrcINLogN.get(), maxDbSize);
+    searchVsFalsePos.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
     //--------------------------------------------------------------------------
     // updates experiment
 
     if (config::DSSE_SHOULD_BENCHMARK_UPDTS) {
-        app::experiments::updates::printHeader(maxDbSizeExp);
+        app::experiments::UpdateVsDbSize updateVsDbSize(maxDbSizeExp);
+        updateVsDbSize.printHeader(maxDbSizeExp);
 
         std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-        app::experiments::updates::run(sdaPiBas.get(), maxDbSize);
+        updateVsDbSize.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
 
         std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-        app::experiments::updates::run(sdaNLogN.get(), maxDbSize);
+        updateVsDbSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
 
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-        app::experiments::updates::run(sdaLogSrcPiBas.get(), maxDbSize);
+        updateVsDbSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        app::experiments::updates::run(sdaLogSrcNLogN.get(), maxDbSize);
+        updateVsDbSize.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-        app::experiments::updates::run(sdaLogSrcIPiBas.get(), maxDbSize);
+        updateVsDbSize.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
 
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        app::experiments::updates::run(sdaLogSrcINLogN.get(), maxDbSize);
+        updateVsDbSize.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-        app::experiments::updates::run(sdaLogSrcIStar.get(), maxDbSize);
+        updateVsDbSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
     }
 }

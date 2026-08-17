@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "app/db_factory.h"
+#include "app/experiments/i_experiment.h"
 
 #include "schemes/interfaces/sse.h"
 
@@ -15,48 +16,62 @@
 #include "utils/types/tuple.h"
 
 
-namespace app::experiments::debugging {
+namespace app::experiments {
 
 
-void printHeader(bigint maxDbSizeExp, const Range<Kw>& query) {
-    std::cout << std::endl;
-    std::cout << "============================= Debugging Experiment ============================="
-              << std::endl;
-    std::cout << "Fixed DB size 2^" << maxDbSizeExp << std::endl;
-    std::cout << "Fixed query " << query << std::endl;
-    std::cout << "================================================================================"
-              << std::endl;
-    std::cout << std::endl << std::endl;
-}
+class Debugging : public IExperiment<ISse<>> {
+public:
+    Debugging(Db<>&& db, const Range<Kw>& query, bigint dbSizeExp) :
+        db(std::move(db), query(query) {}
 
+    void printHeader() const override {
+        std::cout << std::endl;
+        std::cout << "================================== Debugging ==================================="
+                  << std::endl;
+        std::cout << "Fixed DB size 2^" << this->db.size() << std::endl;
+        std::cout << "Query " << this->query << std::endl;
+        std::cout << "================================================================================"
+                  << std::endl;
+        std::cout << std::endl << std::endl;
+    }
 
-// experiment for debugging with fixed query and printed results
-void run(ISse<>* sse, const Db<>& db, const Range<Kw>& query) {
-    // setup
-    sse->setup(utils::crypto::KEY_LEN, db);
+    // experiment for debugging with fixed query and printed results
+    void run(ISse<>* sse, bool shouldBenchmark) const override {
+        // setup
+        sse->setup(utils::crypto::KEY_LEN, this->db);
 
-    // search
-    std::vector<Tuple<>> results = sse->search(query);
-    std::vector<Tuple<>> falsePositives;
-    std::cout << "Results ((id,kw,op),kwrange):" << std::endl;
-    for (const Tuple<>& result : results) {
-        Kw kw = result.getKw();
-        if (query.contains(kw)) {
-            std::cout << result << " with keyword " << kw << std::endl;
-        } else {
-            falsePositives.push_back(result);
+        // search
+        std::vector<Tuple<>> results = sse->search(this->query);
+        std::vector<Tuple<>> falsePositives;
+        std::cout << "Results ((id,kw,op),kwrange):" << std::endl;
+        for (const Tuple<>& result : results) {
+            Kw kw = result.getKw();
+            if (query.contains(kw)) {
+                std::cout << result << " with keyword " << kw << std::endl;
+            } else {
+                falsePositives.push_back(result);
+            }
         }
+        std::cout << std::endl;
+
+        std::cout << "False positives ((id,kw,op),kwrange):" << std::endl;
+        for (const Tuple<>& result : falsePositives) {
+            std::cout << result << " with keyword " << result.getKw() << std::endl;
+        }
+        std::cout << std::endl;
+
+        sse->clear();
     }
-    std::cout << std::endl;
 
-    std::cout << "False positives ((id,kw,op),kwrange):" << std::endl;
-    for (const Tuple<>& result : falsePositives) {
-        std::cout << result << " with keyword " << result.getKw() << std::endl;
+    // to free memory
+    void clearDb() {
+        this->db.clear();
     }
-    std::cout << std::endl;
 
-    sse->clear();
-}
+private:
+    Db<> db;
+    Range<Kw> query;
+};
 
 
-} // namespace `app::experiments::debugging`
+} // namespace `app::experiments`

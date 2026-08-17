@@ -1,8 +1,8 @@
 #pragma once
 
-#include "db_sizes.h"
+#include "all_vs_db_size.h"
 #include "debugging.h"
-#include "false_pos.h"
-#include "result_sizes.h"
-#include "range_sizes.h"
-#include "updates.h"
+#include "search_vs_false_pos.h"
+#include "search_vs_result_size.h"
+#include "search_vs_range_size.h"
+#include "update_vs_db_size.h"
