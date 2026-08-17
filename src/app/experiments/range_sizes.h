@@ -33,7 +33,8 @@ void printHeader(bigint maxDbSizeExp) {
 
 
 void run(ISse<>* sse, bigint dbSize) {
-    Db<> db = createDb(dbSize, true, true);
+    Db<> db;
+    createDb(db, dbSize, true, true);
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     // setup

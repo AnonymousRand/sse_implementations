@@ -34,7 +34,8 @@ void printHeader(bigint maxDbSizeExp) {
 
 void run(ISse<>* sse, bigint dbSize) {
     // this is non-randomized to precisely control result sizes: then there is a unique entry per kw
-    Db<> db = createDb(dbSize, false, false);
+    Db<> db;
+    createDb(db, dbSize, false, false);
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     // setup

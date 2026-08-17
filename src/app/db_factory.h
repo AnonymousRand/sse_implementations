@@ -12,22 +12,26 @@
 namespace app {
 
 
-Db<> createDb(bigint dbSize, bool isRandom, bool hasDeletions) {
-    Db<> db {};
+/**
+ * add `dbSize` new tuples to the DB `ret`. if `isRandom` is `true`, then the keywords
+ * are limited to between `minKw` and `maxKw` (both inclusive).
+ */
+void createDb(
+    Db<>& ret, bigint dbSize, bool isRandom, bool hasDeletions,
+    bigint minKw = 0, bigint maxKw = dbSize + minKw - 1
+) {
     if (dbSize == 0) {
-        // (note that we return the same `db` variable even with empty so that compiler
-        // is able to do named return value optimization)
-        return db;
+        return;
     }
-    std::uniform_int_distribution<bigint> dist(0, dbSize - 1);
+    std::uniform_int_distribution<bigint> dist(minKw, maxKw);
 
     Id minId = 0;
     Id maxId = dbSize - 1;
     if (hasDeletions) {
         // delete the document with keyword 4
         Range<Kw> kwRangeDel {4, 4};
-        db.push_back(Tuple<> {0, 4, Op::INS, kwRangeDel});
-        db.push_back(Tuple<> {0, 4, Op::DEL, kwRangeDel});
+        ret.push_back(Tuple<> {0, 4, Op::INS, kwRangeDel});
+        ret.push_back(Tuple<> {0, 4, Op::DEL, kwRangeDel});
         maxId -= 2;
     }
 
@@ -36,7 +40,7 @@ Db<> createDb(bigint dbSize, bool isRandom, bool hasDeletions) {
         for (Id id = minId; id <= maxId; id++) {
             Kw kw = dist(utils::random::RNG);
             Range<Kw> kwRange {kw, kw};
-            db.push_back(Tuple<> {id, kw, Op::INS, kwRange});
+            ret.push_back(Tuple<> {id, kw, Op::INS, kwRange});
         }
     } else {
         for (Id id = minId; id <= maxId; id++) {
@@ -44,11 +48,9 @@ Db<> createDb(bigint dbSize, bool isRandom, bool hasDeletions) {
             // and make them non-contiguous to test Log-SRC as well
             Kw kw = (dbSize - id) * 2;
             Range<Kw> kwRange {kw, kw};
-            db.push_back(Tuple<> {id, kw, Op::INS, kwRange});
+            ret.push_back(Tuple<> {id, kw, Op::INS, kwRange});
         }
     }
-
-    return db;
 }
 
 

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <memory>
@@ -83,7 +84,8 @@ int main() {
     // declare these out here so that they don't change (in particular, randomized DBs)
     // during any one program execution, between different SSE schemes/calls to `run()`
     // adjust at will here!
-    Db<> debuggingDb = app::createDb(maxDbSize, true, true);
+    Db<> debuggingDb;
+    app::createDb(debuggingDb, maxDbSize, true, true);
     const Range<Kw> debuggingQuery {3, 5};
 
     app::experiments::debugging::printHeader(maxDbSizeExp, debuggingQuery);
@@ -136,16 +138,19 @@ int main() {
     //--------------------------------------------------------------------------
     // DB sizes experiment
 
-    app::experiments::db_sizes::printHeader(maxDbSizeExp);
+    const bigint dbSizesExpResultCount = std::min(
+        config::DB_SIZES_EXPERIMENT_RESULT_COUNT, maxDbSize
+    );
+    app::experiments::db_sizes::printHeader(maxDbSizeExp, ,resultCount);
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    app::experiments::db_sizes::run(piBas.get(), maxDbSize);
+    app::experiments::db_sizes::run(piBas.get(), maxDbSize, resultCount);
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    app::experiments::db_sizes::run(nLogN.get(), maxDbSize);
+    app::experiments::db_sizes::run(nLogN.get(), maxDbSize, resultCount);
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    app::experiments::db_sizes::run(logSrcPiBas.get(), maxDbSize);
+    app::experiments::db_sizes::run(logSrcPiBas.get(), maxDbSize, resultCount);
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
     app::experiments::db_sizes::run(logSrcNLogN.get(), maxDbSize);

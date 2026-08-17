@@ -32,7 +32,8 @@ void printHeader(bigint maxDbSizeExp) {
 
 
 void run(IDsse<>* dsse, bigint dbSize) {
-    Db<> db = createDb(dbSize, true, true);
+    Db<> db;
+    createDb(db, dbSize, true, true);
 
     // setup (with empty DB, just to init keys and stuff)
     dsse->setup(utils::crypto::KEY_LEN, Db<> {});

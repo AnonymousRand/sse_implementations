@@ -20,26 +20,30 @@
 namespace app::experiments::db_sizes {
 
 
-void printHeader(bigint maxDbSizeExp) {
+void printHeader(bigint maxDbSizeExp, bigint fixedResultCount) {
     std::cout << std::endl;
     std::cout << "============================= DB Sizes Experiment =============================="
               << std::endl;
     std::cout << "Varied DB size up to 2^" << maxDbSizeExp << std::endl;
-    std::cout << "Fixed query 0-3" << std::endl;
+    std::cout << "Fixed result size " << fixedResultCount << std::endl;
     std::cout << "================================================================================"
               << std::endl;
     std::cout << std::endl << std::endl;
 }
 
 
-void run(ISse<>* sse, bigint maxDbSize) {
-    Range<Kw> query {0, 3};
+void run(ISse<>* sse, bigint maxDbSize, bigint fixedResultCount) {
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     // (start `dbSizeExp` at 2 as otherwise the query doesn't really make sense)
-    for (bigint dbSizeExp = 2; dbSizeExp <= std::log2(maxDbSize); dbSizeExp++) {
+    for (bigint dbSizeExp = std::ceil(std::log2(fixedResultCount));
+         dbSizeExp <= std::log2(maxDbSize); dbSizeExp++)
+    {
         bigint dbSize = std::pow(2, dbSizeExp);
-        Db<> db = createDb(dbSize, true, true);
+        Range<Kw> query {0, fixedResultCount - 1};
+        Db<> db;
+        createDb(db, fixedResultCount, true, true);
+        createDb(db, dbSize - fixedResultCount, true, true, fixedResultCount);
 
         // setup
         sse->setup(utils::crypto::KEY_LEN, db);
@@ -48,8 +52,9 @@ void run(ISse<>* sse, bigint maxDbSize) {
         );
 
         // search
-        sse->search(query);
+        auto tmp = sse->search(query);
         sse->benchmark->print(config::SHOULD_BENCHMARK, "Search");
+        std::cout << "result count is " << tmp.size() << std::endl;
 
         sse->clear();
     }
