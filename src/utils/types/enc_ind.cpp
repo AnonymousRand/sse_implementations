@@ -17,7 +17,7 @@
 //==============================================================================
 
 
-namespace utils {
+namespace utils::enc_ind {
 
 
 ustring toUstr(const EncIndEntry& encIndEntry) {
@@ -27,7 +27,7 @@ ustring toUstr(const EncIndEntry& encIndEntry) {
 }
 
 
-} // namespace `utils`
+} // namespace `utils::enc_ind`
 
 
 //==============================================================================
@@ -149,7 +149,7 @@ bool EncInd::read(ubigint pos, EncIndVal& ret) const {
     }
 
     ret.first = ustring(&entry[KEY_LEN], DATA_LEN);
-    ret.second = ustring(&entry[KEY_LEN + DATA_LEN], crypto::IV_LEN);
+    ret.second = ustring(&entry[KEY_LEN + DATA_LEN], utils::crypto::IV_LEN);
     return true;
 }
 
@@ -237,7 +237,7 @@ EncIndEntry EncInd::get(ubigint pos) const {
 
     ustring key = ustring(&entry[0], KEY_LEN);
     ustring data = ustring(&entry[KEY_LEN], DATA_LEN);
-    ustring iv = ustring(&entry[KEY_LEN + DATA_LEN], crypto::IV_LEN);
+    ustring iv = ustring(&entry[KEY_LEN + DATA_LEN], utils::crypto::IV_LEN);
     return EncIndEntry {key, EncIndVal {data, iv}};
 };
 
@@ -245,7 +245,7 @@ EncIndEntry EncInd::get(ubigint pos) const {
 void EncInd::print() const {
     for (bigint pos = 0; pos < this->size; pos++) {
         EncIndEntry entry = this->get(pos);
-        std::cerr << pos << ": " << utils::ustrToHex(utils::toUstr(entry))
+        std::cerr << pos << ": " << utils::debugging::ustrToHex(utils::enc_ind::toUstr(entry))
                   << std::endl << std::endl;
     }
 }

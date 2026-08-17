@@ -44,7 +44,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
     // build TDAG over `Kw`s and replicate `db` appropriately
     Db<Tuple<>> dbWithRepls = db;
-    utils::buildTdagAndDb<Tuple<>>(this->tdag, dbWithRepls);
+    utils::tdag::buildTdagAndDb<Tuple<>>(this->tdag, dbWithRepls);
 
     this->underly->setup(secParam, dbWithRepls);
 }
@@ -86,7 +86,7 @@ void LogSrc<Underly>::getDb(Db<Tuple<>>& ret) const {
     // we only return leaves as that is what was originally passed to `setup()`, so we exclude
     // replicated tuples: assume any tuples with `DbKw` range size >1 is replicated and not a leaf
     Db<Tuple<>> underlyDb;
-    underlyDb.reserve(utils::calcTdagTupleCount(this->size));
+    underlyDb.reserve(utils::tdag::calcTdagTupleCount(this->size));
     this->underly->getDb(underlyDb);
     for (const Tuple<>& tuple : underlyDb) {
         Range<Kw> kwRange = tuple.getDbKwRange();

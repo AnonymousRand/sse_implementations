@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "utils/misc.h"
 #include "utils/random.h"
-#include "utils/string_utils.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/i_db.h"
 #include "utils/types/i_disk_storage.h"
@@ -93,7 +93,7 @@ void DbDisk<DbTuple>::push_back(const DbTuple& dbTuple) {
                   << "(want " << TUPLE_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    utils::padStr(dbTupleStr, TUPLE_LEN);
+    utils::misc::padStr(dbTupleStr, TUPLE_LEN);
 
     this->appendRaw(dbTupleStr.c_str());
 }
@@ -122,7 +122,7 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::shuffle() {
     auto shuffle = [](std::vector<bigint>& dbIndices) {
-        std::shuffle(dbIndices.begin(), dbIndices.end(), utils::RNG);
+        std::shuffle(dbIndices.begin(), dbIndices.end(), utils::random::RNG);
     };
     *this = this->applyAlgoViaIndices(shuffle);
 }

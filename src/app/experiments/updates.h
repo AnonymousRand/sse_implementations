@@ -38,7 +38,7 @@ void run(IDsse<>* dsse, bigint dbSize) {
     Db<> db = createDb(dbSize, true, true);
 
     // setup (with empty DB, just to init keys and stuff)
-    dsse->setup(crypto::KEY_LEN, Db<> {});
+    dsse->setup(utils::crypto::KEY_LEN, Db<> {});
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     // updates

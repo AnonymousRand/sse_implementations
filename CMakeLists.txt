@@ -27,7 +27,7 @@ add_executable(main
 
     src/utils/crypto.cpp
     src/utils/debugging.cpp
-    src/utils/string_utils.cpp
+    src/utils/misc.cpp
 
     src/utils/types/db/db_disk.cpp
     src/utils/types/db/db_ram.cpp

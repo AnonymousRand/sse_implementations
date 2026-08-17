@@ -21,13 +21,13 @@ using EncIndVal   = std::pair<ustring, ustring>;
 using EncIndEntry = std::pair<ustring, EncIndVal>;
 
 
-namespace utils {
+namespace utils::enc_ind {
 
 
 ustring toUstr(const EncIndEntry& encIndEntry);
 
 
-} // namespace `utils`
+} // namespace `utils::enc_ind`
 
 
 //==============================================================================
@@ -42,7 +42,7 @@ ustring toUstr(const EncIndEntry& encIndEntry);
 class EncInd : public IDiskStorage {
 public:
     // (both PRF (default) and hash (res-hiding) have 512 bit output)
-    inline static constexpr int KEY_LEN   = crypto::HASH_OUTPUT_LEN;
+    inline static constexpr int KEY_LEN   = utils::crypto::HASH_OUTPUT_LEN;
     // (currently, encoding a `Tuple<>` is of the form `(id,kw,op),dbKw-dbKw` (and encrypting an
     // exactly n block length plaintext with AES should produce the exact same block ciphertext),
     // so all but 7 bytes are divided up between `id`, `kw`, and 2 `dbKw`s. however, we actually
@@ -50,9 +50,9 @@ public:
     // an extra block if our plaintext is exactly an integer number of blocks long, thus the `+8`.)
     // also round up to the next AES block
     inline static const int     DATA_LEN  =
-        std::ceil((4 * config::MAX_VALUE_DIGITS + 8) / (float)crypto::BLOCK_SIZE)
-        * crypto::BLOCK_SIZE;
-    inline static constexpr int VAL_LEN   = DATA_LEN + crypto::IV_LEN;
+        std::ceil((4 * config::MAX_VALUE_DIGITS + 8) / (float)utils::crypto::BLOCK_SIZE)
+        * utils::crypto::BLOCK_SIZE;
+    inline static constexpr int VAL_LEN   = DATA_LEN + utils::crypto::IV_LEN;
     inline static constexpr int ENTRY_LEN = KEY_LEN + VAL_LEN;
 
     //--------------------------------------------------------------------------

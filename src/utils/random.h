@@ -17,10 +17,10 @@ std::random_device RAND_DEV;
 //==============================================================================
 
 
-namespace utils {
+namespace utils::random {
 
 
 inline std::mt19937 RNG(RAND_DEV());
 
 
-} // namespace `utils`
+} // namespace `utils::random`

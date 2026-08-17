@@ -5,7 +5,7 @@
 #include "utils/types/ustring.h"
 
 
-namespace crypto {
+namespace utils::crypto {
 
 
 // lengths are in bytes
@@ -53,4 +53,4 @@ ustring decryptAndUnpad(
 );
 
 
-} // namespace `crypto`
+} // namespace `utils::crypto`

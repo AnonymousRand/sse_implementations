@@ -59,7 +59,7 @@ std::string Range<T>::toStr() const {
 
 template <std::integral T>
 ustring Range<T>::toUstr() const {
-    return ::utils::toUstr(this->toStr());
+    return ::utils::ustr::toUstr(this->toStr());
 }
 
 

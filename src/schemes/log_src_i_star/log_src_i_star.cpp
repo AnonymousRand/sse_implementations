@@ -73,7 +73,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // after guaranteeing contiguous-ness of `Kw`s, build TDAG 1 over `Kw`s and replicate
     // `db1` appropriately, again padding the leaf count to the next power of 2 as is
     // required for Log-SRC-i*
-    utils::buildTdagAndDb<SrcIDb1Tuple>(this->tdag1, db1, true);
+    utils::tdag::buildTdagAndDb<SrcIDb1Tuple>(this->tdag1, db1, true);
 
     this->underly1->setup(secParam, db1);
 
@@ -82,7 +82,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
 
     // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately, and padding
     // the leaf count to the next power of 2 as is required for Log-SRC-i*
-    utils::buildTdagAndDb<Tuple<IdAlias>>(this->tdag2, db2, true);
+    utils::tdag::buildTdagAndDb<Tuple<IdAlias>>(this->tdag2, db2, true);
 
     this->underly2->setup(secParam, db2);
 }

@@ -169,7 +169,7 @@ void IDiskStorage::clear() {
 
 std::string IDiskStorage::genFilename() const {
     // avoid naming clashes by generating a random 8 byte (16 char) hex string
-    ubigint randomHex = ::dist(utils::RNG);
+    ubigint randomHex = ::dist(utils::random::RNG);
     std::string randomHexStr = std::format("{:016x}", randomHex);
     return std::format("{}/{}{}.dat", this->FILE_DIR(), this->FILENAME_PREFIX(), randomHexStr);
 }

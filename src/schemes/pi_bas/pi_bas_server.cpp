@@ -7,7 +7,7 @@
 
 #include "utils/benchmark.h"
 #include "utils/crypto.h"
-#include "utils/string_utils.h"
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind.h"
 #include "utils/types/tuple.h"
@@ -67,10 +67,11 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
     while (true) {
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
         // (same as client's `setup()`)
-        ustring label = crypto::hash(
-            crypto::HASH_FUNC, crypto::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
+        ustring label = utils::crypto::hash(
+            utils::crypto::HASH_FUNC,
+            utils::crypto::HASH_OUTPUT_LEN, queryToken + utils::ustr::toUstr(dbKwCounter)
         );
-        ubigint pos = utils::hashToPos(label);
+        ubigint pos = utils::misc::hashToPos(label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;
         bool isFound = this->encInd->find(pos, label, encIndVal);

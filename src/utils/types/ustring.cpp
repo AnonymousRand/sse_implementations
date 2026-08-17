@@ -6,7 +6,7 @@
 #include "utils/types/basic_types.h"
 
 
-namespace utils {
+namespace utils::ustr {
 
 
 ustring toUstr(bigint n) {
@@ -35,13 +35,13 @@ std::string toStr(const ustring& ustr) {
 
 
 bigint fromUstr(const ustring& ustr) {
-    return std::stol(utils::toStr(ustr));
+    return std::stol(toStr(ustr));
 }
 
 
-} // namespace `utils`
+} // namespace `utils::ustr`
 
 
 std::ostream& operator <<(std::ostream& os, const ustring& ustr) {
-    return os << utils::toStr(ustr);
+    return os << utils::ustr::toStr(ustr);
 }

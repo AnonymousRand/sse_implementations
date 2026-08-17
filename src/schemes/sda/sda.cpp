@@ -14,6 +14,7 @@
 #include "schemes/n_log_n/n_log_n.h"
 #include "schemes/pi_bas/pi_bas.h"
 
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/range.h"
@@ -102,7 +103,7 @@ std::vector<Tuple<>> Sda<Underly>::search(
     }
 
     if (shouldCleanUpResults) {
-        allResults = utils::cleanUpResults(allResults);
+        allResults = utils::misc::cleanUpResults(allResults);
     }
     return allResults;
 }

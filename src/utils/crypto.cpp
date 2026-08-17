@@ -7,7 +7,7 @@
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 
-#include "utils/string_utils.h"
+#include "utils/misc.h"
 #include "utils/types/ustring.h"
 
 
@@ -34,7 +34,7 @@ void handleErrors() {
 //==============================================================================
 
 
-namespace crypto {
+namespace utils::crypto {
 
 
 ustring genKey(int keyLen) {
@@ -43,7 +43,7 @@ ustring genKey(int keyLen) {
     if (res != 1) {
         handleErrors();
     }
-    ustring ustrKey = ::utils::toUstr(key, keyLen);
+    ustring ustrKey = ::utils::ustr::toUstr(key, keyLen);
     delete[] key;
     return ustrKey;
 }
@@ -55,7 +55,7 @@ ustring genIv(int ivLen) {
     if (res != 1) {
         handleErrors();
     }
-    ustring ustrIv = ::utils::toUstr(iv, ivLen);
+    ustring ustrIv = ::utils::ustr::toUstr(iv, ivLen);
     delete[] iv;
     return ustrIv;
 }
@@ -97,7 +97,7 @@ ustring prf(const ustring& key, const ustring& input) {
     uchar* output = HMAC(
         EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen
     );
-    return ::utils::toUstr(output, outputLen);
+    return utils::ustr::toUstr(output, outputLen);
 }
 
 
@@ -147,7 +147,7 @@ ustring padAndEncrypt(
                   << " bytes is too long! " << "(want " << targetLen << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    utils::padStr(ptext, targetLen);
+    utils::misc::padStr(ptext, targetLen);
     return encrypt(cipher, key, ptext, iv);
 }
 
@@ -205,4 +205,4 @@ ustring decryptAndUnpad(
 }
 
 
-} // namespace `crypto`
+} // namespace `utils::crypto`

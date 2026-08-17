@@ -34,7 +34,7 @@ Db<> createDb(bigint dbSize, bool isRandom, bool hasDeletions) {
     if (isRandom) {
         // fill the rest with random keywords
         for (Id id = minId; id <= maxId; id++) {
-            Kw kw = dist(utils::RNG);
+            Kw kw = dist(utils::random::RNG);
             Range<Kw> kwRange {kw, kw};
             db.push_back(Tuple<> {id, kw, Op::INS, kwRange});
         }

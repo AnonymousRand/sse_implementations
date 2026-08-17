@@ -73,7 +73,7 @@ void run(ISse<>* sse, bigint maxDbSize) {
         */
 
         // setup
-        sse->setup(crypto::KEY_LEN, db);
+        sse->setup(utils::crypto::KEY_LEN, db);
         sse->benchmark->print(
             config::SHOULD_BENCHMARK, "Setup", std::format("(size 2^{})", std::log2(dbSize))
         );

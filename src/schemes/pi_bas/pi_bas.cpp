@@ -12,7 +12,7 @@
 #include "schemes/pi_bas/pi_bas_server.h"
 
 #include "utils/crypto.h"
-#include "utils/string_utils.h"
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/enc_ind.h"
@@ -46,8 +46,8 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->secParam = secParam;
     this->size = db.size();
 
-    this->prfKey = crypto::genKey(secParam);
-    this->encKey = crypto::genKey(secParam);
+    this->prfKey = utils::crypto::genKey(secParam);
+    this->encKey = utils::crypto::genKey(secParam);
 
     EncInd* encInd = new EncInd();
     encInd->init(this->size);
@@ -81,9 +81,9 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             ustring label;
             ubigint pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
-            ustring iv = crypto::genIv(crypto::IV_LEN);
-            ustring encDbTuple = crypto::padAndEncrypt(
-                crypto::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
+            ustring iv = utils::crypto::genIv(utils::crypto::IV_LEN);
+            ustring encDbTuple = utils::crypto::padAndEncrypt(
+                utils::crypto::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->write(pos, std::pair {label, std::pair {encDbTuple, iv}});
@@ -163,7 +163,7 @@ std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const 
 template <IsDbTuple DbTuple>
 ustring PiBas<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
-    return crypto::prf(this->prfKey, query.toUstr());
+    return utils::crypto::prf(this->prfKey, query.toUstr());
 }
 
 
@@ -172,10 +172,11 @@ ubigint PiBas<DbTuple>::map(
     const ustring& queryToken, bigint dbKwCounter, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w) || c)
-    retLabel = crypto::hash(
-        crypto::HASH_FUNC, crypto::HASH_OUTPUT_LEN, queryToken + utils::toUstr(dbKwCounter)
+    retLabel = utils::crypto::hash(
+        utils::crypto::HASH_FUNC,
+        utils::crypto::HASH_OUTPUT_LEN, queryToken + utils::ustr::toUstr(dbKwCounter)
     );
-    return utils::hashToPos(retLabel);
+    return utils::misc::hashToPos(retLabel);
 }
 
 

@@ -1,4 +1,101 @@
 #include "schemes/n_log_n/n_log_n.h"
+#include "schemes/pi_bas/pi_bas_server.h"
+
+#include <concepts>
+#include <vector>
+
+#include "schemes/interfaces/sse_server.h"
+
+#include "utils/benchmark.h"
+#include "utils/crypto.h"
+#include "utils/misc.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/enc_ind.h"
+#include "utils/types/tuple.h"
+#include "utils/types/ustring.h"
+
+
+template <IsDbTuple DbTuple>
+PiBasServer<DbTuple>::~PiBasServer() {
+    this->clear();
+}
+
+
+//------------------------------------------------------------------------------
+// `ISseServer`
+
+
+template <IsDbTuple DbTuple>
+void PiBasServer<DbTuple>::clear() {
+    // (this is deleted instead of just cleared since we only set it via direct
+    // pointer assignment, so if we don't delete we would make this memory inaccessible
+    // the next time we assign `encInd`)
+    if (this->encInd != nullptr) {
+        this->benchmark->diskSize -= this->encInd->getSize() * EncInd::ENTRY_LEN;
+        delete this->encInd;
+        this->encInd = nullptr;
+    };
+}
+
+
+//------------------------------------------------------------------------------
+// helpers
+
+
+template <IsDbTuple DbTuple>
+void PiBasServer<DbTuple>::setEncInd(EncInd* encInd) {
+    bigint encIndBytes = encInd->getSize() * EncInd::ENTRY_LEN;
+    this->benchmark->diskSize += encIndBytes;
+    this->benchmark->network += encIndBytes;
+    this->encInd = encInd;
+}
+
+
+template <IsDbTuple DbTuple>
+EncInd* PiBasServer<DbTuple>::getEncInd() const {
+    this->benchmark->network += this->encInd->getSize() * EncInd::ENTRY_LEN;
+    return this->encInd;
+}
+
+
+template <IsDbTuple DbTuple>
+std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryToken) const {
+    this->benchmark->network += queryToken.length();
+    std::vector<EncIndVal> encResults;
+
+    // for c = 0 until `Get` returns error
+    bigint dbKwCounter = 0;
+    while (true) {
+        // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
+        // (same as client's `setup()`)
+        ustring label = utils::crypto::hash(
+            utils::crypto::HASH_FUNC,
+            utils::crypto::HASH_OUTPUT_LEN, queryToken + utils::ustr::toUstr(dbKwCounter)
+        );
+        ubigint pos = utils::misc::hashToPos(label);
+        // res <- encInd.get(l)
+        EncIndVal encIndVal;
+        bool isFound = this->encInd->find(pos, label, encIndVal);
+        if (!isFound) {
+            break;
+        }
+
+        encResults.push_back(encIndVal);
+        dbKwCounter++;
+    }
+
+    this->benchmark->network += encResults.size() * EncInd::VAL_LEN;
+    return encResults;
+}
+
+
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
+template class PiBasServer<Tuple<>>;
+template class PiBasServer<SrcIDb1Tuple>;
+//template class PiBasServer<Tuple<IdAlias>>;
 
 #include <algorithm>
 #include <bit>
@@ -15,8 +112,8 @@
 #include "schemes/n_log_n/n_log_n_server.h"
 
 #include "utils/crypto.h"
+#include "utils/misc.h"
 #include "utils/random.h"
-#include "utils/string_utils.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/enc_ind.h"
@@ -51,8 +148,8 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->size = db.size();
     this->numLvls = this->computeNumLvls();
 
-    this->prfKey = crypto::genKey(secParam);
-    this->encKey = crypto::genKey(secParam);
+    this->prfKey = utils::crypto::genKey(secParam);
+    this->encKey = utils::crypto::genKey(secParam);
     
     std::vector<EncInd*> encIndLvls;
     for (bigint lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
@@ -102,9 +199,10 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
-        ustring ivDict = crypto::genIv(crypto::IV_LEN);
-        ustring encDbKwCount = crypto::padAndEncrypt(
-            crypto::ENC_CIPHER, this->encKey, utils::toUstr(dbKwCount), ivDict, EncInd::DATA_LEN - 1
+        ustring ivDict = utils::crypto::genIv(utils::crypto::IV_LEN);
+        ustring encDbKwCount = utils::crypto::padAndEncrypt(
+            utils::crypto::ENC_CIPHER,
+            this->encKey, utils::ustr::toUstr(dbKwCount), ivDict, EncInd::DATA_LEN - 1
         );
         ubigint posDict = this->mapNoMod(queryToken, labelDict);
         dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
@@ -114,9 +212,9 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         for (bigint dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
-            ustring iv = crypto::genIv(crypto::IV_LEN);
-            ustring encDbTuple = crypto::padAndEncrypt(
-                crypto::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
+            ustring iv = utils::crypto::genIv(utils::crypto::IV_LEN);
+            ustring encDbTuple = utils::crypto::padAndEncrypt(
+                utils::crypto::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encIndLvls[lvl]->write(
@@ -201,10 +299,10 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
-    ustring decDbKwCount = crypto::decryptAndUnpad(
-        crypto::ENC_CIPHER, this->encKey, encDbKwCount, ivDict
+    ustring decDbKwCount = utils::crypto::decryptAndUnpad(
+        utils::crypto::ENC_CIPHER, this->encKey, encDbKwCount, ivDict
     );
-    bigint dbKwCount = utils::fromUstr(decDbKwCount);
+    bigint dbKwCount = utils::ustr::fromUstr(decDbKwCount);
     bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
@@ -237,15 +335,17 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
 template <IsDbTuple DbTuple>
 ustring NLogN<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
-    return crypto::prf(this->prfKey, query.toUstr());
+    return utils::crypto::prf(this->prfKey, query.toUstr());
 }
 
 
 template <IsDbTuple DbTuple>
 ubigint NLogN<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
-    retLabel = crypto::hash(crypto::HASH_FUNC, crypto::HASH_OUTPUT_LEN, queryToken);
-    return utils::hashToPos(retLabel); // no modulus
+    retLabel = utils::crypto::hash(
+        utils::crypto::HASH_FUNC, utils::crypto::HASH_OUTPUT_LEN, queryToken
+    );
+    return utils::misc::hashToPos(retLabel); // no modulus
 }
 
 

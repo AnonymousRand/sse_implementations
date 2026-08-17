@@ -315,7 +315,7 @@ template std::ostream& operator <<(std::ostream& os, TdagNode<Kw>* node);
 //==============================================================================
 
 
-namespace utils {
+namespace utils::tdag {
 
 
 bigint calcTdagTupleCount(bigint leafCount) {
@@ -343,7 +343,7 @@ bigint calcTdagTupleCount(bigint leafCount) {
 
 
 template <IsDbTuple DbTuple>
-void buildTdagAndDb(
+void buildTdagAndDbFromLeaves(
     TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, bool shouldPadDb
 ) {
     using DbKw = typename DbTuple::DbKwType;
@@ -408,4 +408,4 @@ template void replDbForTdag<SrcIDb1Tuple>(Db<SrcIDb1Tuple>& db, const TdagNode<K
 //);
 
 
-} // namespace `utils`
+} // namespace `utils::tdag`

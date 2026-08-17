@@ -73,7 +73,7 @@ private:
 //==============================================================================
 
 
-namespace utils {
+namespace utils::tdag {
 
 
 bigint calcTdagTupleCount(bigint leafCount);
@@ -89,4 +89,4 @@ template <IsDbTuple DbTuple>
 void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tdag);
 
 
-} // namespace `utils`
+} // namespace `utils::tdag`

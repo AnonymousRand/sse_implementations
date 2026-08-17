@@ -6,7 +6,7 @@
 #include "schemes/interfaces/sse.h"
 
 #include "utils/crypto.h"
-#include "utils/string_utils.h"
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind.h"
 #include "utils/types/range.h"
@@ -45,15 +45,15 @@ public:
         }
 
         if (shouldCleanUpResults) {
-            allResults = utils::cleanUpResults(allResults);
+            allResults = utils::misc::cleanUpResults(allResults);
         }
         return allResults;
     }
 
     // handle clearing of this class' member variables
     void clear() override {
-        this->prfKey = utils::toUstr("");
-        this->encKey = utils::toUstr("");
+        this->prfKey = utils::ustr::toUstr("");
+        this->encKey = utils::ustr::toUstr("");
     }
 
 protected:
@@ -74,8 +74,8 @@ protected:
     DbTuple decryptEncIndVal(const EncIndVal& encIndVal) const {
         ustring encDbTuple = encIndVal.first;
         ustring iv = encIndVal.second;
-        ustring decDbTuple = crypto::decryptAndUnpad(
-            crypto::ENC_CIPHER, this->encKey, encDbTuple, iv
+        ustring decDbTuple = utils::crypto::decryptAndUnpad(
+            utils::crypto::ENC_CIPHER, this->encKey, encDbTuple, iv
         );
         return DbTuple::fromUstr(decDbTuple);
     }
