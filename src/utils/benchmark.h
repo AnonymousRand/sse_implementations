@@ -50,7 +50,7 @@ struct Benchmark {
     void print(bool shouldBenchmark, const std::string& label) const {
         if (shouldBenchmark) {
             std::cout << std::format("| {:<25} ", label)
-                      << std::format("| {:<14} ", this->time)
+                      << std::format("| {:<14.13} ", this->time)
                       << std::format("| {:<14} ", this->diskSize)
                       << std::format("| {:<14} |", this->network)
                       << std::endl;
@@ -60,7 +60,7 @@ struct Benchmark {
     void print(bool shouldBenchmark, const std::string& label1, const std::string& label2) const {
         if (shouldBenchmark) {
             std::cout << std::format("| {:<6} ", label1) << std::format("{:<18} ", label2)
-                      << std::format("| {:<14} ", this->time)
+                      << std::format("| {:<14.13} ", this->time)
                       << std::format("| {:<14} ", this->diskSize)
                       << std::format("| {:<14} |", this->network)
                       << std::endl;

@@ -37,7 +37,13 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     this->secParam = secParam;
 
     if (this->useShortcutSetup) {
-        bigint lastFilledInd = db.size() > 0 ? (bigint)std::log2(db.size()) : -1;
+        // need this special case to avoid things like indexing issues later
+        if (db.size() == 0) {
+            this->firstEmptyInd = 0;
+            return;
+        }
+
+        bigint lastFilledInd = std::log2(db.size());
 
         // this is the shortcut way: simply initialize and fill in all subindexes in one go
         // (note that the non-shortcut `setup()` places earlier items in `db` into larger
@@ -63,9 +69,7 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
             dbPos += indSize;
         }
         // reverse the vector at the end as we had pushed smaller subindexes to the back
-        if (this->underlys.size() > 0) {
-            std::reverse(this->underlys.begin(), this->underlys.end());
-        }
+        std::reverse(this->underlys.begin(), this->underlys.end());
 
         // update the pointer to the first empty index as usual (like in `update()`)
         bigint newFirstEmpty = 0;
