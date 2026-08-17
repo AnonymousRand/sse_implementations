@@ -39,6 +39,7 @@ public:
 
         // create a DB where for each i, there are 2^(i-1) tuples with random keywords
         // in the range [2^(i-1), 2^i - 1] (and for i = 0, a single tuple with keyword 0)
+        //
         // then, querying 0-(2^i - 1) should produce exactly 2^i results
         bigint dbSize = std::pow(2, this->dbSizeExp);
         Db<> db;
@@ -54,13 +55,10 @@ public:
         sse->setup(utils::crypto::KEY_LEN, db);
 
         // searches
-        for (bigint resultSizeExp = 0; resultSizeExp <= this->dbSizeExp; resultSizeExp++) {
-            Range<Kw> query {0, (bigint)std::pow(2, resultSizeExp) - 1};
-            auto res = sse->search(query);
-            sse->benchmark->print(
-                shouldBenchmark, "Search", std::format("(result size 2^{})", resultSizeExp)
-            );
-            std::cout << "res size " << res.size() << std::endl;
+        for (bigint i = 0; i <= this->dbSizeExp; i++) {
+            Range<Kw> query {0, (bigint)std::pow(2, i) - 1};
+            sse->search(query);
+            sse->benchmark->print(shouldBenchmark, "Search", std::format("(result size 2^{})", i));
         }
         std::cout << std::endl;
 
