@@ -25,7 +25,7 @@ void printHeader(bigint maxDbSizeExp) {
     std::cout << "========================== False Positives Experiment =========================="
               << std::endl;
     std::cout << "Varied DB size up to 2^" << maxDbSizeExp << std::endl;
-    std::cout << "High false positives query" << std::endl;
+    std::cout << "|DB| - 1 false positives" << std::endl;
     std::cout << "================================================================================"
               << std::endl;
     std::cout << std::endl << std::endl;
@@ -35,6 +35,8 @@ void printHeader(bigint maxDbSizeExp) {
 void run(ISse<>* sse, bigint maxDbSize) {
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
+    // (start `dbSizeExp` at 2 as otherwise the query doesn't really make sense, and we also
+    // want `dbSize` >= 4 at all times; see later comment)
     for (bigint dbSizeExp = 2; dbSizeExp <= std::log2(maxDbSize); dbSizeExp++) {
         bigint dbSize = std::pow(2, dbSizeExp);
 

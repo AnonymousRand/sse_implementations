@@ -96,13 +96,13 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::clear() {
-    // clears keys
-    IStaticPointSse<DbTuple>::clear();
+    this->server->clear();
 
     // clears `this->size`
     ISdUnderly<DbTuple>::clear();
 
-    this->server->clear();
+    // clears keys
+    IStaticPointSse<DbTuple>::clear();
 }
 
 

@@ -111,9 +111,6 @@ std::vector<Tuple<>> Sda<Underly>::search(
 
 template <IsSdUnderly Underly>
 void Sda<Underly>::clear() {
-    // clears `this->updateCount`
-    IDsse<Tuple<>>::clear();
-
     // (apparently vector `clear()` automatically calls the destructor for each element
     // *unless* it is a pointer)
     for (Underly* underly : this->underlys) {
@@ -125,6 +122,9 @@ void Sda<Underly>::clear() {
     this->underlys.clear();
 
     this->firstEmptyInd = 0;
+
+    // clears `this->updateCount`
+    IDsse<Tuple<>>::clear();
 }
 
 

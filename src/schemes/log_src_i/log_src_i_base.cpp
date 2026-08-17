@@ -95,9 +95,6 @@ std::vector<Tuple<>> LogSrcIBase<Underly>::search(
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrcIBase<Underly>::clear() {
-    // clears `this->size`
-    ISdUnderly<Tuple<>>::clear();
-
     this->underly1->clear();
     this->underly2->clear();
 
@@ -109,6 +106,9 @@ void LogSrcIBase<Underly>::clear() {
         delete this->tdag2;
         this->tdag2 = nullptr;
     }
+
+    // clears `this->size`
+    ISdUnderly<Tuple<>>::clear();
 }
 
 

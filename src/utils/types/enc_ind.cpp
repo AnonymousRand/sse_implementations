@@ -76,10 +76,10 @@ void EncInd::init(bigint size) {
 
 
 void EncInd::clear() {
+    this->size = 0;
+
     // clears DB file and file pointer
     IDiskStorage::clear();
-
-    this->size = 0;
 }
 
 

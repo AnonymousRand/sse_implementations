@@ -35,14 +35,11 @@ public:
     ValType& operator [](const KeyType& key);
     const ValType& operator [](const KeyType& key) const;
 
-    //--------------------------------------------------------------------------
-    // utils
-
 private:
     InnerType map;
 
-//------------------------------------------------------------------------------
-// iterator
+    //--------------------------------------------------------------------------
+    // iterator
 
 public:
     // non-const iterators

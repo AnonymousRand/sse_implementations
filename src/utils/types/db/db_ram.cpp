@@ -38,11 +38,11 @@ DbRam<DbTuple>::DbRam(std::initializer_list<DbTuple> initList) :
 
 template <IsDbTuple DbTuple>
 void DbRam<DbTuple>::clear() {
-    // clears `this->_size`
-    IDb<DbTuple>::clear();
-
     // clears DB vector
     this->vec.clear();
+
+    // clears `this->_size`
+    IDb<DbTuple>::clear();
 }
 
 

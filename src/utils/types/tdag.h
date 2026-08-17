@@ -45,24 +45,22 @@ public:
 
 private:
     Range<T> range;
-    TdagNode<T>* left = nullptr;
-    TdagNode<T>* right = nullptr;
-    TdagNode<T>* extraParent = nullptr;
+    TdagNode* left = nullptr;
+    TdagNode* right = nullptr;
+    TdagNode* extraParent = nullptr;
     bool isExtraParent = false;
 
     /**
      * construct a `TdagNode` with the given children, setting its own `range`
      * to the union of its children's ranges.
      */
-    TdagNode(TdagNode<T>* left, TdagNode<T>* right);
+    TdagNode(TdagNode* left, TdagNode* right);
 
     /**
      * traverse subtree of `this` and return all traversed nodes in preorder.
      */
-    std::list<const TdagNode<T>*> traverse() const;
-    std::list<const TdagNode<T>*> traverseHelper(
-        std::unordered_set<TdagNode<T>*>& extraParents
-    ) const;
+    std::list<const TdagNode*> traverse() const;
+    std::list<const TdagNode*> traverseHelper(std::unordered_set<TdagNode*>& extraParents) const;
 
     Range<T> findSrcHelper(const Range<T>& targetRange) const;
 };

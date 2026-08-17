@@ -226,14 +226,14 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::clear() {
-    // clears keys
-    IStaticPointSse<DbTuple>::clear();
+    this->server->clear();
+    this->lvlCount = 0;
 
     // clears `this->size`
     ISdUnderly<DbTuple>::clear();
 
-    this->server->clear();
-    this->lvlCount = 0;
+    // clears keys
+    IStaticPointSse<DbTuple>::clear();
 }
 
 

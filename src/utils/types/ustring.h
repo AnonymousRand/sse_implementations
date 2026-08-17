@@ -29,8 +29,7 @@ bigint fromUstr(const ustring& ustr);
 std::ostream& operator <<(std::ostream& os, const ustring& ustr);
 
 
-// provide hash function for `ustring`s to use faster hashmap-based structures,
-// like `unordered_map` instead of `map`
+// specialize `std::hash` for `ustring` so that they can be used as keys for `std::unordered_*`
 template <>
 struct std::hash<ustring> {
     inline std::size_t operator ()(const ustring& ustr) const noexcept {

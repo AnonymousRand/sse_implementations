@@ -90,3 +90,4 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 - see [src/utils/types/MOVE_SEMANTICS.md](src/utils/types/MOVE_SEMANTICS.md) for notes about move semantics and the big five.
 - currently, one-line getters/setters/very simple methods like `bool IDb::empty()` are implemented inside the class declaration in the header. very broad interfaces like in [src/schemes/interfaces/](src/schemes/interfaces/) have all implementations of methods in the header and have no .cpp file, which avoids massive explicit template instantiation.
 - public destructors in classes that are meant to be inherited from should almost always be `virtual`.
+- call parent `clear()` methods at the end, in reverse order of `init()` or constructor (just like destructor/constructor). if no `init()` or constructor to reference, the unofficial convention i'm using is the reverse order of inheritance.

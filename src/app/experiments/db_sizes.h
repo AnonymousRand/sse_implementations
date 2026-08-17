@@ -36,6 +36,7 @@ void run(ISse<>* sse, bigint maxDbSize) {
     Range<Kw> query {0, 3};
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
+    // (start `dbSizeExp` at 2 as otherwise the query doesn't really make sense)
     for (bigint dbSizeExp = 2; dbSizeExp <= std::log2(maxDbSize); dbSizeExp++) {
         bigint dbSize = std::pow(2, dbSizeExp);
         Db<> db = createDb(dbSize, true, true);

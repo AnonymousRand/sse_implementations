@@ -66,9 +66,6 @@ std::vector<Tuple<>> LogSrc<Underly>::search(
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 void LogSrc<Underly>::clear() {
-    // clears `this->size`
-    ISdUnderly<Tuple<>>::clear();
-
     this->underly->clear();
 
     // delete TDAG fully since it is reallocated with `new` in `setup()`
@@ -76,6 +73,9 @@ void LogSrc<Underly>::clear() {
         delete this->tdag;
         this->tdag = nullptr;
     }
+
+    // clears `this->size`
+    ISdUnderly<Tuple<>>::clear();
 }
 
 

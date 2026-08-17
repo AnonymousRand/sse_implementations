@@ -72,8 +72,8 @@ concept IsDbTuple = requires(T t) {
 template <class DbKw = Kw>
 class Tuple : public IDbTuple<std::tuple<Id, Kw, Op>, DbKw> {
 public:
-    inline static const Tuple<DbKw> DUMMY(const Range<DbKw>& dbKwRange) {
-        return Tuple<DbKw> {::DUMMY, ::DUMMY, Op::DUMMY, dbKwRange};
+    inline static const Tuple DUMMY(const Range<DbKw>& dbKwRange) {
+        return Tuple {::DUMMY, ::DUMMY, Op::DUMMY, dbKwRange};
     }
 
     using IDbTuple<std::tuple<Id, Kw, Op>, DbKw>::IDbTuple;
@@ -85,8 +85,8 @@ public:
     Op getOp() const;
 
     std::string toStr() const override;
-    static Tuple<DbKw> fromStr(const std::string& str);
-    static Tuple<DbKw> fromUstr(const ustring& ustr);
+    static Tuple fromStr(const std::string& str);
+    static Tuple fromUstr(const ustring& ustr);
 
 private:
     static const std::string REGEX_STR;
@@ -94,6 +94,7 @@ private:
 };
 
 
+// specialize `std::hash` for `Tuple` so that they can be used as keys for `std::unordered_*`
 template <class DbKw>
 struct std::hash<Tuple<DbKw>> {
     inline std::size_t operator ()(const Tuple<DbKw>& tuple) const noexcept {
