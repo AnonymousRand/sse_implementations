@@ -56,12 +56,24 @@ ubigint hashToPos(const ustring& hash) {
 
 
 template <class CharType>
-void padStr(std::basic_string<CharType>& str, int targetLen) {
+void padStr(std::basic_string<CharType>& str, bigint targetLen) {
     if (str.length() < targetLen) {
-        int amountToPad = targetLen - str.length();
+        bigint amountToPad = targetLen - str.length();
         std::basic_string<CharType> padding(amountToPad, '\0');
         str += padding;
     }
+}
+
+
+template <class CharType>
+void unpadStr(std::basic_string<CharType>& str) {
+    bigint paddingStart;
+    for (paddingStart = str.length() - 1; paddingStart >= 0; paddingStart--) {
+        if (str[paddingStart] != '\0') {
+            break;
+        }
+    }
+    str.resize(paddingStart + 1); // (`+ 1` to add back the first null terminator)
 }
 
 
@@ -74,8 +86,12 @@ template std::vector<SrcIDb1Tuple> cleanUpResults(const std::vector<SrcIDb1Tuple
 //template std::vector<Tuple<IdAlias>> cleanUpResults(const std::vector<Tuple<IdAlias>>& tuples);
 
 
-template void padStr(std::basic_string<char>& str, int targetLen);
-template void padStr(std::basic_string<uchar>& str, int targetLen);
+template void padStr(std::basic_string<char>& str, bigint targetLen);
+template void padStr(std::basic_string<uchar>& str, bigint targetLen);
+
+
+template void unpadStr(std::basic_string<char>& str);
+template void unpadStr(std::basic_string<uchar>& str);
 
 
 } // namespace `utils::misc`

@@ -74,9 +74,7 @@ protected:
     DbTuple decryptEncIndVal(const EncIndVal& encIndVal) const {
         ustring encDbTuple = encIndVal.first;
         ustring iv = encIndVal.second;
-        ustring decDbTuple = utils::crypto::decryptAndUnpad(
-            utils::crypto::ENC_CIPHER, this->encKey, encDbTuple, iv
-        );
+        ustring decDbTuple = utils::crypto::decryptAndUnpad(this->encKey, encDbTuple, iv);
         return DbTuple::fromUstr(decDbTuple);
     }
 };

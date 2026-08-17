@@ -85,8 +85,8 @@ template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::push_back(const DbTuple& dbTuple) {
     std::string dbTupleStr = dbTuple.toStr();
 
-    // make sure every encoded tuple is stored into the same fixed-length size for easy lookups
-    // pad with null bytes if necessary, like a null terminator for a string in memory
+    // make sure every encoded tuple is stored into the same fixed-length size for easy lookups,
+    // padding with '\0' bytes if necessary
     if (dbTupleStr.length() > TUPLE_LEN) {
         std::cerr << "Error: DbDisk::push_back(): write of length " << dbTupleStr.length()
                   << " bytes is not allowed! "
@@ -106,13 +106,7 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     std::string dbTupleStr(dbTupleCstr, TUPLE_LEN);
 
     // unpad as necessary so that decoding works properly
-    int paddingStart;
-    for (paddingStart = TUPLE_LEN - 1; paddingStart >= 0; paddingStart--) {
-        if (dbTupleStr[paddingStart] != '\0') {
-            break;
-        }
-    }
-    dbTupleStr.resize(paddingStart + 1); // (`+ 1` to add back the first null terminator)
+    utils::misc::unpadStr(dbTupleStr);
 
     // decode and return
     return DbTuple::fromStr(dbTupleStr);

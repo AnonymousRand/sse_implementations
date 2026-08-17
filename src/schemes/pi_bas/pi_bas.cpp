@@ -81,9 +81,9 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             ustring label;
             ubigint pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
-            ustring iv = utils::crypto::genIv(utils::crypto::IV_LEN);
+            ustring iv = utils::crypto::genIv();
             ustring encDbTuple = utils::crypto::padAndEncrypt(
-                utils::crypto::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
+                this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->write(pos, std::pair {label, std::pair {encDbTuple, iv}});
@@ -172,10 +172,7 @@ ubigint PiBas<DbTuple>::map(
     const ustring& queryToken, bigint dbKwCounter, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w) || c)
-    retLabel = utils::crypto::hash(
-        utils::crypto::HASH_FUNC,
-        utils::crypto::HASH_OUTPUT_LEN, queryToken + utils::ustr::toUstr(dbKwCounter)
-    );
+    retLabel = utils::crypto::hash(queryToken + utils::ustr::toUstr(dbKwCounter));
     return utils::misc::hashToPos(retLabel);
 }
 

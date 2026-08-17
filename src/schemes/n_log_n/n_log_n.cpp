@@ -68,10 +68,7 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
     while (true) {
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
         // (same as client's `setup()`)
-        ustring label = utils::crypto::hash(
-            utils::crypto::HASH_FUNC,
-            utils::crypto::HASH_OUTPUT_LEN, queryToken + utils::ustr::toUstr(dbKwCounter)
-        );
+        ustring label = utils::crypto::hash(queryToken + utils::ustr::toUstr(dbKwCounter));
         ubigint pos = utils::misc::hashToPos(label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;
@@ -199,9 +196,8 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
-        ustring ivDict = utils::crypto::genIv(utils::crypto::IV_LEN);
+        ustring ivDict = utils::crypto::genIv();
         ustring encDbKwCount = utils::crypto::padAndEncrypt(
-            utils::crypto::ENC_CIPHER,
             this->encKey, utils::ustr::toUstr(dbKwCount), ivDict, EncInd::DATA_LEN - 1
         );
         ubigint posDict = this->mapNoMod(queryToken, labelDict);
@@ -212,9 +208,9 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         for (bigint dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
-            ustring iv = utils::crypto::genIv(utils::crypto::IV_LEN);
+            ustring iv = utils::crypto::genIv();
             ustring encDbTuple = utils::crypto::padAndEncrypt(
-                utils::crypto::ENC_CIPHER, this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
+                this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encIndLvls[lvl]->write(
@@ -299,9 +295,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
-    ustring decDbKwCount = utils::crypto::decryptAndUnpad(
-        utils::crypto::ENC_CIPHER, this->encKey, encDbKwCount, ivDict
-    );
+    ustring decDbKwCount = utils::crypto::decryptAndUnpad(this->encKey, encDbKwCount, ivDict);
     bigint dbKwCount = utils::ustr::fromUstr(decDbKwCount);
     bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
@@ -342,9 +336,7 @@ ustring NLogN<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
 template <IsDbTuple DbTuple>
 ubigint NLogN<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
-    retLabel = utils::crypto::hash(
-        utils::crypto::HASH_FUNC, utils::crypto::HASH_OUTPUT_LEN, queryToken
-    );
+    retLabel = utils::crypto::hash(queryToken);
     return utils::misc::hashToPos(retLabel); // no modulus
 }
 

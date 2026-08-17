@@ -61,7 +61,7 @@ ustring genIv(int ivLen) {
 }
 
 
-ustring hash(const EVP_MD* hashFunc, int hashOutputLen, const ustring& input) {
+ustring hash(const ustring& input, const EVP_MD* hashFunc, int hashOutputLen) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (!ctx) {
         handleErrors();
@@ -102,7 +102,7 @@ ustring prf(const ustring& key, const ustring& input) {
 
 
 ustring encrypt(
-    const EVP_CIPHER* cipher, const ustring& key, const ustring& ptext, const ustring& iv
+    const ustring& key, const ustring& ptext, const ustring& iv, const EVP_CIPHER* cipher
 ) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
@@ -140,7 +140,7 @@ ustring encrypt(
 
 
 ustring padAndEncrypt(
-    const EVP_CIPHER* cipher, const ustring& key, ustring ptext, const ustring& iv, int targetLen
+    const ustring& key, ustring ptext, const ustring& iv, int targetLen, const EVP_CIPHER* cipher
 ) {
     if (ptext.length() > targetLen) {
         std::cerr << "Error: padAndEncrypt(): plaintext of length " << ptext.length()
@@ -148,12 +148,12 @@ ustring padAndEncrypt(
         std::exit(EXIT_FAILURE);
     }
     utils::misc::padStr(ptext, targetLen);
-    return encrypt(cipher, key, ptext, iv);
+    return encrypt(key, ptext, iv, cipher);
 }
 
 
 ustring decrypt(
-    const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv
+    const ustring& key, const ustring& ctext, const ustring& iv, const EVP_CIPHER* cipher
 ) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
@@ -191,16 +191,10 @@ ustring decrypt(
 
 
 ustring decryptAndUnpad(
-    const EVP_CIPHER* cipher, const ustring& key, const ustring& ctext, const ustring& iv
+    const ustring& key, const ustring& ctext, const ustring& iv, const EVP_CIPHER* cipher
 ) {
-    ustring ptext = decrypt(cipher, key, ctext, iv);
-    int paddingStart;
-    for (paddingStart = ptext.length() - 1; paddingStart >= 0; paddingStart--) {
-        if (ptext[paddingStart] != '\0') {
-            break;
-        }
-    }
-    ptext.resize(paddingStart + 1); // (`+ 1` to add back the first null terminator)
+    ustring ptext = decrypt(key, ctext, iv, cipher);
+    utils::misc::unpadStr(ptext);
     return ptext;
 }
 
