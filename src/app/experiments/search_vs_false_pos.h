@@ -1,3 +1,5 @@
+// WARNING: this is a slow experiment to run since it calls `setup()` with every search!!
+
 #pragma once
 
 #include <cmath>
@@ -21,15 +23,14 @@ namespace app::experiments {
 
 class SearchVsFalsePos : public IExperiment<ISse<>> {
 public:
-    SearchVsFalsePos(bigint dbSizeExp) : dbSizeExp(dbSizeExp) {}
+    SearchVsFalsePos(bigint maxDbSizeExp) : maxDbSizeExp(maxDbSizeExp) {}
 
     void printHeader() const override {
         std::cout << std::endl;
         std::cout << "========================== Search vs. False Positives =========================="
                   << std::endl;
-        std::cout << "Search vs. false positives up to 2^" << this->dbSizeExp << " - 1"
+        std::cout << "Search vs. false positives up to 2^" << this->maxDbSizeExp << " - 1"
                   << std::endl;
-        std::cout << "Fixed DB size and query result size, both 2^" << this->dbSizeExp << std::endl;
         std::cout << "================================================================================"
                   << std::endl;
         std::cout << std::endl << std::endl;
@@ -38,48 +39,43 @@ public:
     void run(ISse<>* sse, bool shouldBenchmark) const override {
         Benchmark::printHeader(shouldBenchmark);
 
-        // for Log-SRC, the SRC will always be the root node if the leftmost keyword
-        // (e.g. 0) along with anything in the right half of the TDAG is queried
-        // 
-        // so, create a DB where keywords span from 0 to n := 2 * log2(DB size) - 1,
-        // and where there are 2^i tuples with keyword n - i for all i such that n - i
-        // is in the right half of the size 2 * log2(DB size) TDAG/keyword domain,
-        // and then one tuple with keyword 0 (to finish off the exact DB size)
-        //
-        // then, querying 0-(n - i) (again for the same i's) should choose the root node
-        // to be the SRC and hence return 2^i - 1 false positives (from the right half,
-        // specifically the keywords larger than n - i). moreover the overall result size
-        // will always be the whole database so we can eliminate that variable
-        bigint largestKw = 2 * this->dbSizeExp - 1;
-        bigint currId = 0;
-        Db<> db;
-        db.push_back(Tuple<> {currId, 0, Op::INS, Range<Kw> {0, 0}});
-        currId++;
-        for (bigint i = 0; i < this->dbSizeExp; i++) {
-            Kw kw = largestKw - i;
-            Range<Kw> kwRange {kw, kw};
-            for (bigint j = 0; j < std::pow(2, i); j++) {
-                db.push_back(Tuple<> {currId, kw, Op::INS, kwRange});
-                currId++;
+        // (start `dbSizeExp` at 2 as otherwise the query doesn't really make sense, and we also
+        // want `dbSize` >= 4 at all times; see later comment)
+        for (bigint dbSizeExp = 2; dbSizeExp <= this->maxDbSizeExp; dbSizeExp++) {
+            bigint dbSize = std::pow(2, dbSizeExp);
+
+            // create a DB where all but one tuple have keyword 0, and the remaining tuple
+            // has keyword `dbSize`
+            //
+            // so for a 1-`dbSize` query, Log-SRC should select the root node as the SRC (assuming
+            // `dbSize` >= 4), returning the entire DB with all but one tuple being false positives
+            Db<> db;
+            Kw kw1 = 0;
+            Kw kw2 = dbSize;
+            Range<Kw> kwRange1 {kw1, kw1};
+            Range<Kw> kwRange2 {kw2, kw2};
+            Range<Kw> query {1, dbSize};
+            for (bigint i = 0; i < dbSize - 1; i++) {
+                db.push_back(Tuple<> {i, kw1, Op::INS, kwRange1});
             }
-        }
+            db.push_back(Tuple<> {dbSize - 1, kw2, Op::INS, kwRange2});
 
-        // setup
-        sse->setup(utils::crypto::KEY_LEN, db);
+            // setup
+            sse->setup(utils::crypto::KEY_LEN, db);
 
-        // searches
-        for (bigint i = 0; i < this->dbSizeExp; i++) {
-            Range<Kw> query {0, largestKw - i};
+            // search
             sse->search(query);
-            sse->benchmark->print(shouldBenchmark, "Search", std::format("(false pos 2^{}-1)", i));
+            sse->benchmark->print(
+                shouldBenchmark, "Search", std::format("(false pos 2^{}-1)", dbSizeExp)
+            );
+
+            sse->clear();
         }
         std::cout << std::endl;
-
-        sse->clear();
     }
 
 private:
-    bigint dbSizeExp;
+    bigint maxDbSizeExp;
 };
 
 

@@ -1,3 +1,5 @@
+// WARNING: this is a slow experiment to run since it calls `setup()` with every search!!
+
 #pragma once
 
 #include <algorithm>
