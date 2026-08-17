@@ -41,8 +41,8 @@ private:
     //----------------------------------------------------------------------
     // helpers
 
-    bigint computeNumLvls() const override;
-    bigint computeBcktCountOnLvl(bigint lvlNum) const override;
+    bigint calcNumLvls() const override;
+    bigint calcBcktCountOnLvl(bigint lvl) const override;
 };
 
 

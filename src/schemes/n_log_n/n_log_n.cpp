@@ -143,18 +143,18 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
     this->secParam = secParam;
     this->size = db.size();
-    this->numLvls = this->computeNumLvls();
+    this->lvlCount = this->calcLvlCount();
 
     this->prfKey = utils::crypto::genKey(secParam);
     this->encKey = utils::crypto::genKey(secParam);
     
     std::vector<EncInd*> encIndLvls;
-    for (bigint lvlNum = 0; lvlNum < this->numLvls; lvlNum++) {
-        EncInd* lvl = new EncInd();
-        bigint bcktCountOnLvl = this->computeBcktCountOnLvl(lvlNum);
-        bigint bcktSizeOnLvl = this->computeBcktSizeOnLvl(lvlNum);
-        lvl->init(bcktCountOnLvl * bcktSizeOnLvl);
-        encIndLvls.push_back(lvl);
+    for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
+        EncInd* encIndLvl = new EncInd();
+        bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
+        bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
+        encIndLvl->init(bcktCountOnLvl * bcktSizeOnLvl);
+        encIndLvls.push_back(encIndLvl);
     }
     EncInd* dbKwCountsDict = new EncInd();
     dbKwCountsDict->init(this->size);
@@ -204,7 +204,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
-        ubigint startPos = pos * this->computeBcktSizeOnLvl(lvl);
+        ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
         for (bigint dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
@@ -233,7 +233,7 @@ void NLogN<DbTuple>::clear() {
     ISdUnderly<DbTuple>::clear();
 
     this->server->clear();
-    this->numLvls = 0;
+    this->lvlCount = 0;
 }
 
 
@@ -245,7 +245,7 @@ template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
     std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
 
-    for (bigint lvl = 0; lvl < this->numLvls; lvl++) {
+    for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
         EncInd* encIndLvl = encIndLvls[lvl];
         // don't use `this->size` as the bound here as that doesn't include padding while
         // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
@@ -306,7 +306,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     ubigint pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
-    ubigint startPos = pos * this->computeBcktSizeOnLvl(lvl);
+    ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
     std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
@@ -349,26 +349,26 @@ std::pair<ubigint, ubigint> NLogN<DbTuple>::map(
     ubigint pos = this->mapNoMod(queryToken, retLabel);
     // (note bottommost level is level 0)
     ubigint lvl = std::log2(dbKwPaddedCount);
-    pos %= (ubigint)this->computeBcktCountOnLvl(lvl);
+    pos %= (ubigint)this->calcBcktCountOnLvl(lvl);
     return std::pair {lvl, pos};
 }
 
 
 template <IsDbTuple DbTuple>
-bigint NLogN<DbTuple>::computeNumLvls() const {
+bigint NLogN<DbTuple>::calcLvlCount() const {
     return std::ceil(std::log2(this->size)) + 1;
 }
 
 
 template <IsDbTuple DbTuple>
-bigint NLogN<DbTuple>::computeBcktCountOnLvl(bigint lvl) const {
+bigint NLogN<DbTuple>::calcBcktCountOnLvl(bigint lvl) const {
     // 2^{lvlCount - lvl + 1} is number of buckets on level `lvl`
-    return std::pow(2, this->numLvls - lvl - 1);
+    return std::pow(2, this->lvlCount - lvl - 1);
 }
 
 
 template <IsDbTuple DbTuple>
-bigint NLogN<DbTuple>::computeBcktSizeOnLvl(bigint lvl) const {
+bigint NLogN<DbTuple>::calcBcktSizeOnLvl(bigint lvl) const {
     return std::pow(2, lvl);
 }
 

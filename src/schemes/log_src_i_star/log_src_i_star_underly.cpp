@@ -52,7 +52,7 @@ std::vector<DbTuple> Underly<DbTuple>::searchBase(const Range<DbKw>& query) cons
     ubigint pos = lvlAndPos.second;
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
-    ubigint startPos = pos * this->computeBcktSizeOnLvl(lvl);
+    ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
     std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
@@ -73,7 +73,7 @@ std::vector<DbTuple> Underly<DbTuple>::searchBase(const Range<DbKw>& query) cons
 
 
 template <IsDbTuple DbTuple>
-bigint Underly<DbTuple>::computeNumLvls() const {
+bigint Underly<DbTuple>::calcLvlCount() const {
     // the key to avoiding the blowup of using NLogN as a black box is by using
     // `leafCount` instead of `this->size` here, since `this->size` includes the
     // replicated tuples and using it sort of assumes those are only the "raw" tuples
@@ -82,12 +82,12 @@ bigint Underly<DbTuple>::computeNumLvls() const {
 
 
 template <IsDbTuple DbTuple>
-bigint Underly<DbTuple>::computeBcktCountOnLvl(bigint lvlNum) const {
-    if (lvlNum == 0) {
+bigint Underly<DbTuple>::calcBcktCountOnLvl(bigint lvl) const {
+    if (lvl == 0) {
         return this->leafCount;
     } else {
-        // this gives the TDAG-specific node/bucket count at level `lvlNum` (for `lvlNum` >= 1)
-        return std::pow(2, this->numLvls - lvlNum) - 1;
+        // this gives the TDAG-specific node/bucket count at level `lvl` (for `lvl` >= 1)
+        return std::pow(2, this->lvlCount - lvl) - 1;
     }
 }
 

@@ -103,11 +103,9 @@ bool EncInd::find(ubigint pos, const ustring& key, EncIndVal& ret, ubigint* posF
     // if entry at `pos` did not match the target `key` (i.e. another kv pair overflowed here
     // first), scan subsequent locations for where the target `key` could've overflowed to
     const uchar* targetKeyCStr = key.c_str();
-    bigint numPositionsChecked = 1;
-    while (std::memcmp(currEntry, targetKeyCStr, KEY_LEN) != 0
-           && numPositionsChecked < this->size)
-    {
-        numPositionsChecked++;
+    bigint positionsChecked = 1;
+    while (std::memcmp(currEntry, targetKeyCStr, KEY_LEN) != 0 && positionsChecked < this->size) {
+        positionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);
@@ -169,11 +167,9 @@ void EncInd::write(ubigint pos, const EncIndEntry& encIndEntry) {
 
     // if location is already filled (because of modulo), find next available location
     // (this is what USENIX'24's implementation does)
-    bigint numPositionsChecked = 1;
-    while (std::memcmp(currEntry, NULL_ENTRY, ENTRY_LEN) != 0
-           && numPositionsChecked < this->size)
-    {
-        numPositionsChecked++;
+    bigint positionsChecked = 1;
+    while (std::memcmp(currEntry, NULL_ENTRY, ENTRY_LEN) != 0 && positionsChecked < this->size) {
+        positionsChecked++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
             std::fseek(this->file, 0, SEEK_SET);

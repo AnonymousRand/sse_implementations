@@ -38,7 +38,7 @@ public:
 
 protected:
     NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
-    bigint numLvls;
+    bigint lvlCount = 0;
 
     //----------------------------------------------------------------------
     // `IStaticPointSse`
@@ -57,10 +57,9 @@ protected:
     ubigint mapNoMod(const ustring& queryToken, ustring& retLabel) const;
 
     /**
-     * generate encrypted label to store in encrypted index, and also return
-     * numerical level and position at which to place it in the index.
-     * (position is a bucket count, not entry count, so this is the raw position
-     * mod the bucket count on that level.)
+     * generate encrypted label to store in encrypted index, and also return numerical level
+     * and position at which to place it in the index. (position is a bucket count, not
+     * entry count, so this is the raw position mod the bucket count on that level.)
      *
      * preconditions:
      *     - `dbKwListSize` is a power of 2.
@@ -69,7 +68,7 @@ protected:
         const ustring& queryToken, bigint dbKwPaddedCount, ustring& retLabel
     ) const;
 
-    virtual bigint computeNumLvls() const;
-    virtual bigint computeBcktCountOnLvl(bigint lvlNum) const;
-    virtual bigint computeBcktSizeOnLvl(bigint lvlNum) const;
+    virtual bigint calcNumLvls() const;
+    virtual bigint calcBcktCountOnLvl(bigint lvl) const;
+    virtual bigint calcBcktSizeOnLvl(bigint lvl) const;
 };
