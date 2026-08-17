@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -28,7 +29,7 @@ public:
         std::cout << std::endl;
         std::cout << "================================== Debugging ==================================="
                   << std::endl;
-        std::cout << "Fixed DB size 2^" << this->db.size() << std::endl;
+        std::cout << "Fixed DB size 2^" << (bigint)std::log2(this->db.size()) << std::endl;
         std::cout << "Query " << this->query << std::endl;
         std::cout << "================================================================================"
                   << std::endl;
