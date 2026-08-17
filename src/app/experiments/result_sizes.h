@@ -33,16 +33,12 @@ void printHeader(bigint maxDbSizeExp) {
 
 
 void run(ISse<>* sse, bigint dbSize) {
-    if (dbSize == 0) {
-        return;
-    }
     // this is non-randomized to precisely control result sizes: then there is a unique entry per kw
     Db<> db = createDb(dbSize, false, false);
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
     // setup
     sse->setup(utils::crypto::KEY_LEN, db);
-    sse->benchmark->print(config::SHOULD_BENCHMARK, "Setup");
 
     // searches
     for (bigint resultSizeExp = 0; resultSizeExp <= std::log2(dbSize); resultSizeExp++) {

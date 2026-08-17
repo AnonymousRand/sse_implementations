@@ -33,29 +33,26 @@ void printHeader(bigint maxDbSizeExp) {
 
 
 void run(ISse<>* sse, bigint maxDbSize) {
-    if (maxDbSize == 0) {
-        return;
-    }
     Range<Kw> query {0, 3};
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
-    for (bigint i = 2; i <= std::log2(maxDbSize); i++) {
-        bigint dbSize = std::pow(2, i);
+    for (bigint dbSizeExp = 2; dbSizeExp <= std::log2(maxDbSize); dbSizeExp++) {
+        bigint dbSize = std::pow(2, dbSizeExp);
         Db<> db = createDb(dbSize, true, true);
 
         // setup
         sse->setup(utils::crypto::KEY_LEN, db);
         sse->benchmark->print(
-            config::SHOULD_BENCHMARK, "Setup", std::format("(size 2^{})", std::log2(dbSize))
+            config::SHOULD_BENCHMARK, "Setup", std::format("(size 2^{})", dbSizeExp)
         );
 
         // search
         sse->search(query);
         sse->benchmark->print(config::SHOULD_BENCHMARK, "Search");
+
+        sse->clear();
     }
     std::cout << std::endl;
-
-    sse->clear();
 }
 
 

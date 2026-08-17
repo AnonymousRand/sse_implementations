@@ -68,7 +68,7 @@ protected:
         const ustring& queryToken, bigint dbKwPaddedCount, ustring& retLabel
     ) const;
 
-    virtual bigint calcNumLvls() const;
+    virtual bigint calcLvlCount() const;
     virtual bigint calcBcktCountOnLvl(bigint lvl) const;
     virtual bigint calcBcktSizeOnLvl(bigint lvl) const;
 };

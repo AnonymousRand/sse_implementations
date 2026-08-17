@@ -33,59 +33,38 @@ void printHeader(bigint maxDbSizeExp) {
 
 
 void run(ISse<>* sse, bigint maxDbSize) {
-    if (maxDbSize == 0) {
-        return;
-    }
     Benchmark::printHeader(config::SHOULD_BENCHMARK);
 
-    for (bigint i = 2; i <= std::log2(maxDbSize); i++) {
-        bigint dbSize = std::pow(2, i);
+    for (bigint dbSizeExp = 2; dbSizeExp <= std::log2(maxDbSize); dbSizeExp++) {
+        bigint dbSize = std::pow(2, dbSizeExp);
 
-        // two unique keywords, with half being 0 and the other half being the max
-        // thus using Log-SRC, half the tuples will be returned as false positives on a
-        // [1, n - 1] query (if the root node is the SRC)
+        // all but one tuple have keyword 0, and the remaining tuple has keyword `dbSize`
+        // so for a 1-`dbSize` query, Log-SRC should select the root node as the SRC (assuming
+        // `dbSize` >= 4), returning the entire DB with all but one tuple being false positives
         Db<> db;
         Kw kw1 = 0;
-        Kw kw2 = dbSize - 1;
+        Kw kw2 = dbSize;
         Range<Kw> kwRange1 {kw1, kw1};
         Range<Kw> kwRange2 {kw2, kw2};
-        bigint id;
-        for (id = 0; id < dbSize / 2; id++) {
-            db.push_back(Tuple<> {id, kw1, Op::INS, kwRange1});
-        }
-        for (; id < dbSize; id++) {
-            db.push_back(Tuple<> {id, kw2, Op::INS, kwRange2});
-        }
+        Range<Kw> query {1, dbSize};
 
-        /*
-        // two unique keywords, with all but one being 0 and the other being the max
-        // thus all but one tuple will be returned as false positives on a [1, n - 1] query
-        // (if the root node is the SRC)
-        Db<> db;
-        Kw kw1 = 0;
-        Kw kw2 = dbSize - 1;
-        Range<Kw> kwRange1 {kw1, kw1};
-        Range<Kw> kwRange2 {kw2, kw2};
         for (bigint i = 0; i < dbSize - 1; i++) {
             db.push_back(Tuple<> {i, kw1, Op::INS, kwRange1});
         }
         db.push_back(Tuple<> {dbSize - 1, kw2, Op::INS, kwRange2});
-        */
 
         // setup
         sse->setup(utils::crypto::KEY_LEN, db);
-        sse->benchmark->print(
-            config::SHOULD_BENCHMARK, "Setup", std::format("(size 2^{})", std::log2(dbSize))
-        );
 
         // search
-        Range<Kw> query {1, dbSize - 1};
         sse->search(query);
-        sse->benchmark->print(config::SHOULD_BENCHMARK, "Search");
+        sse->benchmark->print(
+            config::SHOULD_BENCHMARK, "Search", std::format("(false pos 2^{}-1)", dbSizeExp)
+        );
+
+        sse->clear();
     }
     std::cout << std::endl;
-
-    sse->clear();
 }
 
 

@@ -15,8 +15,8 @@ namespace app {
 Db<> createDb(bigint dbSize, bool isRandom, bool hasDeletions) {
     Db<> db {};
     if (dbSize == 0) {
-        // (note that we return the same `db` variable even with empty so that
-        // compiler does named return value optimization)
+        // (note that we return the same `db` variable even with empty so that compiler
+        // is able to do named return value optimization)
         return db;
     }
     std::uniform_int_distribution<bigint> dist(0, dbSize - 1);

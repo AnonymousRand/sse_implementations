@@ -32,9 +32,6 @@ void printHeader(bigint maxDbSizeExp) {
 
 
 void run(IDsse<>* dsse, bigint dbSize) {
-    if (dbSize == 0) {
-        return;
-    }
     Db<> db = createDb(dbSize, true, true);
 
     // setup (with empty DB, just to init keys and stuff)
