@@ -41,26 +41,21 @@ public:
         // for Log-SRC, the SRC will always be the root node if the leftmost keyword
         // (e.g. 0) along with anything in the right half of the TDAG is queried
         // 
-        // so, create a DB where keywords span from 0 to n := log2(DB size) - 1, and
-        // where there are 2^i tuples with keyword n - i for all i>=1 such that n - i
-        // is in the right half of the TDAG/keyword domain, and then one tuple with
-        // keyword 0 (to finish off the exact DB size)
+        // so, create a DB where keywords span from 0 to n := 2 * log2(DB size) - 1,
+        // and where there are 2^i tuples with keyword n - i for all i such that n - i
+        // is in the right half of the size 2 * log2(DB size) TDAG/keyword domain,
+        // and then one tuple with keyword 0 (to finish off the exact DB size)
         //
         // then, querying 0-(n - i) (again for the same i's) should choose the root node
         // to be the SRC and hence return 2^i - 1 false positives (from the right half,
         // specifically the keywords larger than n - i). moreover the overall result size
-        // will always be the whole database so we can eliminate that variable.
-        //
-        // IMPORTANT: this only works if `this->dbSizeExp` is even! otherwise TDAG is not symmetric
-        if (this->dbSizeExp % 2 == 1) {
-            std::cout << "WARNING: this experiment's numbers may be off since the DB size"
-                      << "is not an even power of 2!" << std::endl;
-        }
-        bigint largestKw = this->dbSizeExp - 1;
+        // will always be the whole database so we can eliminate that variable
+        bigint largestKw = 2 * this->dbSizeExp - 1;
+        bigint currId = 0;
         Db<> db;
-        db.push_back(Tuple<> {0, 0, Op::INS, Range<Kw> {0, 0}});
-        bigint currId = 1;
-        for (bigint i = 1; i < this->dbSizeExp / 2; i++) {
+        db.push_back(Tuple<> {currId, 0, Op::INS, Range<Kw> {0, 0}});
+        currId++;
+        for (bigint i = 0; i < this->dbSizeExp; i++) {
             Kw kw = largestKw - i;
             Range<Kw> kwRange {kw, kw};
             for (bigint j = 0; j < std::pow(2, i); j++) {
@@ -68,25 +63,15 @@ public:
                 currId++;
             }
         }
-        std::cout << "TMP: db size is " << db.size() << "; want " << std::pow(2, this->dbSizeExp) << std::endl;
 
         // setup
         sse->setup(utils::crypto::KEY_LEN, db);
 
         // searches
-        for (bigint i = 1; i < this->dbSizeExp / 2; i++) {
+        for (bigint i = 0; i < this->dbSizeExp; i++) {
             Range<Kw> query {0, largestKw - i};
-            auto tmp = sse->search(query);
+            sse->search(query);
             sse->benchmark->print(shouldBenchmark, "Search", std::format("(false pos 2^{}-1)", i));
-
-            std::vector<Tuple<>> falsePositives;
-            for (const Tuple<>& result : tmp) {
-                Kw kw = result.getKw();
-                if (!query.contains(kw)) {
-                    falsePositives.push_back(result);
-                }
-            }
-            std::cout << "TMP: actual false positives " << falsePositives.size() << std::endl;
         }
         std::cout << std::endl;
 
