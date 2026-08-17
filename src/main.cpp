@@ -81,12 +81,7 @@ int main() {
     //--------------------------------------------------------------------------
     // debugging experiment
 
-    // declare these out here so that they don't change (in particular, randomized DBs)
-    // during any one program execution, between different SSE schemes/calls to `run()`
-    // adjust at will here!
-    Db<> debuggingDb;
-    app::createDb(debuggingDb, maxDbSize, true, true);
-    app::experiments::Debugging debugging(std::move(debuggingDb), Range<Kw> {3, 5});
+    app::experiments::Debugging debugging(maxDbSizeExp);
     debugging.printHeader();
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;

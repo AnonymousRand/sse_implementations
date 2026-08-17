@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <iostream>
-#include <utility>
 #include <vector>
 
 #include "app/db_factory.h"
@@ -22,8 +21,13 @@ namespace app::experiments {
 
 class Debugging : public IExperiment<ISse<>> {
 public:
-    Debugging(Db<>&& db, const Range<Kw>& query) :
-        db(std::move(db)), query(query) {}
+    Debugging(bigint dbSizeExp) : dbSizeExp(dbSizeExp) {
+        // config; adjust at will!!
+        // (DB and query declared as member variables so that they don't change
+        // between calls to `run()`, for different SSE schemes)
+        createDb(this->db, std::pow(2, dbSizeExp), true, true);
+        this->query = Range<Kw> {3, 5};
+    }
 
     void printHeader() const override {
         std::cout << std::endl;
@@ -70,6 +74,7 @@ public:
     }
 
 private:
+    bigint dbSizeExp;
     Db<> db;
     Range<Kw> query;
 };
