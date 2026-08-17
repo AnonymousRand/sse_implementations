@@ -291,6 +291,24 @@ int main() {
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
     searchVsFalsePos.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
 
+    std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
+    searchVsFalsePos.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
+
+    std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
+    searchVsFalsePos.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
+
+    std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
+    searchVsFalsePos.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
+
+    std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
+    searchVsFalsePos.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+
+    std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
+    searchVsFalsePos.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
+
+    std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
+    searchVsFalsePos.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
+
     //--------------------------------------------------------------------------
     // updates experiment
 
