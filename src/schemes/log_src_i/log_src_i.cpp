@@ -3,7 +3,9 @@
 #include <concepts>
 
 #include "schemes/interfaces/sse.h"
+#include "schemes/log_src/log_src_utils.h"
 #include "schemes/log_src_i/log_src_i_base.h"
+#include "schemes/log_src_i/log_src_i_utils.h"
 
 // for explicit template instantiation
 #include "schemes/n_log_n/n_log_n.h"
@@ -34,7 +36,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // init sub-DBs
 
     // sort documents by keyword
-    Db<Tuple<>> sortedDb = LogSrcIBase<Underly>::sortInputDb(db);
+    Db<Tuple<>> sortedDb = log_src_i::utils::sortInputDbByKw(db);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
@@ -48,13 +50,13 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
         db1.push_back(newTuple);
     };
-    LogSrcIBase<Underly>::initDbsLeaves(sortedDb, db2, addDb1Leaf);
+    log_src_i::utils::initDbsLeaves(sortedDb, db2, addDb1Leaf);
 
     //--------------------------------------------------------------------------
     // build index 1
 
     // build TDAG 1 over `Kw`s and replicate `db1` appropriately
-    utils::tdag::buildTdagAndDb<SrcIDb1Tuple>(this->tdag1, db1);
+    log_src::utils::buildTdagDbFromLeaves<SrcIDb1Tuple>(db1, this->tdag1);
 
     this->underly1->setup(secParam, db1);
 
@@ -62,7 +64,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // build index 2
 
     // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately
-    utils::tdag::buildTdagAndDb<Tuple<IdAlias>>(this->tdag2, db2);
+    log_src::utils::buildTdagDbFromLeaves<Tuple<IdAlias>>(db2, this->tdag2);
 
     this->underly2->setup(secParam, db2);
 }

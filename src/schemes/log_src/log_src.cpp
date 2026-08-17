@@ -1,8 +1,10 @@
 #include "schemes/log_src/log_src.h"
 
 #include <concepts>
+#include <vector>
 
 #include "schemes/interfaces/sse.h"
+#include "schemes/log_src/log_src_utils.h"
 
 // for explicit template instantiation
 #include "schemes/n_log_n/n_log_n.h"
@@ -44,7 +46,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
     // build TDAG over `Kw`s and replicate `db` appropriately
     Db<Tuple<>> dbWithRepls = db;
-    utils::tdag::buildTdagAndDb<Tuple<>>(this->tdag, dbWithRepls);
+    log_src::utils::buildTdagDbFromLeaves<Tuple<>>(dbWithRepls, this->tdag);
 
     this->underly->setup(secParam, dbWithRepls);
 }

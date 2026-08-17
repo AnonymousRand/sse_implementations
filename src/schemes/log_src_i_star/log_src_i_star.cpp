@@ -1,6 +1,9 @@
 #include "schemes/log_src_i_star/log_src_i_star.h"
 
-#include "schemes/log_src_i_star/underly.h" 
+#include "schemes/log_src/log_src_utils.h"
+#include "schemes/log_src_i/log_src_i_base.h"
+#include "schemes/log_src_i/log_src_i_utils.h"
+#include "schemes/log_src_i_star/log_src_i_star_underly.h"
 
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
@@ -26,7 +29,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // init sub-DBs
 
     // sort documents by keyword
-    Db<Tuple<>> sortedDb = LogSrcIBase<log_src_i_star::Underly>::sortInputDb(db);
+    Db<Tuple<>> sortedDb = log_src_i::utils::sortInputDbByKw(db);
 
     // assign index 2 nodes/"identifier aliases" and populate both `db1` and `db2`
     // leaves with this information
@@ -40,7 +43,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
         db1.push_back(newTuple);
     };
-    LogSrcIBase<log_src_i_star::Underly>::initDbsLeaves(sortedDb, db2, addDb1Leaf);
+    log_src_i::utils::initDbsLeaves(sortedDb, db2, addDb1Leaf);
 
     //--------------------------------------------------------------------------
     // build index 1
@@ -73,7 +76,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // after guaranteeing contiguous-ness of `Kw`s, build TDAG 1 over `Kw`s and replicate
     // `db1` appropriately, again padding the leaf count to the next power of 2 as is
     // required for Log-SRC-i*
-    utils::tdag::buildTdagAndDb<SrcIDb1Tuple>(this->tdag1, db1, true);
+    log_src::utils::buildTdagDbFromLeaves<SrcIDb1Tuple>(db1, this->tdag1, true);
 
     this->underly1->setup(secParam, db1);
 
@@ -82,7 +85,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
 
     // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately, and padding
     // the leaf count to the next power of 2 as is required for Log-SRC-i*
-    utils::tdag::buildTdagAndDb<Tuple<IdAlias>>(this->tdag2, db2, true);
+    log_src::utils::buildTdagDbFromLeaves<Tuple<IdAlias>>(db2, this->tdag2, true);
 
     this->underly2->setup(secParam, db2);
 }

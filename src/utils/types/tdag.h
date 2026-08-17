@@ -79,14 +79,4 @@ namespace utils::tdag {
 bigint calcTdagTupleCount(bigint leafCount);
 
 
-template <IsDbTuple DbTuple>
-void buildTdagAndDb(
-    TdagNode<typename DbTuple::DbKwType>*& tdag, Db<DbTuple>& db, bool shouldPadDb = false
-);
-
-
-template <IsDbTuple DbTuple>
-void replDbForTdag(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tdag);
-
-
 } // namespace `utils::tdag`
