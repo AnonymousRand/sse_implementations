@@ -34,6 +34,7 @@ public:
         std::cout << std::endl << std::endl;
     }
 
+    // >>TODO is there a way to make this not setup() every time like with search vs result sizes? same db every time
     void run(ISse<>* sse, bool shouldBenchmark) const override {
         Benchmark::printHeader(shouldBenchmark);
 
@@ -42,7 +43,7 @@ public:
         for (bigint dbSizeExp = 2; dbSizeExp <= this->maxDbSizeExp; dbSizeExp++) {
             bigint dbSize = std::pow(2, dbSizeExp);
 
-            // all but one tuple have keyword 0, and the remaining tuple has keyword `dbSize`
+            // create a DB where all but one tuple have keyword 0, and the remaining tuple has keyword `dbSize`
             // so for a 1-`dbSize` query, Log-SRC should select the root node as the SRC (assuming
             // `dbSize` >= 4), returning the entire DB with all but one tuple being false positives
             Db<> db;

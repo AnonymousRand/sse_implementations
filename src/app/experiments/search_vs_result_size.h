@@ -37,26 +37,34 @@ public:
     void run(ISse<>* sse, bool shouldBenchmark) const override {
         Benchmark::printHeader(shouldBenchmark);
 
+        // create a DB where for each i, there are 2^(i-1) tuples with random keywords
+        // in the range [2^(i-1), 2^i - 1] (and for i = 0, a single tuple with keyword 0)
+        // then, querying 0-(2^i - 1) should produce exactly 2^i results
         bigint dbSize = std::pow(2, this->dbSizeExp);
+        Db<> db;
+        db.push_back(Tuple<> {0, 0, Op::INS, Range<Kw> {0, 0}});
+        for (bigint i = 1; i <= this->dbSizeExp; i++) {
+            bigint chunkSize = std::pow(2, i - 1);
+            Kw minKw = std::pow(2, i - 1);
+            Kw maxKw = std::pow(2, i) - 1;
+            createDb(db, chunkSize, true, false, minKw, maxKw);
+        }
+
+        // setup
+        sse->setup(utils::crypto::KEY_LEN, db);
+
+        // searches
         for (bigint resultSizeExp = 0; resultSizeExp <= this->dbSizeExp; resultSizeExp++) {
-            bigint resultSize = std::pow(2, resultSizeExp);
-            Db<> db;
-            createDb(db, resultSize, true, false);
-            createDb(db, dbSize - resultSize, true, false, resultSize);
-            Range<Kw> query {0, resultSize - 1};
-
-            // setup
-            sse->setup(utils::crypto::KEY_LEN, db);
-
-            // search
-            sse->search(query);
+            Range<Kw> query {0, (bigint)std::pow(2, resultSizeExp) - 1};
+            auto res = sse->search(query);
             sse->benchmark->print(
                 shouldBenchmark, "Search", std::format("(result size 2^{})", resultSizeExp)
             );
-
-            sse->clear();
+            std::cout << "res size " << res.size() << std::endl;
         }
         std::cout << std::endl;
+
+        sse->clear();
     }
 
 private:

@@ -29,8 +29,8 @@ void createDb(
     if (minKw == DUMMY) { minKw = 0; }
     if (maxKw == DUMMY) { maxKw = dbSize + minKw - 1; }
 
-    Id minId = 0;
-    Id maxId = dbSize - 1;
+    Id minId = minKw;
+    Id maxId = dbSize + minKw - 1;
     if (hasDeletions) {
         // delete the document with keyword 4
         Range<Kw> kwRangeDel {4, 4};
