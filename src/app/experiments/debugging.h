@@ -21,8 +21,8 @@ namespace app::experiments {
 
 class Debugging : public IExperiment<ISse<>> {
 public:
-    Debugging(Db<>&& db, const Range<Kw>& query, bigint dbSizeExp) :
-        db(std::move(db), query(query) {}
+    Debugging(Db<>&& db, const Range<Kw>& query) :
+        db(std::move(db)), query(query) {}
 
     void printHeader() const override {
         std::cout << std::endl;

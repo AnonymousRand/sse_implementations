@@ -1,7 +1,7 @@
 # SSE Implementations
 
 Implementations of the following [searchable symmetric encryption](https://en.wikipedia.org/wiki/Searchable_symmetric_encryption) (SSE) schemes:
-- PiBas ([Cash et al., NDSS'14](https://eprint.iacr.org/2014/853.pdf)) (but specifically the result-hiding variant used in [Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf) (in figure 12), similar to PiBasRo)
+- PiBas ([Cash et al., NDSS'14](https://eprint.iacr.org/2014/853.pdf)) (specifically the result-hiding variant used in [Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf) figure 12, similar to PiBasRo)
 - NLogN ([Asharov et al., STOC'16](https://eprint.iacr.org/2016/251.pdf), approach #3 "Improving the Cash–Tessaro Scheme")
 - Logarithmic-SRC ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
 - Logarithmic-SRC-i ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
@@ -76,8 +76,8 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 - This is NOT intended for actual, real-world use! It's more a proof of concept or a simulation for doing experimental evaluation.
 - The client-server distinction is fairly minimal and is only meant for benchmarking things like network communication. This implementation does not actually run across two separate hosts or have a well-defined client/server program.
     - The "client" classes for each scheme also function as the "controller", exposing the SSE API and implementing the client-side logic. These classes in turn may own "server" classes, which mostly serve to just store and perform basic retrieval operations on encrypted indexes.
-    - At the moment, only the "most underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep one or more instances of these underlying schemes (specifically, the underlying schemes' client classes, which hence also includes the servers).
-- Ids and keywords MUST be nonnegative integer values. Otherwise, Bad Things may happen.
+    - At the moment, only the "most underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep one or more instances of these underlying schemes (specifically, of the underlying schemes' client classes, which hence also includes the servers).
+- Ids and keywords MUST be nonnegative integral values. Otherwise, Bad Things may happen.
 - While database tuples each possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
 - Experiments can be found in [src/app/experiments/](src/app/experiments/).

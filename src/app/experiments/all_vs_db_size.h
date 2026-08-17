@@ -21,12 +21,12 @@ namespace app::experiments {
 
 
 // config
-inline constexpr bigint RESULT_SIZE = 4;
+inline constexpr bigint RESULT_SIZE = 100;
 
 
 class AllVsDbSize : public IExperiment<ISse<>> {
 public:
-    DbSizesExperiment(bigint maxDbSizeExp) :
+    AllVsDbSize(bigint maxDbSizeExp) :
         maxDbSizeExp(maxDbSizeExp)
     {
         bigint maxDbSize = std::pow(2, maxDbSizeExp);
@@ -38,7 +38,7 @@ public:
         std::cout << "=============================== All vs. DB Size ================================"
                   << std::endl;
         std::cout << "Setup and search vs. DB size up to 2^" << this->maxDbSizeExp << std::endl;
-        std::cout << "Fixed search result size " << this->resultSize << std::endl;
+        std::cout << "Fixed query result size " << this->resultSize << std::endl;
         std::cout << "================================================================================"
                   << std::endl;
         std::cout << std::endl << std::endl;
@@ -65,10 +65,8 @@ public:
             );
 
             // search
-            // >>TODO testing
-            auto tmp = sse->search(query);
+            sse->search(query);
             sse->benchmark->print(shouldBenchmark, "Search");
-            std::cout << "result count is " << tmp.size() << std::endl;
 
             sse->clear();
         }

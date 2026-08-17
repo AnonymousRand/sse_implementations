@@ -27,7 +27,7 @@ public:
         std::cout << std::endl;
         std::cout << "============================ Search vs. Result Size ============================"
                   << std::endl;
-        std::cout << "Search vs. query result size up to " << this->dbSizeExp << std::endl;
+        std::cout << "Search vs. query result size up to 2^" << this->dbSizeExp << std::endl;
         std::cout << "Fixed DB size 2^" << this->dbSizeExp << std::endl;
         std::cout << "================================================================================"
                   << std::endl;
@@ -38,7 +38,7 @@ public:
         Benchmark::printHeader(shouldBenchmark);
 
         bigint dbSize = std::pow(2, this->dbSizeExp);
-        for (bigint resultSizeExp = 0; resultSizeExp <= std::log2(dbSize); resultSizeExp++) {
+        for (bigint resultSizeExp = 0; resultSizeExp <= this->dbSizeExp; resultSizeExp++) {
             bigint resultSize = std::pow(2, resultSizeExp);
             Db<> db;
             createDb(db, resultSize, true, false);

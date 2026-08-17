@@ -27,7 +27,7 @@ public:
         std::cout << std::endl;
         std::cout << "============================ Search vs. Range Size ============================="
                   << std::endl;
-        std::cout << "Search vs. query range size up to " << this->dbSizeExp << std::endl;
+        std::cout << "Search vs. query range size up to 2^" << this->dbSizeExp << std::endl;
         std::cout << "Fixed DB size 2^" << this->dbSizeExp << std::endl;
         std::cout << "================================================================================"
                   << std::endl;

@@ -86,8 +86,8 @@ int main() {
     // adjust at will here!
     Db<> debuggingDb;
     app::createDb(debuggingDb, maxDbSize, true, true);
-    app::experiments::Debugging debugging(std::move(debuggingDb), Range<Kw> {3, 5}, maxDbSizeExp);
-    debugging.printHeader(maxDbSizeExp, debuggingQuery);
+    app::experiments::Debugging debugging(std::move(debuggingDb), Range<Kw> {3, 5});
+    debugging.printHeader();
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
     debugging.run(piBas.get(), config::SHOULD_BENCHMARK);
@@ -138,7 +138,7 @@ int main() {
     // all vs. DB size experiment
 
     app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp);
-    allVsDbSize.printHeader(maxDbSizeExp, ,resultCount);
+    allVsDbSize.printHeader();
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
     allVsDbSize.run(piBas.get(), config::SHOULD_BENCHMARK);
@@ -186,7 +186,7 @@ int main() {
     // search vs. result size experiment
 
     app::experiments::SearchVsResultSize searchVsResultSize(maxDbSizeExp);
-    searchVsResultSize.printHeader(maxDbSizeExp);
+    searchVsResultSize.printHeader();
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
     searchVsResultSize.run(piBas.get(), config::SHOULD_BENCHMARK);
@@ -234,7 +234,7 @@ int main() {
     // search vs. range size experiment
 
     app::experiments::SearchVsRangeSize searchVsRangeSize(maxDbSizeExp);
-    searchVsRangeSize.printHeader(maxDbSizeExp);
+    searchVsRangeSize.printHeader();
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
     searchVsRangeSize.run(piBas.get(), config::SHOULD_BENCHMARK);
@@ -282,7 +282,7 @@ int main() {
     // search vs. false positives experiment
 
     app::experiments::SearchVsFalsePos searchVsFalsePos(maxDbSizeExp);
-    searchVsFalsePos.printHeader(maxDbSizeExp);
+    searchVsFalsePos.printHeader();
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
     searchVsFalsePos.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
@@ -301,7 +301,7 @@ int main() {
 
     if (config::DSSE_SHOULD_BENCHMARK_UPDTS) {
         app::experiments::UpdateVsDbSize updateVsDbSize(maxDbSizeExp);
-        updateVsDbSize.printHeader(maxDbSizeExp);
+        updateVsDbSize.printHeader();
 
         std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
         updateVsDbSize.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);

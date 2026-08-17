@@ -19,12 +19,15 @@ namespace app {
  */
 void createDb(
     Db<>& ret, bigint dbSize, bool isRandom, bool hasDeletions,
-    bigint minKw = 0, bigint maxKw = dbSize + minKw - 1
+    bigint minKw = DUMMY, bigint maxKw = DUMMY
 ) {
     if (dbSize == 0) {
         return;
     }
-    std::uniform_int_distribution<bigint> dist(minKw, maxKw);
+
+    // default param values (they can't depend on earlier function params)
+    if (minKw == DUMMY) { minKw = 0; }
+    if (maxKw == DUMMY) { maxKw = dbSize + minKw - 1; }
 
     Id minId = 0;
     Id maxId = dbSize - 1;
@@ -38,6 +41,7 @@ void createDb(
 
     if (isRandom) {
         // fill the rest with random keywords
+        std::uniform_int_distribution<bigint> dist(minKw, maxKw);
         for (Id id = minId; id <= maxId; id++) {
             Kw kw = dist(utils::random::RNG);
             Range<Kw> kwRange {kw, kw};
