@@ -18,7 +18,15 @@
 template <std::integral T>
 class Range : public std::pair<T, T> {
 public:
-    inline static const Range DUMMY() { return Range {::DUMMY, ::DUMMY}; }
+    inline static const Range DUMMY() {
+        return Range {::DUMMY, ::DUMMY};
+    }
+
+    static const bool isDummy(const Range& range) {
+        return range == DUMMY();
+    }
+
+    //--------------------------------------------------------------------------
 
     Range() = default;
     Range(T start, T end);

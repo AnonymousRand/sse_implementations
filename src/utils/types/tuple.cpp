@@ -37,6 +37,12 @@ std::ostream& operator <<(std::ostream& os, const IDbTuple<DbDoc, DbKw>& iDbTupl
 }
 
 
+template <class DbDoc, class DbKw>
+bool operator ==(const IDbTuple<DbDoc, DbKw>& tuple1, const IDbTuple<DbDoc, DbKw>& tuple2) {
+    return tuple1.dbDoc == tuple2.dbDoc && tuple1.dbKwRange == tuple2.dbKwRange;
+}
+
+
 //==============================================================================
 // `Tuple`
 //==============================================================================
@@ -84,16 +90,10 @@ std::string Tuple<DbKw>::toStr() const {
 
 
 template <class DbKw>
-Tuple<DbKw> Tuple<DbKw>::fromUstr(const ustring& ustr) {
-    return Tuple<DbKw>::fromStr(::utils::ustr::toStr(ustr));
-}
-
-
-template <class DbKw>
 Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, REGEX) || matches.size() != 5) {
-        std::cerr << "Error: Tuple::fromUstr(): bad string \"" << str << "\" passed" << std::endl
+        std::cerr << "Error: Tuple::fromStr(): bad string \"" << str << "\" passed" << std::endl
                   << "Regex to match is \"" << REGEX_STR << "\"; " << "matched groups are:"
                   << std::endl;
         for (auto match : matches) {
@@ -110,8 +110,14 @@ Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
 }
 
 
+template <class DbKw>
+Tuple<DbKw> Tuple<DbKw>::fromUstr(const ustring& ustr) {
+    return Tuple<DbKw>::fromStr(::utils::ustr::toStr(ustr));
+}
+
+
 //------------------------------------------------------------------------------
-// explicit template instantiations
+// explicit template instantiations (for `IDbTuple`)
 
 
 template class IDbTuple<std::tuple<Id, Kw, Op>, Kw>;
@@ -120,6 +126,16 @@ template class IDbTuple<std::tuple<Id, Kw, Op>, Kw>;
 
 template class Tuple<Kw>;
 //template class Tuple<IdAlias>;
+
+
+template bool operator ==(
+    const IDbTuple<std::tuple<Id, Kw, Op>, Kw>& tuple1,
+    const IDbTuple<std::tuple<Id, Kw, Op>, Kw>& tuple2
+);
+//template bool operator ==(
+//    const IDbTuple<std::tuple<Id, Kw, Op>, IdAlias>& tuple1,
+//    const IDbTuple<std::tuple<Id, Kw, Op>, IdAlias>& tuple2
+//);
 
 
 template std::ostream& operator <<(
@@ -163,15 +179,10 @@ std::string SrcIDb1Tuple::toStr() const {
 }
 
 
-SrcIDb1Tuple SrcIDb1Tuple::fromUstr(const ustring& ustr) {
-    return SrcIDb1Tuple::fromStr(::utils::ustr::toStr(ustr));
-}
-
-
 SrcIDb1Tuple SrcIDb1Tuple::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, REGEX) || matches.size() != 4) {
-        std::cerr << "Error: SrcIDb1Tuple::fromUstr(): bad string \"" << str << "\" passed"
+        std::cerr << "Error: SrcIDb1Tuple::fromStr(): bad string \"" << str << "\" passed"
                   << std::endl
                   << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                   << std::endl;
@@ -188,11 +199,22 @@ SrcIDb1Tuple SrcIDb1Tuple::fromStr(const std::string& str) {
 }
 
 
+SrcIDb1Tuple SrcIDb1Tuple::fromUstr(const ustring& ustr) {
+    return SrcIDb1Tuple::fromStr(::utils::ustr::toStr(ustr));
+}
+
+
 //------------------------------------------------------------------------------
-// explicit template instantiations
+// explicit template instantiations (for `IDbTuple`)
 
 
 template class IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>;
+
+
+template bool operator ==(
+    const IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>& tuple1,
+    const IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>& tuple2
+);
 
 
 template std::ostream& operator <<(

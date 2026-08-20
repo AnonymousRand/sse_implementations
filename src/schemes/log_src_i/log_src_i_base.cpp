@@ -53,7 +53,7 @@ std::vector<Tuple<>> LogSrcIBase<Underly>::search(
     // query 1
 
     Range<Kw> src1 = this->tdag1->findSrc(query);
-    if (src1 == Range<Kw>::DUMMY()) { 
+    if (Range<Kw>::isDummy(src1)) {
         return std::vector<Tuple<>> {};
     }
     std::vector<SrcIDb1Tuple> query1Results = this->underly1->search(src1, false, false);
@@ -86,7 +86,7 @@ std::vector<Tuple<>> LogSrcIBase<Underly>::search(
     // perform query 2
     Range<IdAlias> query2 {minIdAlias, maxIdAlias};
     Range<IdAlias> src2 = this->tdag2->findSrc(query2);
-    if (src2 == Range<IdAlias>::DUMMY()) {
+    if (Range<IdAlias>::isDummy(src2)) {
         return std::vector<Tuple<>> {};
     }
     return this->underly2->search(src2, shouldCleanUpResults, false);
@@ -136,7 +136,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
         }
         // also exclude ALL dummies (this is done client-side so it's fine to reveal sizes)
         Range<IdAlias> idAliasRange = db1Tuple.getIdAliasRange();
-        if (idAliasRange == Range<IdAlias>::DUMMY()) {
+        if (Range<IdAlias>::isDummy(idAliasRange)) {
             continue;
         }
 

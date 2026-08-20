@@ -44,6 +44,11 @@ public:
     ustring toUstr() const;
 
     template <class DbDoc2, class DbKw2>
+    friend bool operator ==(
+        const IDbTuple<DbDoc2, DbKw2>& tuple1, const IDbTuple<DbDoc2, DbKw2>& tuple2
+    );
+
+    template <class DbDoc2, class DbKw2>
     friend std::ostream& operator <<(std::ostream& os, const IDbTuple<DbDoc2, DbKw2>& iDbTuple);
 
 protected:
@@ -75,6 +80,12 @@ public:
     inline static const Tuple DUMMY(const Range<DbKw>& dbKwRange) {
         return Tuple {::DUMMY, ::DUMMY, Op::DUMMY, dbKwRange};
     }
+
+    static bool isDummy(const Tuple& tuple) {
+        return tuple == DUMMY(tuple.getDbKwRange());
+    }
+
+    //--------------------------------------------------------------------------
 
     using IDbTuple<std::tuple<Id, Kw, Op>, DbKw>::IDbTuple;
 
@@ -113,6 +124,12 @@ public:
     inline static const SrcIDb1Tuple DUMMY(const Range<Kw>& kwRange) {
         return SrcIDb1Tuple {::DUMMY, Range<IdAlias>::DUMMY(), kwRange};
     }
+
+    static bool isDummy(const SrcIDb1Tuple& tuple) {
+        return tuple == DUMMY(tuple.getDbKwRange());
+    }
+
+    //--------------------------------------------------------------------------
 
     using IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>::IDbTuple;
 

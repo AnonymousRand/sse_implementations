@@ -57,7 +57,7 @@ std::vector<Tuple<>> LogSrc<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
     Range<Kw> src = this->tdag->findSrc(query);
-    if (src == Range<Kw>::DUMMY()) {
+    if (Range<Kw>::isDummy(src)) {
         return std::vector<Tuple<>> {};
     }
     return this->underly->search(src, shouldCleanUpResults, false);

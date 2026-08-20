@@ -266,15 +266,14 @@ void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
             }
 
             DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
-            // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
-            // to easily access these `DbKw` ranges in plaintext
-            Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
             // exclude dummies/padding (that are from NLogN's `setup()`, but not from any upstream
             // SSE scheme which is using NLogN as an underlying scheme. while deleting those dummies
             // too seems to work fine, we don't since we don't have an easy, general way to check
             // for those here, and that should be the upstream scheme's concern anyway.)
-            if (dbKwRange != Range<DbKw>::DUMMY()) {
-                DbTuple newDbTuple(dbTuple.getDbDoc(), dbKwRange);
+            if (!DbTuple::isDummy(dbTuple)) {
+                // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
+                // to easily access these `DbKw` ranges in plaintext
+                DbTuple newDbTuple(dbTuple.getDbDoc(), dbTuple.getDbKwRange());
                 ret.push_back(newDbTuple);
             }
         }

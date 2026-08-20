@@ -216,7 +216,7 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) const {
     // and extra TDAG parent 
     std::map<T, Range<T>> candidates;
     auto tryAddCandidate = [&](Range<T> range) {
-        if (range == Range<T>::DUMMY() || !range.contains(targetRange)) {
+        if (Range<T>::isDummy(range) || !range.contains(targetRange)) {
             return T(-1);
         }
 
