@@ -55,9 +55,7 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
             Db<Tuple<>> indDb;
             if (dbPos < db.size()) {
                 if (dbPos + indSize < db.size()) {
-                    this->benchmark->startProfile("copy DB");
                     indDb = Db<Tuple<>>(db, dbPos, dbPos + indSize);
-                    this->benchmark->stopProfile("copy DB");
                 } else {
                     indDb = Db<Tuple<>>(db, dbPos, db.size());
                 }

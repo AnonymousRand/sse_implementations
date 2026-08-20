@@ -85,17 +85,17 @@ protected:
     //--------------------------------------------------------------------------
     // iterator
 
-    // this allows us to iterate through a `DbDisk` using range-based `for` loop or iterators,
+    // this allows us to iterate through an `IDb` using range-based `for` loop or iterators,
     // implementing the bare minimum operator overloads necessary to do so
     // 
-    // (note this is not a `LegacyRandomAccessIterator`, meaning things like `std::sort()`
-    // which need to modify it in place will not work. this is because that requires dereferencing
-    // the iterator to return a reference to a `DbTuple` object, but `DbTuple` objects are only
-    // constructed on the fly when reading from a `DbDisk`, so this is basically impossible.)
+    // (note this is not a `LegacyRandomAccessIterator`, meaning things like `std::sort()` which
+    // need to modify it in place will not work. this is because that requires dereferencing the
+    // iterator to return a reference to a `DbTuple` object, but `DbTuple` objects are constructed
+    // on the fly when reading from a `DbDisk`, for example, so this is basically impossible.)
 
 public:
     // the template allows `DbTuple2` to be either `DbTuple` or `const DbTuple` so we can have
-    // both non-const (e.g. for `std::sort()`) and const iterators (e.g. for `const DbDisk<>&`)
+    // both non-const (e.g. for `std::sort()`) and const iterators (e.g. for `const IDb<>&`)
     template <class DbTuple2> requires std::is_same_v<std::remove_cv_t<DbTuple2>, DbTuple>
     struct Iter {
         const IDb<DbTuple>* db = nullptr;

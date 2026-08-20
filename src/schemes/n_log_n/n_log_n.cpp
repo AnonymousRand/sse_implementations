@@ -175,9 +175,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
     this->benchmark->stopProfile("getUniq");
     for (const Range<DbKw>& dbKwRange : uniqDbKwRanges) {
-        this->benchmark->startProfile("ind find");
         auto iter = ind.find(dbKwRange);
-        this->benchmark->stopProfile("ind find");
         if (iter == ind.end()) {
             std::cerr << "Error: NLogN::setup(): DB kw range " << dbKwRange
                       << " not found in index" << std::endl;
@@ -188,13 +186,9 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         Db<DbTuple> dbKwList = std::move(iter->second);
         bigint dbKwCount = dbKwList.size();
         DbKw maxDbKw = db.getDbKwBounds().second;
-        this->benchmark->startProfile("pad");
         dbKwList.pad(maxDbKw);
-        this->benchmark->stopProfile("pad");
         // randomly permute documents associated with same keyword, i.e. shuffle within bucket
-        this->benchmark->startProfile("shuffle");
         dbKwList.shuffle();
-        this->benchmark->stopProfile("shuffle");
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         bigint dbKwPaddedCount = dbKwList.size();
@@ -231,9 +225,11 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             );
             this->benchmark->stopProfile("crypto");
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
+            this->benchmark->startProfile("write");
             encIndLvls[lvl]->write(
                 startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
             );
+            this->benchmark->stopProfile("write");
         }
     }
 
