@@ -81,6 +81,7 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 - While database tuples each possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
 - Experiments can be found in [src/app/experiments/](src/app/experiments/).
+- Profile a section of code inside an SSE scheme's class using `this->benchmarks->startProfile(<profile display name>)` and `this->benchmarks->endProfile(<profile display name>)`; then the total time stored in the `<profile display name>` profile will be printed out in the benchmarking info.
 - i have pain
 
 # dev notes/conventions
