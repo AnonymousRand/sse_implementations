@@ -69,7 +69,7 @@ public:
         }
     }
 
-    void endProfile(const std::string& profileName) {
+    void stopProfile(const std::string& profileName) {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto iter = this->profiles.find(profileName);
@@ -78,7 +78,7 @@ public:
             std::chrono::duration<double, std::milli> elapsed = end - profile.start;
             profile.time += elapsed.count();
         } else {
-            std::cerr << "Error: Benchmark::endProfile(): attempted to end profile "
+            std::cerr << "Error: Benchmark::stopProfile(): attempted to end profile "
                       << profileName << ", but it has not been started yet" << std::endl;
             std::exit(EXIT_FAILURE);
         }

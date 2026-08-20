@@ -69,7 +69,7 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
         // (same as client's `setup()`)
         this->benchmark->startProfile("crypto");
         ustring label = utils::crypto::hash(queryToken + utils::ustr::toUstr(dbKwCounter));
-        this->benchmark->endProfile("crypto");
+        this->benchmark->stopProfile("crypto");
         ubigint pos = utils::misc::hashToPos(label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;

@@ -71,7 +71,7 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
 
         this->benchmark->startProfile("crypto");
         ustring label = utils::crypto::hash(queryToken + utils::ustr::toUstr(dbKwCounter));
-        this->benchmark->endProfile("crypto");
+        this->benchmark->stopProfile("crypto");
         ubigint pos = utils::misc::hashToPos(label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;
@@ -168,16 +168,16 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     // generate (plaintext) index of keywords to documents/ids mapping
     this->benchmark->startProfile("ind");
     Ind<DbTuple> ind(db);
-    this->benchmark->endProfile("ind");
+    this->benchmark->stopProfile("ind");
 
     // for each w in W
     this->benchmark->startProfile("getUniq");
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
-    this->benchmark->endProfile("getUniq");
+    this->benchmark->stopProfile("getUniq");
     for (const Range<DbKw>& dbKwRange : uniqDbKwRanges) {
         this->benchmark->startProfile("ind find");
         auto iter = ind.find(dbKwRange);
-        this->benchmark->endProfile("ind find");
+        this->benchmark->stopProfile("ind find");
         if (iter == ind.end()) {
             std::cerr << "Error: NLogN::setup(): DB kw range " << dbKwRange
                       << " not found in index" << std::endl;
@@ -190,18 +190,18 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         DbKw maxDbKw = db.getDbKwBounds().second;
         this->benchmark->startProfile("pad");
         dbKwList.pad(maxDbKw);
-        this->benchmark->endProfile("pad");
+        this->benchmark->stopProfile("pad");
         // randomly permute documents associated with same keyword, i.e. shuffle within bucket
         this->benchmark->startProfile("shuffle");
         dbKwList.shuffle();
-        this->benchmark->endProfile("shuffle");
+        this->benchmark->stopProfile("shuffle");
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         bigint dbKwPaddedCount = dbKwList.size();
         // PRF(K_1, w)
         this->benchmark->startProfile("crypto");
         ustring queryToken = this->genQueryToken(dbKwRange);
-        this->benchmark->endProfile("crypto");
+        this->benchmark->stopProfile("crypto");
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
         ustring label;
         std::pair<ubigint, ubigint> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
@@ -215,7 +215,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         ustring encDbKwCount = utils::crypto::padAndEncrypt(
             this->encKey, utils::ustr::toUstr(dbKwCount), ivDict, EncInd::DATA_LEN - 1
         );
-        this->benchmark->endProfile("crypto");
+        this->benchmark->stopProfile("crypto");
         ubigint posDict = this->mapNoMod(queryToken, labelDict);
         dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
@@ -229,7 +229,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             ustring encDbTuple = utils::crypto::padAndEncrypt(
                 this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
-            this->benchmark->endProfile("crypto");
+            this->benchmark->stopProfile("crypto");
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encIndLvls[lvl]->write(
                 startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
@@ -301,7 +301,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     // PRF(K_1, w)
     this->benchmark->startProfile("crypto");
     ustring queryToken = this->genQueryToken(query);
-    this->benchmark->endProfile("crypto");
+    this->benchmark->stopProfile("crypto");
 
     // first retrieve the number of results/`dbKwCount` to know what level to search
     // (and how many dummies there are)
@@ -316,7 +316,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     ustring ivDict = encIndValDict.second;
     this->benchmark->startProfile("crypto");
     ustring decDbKwCount = utils::crypto::decryptAndUnpad(this->encKey, encDbKwCount, ivDict);
-    this->benchmark->endProfile("crypto");
+    this->benchmark->stopProfile("crypto");
     bigint dbKwCount = utils::ustr::fromUstr(decDbKwCount);
     bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
@@ -359,7 +359,7 @@ ubigint NLogN<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) c
     // l <- Hash(PRF(K_1, w))
     this->benchmark->startProfile("crypto");
     retLabel = utils::crypto::hash(queryToken);
-    this->benchmark->endProfile("crypto");
+    this->benchmark->stopProfile("crypto");
     return utils::misc::hashToPos(retLabel); // no modulus
 }
 

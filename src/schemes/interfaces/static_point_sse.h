@@ -77,7 +77,7 @@ protected:
         ustring iv = encIndVal.second;
         this->benchmark->startProfile("crypto");
         ustring decDbTuple = utils::crypto::decryptAndUnpad(this->encKey, encDbTuple, iv);
-        this->benchmark->endProfile("crypto");
+        this->benchmark->stopProfile("crypto");
         return DbTuple::fromUstr(decDbTuple);
     }
 };
