@@ -69,9 +69,7 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
         // (same as client's `setup()`)
 
-        this->benchmark->startProfile("crypto");
         ustring label = utils::crypto::hash(queryToken + utils::ustr::toUstr(dbKwCounter));
-        this->benchmark->stopProfile("crypto");
         ubigint pos = utils::misc::hashToPos(label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;
@@ -166,14 +164,10 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     // build index
 
     // generate (plaintext) index of keywords to documents/ids mapping
-    this->benchmark->startProfile("ind");
     Ind<DbTuple> ind(db);
-    this->benchmark->stopProfile("ind");
 
     // for each w in W
-    this->benchmark->startProfile("getUniq");
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
-    this->benchmark->stopProfile("getUniq");
     for (const Range<DbKw>& dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
         if (iter == ind.end()) {
@@ -193,9 +187,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         bigint dbKwPaddedCount = dbKwList.size();
         // PRF(K_1, w)
-        this->benchmark->startProfile("crypto");
         ustring queryToken = this->genQueryToken(dbKwRange);
-        this->benchmark->stopProfile("crypto");
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
         ustring label;
         std::pair<ubigint, ubigint> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
@@ -205,11 +197,9 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         ustring labelDict;
         ustring ivDict = utils::crypto::genIv();
-        this->benchmark->startProfile("crypto");
         ustring encDbKwCount = utils::crypto::padAndEncrypt(
             this->encKey, utils::ustr::toUstr(dbKwCount), ivDict, EncInd::DATA_LEN - 1
         );
-        this->benchmark->stopProfile("crypto");
         ubigint posDict = this->mapNoMod(queryToken, labelDict);
         dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
@@ -219,17 +209,13 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
             ustring iv = utils::crypto::genIv();
-            this->benchmark->startProfile("crypto");
             ustring encDbTuple = utils::crypto::padAndEncrypt(
                 this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
-            this->benchmark->stopProfile("crypto");
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            this->benchmark->startProfile("write");
             encIndLvls[lvl]->write(
                 startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
             );
-            this->benchmark->stopProfile("write");
         }
     }
 
@@ -295,9 +281,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     std::vector<DbTuple> results {};
 
     // PRF(K_1, w)
-    this->benchmark->startProfile("crypto");
     ustring queryToken = this->genQueryToken(query);
-    this->benchmark->stopProfile("crypto");
 
     // first retrieve the number of results/`dbKwCount` to know what level to search
     // (and how many dummies there are)
@@ -310,9 +294,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     }
     ustring encDbKwCount = encIndValDict.first;
     ustring ivDict = encIndValDict.second;
-    this->benchmark->startProfile("crypto");
     ustring decDbKwCount = utils::crypto::decryptAndUnpad(this->encKey, encDbKwCount, ivDict);
-    this->benchmark->stopProfile("crypto");
     bigint dbKwCount = utils::ustr::fromUstr(decDbKwCount);
     bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
 
@@ -353,9 +335,7 @@ ustring NLogN<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
 template <IsDbTuple DbTuple>
 ubigint NLogN<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
-    this->benchmark->startProfile("crypto");
     retLabel = utils::crypto::hash(queryToken);
-    this->benchmark->stopProfile("crypto");
     return utils::misc::hashToPos(retLabel); // no modulus
 }
 
