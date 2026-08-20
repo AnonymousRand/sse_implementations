@@ -20,6 +20,9 @@
 // (and `= default` calls their parent versions in order of inheritance)
 template <IsDbTuple DbTuple>
 class DbDisk : public IDiskStorage, public IDb<DbTuple> {
+private:
+    using IDb<DbTuple>::DbKw;
+
 public:
     //--------------------------------------------------------------------------
     // constructors/destructors
@@ -29,7 +32,7 @@ public:
     /**
      * copy `db` from `startIndex` (inclusive) to `endIndex` (exclusive).
      */
-    DbDisk(const DbDisk& db, bigint startIndex, bigint endIndex);
+    DbDisk(const DbDisk& other, bigint startIndex, bigint endIndex);
 
     /**
      * initialize a `DbDisk` with the raw values in the brace-enclosed initializer list `initList`.
@@ -81,10 +84,6 @@ private:
 
     //--------------------------------------------------------------------------
     // helpers
-
-    // helpers that don't do encoding/decoding (e.g. also good for faster copy constructors)
-    void readRaw(bigint index, char* ret) const;
-    void appendRaw(const char* dbTupleCstr);
 
     /**
      * wrapper for algorithms (e.g. from `<algorithms>`) to make them work when a `DbDisk` isn't

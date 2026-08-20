@@ -13,6 +13,9 @@
 // (hence we also try to match `std::vector`'s method names as much as possible here)
 template <IsDbTuple DbTuple = Tuple<>>
 class IDb {
+protected:
+    using DbKw = typename DbTuple::DbKwType;
+
 public:
     // note: unfortunately most constructors are not currently enforced here since they can't really
     // be virtual, so just make sure all necessary constructors are implemented in all children
@@ -55,21 +58,29 @@ public:
     bigint size() const { return this->_size; }
     bool empty() const { return this->_size == 0; }
     virtual void reserve(bigint size) = 0;
+    Range<bigint> getDbKwBounds() const { return Range<bigint> {this->minDbKw, this->maxDbKw}; }
 
     virtual void shuffle() = 0;
     virtual void sort(
         const std::function<bool(const DbTuple& dbTuple1, const DbTuple& dbTuple2)>& compare
     ) = 0;
 
-    //--------------------------------------------------------------------------
-    // utils
-
-    Range<typename DbTuple::DbKwType> findDbKwBounds() const;
-    std::unordered_set<Range<typename DbTuple::DbKwType>> getUniqDbKwRanges() const;
-    void pad(typename DbTuple::DbKwType& currMaxDbKw);
+    std::unordered_set<Range<DbKw>> getUniqDbKwRanges() const;
+    void pad(DbKw& currMaxDbKw);
 
 protected:
     bigint _size = 0;
+    bigint minDbKw = DUMMY;
+    bigint maxDbKw = DUMMY;
+
+    //--------------------------------------------------------------------------
+    // helpers
+
+    /**
+     * callback that you MUST call after adding a new tuple to the DB! (e.g. as it
+     * updates member variables.
+     */
+    void onNewDbTuple(const DbTuple& dbTuple);
 
     //--------------------------------------------------------------------------
     // iterator

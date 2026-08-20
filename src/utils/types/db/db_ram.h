@@ -13,6 +13,8 @@
 template <IsDbTuple DbTuple>
 class DbRam : public IDb<DbTuple> {
 private:
+    using IDb<DbTuple>::DbKw;
+
     using InnerType = std::vector<DbTuple>;
 
 public:
@@ -24,7 +26,7 @@ public:
     /**
      * copy `db` from `startIndex` (inclusive) to `endIndex` (exclusive).
      */
-    DbRam(const DbRam& db, bigint startIndex, bigint endIndex);
+    DbRam(const DbRam& other, bigint startIndex, bigint endIndex);
 
     /**
      * initialize a `DbRam` with the raw values in the brace-enclosed initializer list `initList`.

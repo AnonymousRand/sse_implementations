@@ -17,6 +17,7 @@
 #include "utils/types/basic_types.h"
 #include "utils/types/db/i_db.h"
 #include "utils/types/i_disk_storage.h"
+#include "utils/types/range.h"
 #include "utils/types/tuple.h"
 
 
@@ -32,14 +33,13 @@ DbDisk<DbTuple>::DbDisk() {
 
 
 template <IsDbTuple DbTuple>
-DbDisk<DbTuple>::DbDisk(const DbDisk<DbTuple>& db, bigint startIndex, bigint endIndex) :
+DbDisk<DbTuple>::DbDisk(const DbDisk<DbTuple>& other, bigint startIndex, bigint endIndex) :
+    // important to always call default constructor so `IDiskStorage::init()` can be called!
     DbDisk<DbTuple>()
 {
     for (bigint index = startIndex; index < endIndex; index++) {
-        // avoid decoding and re-encoding every tuple, which incurs expensive regex
-        char dbTupleCstr[TUPLE_LEN];
-        db.readRaw(index, dbTupleCstr);
-        this->appendRaw(dbTupleCstr);
+        DbTuple dbTuple = other[index];
+        this->push_back(dbTuple);
     }
 }
 
@@ -61,6 +61,7 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
 // copy constructor
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple>::DbDisk(const DbDisk& other) :
+    // call `IDb`'s base copy constructor to ensure it gets run as well
     IDb<DbTuple>(other)
 {
     IDiskStorage::copyFrom(other);
@@ -89,20 +90,49 @@ void DbDisk<DbTuple>::push_back(const DbTuple& dbTuple) {
     // padding with '\0' bytes if necessary
     if (dbTupleStr.length() > TUPLE_LEN) {
         std::cerr << "Error: DbDisk::push_back(): write of length " << dbTupleStr.length()
-                  << " bytes is not allowed! "
-                  << "(want " << TUPLE_LEN << " bytes)" << std::endl;
+                  << " bytes is not allowed! (want " << TUPLE_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
     utils::misc::padStr(dbTupleStr, TUPLE_LEN);
 
-    this->appendRaw(dbTupleStr.c_str());
+    // write to DB
+    std::fseek(this->file, 0, SEEK_END);
+    int itemsWritten = std::fwrite(dbTupleStr.c_str(), TUPLE_LEN, 1, this->file);
+    if (itemsWritten != 1) {
+        std::cerr << "Error: DbDisk::push_back(): error writing to file " << this->filename
+                  << " (nothing written)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    this->isFlushed = false;
+
+    // update member variables as needed
+    this->onNewDbTuple(dbTuple);
 }
 
 
 template <IsDbTuple DbTuple>
 DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
+    if (index >= this->_size) {
+        std::cerr << "Error: DbDisk::operator []: index out of bounds "
+                  << "(index is " << index << ", size is " << this->_size << ")" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    // make sure to flush if more writes have been done since the last manual flush
+    if (!this->isFlushed) {
+        std::fflush(this->file);
+        this->isFlushed = true;
+    }
+
+    // read from DB
     char dbTupleCstr[TUPLE_LEN];
-    this->readRaw(index, dbTupleCstr);
+    std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
+    int itemsRead = std::fread(dbTupleCstr, TUPLE_LEN, 1, this->file);
+    if (itemsRead != 1) {
+        std::cerr << "Error: DbDisk::operator []: error reading from file " << this->filename
+                  << " (nothing read)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
     std::string dbTupleStr(dbTupleCstr, TUPLE_LEN);
 
     // unpad as necessary so that decoding works properly
@@ -140,45 +170,6 @@ void DbDisk<DbTuple>::sort(
 
 //--------------------------------------------------------------------------
 // helpers
-
-
-template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::readRaw(bigint index, char* ret) const {
-    if (index >= this->_size) {
-        std::cerr << "Error: DbDisk::readRaw(): index out of bounds "
-                  << "(index is " << index << ", size is " << this->_size << ")" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    // make sure to flush if more writes have been done since the last manual flush
-    if (!this->isFlushed) {
-        std::fflush(this->file);
-        this->isFlushed = true;
-    }
-
-    std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
-    int itemsRead = std::fread(ret, TUPLE_LEN, 1, this->file);
-    if (itemsRead != 1) {
-        std::cerr << "Error: DbDisk::readRaw(): error reading from file " << this->filename
-                  << " (nothing read)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-}
-
-
-template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::appendRaw(const char* dbTupleCstr) {
-    std::fseek(this->file, 0, SEEK_END);
-    int itemsWritten = std::fwrite(dbTupleCstr, TUPLE_LEN, 1, this->file);
-    if (itemsWritten != 1) {
-        std::cerr << "Error: DbDisk::appendRaw(): error writing to file " << this->filename
-                  << " (nothing written)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    this->isFlushed = false;
-
-    this->_size++;
-}
 
 
 template <IsDbTuple DbTuple>

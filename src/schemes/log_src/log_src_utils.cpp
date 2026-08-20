@@ -20,16 +20,15 @@ void buildTdagDbFromLeaves(
     using DbKw = typename DbTuple::DbKwType;
 
     // obtain TDAG leaf bounds
-    Range<DbKw> dbKwBounds = db.findDbKwBounds();
-    DbKw maxDbKw = dbKwBounds.second;
+    Range<DbKw> dbKwBounds = db.getDbKwBounds();
 
     // pad if necessary
     if (shouldPadDb) {
-        db.pad(maxDbKw);
+        db.pad(dbKwBounds.second);
     }
 
     // construct TDAG
-    tdag = new TdagNode<DbKw>(dbKwBounds.first, maxDbKw);
+    tdag = new TdagNode<DbKw>(dbKwBounds);
     
     // replicate every (leaf) DB tuple to all TDAG nodes that cover it
     replTdagDb<DbTuple>(db, tdag);

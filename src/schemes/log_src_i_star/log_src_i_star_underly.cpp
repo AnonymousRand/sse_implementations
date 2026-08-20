@@ -22,7 +22,7 @@ namespace log_src_i_star {
 
 template <IsDbTuple DbTuple>
 void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
-    Range<DbKw> dbKwBounds = db.findDbKwBounds();
+    Range<DbKw> dbKwBounds = db.getDbKwBounds();
     this->leafCount = dbKwBounds.size();
     NLogN<DbTuple>::setup(secParam, db);
 }

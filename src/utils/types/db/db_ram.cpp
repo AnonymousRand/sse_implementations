@@ -9,6 +9,7 @@
 #include "utils/random.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/i_db.h"
+#include "utils/types/range.h"
 #include "utils/types/tuple.h"
 
 
@@ -17,18 +18,22 @@
 
 
 template <IsDbTuple DbTuple>
-DbRam<DbTuple>::DbRam(const DbRam& db, bigint startIndex, bigint endIndex) :
-    vec(db.vec.begin() + startIndex, db.vec.begin() + endIndex)
-{
-   this->_size = this->vec.size();
+DbRam<DbTuple>::DbRam(const DbRam& other, bigint startIndex, bigint endIndex) {
+    // doing this manually in order to be able to set `minDbKw` and `maxDbKw` members
+    this->vec.reserve(endIndex - startIndex);
+    for (bigint index = startIndex; index < endIndex; index++) {
+        DbTuple dbTuple = other[index];
+        this->push_back(dbTuple);
+    }
 }
 
 
 template <IsDbTuple DbTuple>
-DbRam<DbTuple>::DbRam(std::initializer_list<DbTuple> initList) :
-    vec(initList)
-{
-    this->_size = this->vec.size();
+DbRam<DbTuple>::DbRam(std::initializer_list<DbTuple> initList) {
+    this->vec.reserve(initList.size());
+    for (const DbTuple& dbTuple : initList) {
+        this->push_back(dbTuple);
+    }
 }
 
 
@@ -49,7 +54,9 @@ void DbRam<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void DbRam<DbTuple>::push_back(const DbTuple& dbTuple) {
     this->vec.push_back(dbTuple);
-    this->_size++;
+
+    // update member variables as needed
+    this->onNewDbTuple(dbTuple);
 }
 
 

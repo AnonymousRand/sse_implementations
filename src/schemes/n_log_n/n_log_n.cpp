@@ -166,12 +166,18 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     // build index
 
     // generate (plaintext) index of keywords to documents/ids mapping
+    this->benchmark->startProfile("ind");
     Ind<DbTuple> ind(db);
+    this->benchmark->endProfile("ind");
 
     // for each w in W
+    this->benchmark->startProfile("getUniq");
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
+    this->benchmark->endProfile("getUniq");
     for (const Range<DbKw>& dbKwRange : uniqDbKwRanges) {
+        this->benchmark->startProfile("ind find");
         auto iter = ind.find(dbKwRange);
+        this->benchmark->endProfile("ind find");
         if (iter == ind.end()) {
             std::cerr << "Error: NLogN::setup(): DB kw range " << dbKwRange
                       << " not found in index" << std::endl;
@@ -181,11 +187,14 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         // pad keyword list to the next power of two
         Db<DbTuple> dbKwList = std::move(iter->second);
         bigint dbKwCount = dbKwList.size();
-        Range<DbKw> dbKwBounds = db.findDbKwBounds();
-        DbKw maxDbKw = dbKwBounds.second;
+        DbKw maxDbKw = db.getDbKwBounds().second;
+        this->benchmark->startProfile("pad");
         dbKwList.pad(maxDbKw);
+        this->benchmark->endProfile("pad");
         // randomly permute documents associated with same keyword, i.e. shuffle within bucket
+        this->benchmark->startProfile("shuffle");
         dbKwList.shuffle();
+        this->benchmark->endProfile("shuffle");
 
         // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
         bigint dbKwPaddedCount = dbKwList.size();

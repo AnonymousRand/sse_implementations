@@ -192,8 +192,7 @@ void EncInd::write(ubigint pos, const EncIndEntry& encIndEntry) {
     ustring entry = key + val.first + val.second;
     if (entry.length() != ENTRY_LEN) {
         std::cerr << "Error: EncInd::write(): write of length " << entry.length()
-                  << " bytes is not allowed! "
-                  << "(want " << ENTRY_LEN << " bytes)" << std::endl;
+                  << " bytes is not allowed! (want " << ENTRY_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
