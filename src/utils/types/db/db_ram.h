@@ -35,7 +35,7 @@ public:
 
 
     //--------------------------------------------------------------------------
-    // copy/move
+    // the big five
 
     // destructor
     ~DbRam() = default;

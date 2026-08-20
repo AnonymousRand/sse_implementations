@@ -49,7 +49,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->prfKey = utils::crypto::genKey(secParam);
     this->encKey = utils::crypto::genKey(secParam);
 
-    EncInd* encInd = new EncInd();
+    EncIndRand* encInd = new EncIndRand();
     encInd->init(this->size);
 
     //--------------------------------------------------------------------------
@@ -83,10 +83,10 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             // d <- Enc(K_2, w, id)
             ustring iv = utils::crypto::genIv();
             ustring encDbTuple = utils::crypto::padAndEncrypt(
-                this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
+                this->encKey, dbTuple.toUstr(), iv, EncIndBase::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            encInd->write(pos, std::pair {label, std::pair {encDbTuple, iv}});
+            encInd->writeToFirstEmpty(pos, std::pair {label, std::pair {encDbTuple, iv}}, this->benchmark.get());
         }
     }
 
@@ -112,7 +112,7 @@ void PiBas<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
-    EncInd* encInd = this->server->getEncInd();
+    EncIndRand* encInd = this->server->getEncInd();
 
     // don't use `this->size` as the bound here as that doesn't include padding while
     // `encInd` does (this should all be client-side anyway so not leaking anything)

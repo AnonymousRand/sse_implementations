@@ -37,7 +37,7 @@ IDiskStorage::~IDiskStorage() {
 
 
 //------------------------------------------------------------------------------
-// copy/move
+// the big five
 
 
 void IDiskStorage::copyFrom(const IDiskStorage& other) {

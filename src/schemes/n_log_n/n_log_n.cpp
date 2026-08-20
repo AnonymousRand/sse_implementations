@@ -1,99 +1,4 @@
 #include "schemes/n_log_n/n_log_n.h"
-#include "schemes/pi_bas/pi_bas_server.h"
-
-#include <concepts>
-#include <vector>
-
-#include "schemes/interfaces/sse_server.h"
-
-#include "utils/benchmark.h"
-#include "utils/crypto.h"
-#include "utils/misc.h"
-#include "utils/types/basic_types.h"
-#include "utils/types/enc_ind.h"
-#include "utils/types/tuple.h"
-#include "utils/types/ustring.h"
-
-
-template <IsDbTuple DbTuple>
-PiBasServer<DbTuple>::~PiBasServer() {
-    this->clear();
-}
-
-
-//------------------------------------------------------------------------------
-// `ISseServer`
-
-
-template <IsDbTuple DbTuple>
-void PiBasServer<DbTuple>::clear() {
-    // (this is deleted instead of just cleared since we only set it via direct
-    // pointer assignment, so if we don't delete we would make this memory inaccessible
-    // the next time we assign `encInd`)
-    if (this->encInd != nullptr) {
-        this->benchmark->serverStorage -= this->encInd->getSize() * EncInd::ENTRY_LEN;
-        delete this->encInd;
-        this->encInd = nullptr;
-    };
-}
-
-
-//------------------------------------------------------------------------------
-// helpers
-
-
-template <IsDbTuple DbTuple>
-void PiBasServer<DbTuple>::setEncInd(EncInd* encInd) {
-    bigint encIndBytes = encInd->getSize() * EncInd::ENTRY_LEN;
-    this->benchmark->serverStorage += encIndBytes;
-    this->benchmark->communication += encIndBytes;
-    this->encInd = encInd;
-}
-
-
-template <IsDbTuple DbTuple>
-EncInd* PiBasServer<DbTuple>::getEncInd() const {
-    this->benchmark->communication += this->encInd->getSize() * EncInd::ENTRY_LEN;
-    return this->encInd;
-}
-
-
-template <IsDbTuple DbTuple>
-std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryToken) const {
-    this->benchmark->communication += queryToken.length();
-    std::vector<EncIndVal> encResults;
-
-    // for c = 0 until `Get` returns error
-    bigint dbKwCounter = 0;
-    while (true) {
-        // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
-        // (same as client's `setup()`)
-
-        ustring label = utils::crypto::hash(queryToken + utils::ustr::toUstr(dbKwCounter));
-        ubigint pos = utils::misc::hashToPos(label);
-        // res <- encInd.get(l)
-        EncIndVal encIndVal;
-        bool isFound = this->encInd->find(pos, label, encIndVal);
-        if (!isFound) {
-            break;
-        }
-
-        encResults.push_back(encIndVal);
-        dbKwCounter++;
-    }
-
-    this->benchmark->communication += encResults.size() * EncInd::VAL_LEN;
-    return encResults;
-}
-
-
-//------------------------------------------------------------------------------
-// explicit template instantiations
-
-
-template class PiBasServer<Tuple<>>;
-template class PiBasServer<SrcIDb1Tuple>;
-//template class PiBasServer<Tuple<IdAlias>>;
 
 #include <algorithm>
 #include <bit>
@@ -149,15 +54,15 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->prfKey = utils::crypto::genKey(secParam);
     this->encKey = utils::crypto::genKey(secParam);
     
-    std::vector<EncInd*> encIndLvls;
+    std::vector<EncIndLoc*> encIndLvls;
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncInd* encIndLvl = new EncInd();
+        EncIndLoc* encIndLvl = new EncIndLoc();
         bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
         bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
         encIndLvl->init(bcktCountOnLvl * bcktSizeOnLvl);
         encIndLvls.push_back(encIndLvl);
     }
-    EncInd* dbKwCountsDict = new EncInd();
+    EncIndRand* dbKwCountsDict = new EncIndRand();
     dbKwCountsDict->init(this->size);
 
     //--------------------------------------------------------------------------
@@ -198,24 +103,37 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         ustring labelDict;
         ustring ivDict = utils::crypto::genIv();
         ustring encDbKwCount = utils::crypto::padAndEncrypt(
-            this->encKey, utils::ustr::toUstr(dbKwCount), ivDict, EncInd::DATA_LEN - 1
+            this->encKey, utils::ustr::toUstr(dbKwCount), ivDict, EncIndBase::DATA_LEN - 1
         );
         ubigint posDict = this->mapNoMod(queryToken, labelDict);
-        dbKwCountsDict->write(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
+        dbKwCountsDict->writeToFirstEmpty(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}}, this->benchmark.get());
 
         // for each id in DB(w) (write into same bucket consecutively)
-        ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
+        bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
+        bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
+        ubigint startPos = pos * bcktSizeOnLvl;
         for (bigint dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // d <- Enc(K_2, w, id)
             ustring iv = utils::crypto::genIv();
             ustring encDbTuple = utils::crypto::padAndEncrypt(
-                this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
+                this->encKey, dbTuple.toUstr(), iv, EncIndBase::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            encIndLvls[lvl]->write(
-                startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
-            );
+            if (dbKwCounter == 0) {
+                // if first write to this bucket, get the first bucket start pos at or after
+                // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
+                encIndLvls[lvl]->writeToFirstEmpty(
+                    startPos, std::pair {label, std::pair {encDbTuple, iv}}, this->benchmark.get(),
+                    bcktSizeOnLvl, bcktCountOnLvl
+                );
+            } else {
+                // after first write, just write consecutively as we are now guaranteed that
+                // there is a full bucket of contiguous space here
+                encIndLvls[lvl]->write(
+                    startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}, this->benchmark.get()
+                );
+            }
         }
     }
 
@@ -243,10 +161,10 @@ void NLogN<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
-    std::vector<EncInd*> encIndLvls = this->server->getEncIndLvls();
+    std::vector<EncIndLoc*> encIndLvls = this->server->getEncIndLvls();
 
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncInd* encIndLvl = encIndLvls[lvl];
+        EncIndLoc* encIndLvl = encIndLvls[lvl];
         // don't use `this->size` as the bound here as that doesn't include padding while
         // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
         for (bigint pos = 0; pos < encIndLvl->getSize(); pos++) {
@@ -306,8 +224,9 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
+    bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
     std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
-        lvl, startPos, dbKwPaddedCount, label
+        lvl, startPos, dbKwPaddedCount, bcktCountOnLvl, label
     );
 
     // decrypt results on the client

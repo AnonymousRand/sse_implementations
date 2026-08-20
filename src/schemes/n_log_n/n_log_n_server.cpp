@@ -15,10 +15,10 @@
 namespace {
 
 
-bigint calcAllEncIndLvlsBytes(const std::vector<EncInd*>& encIndLvls) {
+bigint calcAllEncIndLvlsBytes(const std::vector<EncIndLoc*>& encIndLvls) {
     bigint bytes = 0;
-    for (EncInd* encIndLvl : encIndLvls) {
-        bytes += encIndLvl->getSize() * EncInd::ENTRY_LEN;
+    for (EncIndLoc* encIndLvl : encIndLvls) {
+        bytes += encIndLvl->getSize() * EncIndBase::ENTRY_LEN;
     }
     return bytes;
 }
@@ -44,9 +44,9 @@ NLogNServer<DbTuple>::~NLogNServer() {
 
 template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::clear() {
-    for (EncInd* lvl : this->encIndLvls) {
+    for (EncIndLoc* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
-            this->benchmark->serverStorage -= lvl->getSize() * EncInd::ENTRY_LEN;
+            this->benchmark->serverStorage -= lvl->getSize() * EncIndBase::ENTRY_LEN;
             delete lvl;
             lvl = nullptr;
         }
@@ -54,7 +54,7 @@ void NLogNServer<DbTuple>::clear() {
     this->encIndLvls.clear();
 
     if (this->dbKwCountsDict != nullptr) {
-        this->benchmark->serverStorage -= this->dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
+        this->benchmark->serverStorage -= this->dbKwCountsDict->getSize() * EncIndBase::ENTRY_LEN;
         delete this->dbKwCountsDict;
         this->dbKwCountsDict = nullptr;
     }
@@ -66,7 +66,7 @@ void NLogNServer<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-void NLogNServer<DbTuple>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls) {
+void NLogNServer<DbTuple>::setEncIndLvls(const std::vector<EncIndLoc*>& encIndLvls) {
     bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(encIndLvls);
     this->benchmark->serverStorage += allEncIndLvlsBytes;
     this->benchmark->communication += allEncIndLvlsBytes;
@@ -76,7 +76,7 @@ void NLogNServer<DbTuple>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls)
 
 
 template <IsDbTuple DbTuple>
-std::vector<EncInd*> NLogNServer<DbTuple>::getEncIndLvls() const {
+std::vector<EncIndLoc*> NLogNServer<DbTuple>::getEncIndLvls() const {
     bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(this->encIndLvls);
     this->benchmark->serverStorage += allEncIndLvlsBytes;
     this->benchmark->communication += allEncIndLvlsBytes;
@@ -87,10 +87,10 @@ std::vector<EncInd*> NLogNServer<DbTuple>::getEncIndLvls() const {
 
 template <IsDbTuple DbTuple>
 std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
-    bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
+    bigint lvl, ubigint startPos, bigint bcktSize, bigint bcktCountOnLvl, const ustring& label
 ) const {
     this->benchmark->communication +=
-        sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + label.length();
+        sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + sizeof(bigint) + label.length();
     std::vector<EncIndVal> encResults;
 
     for (bigint dbKwCounter = 0; dbKwCounter < bcktSize; dbKwCounter++) {
@@ -98,13 +98,15 @@ std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
         bool isFound;
         if (dbKwCounter == 0) {
             // if first read, get the right bucket start pos (e.g. in case of modulo
-            // or hash collision in encrypted index)
-            // note: dummies must also use the correct (not dummy) `label` so they
-            // are still found by `find()`
-            isFound = this->encIndLvls[lvl]->find(startPos, label, encIndVal, &startPos);
+            // collision in encrypted index)
+            // (note: dummies must also use the correct (not dummy) `label` so they
+            // are still found by `find()`)
+            isFound = this->encIndLvls[lvl]->find(
+                startPos, label, encIndVal, bcktSize, bcktCountOnLvl
+            );
         } else {
             // after first read, just read from the bucket consecutively as we are
-            // now guaranteed consecutivity
+            // now guaranteed that the full bucket is stored here contiguously
             isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal);
         }
         if (!isFound) {
@@ -114,14 +116,14 @@ std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
         encResults.push_back(encIndVal);
     }
 
-    this->benchmark->communication += encResults.size() * EncInd::VAL_LEN;
+    this->benchmark->communication += encResults.size() * EncIndBase::VAL_LEN;
     return encResults;
 }
 
 
 template <IsDbTuple DbTuple>
-void NLogNServer<DbTuple>::setDbKwCountsDict(EncInd* dbKwCountsDict) {
-    bigint dbKwCountsDictBytes = dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
+void NLogNServer<DbTuple>::setDbKwCountsDict(EncIndRand* dbKwCountsDict) {
+    bigint dbKwCountsDictBytes = dbKwCountsDict->getSize() * EncIndBase::ENTRY_LEN;
     this->benchmark->serverStorage += dbKwCountsDictBytes;
     this->benchmark->communication += dbKwCountsDictBytes;
     this->dbKwCountsDict = dbKwCountsDict;
@@ -132,7 +134,7 @@ template <IsDbTuple DbTuple>
 bool NLogNServer<DbTuple>::getDbKwCount(
     ubigint pos, const ustring& label, EncIndVal& ret
 ) const {
-    this->benchmark->communication += sizeof(ubigint) + label.length() + EncInd::VAL_LEN;
+    this->benchmark->communication += sizeof(ubigint) + label.length() + EncIndBase::VAL_LEN;
     return this->dbKwCountsDict->find(pos, label, ret);
 }
 

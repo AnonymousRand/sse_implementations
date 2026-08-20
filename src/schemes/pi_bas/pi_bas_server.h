@@ -26,10 +26,10 @@ public:
     //--------------------------------------------------------------------------
     // helpers
 
-    void setEncInd(EncInd* encInd);
-    EncInd* getEncInd() const;
+    void setEncInd(EncIndRand* encInd);
+    EncIndRand* getEncInd() const;
     std::vector<EncIndVal> searchEncInd(const ustring& queryToken) const;
 
 private:
-    EncInd* encInd = nullptr;
+    EncIndRand* encInd = nullptr;
 };

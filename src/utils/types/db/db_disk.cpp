@@ -55,7 +55,7 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
 
 
 //------------------------------------------------------------------------------
-// copy/move
+// the big five
 
 
 // copy constructor

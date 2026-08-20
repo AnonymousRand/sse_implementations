@@ -26,20 +26,20 @@ public:
     //--------------------------------------------------------------------------
     // helpers
 
-    void setEncIndLvls(const std::vector<EncInd*>& encIndLvls);
-    std::vector<EncInd*> getEncIndLvls() const;
+    void setEncIndLvls(const std::vector<EncIndLoc*>& encIndLvls);
+    std::vector<EncIndLoc*> getEncIndLvls() const;
     std::vector<EncIndVal> searchEncIndForBckt(
-        bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
+        bigint lvl, ubigint startPos, bigint bcktSize, bigint bcktCountOnLvl, const ustring& label
     ) const;
 
-    void setDbKwCountsDict(EncInd* dbKwCountsDict);
+    void setDbKwCountsDict(EncIndRand* dbKwCountsDict);
     bool getDbKwCount(ubigint pos, const ustring& label, EncIndVal& ret) const;
 
 protected:
-    std::vector<EncInd*> encIndLvls;
+    std::vector<EncIndLoc*> encIndLvls;
 
 private:
-    EncInd* dbKwCountsDict = nullptr;
+    EncIndRand* dbKwCountsDict = nullptr;
 
     //--------------------------------------------------------------------------
     // helpers

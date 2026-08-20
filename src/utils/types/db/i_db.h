@@ -27,7 +27,7 @@ public:
     IDb() = default;
 
     //--------------------------------------------------------------------------
-    // copy/move
+    // the big five
 
     // destructor
     ~IDb() = default;

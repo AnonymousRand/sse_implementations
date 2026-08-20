@@ -40,7 +40,7 @@ public:
     DbDisk(std::initializer_list<DbTuple> initList);
 
     //--------------------------------------------------------------------------
-    // copy/move
+    // the big five
 
     // destructor
     ~DbDisk() = default;
@@ -80,7 +80,7 @@ private:
     constexpr std::string FILE_DIR() const override { return "out/client"; }
     constexpr std::string FILENAME_PREFIX() const override { return "db_"; }
 
-    inline static const int TUPLE_LEN = EncInd::DATA_LEN;
+    inline static const int TUPLE_LEN = EncIndBase::DATA_LEN;
 
     //--------------------------------------------------------------------------
     // helpers

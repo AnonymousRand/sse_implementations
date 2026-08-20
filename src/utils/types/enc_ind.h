@@ -12,6 +12,9 @@
 #include "utils/types/ustring.h"
 
 
+struct Benchmark;
+
+
 //==============================================================================
 // utils
 //==============================================================================
@@ -31,7 +34,7 @@ ustring toUstr(const EncIndEntry& encIndEntry);
 
 
 //==============================================================================
-// `EncInd`
+// `EncIndBase`
 //==============================================================================
 
 
@@ -39,7 +42,7 @@ ustring toUstr(const EncIndEntry& encIndEntry);
  * encrypted indexes are a collection of `std::pair<ustring, std::pair<ustring, ustring>>`
  * (aka `EncIndEntry`) pairs, corresponding to `std::pair<key, std::pair<encrypted data, IV>>`.
  */
-class EncInd : public IDiskStorage {
+class EncIndBase : public IDiskStorage {
 public:
     // (both PRF (default) and hash (res-hiding) have 512 bit output)
     inline static constexpr int KEY_LEN   = utils::crypto::HASH_OUTPUT_LEN;
@@ -58,22 +61,25 @@ public:
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    EncInd() = default;
+    EncIndBase() = default;
 
     //--------------------------------------------------------------------------
-    // copy/move
+    // the big five
+
+    // destructor
+    ~EncIndBase() = default;
 
     // copy constructor
-    EncInd(const EncInd& other);
+    EncIndBase(const EncIndBase& other);
 
     // copy assignment operator
-    EncInd& operator =(const EncInd& other) = default;
+    EncIndBase& operator =(const EncIndBase& other) = default;
 
     // move constructor
-    EncInd(EncInd&& other) noexcept = default;
+    EncIndBase(EncIndBase&& other) noexcept = default;
 
     // move assignment operator
-    EncInd& operator =(EncInd&& other) noexcept = default;
+    EncIndBase& operator =(EncIndBase&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
     // `IDiskStorage`
@@ -85,23 +91,6 @@ public:
     // other interface
 
     /**
-     * tries to find `key` starting at `pos` and iterating linearly if not matching
-     * (i.e. another kv pair overflowed there first).
-     *
-     * params:
-     *     - `posFoundAt`: pointer whose value is replaced by the `pos` at which `key`
-     *       was eventually found (if it was found; otherwise it is left unchanged).
-     *       set to `nullptr` to not receive this value.
-     *
-     * returns:
-     *     - `true` if the kv pair corresponding to `key` was eventually found.
-     *     - `false` if the kv pair corresponding to `key` was never found in the entire index.
-     */
-    bool find(
-        ubigint pos, const ustring& key, EncIndVal& ret, ubigint* posFoundAt = nullptr
-    ) const;
-
-    /**
      * reads and decodes the value at `pos` (without checking the "key`).
      *
      * returns:
@@ -111,13 +100,14 @@ public:
     bool read(ubigint pos, EncIndVal& ret) const;
 
     /**
-     * write to first empty location starting at `pos` (may not be at `pos` if hash collision).
+     * write to `pos` (but does not check if there is already something there, e.g. from
+     * `pos % this->size`, and will overwrite it!).
      */
-    void write(ubigint pos, const EncIndEntry& encIndEntry);
+    void write(ubigint pos, const EncIndEntry& encIndEntry, Benchmark* benchmark);
 
-    bigint getSize() const;
+    bigint getSize() const { return this->size; }
 
-private:
+protected:
     constexpr std::string FILE_DIR() const override { return "out/server"; }
     constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
 
@@ -126,8 +116,154 @@ private:
     bigint size = 0;
 
     //--------------------------------------------------------------------------
+    // helpers
+
+    /**
+     * tries to find `key` starting at `pos`, iterating forward from `pos` by `collisionSkips`
+     * at a time if the key at `pos` does not match `key` (e.g. from `pos % this->size` modulo
+     * collision, or if another kv pair overflowed there first).
+     *
+     * additionally, once `key` has been found, place the location it was found at back in `pos`
+     * (e.g. in case we want to read a bucket contiguously starting from there, for locality).
+     *
+     * returns:
+     *     - `true` if the kv pair corresponding to `key` was eventually found.
+     *     - `false` if the kv pair corresponding to `key` was not found in the entire index.
+     */
+    bool findBase(
+        ubigint& pos, const ustring& key, EncIndVal& ret,
+        bigint collisionSkip, bigint collisionAttempts
+    ) const;
+
+    /**
+     * write to first *empty* location at or after `pos`, iterating forward from `pos`
+     * `collisionSkip` positions at a time until an empty location is found.
+     *
+     * additionally, once this first empty location has been found, place it back in `pos`.
+     */
+    void writeToFirstEmptyBase(
+        ubigint& pos, const EncIndEntry& encIndEntry, Benchmark* benchmark,
+        bigint collisionSkip, bigint collisionAttempts
+    );
+
+    //--------------------------------------------------------------------------
     // debugging
 
     EncIndEntry get(ubigint pos) const;
-    void print() const; // warning: this can be, like, a LOT of stuff!!
+    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
+};
+
+
+//==============================================================================
+// `EncIndRand`
+//==============================================================================
+
+
+class EncIndRand : public EncIndBase {
+public:
+    //--------------------------------------------------------------------------
+    // constructors/destructors
+
+    EncIndRand() = default;
+
+    //--------------------------------------------------------------------------
+    // the big five
+
+    // destructor
+    ~EncIndRand() = default;
+
+    // copy constructor
+    EncIndRand(const EncIndRand& other) = default;
+
+    // copy assignment operator
+    EncIndRand& operator =(const EncIndRand& other) = default;
+
+    // move constructor
+    EncIndRand(EncIndRand&& other) noexcept = default;
+
+    // move assignment operator
+    EncIndRand& operator =(EncIndRand&& other) noexcept = default;
+
+    //--------------------------------------------------------------------------
+    // other interface
+
+    /**
+     * tries to find `key` starting at `pos`, iterating forward *linearly* at a time
+     * if the key at `pos` does not match `key` (e.g. from `pos % this->size` modulo
+     * collision, or if another kv pair overflowed there first).
+     *
+     * this does NOT change `pos`.
+     *
+     * returns:
+     *     - `true` if the kv pair corresponding to `key` was eventually found.
+     *     - `false` if the kv pair corresponding to `key` was not found in the entire index.
+     */
+    bool find(ubigint pos, const ustring& key, EncIndVal& ret) const {
+        // (`pos` is passed by value to `find()`, so we can pass by reference into `findBase()`
+        // and still only a copy of it will be changed)
+        return this->findBase(pos, key, ret, 1, this->size);
+    }
+
+    /**
+     * write to first *empty* location at or after `pos`, iterating forward from `pos`
+     * *linearly* until we find an empty location.
+     *
+     * this does NOT change `pos`.
+     */
+    void writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry, Benchmark* benchmark) {
+        this->writeToFirstEmptyBase(pos, encIndEntry, benchmark, 1, this->size);
+    }
+};
+
+
+
+//==============================================================================
+// `EncIndLoc`
+//==============================================================================
+
+
+class EncIndLoc : public EncIndBase {
+public:
+    //--------------------------------------------------------------------------
+    // constructors/destructors
+
+    EncIndLoc() = default;
+
+    //--------------------------------------------------------------------------
+    // the big five
+
+    // destructor
+    ~EncIndLoc() = default;
+
+    // copy constructor
+    EncIndLoc(const EncIndLoc& other) = default;
+
+    // copy assignment operator
+    EncIndLoc& operator =(const EncIndLoc& other) = default;
+
+    // move constructor
+    EncIndLoc(EncIndLoc&& other) noexcept = default;
+
+    // move assignment operator
+    EncIndLoc& operator =(EncIndLoc&& other) noexcept = default;
+
+    //--------------------------------------------------------------------------
+    // other interface
+
+    // NOTE: currently `EncIndLoc` is exactly the same as `EncIndBase`; we just still instantiate
+    // it as a child class to make its semantic meaning clearer (e.g. so that we don't have to have
+    // NLogN hold an `EncIndBase`, or make `EncIndRand` inherit from and hence "be an" `EncIndLoc`)
+    bool find(
+        ubigint& pos, const ustring& key, EncIndVal& ret,
+        bigint collisionSkip, bigint collisionAttempts
+    ) const {
+        return this->findBase(pos, key, ret, collisionSkip, collisionAttempts);
+    }
+
+    void writeToFirstEmpty(
+        ubigint& pos, const EncIndEntry& encIndEntry, Benchmark* benchmark,
+        bigint collisionSkip, bigint collisionAttempts
+    ) {
+        this->writeToFirstEmptyBase(pos, encIndEntry, benchmark, collisionSkip, collisionAttempts);
+    }
 };
