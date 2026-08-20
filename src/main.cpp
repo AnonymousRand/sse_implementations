@@ -77,7 +77,6 @@ int main() {
         config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
     );
 
-    /*
     //--------------------------------------------------------------------------
     // debugging experiment
 
@@ -128,7 +127,6 @@ int main() {
 
     // free memory ASAP
     debugging.clearDb();
-    */
 
     //--------------------------------------------------------------------------
     // all vs. DB size experiment
@@ -136,7 +134,6 @@ int main() {
     app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp);
     allVsDbSize.printHeader();
 
-    /*
     std::cout << "================ PiBas =================" << std::endl << std::endl;
     allVsDbSize.run(piBas.get(), config::SHOULD_BENCHMARK);
 
@@ -163,7 +160,6 @@ int main() {
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
     allVsDbSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
-    */
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
     allVsDbSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
@@ -186,7 +182,6 @@ int main() {
     app::experiments::SearchVsResultSize searchVsResultSize(maxDbSizeExp);
     searchVsResultSize.printHeader();
 
-    /*
     std::cout << "================ PiBas =================" << std::endl << std::endl;
     searchVsResultSize.run(piBas.get(), config::SHOULD_BENCHMARK);
 
@@ -213,7 +208,6 @@ int main() {
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
     searchVsResultSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
-    */
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
     searchVsResultSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
@@ -230,7 +224,6 @@ int main() {
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
     searchVsResultSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
 
-    /*
     //--------------------------------------------------------------------------
     // search vs. range size experiment
 
@@ -278,12 +271,10 @@ int main() {
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
     searchVsRangeSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
-    */
     
     //--------------------------------------------------------------------------
     // search vs. false positives experiment
 
-    /*
     app::experiments::SearchVsFalsePos searchVsFalsePos(maxDbSizeExp);
     searchVsFalsePos.printHeader();
 
@@ -316,7 +307,6 @@ int main() {
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
     searchVsFalsePos.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
-    */
 
     //--------------------------------------------------------------------------
     // updates experiment
