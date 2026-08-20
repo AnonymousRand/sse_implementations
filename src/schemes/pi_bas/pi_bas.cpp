@@ -71,7 +71,9 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         }
 
         // PRF(K_1, w)
+        this->benchmark->startProfile("crypto");
         ustring queryToken = this->genQueryToken(dbKwRange);
+        this->benchmark->endProfile("crypto");
         Db<DbTuple> dbKwList = std::move(iter->second);
 
         // for each id in DB(w)
@@ -82,9 +84,11 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             ubigint pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
             ustring iv = utils::crypto::genIv();
+            this->benchmark->startProfile("crypto");
             ustring encDbTuple = utils::crypto::padAndEncrypt(
                 this->encKey, dbTuple.toUstr(), iv, EncInd::DATA_LEN - 1
             );
+            this->benchmark->endProfile("crypto");
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->write(pos, std::pair {label, std::pair {encDbTuple, iv}});
         }
@@ -142,7 +146,9 @@ std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const 
     std::vector<DbTuple> results;
 
     // PRF(K_1, w)
+    this->benchmark->startProfile("crypto");
     ustring queryToken = this->genQueryToken(query);
+    this->benchmark->endProfile("crypto");
     std::vector<EncIndVal> encResults = this->server->searchEncInd(queryToken);
 
     // decrypt results on the client
@@ -172,7 +178,9 @@ ubigint PiBas<DbTuple>::map(
     const ustring& queryToken, bigint dbKwCounter, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w) || c)
+    this->benchmark->startProfile("crypto");
     retLabel = utils::crypto::hash(queryToken + utils::ustr::toUstr(dbKwCounter));
+    this->benchmark->endProfile("crypto");
     return utils::misc::hashToPos(retLabel);
 }
 

@@ -24,7 +24,7 @@ int main() {
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
     const bigint maxDbSize = std::pow(2, maxDbSizeExp);
-    std::cout << std::endl;
+    std::cout << std::endl << std::endl;
 
     std::unique_ptr<PiBas<>> piBas               = app::createSse<PiBas<>>(
         config::SHOULD_BENCHMARK

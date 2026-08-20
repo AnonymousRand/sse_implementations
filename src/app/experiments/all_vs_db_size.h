@@ -22,11 +22,11 @@
 namespace app::experiments {
 
 
-// config
-inline constexpr bigint RESULT_SIZE = 100;
-
-
 class AllVsDbSize : public IExperiment<ISse<>> {
+private:
+    // config
+    inline static constexpr bigint RESULT_SIZE = 100;
+
 public:
     AllVsDbSize(bigint maxDbSizeExp) :
         maxDbSizeExp(maxDbSizeExp)

@@ -17,7 +17,7 @@ template <IsDbTuple DbTuple>
 Ind<DbTuple>::Ind(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
     for (const DbTuple& dbTuple : db) {
         Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
-        if (this->count(dbKwRange) == 0) {
+        if (!this->contains(dbKwRange)) {
             (*this)[dbKwRange] = Db<DbTuple> {dbTuple};
         } else {
             (*this)[dbKwRange].push_back(dbTuple);
@@ -46,6 +46,12 @@ Ind<DbTuple>::Iter Ind<DbTuple>::find(const KeyType& key) {
 template <IsDbTuple DbTuple>
 Ind<DbTuple>::ConstIter Ind<DbTuple>::find(const KeyType& key) const {
     return this->map.find(key);
+}
+
+
+template <IsDbTuple DbTuple>
+bool Ind<DbTuple>::contains(const KeyType& key) const {
+    return this->map.contains(key);
 }
 
 

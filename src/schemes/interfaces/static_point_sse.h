@@ -5,6 +5,7 @@
 
 #include "schemes/interfaces/sse.h"
 
+#include "utils/benchmark.h"
 #include "utils/crypto.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
@@ -74,7 +75,9 @@ protected:
     DbTuple decryptEncIndVal(const EncIndVal& encIndVal) const {
         ustring encDbTuple = encIndVal.first;
         ustring iv = encIndVal.second;
+        this->benchmark->startProfile("crypto");
         ustring decDbTuple = utils::crypto::decryptAndUnpad(this->encKey, encDbTuple, iv);
+        this->benchmark->endProfile("crypto");
         return DbTuple::fromUstr(decDbTuple);
     }
 };
