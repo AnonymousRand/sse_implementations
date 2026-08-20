@@ -21,14 +21,16 @@
 struct Benchmark {
 private:
     // config
-    inline static constexpr bigint PRINT_COL_WIDTH = 15;
+    inline static constexpr bigint PRINT_LABEL_WIDTH = 25;
+    inline static constexpr bigint PRINT_LABEL_FIRST_HALF_WIDTH = 6;
+    inline static constexpr bigint PRINT_COL_WIDTH = 18;
 
 public:
     //--------------------------------------------------------------------------
     // general stats to benchmark
 
     double time = 0;
-    bigint diskSize = 0;
+    bigint serverStorage = 0;
     bigint communication = 0;
 
     //--------------------------------------------------------------------------
@@ -94,7 +96,7 @@ public:
 
     void resetAll() {
         this->time = 0;
-        this->diskSize = 0;
+        this->serverStorage = 0;
         this->communication = 0;
 
         this->totalUpdtCount = 0;
@@ -122,12 +124,16 @@ public:
     // values inside the *body* of the table (in `print()` below)
     static void printHeader(bool shouldBenchmark) {
         if (shouldBenchmark) {
-            std::cout << std::format("| {:<25} ", "Params")
+            std::cout << std::format("| {:<{}} ", "Params", PRINT_LABEL_WIDTH)
                       << std::format("| {:<{}} ", "Time (ms)", PRINT_COL_WIDTH)
-                      << std::format("| {:<{}} ", "Disk Size (B)", PRINT_COL_WIDTH)
-                      << std::format("| {:<{}} |", "Communication (B)", PRINT_COL_WIDTH)
+                      << std::format("| {:<{}} ", "Server Storage (B)", PRINT_COL_WIDTH)
+                      << std::format("| {:<{}} ", "Communication (B)", PRINT_COL_WIDTH)
+                      // (trailing spaces to match bottom border, which should extend until
+                      // the right border of the first profile output in the table body)
+                      << std::format("| {:<{}}  ", "Profiling (ms)", PRINT_COL_WIDTH)
                       << std::endl;
-            std::cout << "----------------------------"
+            std::cout << std::format("--{:-<{}}-", "", PRINT_LABEL_WIDTH)
+                      << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
                       << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
                       << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
                       << std::format("--{:-<{}}--", "", PRINT_COL_WIDTH)
@@ -150,10 +156,10 @@ public:
             }
 
 
-            std::cout << std::format("| {:<25} ", label)
+            std::cout << std::format("| {:<{}} ", label, PRINT_LABEL_WIDTH)
                       // explicitly cast doubles to string so that `.` controls exact string length
                       << std::format("| {0:<{1}.{1}} ", std::to_string(this->time), PRINT_COL_WIDTH)
-                      << std::format("| {:<{}} ", this->diskSize, PRINT_COL_WIDTH)
+                      << std::format("| {:<{}} ", this->serverStorage, PRINT_COL_WIDTH)
                       << std::format("| {:<{}} ", this->communication, PRINT_COL_WIDTH)
                       << profileOutputs << "|"
                       << std::endl;
@@ -161,7 +167,12 @@ public:
     }
 
     void print(bool shouldBenchmark, const std::string& label1, const std::string& label2) const {
-        std::string label = std::format("{:<6} {:<18}", label1, label2);
+        std::string label = std::format(
+            "{:<{}} {:<{}}",
+            label1, PRINT_LABEL_FIRST_HALF_WIDTH,
+            // (`- 1` because of the space between the first and second halves)
+            label2, PRINT_LABEL_WIDTH - PRINT_LABEL_FIRST_HALF_WIDTH - 1
+        );
         this->print(shouldBenchmark, label);
     }
 

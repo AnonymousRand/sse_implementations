@@ -30,7 +30,7 @@ void PiBasServer<DbTuple>::clear() {
     // pointer assignment, so if we don't delete we would make this memory inaccessible
     // the next time we assign `encInd`)
     if (this->encInd != nullptr) {
-        this->benchmark->diskSize -= this->encInd->getSize() * EncInd::ENTRY_LEN;
+        this->benchmark->serverStorage -= this->encInd->getSize() * EncInd::ENTRY_LEN;
         delete this->encInd;
         this->encInd = nullptr;
     };
@@ -44,7 +44,7 @@ void PiBasServer<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void PiBasServer<DbTuple>::setEncInd(EncInd* encInd) {
     bigint encIndBytes = encInd->getSize() * EncInd::ENTRY_LEN;
-    this->benchmark->diskSize += encIndBytes;
+    this->benchmark->serverStorage += encIndBytes;
     this->benchmark->communication += encIndBytes;
     this->encInd = encInd;
 }

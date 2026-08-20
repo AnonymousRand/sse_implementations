@@ -90,8 +90,8 @@ private:
      * wrapper for algorithms (e.g. from `<algorithms>`) to make them work when a `DbDisk` isn't
      * actually storing any of its entries as actual `DbTuple` elements anywhere.
      *
-     * instead, perform the algorithm on a vector of indices (which should be significantly
-     * smaller than the `DbDisk` itself) and then using that to build and return a new output `DbDisk`.
+     * instead, perform the algorithm on a vector of indices (which should be significantly smaller
+     * than the `DbDisk` itself) and then using that to build and return a new output `DbDisk`.
      */
     DbDisk<DbTuple> applyAlgoViaIndices(
         const std::function<void(std::vector<bigint>& dbIndices)>& algoOnIndices

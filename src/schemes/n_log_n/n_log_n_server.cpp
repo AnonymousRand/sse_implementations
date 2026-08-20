@@ -46,7 +46,7 @@ template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::clear() {
     for (EncInd* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
-            this->benchmark->diskSize -= lvl->getSize() * EncInd::ENTRY_LEN;
+            this->benchmark->serverStorage -= lvl->getSize() * EncInd::ENTRY_LEN;
             delete lvl;
             lvl = nullptr;
         }
@@ -54,7 +54,7 @@ void NLogNServer<DbTuple>::clear() {
     this->encIndLvls.clear();
 
     if (this->dbKwCountsDict != nullptr) {
-        this->benchmark->diskSize -= this->dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
+        this->benchmark->serverStorage -= this->dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
         delete this->dbKwCountsDict;
         this->dbKwCountsDict = nullptr;
     }
@@ -68,7 +68,7 @@ void NLogNServer<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls) {
     bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(encIndLvls);
-    this->benchmark->diskSize += allEncIndLvlsBytes;
+    this->benchmark->serverStorage += allEncIndLvlsBytes;
     this->benchmark->communication += allEncIndLvlsBytes;
 
     this->encIndLvls = encIndLvls;
@@ -78,7 +78,7 @@ void NLogNServer<DbTuple>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls)
 template <IsDbTuple DbTuple>
 std::vector<EncInd*> NLogNServer<DbTuple>::getEncIndLvls() const {
     bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(this->encIndLvls);
-    this->benchmark->diskSize += allEncIndLvlsBytes;
+    this->benchmark->serverStorage += allEncIndLvlsBytes;
     this->benchmark->communication += allEncIndLvlsBytes;
 
     return this->encIndLvls;
@@ -122,7 +122,7 @@ std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
 template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::setDbKwCountsDict(EncInd* dbKwCountsDict) {
     bigint dbKwCountsDictBytes = dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
-    this->benchmark->diskSize += dbKwCountsDictBytes;
+    this->benchmark->serverStorage += dbKwCountsDictBytes;
     this->benchmark->communication += dbKwCountsDictBytes;
     this->dbKwCountsDict = dbKwCountsDict;
 }
