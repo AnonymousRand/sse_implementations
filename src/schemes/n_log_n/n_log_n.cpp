@@ -106,7 +106,9 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             this->encKey, utils::ustr::toUstr(dbKwCount), ivDict, EncIndBase::DATA_LEN - 1
         );
         ubigint posDict = this->mapNoMod(queryToken, labelDict);
-        dbKwCountsDict->writeToFirstEmpty(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
+        dbKwCountsDict->writeToFirstEmpty(
+            posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}}
+        );
 
         // for each id in DB(w) (write into same bucket consecutively)
         bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
