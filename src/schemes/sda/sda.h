@@ -25,7 +25,7 @@ public:
 
     ~Sda();
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // `ISse`
 
     void setup(int secParam, const Db<Tuple<>>& db) override;
@@ -34,7 +34,7 @@ public:
     ) const override;
     void clear() override;
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // `IDsse`
 
     void update(const Tuple<>& newTuple) override;
@@ -42,4 +42,9 @@ public:
 private:
     std::vector<Underly*> underlys;
     bigint firstEmptyInd;
+
+    //--------------------------------------------------------------------------
+    // helpers
+
+    bigint calcFirstEmptyInd() const;
 };

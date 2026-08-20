@@ -25,13 +25,13 @@ public:
 
     ~NLogN();
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // `ISse`
 
     void setup(int secParam, const Db<DbTuple>& db) override;
     void clear() override;
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // `ISdUnderly`
 
     void getDb(Db<DbTuple>& ret) const override;
@@ -40,12 +40,12 @@ protected:
     NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
     bigint lvlCount = 0;
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // `IStaticPointSse`
 
     std::vector<DbTuple> searchBase(const Range<DbKw>& query) const override;
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // helpers
 
     ustring genQueryToken(const Range<DbKw>& query) const;

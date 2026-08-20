@@ -72,14 +72,7 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         std::reverse(this->underlys.begin(), this->underlys.end());
 
         // update the pointer to the first empty index as usual (like in `update()`)
-        bigint newFirstEmpty = 0;
-        // (note: the order of conditions here is important; we need short-circuiting!)
-        while (newFirstEmpty < this->underlys.size()
-               && this->underlys[newFirstEmpty]->getSize() > 0)
-        {
-            newFirstEmpty++;
-        }
-        this->firstEmptyInd = newFirstEmpty;
+        this->firstEmptyInd = this->calcFirstEmptyInd();
     } else {
         for (const Tuple<>& tuple : db) {
             this->update(tuple);
@@ -171,16 +164,24 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
     }
 
     // update the pointer to the first empty index
-    bigint newFirstEmpty = 0;
-    // (note: the order of conditions here is important; we need short-circuiting!)
-    while (newFirstEmpty < this->underlys.size()
-           && this->underlys[newFirstEmpty]->getSize() > 0)
-    {
-        newFirstEmpty++;
-    }
-    this->firstEmptyInd = newFirstEmpty;
+    this->firstEmptyInd = this->calcFirstEmptyInd();
 
     this->updateCount++;
+}
+
+
+//------------------------------------------------------------------------------
+// helpers
+
+
+template <IsSdUnderly Underly>
+bigint Sda<Underly>::calcFirstEmptyInd() const {
+    bigint newFirstEmpty = 0;
+    // (note: the order of conditions here is important; we need the short-circuiting!)
+    while (newFirstEmpty < this->underlys.size() && this->underlys[newFirstEmpty]->getSize() > 0) {
+        newFirstEmpty++;
+    }
+    return newFirstEmpty;
 }
 
 

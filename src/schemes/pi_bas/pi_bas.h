@@ -26,13 +26,13 @@ public:
 
     ~PiBas();
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // `ISse`
 
     void setup(int secParam, const Db<DbTuple>& db) override;
     void clear() override;
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // `ISdUnderly`
 
     void getDb(Db<DbTuple>& ret) const override;
@@ -40,12 +40,12 @@ public:
 private:
     PiBasServer<DbTuple>* server = new PiBasServer<DbTuple>(this->benchmark);
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // `IStaticPointSse`
 
     std::vector<DbTuple> searchBase(const Range<DbKw>& query) const override;
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // helpers
 
     ustring genQueryToken(const Range<DbKw>& query) const;

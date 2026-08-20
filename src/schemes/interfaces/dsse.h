@@ -26,12 +26,12 @@ public:
     IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup) :
         ISse<DbTuple>(benchmark), useShortcutSetup(useShortcutSetup) {}
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // methods to implement
 
     virtual void update(const DbTuple& newTuple) = 0;
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // shared code
 
     // handle clearing of this class' member variables

@@ -22,7 +22,7 @@ protected:
 public:
     std::shared_ptr<Benchmark> benchmark;
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // methods to implement
 
     ISse(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
