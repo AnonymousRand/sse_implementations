@@ -53,8 +53,8 @@ std::unordered_set<Range<typename DbTuple::DbKwType>> IDb<DbTuple>::getUniqDbKwR
 
     std::unordered_set<Range<DbKw>> uniqDbKwRanges;
     for (const DbTuple& dbTuple : *this) {
-        Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
-        uniqDbKwRanges.insert(dbKwRange); // `unordered_set` will not insert duplicate elements
+        // (`unordered_set` will not insert duplicate elements)
+        uniqDbKwRanges.emplace(dbTuple.getDbKwRange());
     }
     return uniqDbKwRanges;
 }

@@ -32,8 +32,7 @@ std::vector<Tuple<>> cleanUpResults(const std::vector<Tuple<>>& tuples) {
     for (const Tuple<>& tuple : tuples) {
         Op op = tuple.getOp();
         if (op == Op::DEL) {
-            Id id = tuple.getId();
-            deletedIds.insert(id);
+            deletedIds.emplace(tuple.getId());
         }
     }
     // copy over vector without deleted (or dummy) tuples, as well as no dummy ids
