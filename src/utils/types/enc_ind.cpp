@@ -65,12 +65,13 @@ void EncIndBase::init(bigint size) {
     this->size = size;
 
     // fill file with zero bits
-    int itemsWritten = std::fwrite(NULL_ENTRY, ENTRY_LEN, this->size, this->file);
-    if (itemsWritten != this->size) {
-        std::cerr << "Error: EncIndBase::init(): error initializing file " << this->filename
-                  << " (only " << itemsWritten << " out of " << this->size << " written)"
-                  << std::endl;
-        std::exit(EXIT_FAILURE);
+    for (bigint i = 0; i < this->size; i++) {
+        int itemsWritten = std::fwrite(NULL_ENTRY, ENTRY_LEN, 1, this->file);
+        if (itemsWritten != 1) {
+            std::cerr << "Error: EncIndBase::init(): error initializing file " << this->filename
+                      << " with zero bits (nothing written)" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
     }
     std::fflush(this->file);
 }
