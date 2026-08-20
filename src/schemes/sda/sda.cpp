@@ -73,8 +73,9 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
         // update the pointer to the first empty index as usual (like in `update()`)
         bigint newFirstEmpty = 0;
-        while (this->underlys[newFirstEmpty]->getSize() > 0
-               && newFirstEmpty < this->underlys.size())
+        // (note: the order of conditions here is important; we need short-circuiting!)
+        while (newFirstEmpty < this->underlys.size()
+               && this->underlys[newFirstEmpty]->getSize() > 0)
         {
             newFirstEmpty++;
         }
@@ -144,12 +145,12 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
         newUnderly->setup(this->secParam, Db<Tuple<>> {newTuple});
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
+        this->updateCount++;
         return;
     }
 
     // merge all EDB_<j into EDB_j where j is `this->firstEmptyInd`
     Db<Tuple<>> mergedDb;
-    mergedDb.reserve(this->updateCount + 1);
     for (bigint i = 0; i < this->firstEmptyInd; i++) {
         // (`getDb()` appends to the passed-in container)
         this->underlys[i]->getDb(mergedDb);
@@ -171,7 +172,10 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
 
     // update the pointer to the first empty index
     bigint newFirstEmpty = 0;
-    while (this->underlys[newFirstEmpty]->getSize() > 0 && newFirstEmpty < this->underlys.size()) {
+    // (note: the order of conditions here is important; we need short-circuiting!)
+    while (newFirstEmpty < this->underlys.size()
+           && this->underlys[newFirstEmpty]->getSize() > 0)
+    {
         newFirstEmpty++;
     }
     this->firstEmptyInd = newFirstEmpty;
