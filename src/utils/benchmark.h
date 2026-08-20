@@ -19,26 +19,26 @@
 struct Benchmark {
     double time = 0;
     bigint diskSize = 0;
-    bigint network = 0;
+    bigint communication = 0;
 
     // (these are for tracking averages, and should really only be used for ephemeral stats)
     bigint totalUpdtCount = 0;
     double totalUpdtTime = 0;
-    bigint totalUpdtNetwork = 0;
+    bigint totalUpdtCommunication = 0;
 
     void resetAll() {
         this->time = 0;
         this->diskSize = 0;
-        this->network = 0;
+        this->communication = 0;
 
         this->totalUpdtCount = 0;
         this->totalUpdtTime = 0;
-        this->totalUpdtNetwork = 0;
+        this->totalUpdtCommunication = 0;
     }
 
     void resetEphems() {
         this->time = 0;
-        this->network = 0;
+        this->communication = 0;
     }
 
     static void printHeader(bool shouldBenchmark) {
@@ -46,7 +46,7 @@ struct Benchmark {
             std::cout << std::format("| {:<25} ", "Params")
                       << std::format("| {:<14} ", "Time (ms)")
                       << std::format("| {:<14} ", "Disk Size (B)")
-                      << std::format("| {:<14} |", "Network (B)")
+                      << std::format("| {:<14} |", "Communication (B)")
                       << std::endl
                       << std::format("----------------------------")
                       << std::format("-----------------")
@@ -62,7 +62,7 @@ struct Benchmark {
                       // explicitly cast doubles to string so that `.` controls exact string length
                       << std::format("| {:<14.14} ", std::to_string(this->time))
                       << std::format("| {:<14} ", this->diskSize)
-                      << std::format("| {:<14} |", this->network)
+                      << std::format("| {:<14} |", this->communication)
                       << std::endl;
         }
     }
@@ -75,12 +75,12 @@ struct Benchmark {
     void printUpdtAvgs(bool shouldBenchmark, const std::string& label) const {
         if (shouldBenchmark) {
             double avgUpdtTime    = this->totalUpdtTime    / this->totalUpdtCount;
-            double avgUpdtNetwork = this->totalUpdtNetwork / this->totalUpdtCount;
+            double avgUpdtCommunication = this->totalUpdtCommunication / this->totalUpdtCount;
 
             std::cout << std::format("| {:<25} ", label)
                       << std::format("| {:<14.14} ", std::to_string(avgUpdtTime))
                       << std::format("| {:<14} ", "")
-                      << std::format("| {:<14.14} |", std::to_string(avgUpdtNetwork))
+                      << std::format("| {:<14.14} |", std::to_string(avgUpdtCommunication))
                       << std::endl;
         }
     }
@@ -144,6 +144,6 @@ public:
         this->benchmark->time = elapsed.count();
         this->benchmark->totalUpdtCount++;
         this->benchmark->totalUpdtTime += this->benchmark->time;
-        this->benchmark->totalUpdtNetwork += this->benchmark->network;
+        this->benchmark->totalUpdtCommunication += this->benchmark->communication;
     }
 };

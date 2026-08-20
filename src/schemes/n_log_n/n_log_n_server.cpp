@@ -69,7 +69,7 @@ template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::setEncIndLvls(const std::vector<EncInd*>& encIndLvls) {
     bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(encIndLvls);
     this->benchmark->diskSize += allEncIndLvlsBytes;
-    this->benchmark->network += allEncIndLvlsBytes;
+    this->benchmark->communication += allEncIndLvlsBytes;
 
     this->encIndLvls = encIndLvls;
 }
@@ -79,7 +79,7 @@ template <IsDbTuple DbTuple>
 std::vector<EncInd*> NLogNServer<DbTuple>::getEncIndLvls() const {
     bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(this->encIndLvls);
     this->benchmark->diskSize += allEncIndLvlsBytes;
-    this->benchmark->network += allEncIndLvlsBytes;
+    this->benchmark->communication += allEncIndLvlsBytes;
 
     return this->encIndLvls;
 }
@@ -89,7 +89,7 @@ template <IsDbTuple DbTuple>
 std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
     bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
 ) const {
-    this->benchmark->network +=
+    this->benchmark->communication +=
         sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + label.length();
     std::vector<EncIndVal> encResults;
 
@@ -114,7 +114,7 @@ std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
         encResults.push_back(encIndVal);
     }
 
-    this->benchmark->network += encResults.size() * EncInd::VAL_LEN;
+    this->benchmark->communication += encResults.size() * EncInd::VAL_LEN;
     return encResults;
 }
 
@@ -123,7 +123,7 @@ template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::setDbKwCountsDict(EncInd* dbKwCountsDict) {
     bigint dbKwCountsDictBytes = dbKwCountsDict->getSize() * EncInd::ENTRY_LEN;
     this->benchmark->diskSize += dbKwCountsDictBytes;
-    this->benchmark->network += dbKwCountsDictBytes;
+    this->benchmark->communication += dbKwCountsDictBytes;
     this->dbKwCountsDict = dbKwCountsDict;
 }
 
@@ -132,7 +132,7 @@ template <IsDbTuple DbTuple>
 bool NLogNServer<DbTuple>::getDbKwCount(
     ubigint pos, const ustring& label, EncIndVal& ret
 ) const {
-    this->benchmark->network += sizeof(ubigint) + label.length() + EncInd::VAL_LEN;
+    this->benchmark->communication += sizeof(ubigint) + label.length() + EncInd::VAL_LEN;
     return this->dbKwCountsDict->find(pos, label, ret);
 }
 

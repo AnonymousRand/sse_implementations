@@ -45,21 +45,21 @@ template <IsDbTuple DbTuple>
 void PiBasServer<DbTuple>::setEncInd(EncInd* encInd) {
     bigint encIndBytes = encInd->getSize() * EncInd::ENTRY_LEN;
     this->benchmark->diskSize += encIndBytes;
-    this->benchmark->network += encIndBytes;
+    this->benchmark->communication += encIndBytes;
     this->encInd = encInd;
 }
 
 
 template <IsDbTuple DbTuple>
 EncInd* PiBasServer<DbTuple>::getEncInd() const {
-    this->benchmark->network += this->encInd->getSize() * EncInd::ENTRY_LEN;
+    this->benchmark->communication += this->encInd->getSize() * EncInd::ENTRY_LEN;
     return this->encInd;
 }
 
 
 template <IsDbTuple DbTuple>
 std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryToken) const {
-    this->benchmark->network += queryToken.length();
+    this->benchmark->communication += queryToken.length();
     std::vector<EncIndVal> encResults;
 
     // for c = 0 until `Get` returns error
@@ -80,7 +80,7 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
         dbKwCounter++;
     }
 
-    this->benchmark->network += encResults.size() * EncInd::VAL_LEN;
+    this->benchmark->communication += encResults.size() * EncInd::VAL_LEN;
     return encResults;
 }
 
