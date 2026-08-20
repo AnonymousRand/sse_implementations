@@ -21,10 +21,19 @@ struct Benchmark {
     bigint diskSize = 0;
     bigint network = 0;
 
+    // (these are for tracking averages, and should really only be used for ephemeral stats)
+    bigint totalUpdtCount = 0;
+    double totalUpdtTime = 0;
+    bigint totalUpdtNetwork = 0;
+
     void resetAll() {
         this->time = 0;
         this->diskSize = 0;
         this->network = 0;
+
+        this->totalUpdtCount = 0;
+        this->totalUpdtTime = 0;
+        this->totalUpdtNetwork = 0;
     }
 
     void resetEphems() {
@@ -50,7 +59,8 @@ struct Benchmark {
     void print(bool shouldBenchmark, const std::string& label) const {
         if (shouldBenchmark) {
             std::cout << std::format("| {:<25} ", label)
-                      << std::format("| {:<14.13} ", this->time)
+                      // explicitly cast doubles to string so that `.` controls exact string length
+                      << std::format("| {:<14.14} ", std::to_string(this->time))
                       << std::format("| {:<14} ", this->diskSize)
                       << std::format("| {:<14} |", this->network)
                       << std::endl;
@@ -58,11 +68,19 @@ struct Benchmark {
     }
 
     void print(bool shouldBenchmark, const std::string& label1, const std::string& label2) const {
+        std::string label = std::format("{:<6} {:<18}", label1, label2);
+        this->print(shouldBenchmark, label);
+    }
+
+    void printUpdtAvgs(bool shouldBenchmark, const std::string& label) const {
         if (shouldBenchmark) {
-            std::cout << std::format("| {:<6} ", label1) << std::format("{:<18} ", label2)
-                      << std::format("| {:<14.13} ", this->time)
-                      << std::format("| {:<14} ", this->diskSize)
-                      << std::format("| {:<14} |", this->network)
+            double avgUpdtTime    = this->totalUpdtTime    / this->totalUpdtCount;
+            double avgUpdtNetwork = this->totalUpdtNetwork / this->totalUpdtCount;
+
+            std::cout << std::format("| {:<25} ", label)
+                      << std::format("| {:<14.14} ", std::to_string(avgUpdtTime))
+                      << std::format("| {:<14} ", "")
+                      << std::format("| {:<14.14} |", std::to_string(avgUpdtNetwork))
                       << std::endl;
         }
     }
@@ -86,6 +104,7 @@ public:
         auto start = std::chrono::high_resolution_clock::now();
         Sse::setup(secParam, db);
         auto end = std::chrono::high_resolution_clock::now();
+
         std::chrono::duration<double, std::milli> elapsed = end - start;
         this->benchmark->time = elapsed.count();
     }
@@ -98,8 +117,10 @@ public:
         auto start = std::chrono::high_resolution_clock::now();
         std::vector<Tuple<>> results = Sse::search(query, shouldCleanUpResults, isNaive);
         auto end = std::chrono::high_resolution_clock::now();
+
         std::chrono::duration<double, std::milli> elapsed = end - start;
         this->benchmark->time = elapsed.count();
+
         return results;
     }
 };
@@ -118,7 +139,11 @@ public:
         auto start = std::chrono::high_resolution_clock::now();
         Dsse::update(newTuple);
         auto end = std::chrono::high_resolution_clock::now();
+
         std::chrono::duration<double, std::milli> elapsed = end - start;
         this->benchmark->time = elapsed.count();
+        this->benchmark->totalUpdtCount++;
+        this->benchmark->totalUpdtTime += this->benchmark->time;
+        this->benchmark->totalUpdtNetwork += this->benchmark->network;
     }
 };

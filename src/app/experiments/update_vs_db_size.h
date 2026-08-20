@@ -49,6 +49,7 @@ public:
             dsse->update(tuple);
             dsse->benchmark->print(shouldBenchmark, "Update", std::to_string(i));
         }
+        dsse->benchmark->printUpdtAvgs(shouldBenchmark, "Averages");
         std::cout << std::endl;
 
         dsse->clear();
