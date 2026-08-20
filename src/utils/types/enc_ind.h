@@ -192,7 +192,8 @@ public:
      * if the key at `pos` does not match `key` (e.g. from `pos % this->size` modulo
      * collision, or if another kv pair overflowed there first).
      *
-     * this does NOT change `pos`.
+     * this does NOT change `pos` (as the actual first empty location should not be needed
+     * for pseudorandom encrypted indexes).
      *
      * returns:
      *     - `true` if the kv pair corresponding to `key` was eventually found.
@@ -208,7 +209,8 @@ public:
      * write to first *empty* location at or after `pos`, iterating forward from `pos`
      * *linearly* until we find an empty location.
      *
-     * this does NOT change `pos`.
+     * this does NOT change `pos` (as the actual first empty location should not be needed
+     * for pseudorandom encrypted indexes).
      */
     void writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry, Benchmark* benchmark) {
         this->writeToFirstEmptyBase(pos, encIndEntry, benchmark, 1, this->size);

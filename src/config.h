@@ -9,9 +9,9 @@ inline constexpr bool DSSE_USE_SHORTCUT_SETUP     = true;
 inline constexpr bool DSSE_SHOULD_BENCHMARK_UPDTS = true;
 
 
-// set this to `true` for truly large (but ~tens-hundreds times slower) DBs
+// set this to `true` for truly large (but much slower) DBs
 // otherwise DBs are stored in RAM
-inline constexpr bool SHOULD_STORE_DBS_ON_DISK = true;
+inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 
 
 // this is the max number of decimal digits you want ids and keywords to be able to support
