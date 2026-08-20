@@ -17,17 +17,43 @@
 
 
 struct Benchmark {
+    //--------------------------------------------------------------------------
+    // general stats to benchmark
+
     double time = 0;
     bigint diskSize = 0;
     bigint communication = 0;
 
-    // (these are for tracking averages, and should really only be used for ephemeral stats)
+    //--------------------------------------------------------------------------
+    // tracking averages (this should really only be done for ephemeral stats)
+
     bigint totalUpdtCount = 0;
     double totalUpdtTime = 0;
     bigint totalUpdtCommunication = 0;
 
+    //--------------------------------------------------------------------------
+    // profiling specific pieces of code
+
+    double profileTime = 0;
+    std::chrono::time_point<std::chrono::high_resolution_clock> profileStart;
+    std::chrono::time_point<std::chrono::high_resolution_clock> profileEnd;
+
+    void startProfile() {
+        this->profileStart = std::chrono::high_resolution_clock::now();
+    }
+
+    void endProfile() {
+        this->profileEnd = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = this->profileEnd - this->profileStart;
+        this->profileTime += elapsed.count();
+    }
+
+    //--------------------------------------------------------------------------
+    // utils
+
     void resetAll() {
         this->time = 0;
+        this->profilingTime = 0;
         this->diskSize = 0;
         this->communication = 0;
 
@@ -38,6 +64,7 @@ struct Benchmark {
 
     void resetEphems() {
         this->time = 0;
+        this->profilingTime = 0;
         this->communication = 0;
     }
 
@@ -45,6 +72,7 @@ struct Benchmark {
         if (shouldBenchmark) {
             std::cout << std::format("| {:<25} ", "Params")
                       << std::format("| {:<14} ", "Time (ms)")
+                      << std::format("| {:<14} ", "Crypto (ms)")
                       << std::format("| {:<14} ", "Disk Size (B)")
                       << std::format("| {:<14} |", "Communication (B)")
                       << std::endl
@@ -61,6 +89,7 @@ struct Benchmark {
             std::cout << std::format("| {:<25} ", label)
                       // explicitly cast doubles to string so that `.` controls exact string length
                       << std::format("| {:<14.14} ", std::to_string(this->time))
+                      << std::format("| {:<14.14} ", std::to_string(this->profilingTime))
                       << std::format("| {:<14} ", this->diskSize)
                       << std::format("| {:<14} |", this->communication)
                       << std::endl;
@@ -79,7 +108,8 @@ struct Benchmark {
 
             std::cout << std::format("| {:<25} ", label)
                       << std::format("| {:<14.14} ", std::to_string(avgUpdtTime))
-                      << std::format("| {:<14} ", "")
+                      << std::format("| {:<14} ", "-")
+                      << std::format("| {:<14} ", "-")
                       << std::format("| {:<14.14} |", std::to_string(avgUpdtCommunication))
                       << std::endl;
         }
