@@ -30,7 +30,6 @@ public:
 
     Iter find(const KeyType& key);
     ConstIter find(const KeyType& key) const;
-    bigint count(const KeyType& key) const;
 
     ValType& operator [](const KeyType& key);
     const ValType& operator [](const KeyType& key) const;

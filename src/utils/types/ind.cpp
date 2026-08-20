@@ -50,12 +50,6 @@ Ind<DbTuple>::ConstIter Ind<DbTuple>::find(const KeyType& key) const {
 
 
 template <IsDbTuple DbTuple>
-bigint Ind<DbTuple>::count(const KeyType& key) const {
-    return this->map.count(key);
-}
-
-
-template <IsDbTuple DbTuple>
 Ind<DbTuple>::ValType& Ind<DbTuple>::operator [](const KeyType& key) {
     return this->map[key];
 }

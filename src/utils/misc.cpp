@@ -39,7 +39,7 @@ std::vector<Tuple<>> cleanUpResults(const std::vector<Tuple<>>& tuples) {
     for (const Tuple<>& tuple : tuples) {
         Id id = tuple.getId();
         Op op = tuple.getOp();
-        if (id != DUMMY && op == Op::INS && deletedIds.count(id) == 0) {
+        if (id != DUMMY && op == Op::INS && !deletedIds.contains(id)) {
             newTuples.push_back(tuple);
         }
     }
