@@ -20,7 +20,7 @@
 
 struct Benchmark {
 private:
-    // config
+    // CONFIG
     inline static constexpr bigint PRINT_LABEL_WIDTH = 25;
     inline static constexpr bigint PRINT_LABEL_FIRST_HALF_WIDTH = 6;
     inline static constexpr bigint PRINT_COL_WIDTH = 18;

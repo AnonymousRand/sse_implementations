@@ -8,7 +8,7 @@ Implementations of the following [searchable symmetric encryption](https://en.wi
 - Logarithmic-SRC-i\* ([Demertzis et al., TODS'18](https://dl.acm.org/doi/pdf/10.1145/3167971))
 - SDa ([Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf))
 
-Since many of these can be instantiated with various underlying schemes, the following instantiations are possible:
+Since many of these can be instantiated with various underlying schemes, the following instantiations are possible (not all of these are secure, though!):
 - PiBas
 - NLogN
 - Logarithmic-SRC[PiBas]
@@ -24,7 +24,7 @@ Since many of these can be instantiated with various underlying schemes, the fol
 - SDa[Logarithmic-SRC-i[NLogN]]
 - SDa[Logarithmic-SRC-i\*]
 
-See [src/main.cpp](src/main.cpp), [src/app/sse_factory.cpp](src/app/sse_factory.cpp), and [src/app/experiments/](src/app/experiments/) for usage examples.
+See [src/main.cpp](src/main.cpp), [src/app/sse_factory.cpp](src/app/sse_factory.cpp), and [src/app/experiments/](src/app/experiments/) for usage examples :3
 
 # Requirements
 

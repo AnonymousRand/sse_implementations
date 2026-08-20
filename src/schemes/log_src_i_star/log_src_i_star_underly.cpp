@@ -23,6 +23,8 @@ namespace log_src_i_star {
 template <IsDbTuple DbTuple>
 void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     Range<DbKw> dbKwBounds = db.getDbKwBounds();
+    std::cout << "Log-SRC-i* setup() with kw bounds " << dbKwBounds << std::endl;
+    // remember to not use `db.size()` as TDAG leaves must be contiguous!
     this->leafCount = dbKwBounds.size();
     NLogN<DbTuple>::setup(secParam, db);
 }

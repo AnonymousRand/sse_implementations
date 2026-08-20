@@ -24,7 +24,7 @@ namespace app::experiments {
 
 class AllVsDbSize : public IExperiment<ISse<>> {
 private:
-    // config
+    // CONFIG
     inline static constexpr bigint RESULT_SIZE = 100;
 
 public:
