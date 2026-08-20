@@ -49,7 +49,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->prfKey = utils::crypto::genKey(secParam);
     this->encKey = utils::crypto::genKey(secParam);
 
-    EncIndRand* encInd = new EncIndRand();
+    EncIndRand* encInd = new EncIndRand(this->benchmark);
     encInd->init(this->size);
 
     //--------------------------------------------------------------------------
@@ -86,7 +86,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
                 this->encKey, dbTuple.toUstr(), iv, EncIndBase::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            encInd->writeToFirstEmpty(pos, std::pair {label, std::pair {encDbTuple, iv}}, this->benchmark.get());
+            encInd->writeToFirstEmpty(pos, std::pair {label, std::pair {encDbTuple, iv}});
         }
     }
 

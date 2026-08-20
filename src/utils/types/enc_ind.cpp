@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "utils/benchmark.h"
@@ -42,6 +43,13 @@ ustring toUstr(const EncIndEntry& encIndEntry) {
 // thousands of bits so there's a 2^{>1000} chance of this happening...and USENIX'24's
 // implementation seems to just do this too)
 const uchar EncIndBase::NULL_ENTRY[ENTRY_LEN] = {};
+
+
+//------------------------------------------------------------------------------
+// constructors/destructors
+
+
+EncIndBase::EncIndBase(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
 
 //------------------------------------------------------------------------------
@@ -111,11 +119,11 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret) const {
 }
 
 
-void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry, Benchmark* benchmark) {
+void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     pos %= this->size;
 
     // encode `encIndEntry` into one string
-    benchmark->startProfile("encode");
+    this->benchmark->startProfile("encode");
     ustring key = encIndEntry.first;
     EncIndVal val = encIndEntry.second;
     ustring entry = key + val.first + val.second;
@@ -124,10 +132,10 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry, Benchmark* b
                   << " bytes is not allowed! (want " << ENTRY_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    benchmark->stopProfile("encode");
+    this->benchmark->stopProfile("encode");
 
     // then go to `pos` and write the encoded `encIndEntry`
-    benchmark->startProfile("fwrite");
+    this->benchmark->startProfile("fwrite");
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     int itemsWritten = std::fwrite(entry.c_str(), ENTRY_LEN, 1, this->file);
     if (itemsWritten != 1) {
@@ -135,11 +143,11 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry, Benchmark* b
                   << " (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    benchmark->stopProfile("fwrite");
+    this->benchmark->stopProfile("fwrite");
     // flush immediately to mark space as occupied (and so we always have `this->isFlushed = true`)
-    benchmark->startProfile("fflush");
+    this->benchmark->startProfile("fflush");
     std::fflush(this->file);
-    benchmark->stopProfile("fflush");
+    this->benchmark->stopProfile("fflush");
 }
 
 
@@ -202,14 +210,13 @@ bool EncIndBase::findBase(
 
 
 void EncIndBase::writeToFirstEmptyBase(
-    ubigint& pos, const EncIndEntry& encIndEntry, Benchmark* benchmark,
-    bigint collisionSkip, bigint collisionAttempts
+    ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
 ) {
     pos %= this->size;
 
     // first check if location at `pos` is already filled
     uchar currEntry[ENTRY_LEN];
-    benchmark->startProfile("fread");
+    this->benchmark->startProfile("fread");
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     int itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
     if (itemsRead != 1) {
@@ -217,11 +224,13 @@ void EncIndBase::writeToFirstEmptyBase(
                   << this->filename << " (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    benchmark->stopProfile("fread");
+    this->benchmark->stopProfile("fread");
 
     // if location is already filled (because of modulo), find next available location, iterating
     // forward by `collisionSkip` positions at a time (this is what USENIX'24's implementation does)
-    benchmark->startProfile("fread2");
+    // TODO: add fast setup config option, in which case this should maybe load a bunch of the file
+    // into memory first and then search through that instead of working inside the file?
+    this->benchmark->startProfile("fread2");
     bigint positionsChecked = 1;
     while (positionsChecked < collisionAttempts
            && std::memcmp(currEntry, NULL_ENTRY, KEY_LEN) != 0)
@@ -250,10 +259,10 @@ void EncIndBase::writeToFirstEmptyBase(
                   << this->filename << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    benchmark->stopProfile("fread2");
+    this->benchmark->stopProfile("fread2");
 
     // otherwise, now write into this empty location
-    this->write(pos, encIndEntry, benchmark);
+    this->write(pos, encIndEntry);
 }
 
 

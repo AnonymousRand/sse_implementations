@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -12,6 +13,7 @@
 #include "utils/types/ustring.h"
 
 
+// still need to forward declare here to avoid some circular dependency
 struct Benchmark;
 
 
@@ -61,7 +63,7 @@ public:
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    EncIndBase() = default;
+    EncIndBase(std::shared_ptr<Benchmark> benchmark);
 
     //--------------------------------------------------------------------------
     // the big five
@@ -103,7 +105,7 @@ public:
      * write to `pos` (but does not check if there is already something there, e.g. from
      * `pos % this->size`, and will overwrite it!).
      */
-    void write(ubigint pos, const EncIndEntry& encIndEntry, Benchmark* benchmark);
+    void write(ubigint pos, const EncIndEntry& encIndEntry);
 
     bigint getSize() const { return this->size; }
 
@@ -114,6 +116,7 @@ protected:
     static const uchar NULL_ENTRY[ENTRY_LEN];
 
     bigint size = 0;
+    std::shared_ptr<Benchmark> benchmark;
 
     //--------------------------------------------------------------------------
     // helpers
@@ -142,8 +145,7 @@ protected:
      * additionally, once this first empty location has been found, place it back in `pos`.
      */
     void writeToFirstEmptyBase(
-        ubigint& pos, const EncIndEntry& encIndEntry, Benchmark* benchmark,
-        bigint collisionSkip, bigint collisionAttempts
+        ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
     );
 
     //--------------------------------------------------------------------------
@@ -164,7 +166,7 @@ public:
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    EncIndRand() = default;
+    using EncIndBase::EncIndBase;
 
     //--------------------------------------------------------------------------
     // the big five
@@ -212,8 +214,8 @@ public:
      * this does NOT change `pos` (as the actual first empty location should not be needed
      * for pseudorandom encrypted indexes).
      */
-    void writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry, Benchmark* benchmark) {
-        this->writeToFirstEmptyBase(pos, encIndEntry, benchmark, 1, this->size);
+    void writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) {
+        this->writeToFirstEmptyBase(pos, encIndEntry, 1, this->size);
     }
 };
 
@@ -229,7 +231,7 @@ public:
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    EncIndLoc() = default;
+    using EncIndBase::EncIndBase;
 
     //--------------------------------------------------------------------------
     // the big five
@@ -263,9 +265,8 @@ public:
     }
 
     void writeToFirstEmpty(
-        ubigint& pos, const EncIndEntry& encIndEntry, Benchmark* benchmark,
-        bigint collisionSkip, bigint collisionAttempts
+        ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
     ) {
-        this->writeToFirstEmptyBase(pos, encIndEntry, benchmark, collisionSkip, collisionAttempts);
+        this->writeToFirstEmptyBase(pos, encIndEntry, collisionSkip, collisionAttempts);
     }
 };

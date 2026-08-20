@@ -56,13 +56,13 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     
     std::vector<EncIndLoc*> encIndLvls;
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncIndLoc* encIndLvl = new EncIndLoc();
+        EncIndLoc* encIndLvl = new EncIndLoc(this->benchmark);
         bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
         bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
         encIndLvl->init(bcktCountOnLvl * bcktSizeOnLvl);
         encIndLvls.push_back(encIndLvl);
     }
-    EncIndRand* dbKwCountsDict = new EncIndRand();
+    EncIndRand* dbKwCountsDict = new EncIndRand(this->benchmark);
     dbKwCountsDict->init(this->size);
 
     //--------------------------------------------------------------------------
@@ -106,7 +106,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             this->encKey, utils::ustr::toUstr(dbKwCount), ivDict, EncIndBase::DATA_LEN - 1
         );
         ubigint posDict = this->mapNoMod(queryToken, labelDict);
-        dbKwCountsDict->writeToFirstEmpty(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}}, this->benchmark.get());
+        dbKwCountsDict->writeToFirstEmpty(posDict, std::pair {labelDict, std::pair {encDbKwCount, ivDict}});
 
         // for each id in DB(w) (write into same bucket consecutively)
         bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
@@ -124,14 +124,14 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
                 // if first write to this bucket, get the first bucket start pos at or after
                 // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
                 encIndLvls[lvl]->writeToFirstEmpty(
-                    startPos, std::pair {label, std::pair {encDbTuple, iv}}, this->benchmark.get(),
+                    startPos, std::pair {label, std::pair {encDbTuple, iv}},
                     bcktSizeOnLvl, bcktCountOnLvl
                 );
             } else {
                 // after first write, just write consecutively as we are now guaranteed that
                 // there is a full bucket of contiguous space here
                 encIndLvls[lvl]->write(
-                    startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}, this->benchmark.get()
+                    startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
                 );
             }
         }
