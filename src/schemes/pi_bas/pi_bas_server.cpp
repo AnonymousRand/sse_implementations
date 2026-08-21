@@ -65,7 +65,6 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
     // for c = 0 until `Get` returns error
     bigint dbKwCounter = 0;
     while (true) {
-        //std::cout << "===== searching with kw counter " << dbKwCounter << std::endl;
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
         // (same as client's `setup()`)
         ustring label = utils::crypto::hash(queryToken + utils::ustr::toUstr(dbKwCounter));

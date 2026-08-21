@@ -149,8 +149,6 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     this->benchmark->startProfile("fflush");
     std::fflush(this->file);
     this->benchmark->stopProfile("fflush");
-    //std::cout << "----- writing to pos " << pos << std::endl;
-    //std::cout << "key is " << utils::debugging::ustrToHex(entry, KEY_LEN) << std::endl;
 }
 
 
@@ -180,11 +178,8 @@ bool EncIndBase::findBase(
     bigint positionsChecked = 0;
     while (std::memcmp(currEntry, targetKeyCstr, KEY_LEN) != 0) {
         positionsChecked++;
-        //std::cout << "----- finding, pos is " << pos << ", positions checked is " << positionsChecked << ", collision attempts is " << collisionAttempts << std::endl;
-        //std::cout << "key is " << utils::debugging::ustrToHex(currEntry, KEY_LEN) << std::endl;
         // if still not found after `collisionAttempts` iterations forward, give up
         if (positionsChecked == collisionAttempts) {
-            //std::cout << "----- DIDN'T FIND!" << std::endl;
             return false;
         }
 
@@ -207,7 +202,6 @@ bool EncIndBase::findBase(
             std::exit(EXIT_FAILURE);
         }
     }
-    //std::cout << "----- FOUND!! at pos " << pos << std::endl;;
 
     // read and decode the kv pair at the matched location we found
     return this->read(pos, ret);
@@ -232,8 +226,6 @@ void EncIndBase::writeToFirstEmptyBase(
     bigint readBufIndex = 0;
     const ubigint origStartPos = pos;
     bigint positionsChecked = 0;
-    //std::cout << "+++++ ATTEMPTING to write to pos " << pos << "; size is " << this->size << std::endl;
-    //std::cout << "----- positions checked: " << positionsChecked << ", pos: " << pos << ", collisionAttempts: " << collisionAttempts << ", collisionSkip: " << collisionSkip << std::endl;
 
     this->benchmark->startProfile("fread");
     readBufEntryCount = this->readIntoReadBuf(
@@ -259,7 +251,6 @@ void EncIndBase::writeToFirstEmptyBase(
                       << this->filename << std::endl;
             std::exit(EXIT_FAILURE);
         }
-        //std::cout << "positions seen: " << positionsChecked << "; pos: " << pos << "readBufIndex: " << readBufIndex << "; collisionSkip: " << collisionSkip << "; collisionAttempts: " << collisionAttempts << std::endl;
 
         // this should be the only place we handle updating `pos`
         readBufIndex += collisionSkip;
@@ -268,8 +259,6 @@ void EncIndBase::writeToFirstEmptyBase(
             pos %= this->size;
             needsFseek = true;
         }
-
-        //std::cout << "----- positions checked: " << positionsChecked << ", pos: " << pos << ", collisionAttempts: " << collisionAttempts << ", collisionSkip: " << collisionSkip << std::endl;
 
         // if we've gotten to the end of the current `readBuf`, read the next part of the file
         // into it, and also reset its internal `readBufIndex` index
@@ -280,7 +269,6 @@ void EncIndBase::writeToFirstEmptyBase(
             needsFseek = isFseekAlwaysNeeded();
             readBufIndex = 0;
         }
-        //std::cout << "about to check index " << readBufIndex << std::endl;
     }
     this->benchmark->stopProfile("fread2");
 
@@ -303,15 +291,6 @@ bigint EncIndBase::readIntoReadBuf(
     bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);
 
     bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
-    //std::cout << "+++++ readIntoReadBuf(): "
-    //          << "targetEntryCount: " << targetEntryCount
-    //          << ", readBufStartPos: " << readBufStartPos
-    //          << ", origStartPos: " << origStartPos
-    //          << ", entriesUntilEof: " << entriesUntilEof
-    //          << ", entriesUntilFullLoop: " << entriesUntilFullLoop
-    //          << ", entriesToRead: " << entriesToRead
-    //          << ", entriesToReadUntilEof: " << entriesToReadUntilEof
-    //          << std::endl;
     this->benchmark->startProfile("fseek2");
     if (shouldFseek) {
         std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
@@ -320,7 +299,6 @@ bigint EncIndBase::readIntoReadBuf(
     this->benchmark->startProfile("fread3");
     bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
     this->benchmark->stopProfile("fread3");
-    //std::cout << "read " << itemsRead << " into buffer" << std::endl;
     if (itemsRead < entriesToReadUntilEof) {
         std::cerr << "Error: EncIndBase::readIntoReadBuf(): error reading (part 1) from file "
                   << this->filename
@@ -337,7 +315,6 @@ bigint EncIndBase::readIntoReadBuf(
             ENTRY_LEN, entriesToRead - entriesToReadUntilEof,
             this->file
         );
-        //std::cout << "read " << itemsRead << " more items into buffer" << std::endl;
         if (itemsRead < entriesToRead) {
             std::cerr << "Error: EncIndBase::writeToFirstEmptyBase(): error reading (part 2) "
                       << "from file " << this->filename
