@@ -9,6 +9,7 @@
 namespace utils::debugging {
 
 
+// NOTE: since this uses a `std::string`, it will currently refuse to print any '\0' bytes
 std::string ustrToHex(const uchar* str, int len) {
     std::string hexStr = "";
     for (int i = 0; i < len; i++) {

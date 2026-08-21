@@ -148,6 +148,8 @@ protected:
         ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
     );
 
+    void readIntoReadBuf(uchar* readBuf, int readBufEntryCount) const;
+
     //--------------------------------------------------------------------------
     // debugging
 
