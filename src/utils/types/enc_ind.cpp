@@ -277,17 +277,28 @@ bigint EncIndBase::readIntoReadBuf(
     uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos
 ) const {
     bigint entriesUntilEof = this->size - readBufStartPos;
-    bigint entriesUntilFullLoop = readBufStartPos <= origStartPos ?
-        origStartPos - readBufStartPos : entriesUntilEof + origStartPos;
+    bigint entriesUntilFullLoop;
+    if (readBufStartPos < origStartPos)      entriesUntilFullLoop = origStartPos - readBufStartPos;
+    else if (readBufStartPos > origStartPos) entriesUntilFullLoop = entriesUntilEof + origStartPos;
+    else                                     entriesUntilFullLoop = this->size;
     // we want to make sure we don't exceed where we had started doing this whole thing back in
     // the caller (e.g. if we had already wrapped around and are getting close to a full loop)
     bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);
 
     bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
+    //std::cout << "+++++ readIntoReadBuf(): "
+    //          << "targetEntryCount: " << targetEntryCount
+    //          << ", readBufStartPos: " << readBufStartPos
+    //          << ", origStartPos: " << origStartPos
+    //          << ", entriesUntilEof: " << entriesUntilEof
+    //          << ", entriesUntilFullLoop: " << entriesUntilFullLoop
+    //          << ", entriesToRead: " << entriesToRead
+    //          << ", entriesToReadUntilEof: " << entriesToReadUntilEof
+    //          << std::endl;
     bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
     //std::cout << "read " << itemsRead << " into buffer" << std::endl;
     if (itemsRead < entriesToReadUntilEof) {
-        std::cerr << "Error: EncIndBase::readIntoReadBuf(): error reading from file "
+        std::cerr << "Error: EncIndBase::readIntoReadBuf(): error reading (part 1) from file "
                   << this->filename
                   << " (only read " << itemsRead << " out of " << entriesToReadUntilEof << ")"
                   << std::endl;
@@ -304,8 +315,8 @@ bigint EncIndBase::readIntoReadBuf(
         );
         //std::cout << "read " << itemsRead << " more items into buffer" << std::endl;
         if (itemsRead < entriesToRead) {
-            std::cerr << "Error: EncIndBase::writeToFirstEmptyBase(): error reading from file "
-                      << this->filename
+            std::cerr << "Error: EncIndBase::writeToFirstEmptyBase(): error reading (part 2) "
+                      << "from file " << this->filename
                       << " (only read " << itemsRead << " out of " << entriesToRead << ")"
                       << std::endl;
             std::exit(EXIT_FAILURE);
