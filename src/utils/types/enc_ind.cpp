@@ -226,14 +226,14 @@ void EncIndBase::writeToFirstEmptyBase(
     // where locality shines?
     // TODO: add fast setup config option and this buffer size
     constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 7);
-    const bigint readBufEntryCapacity = std::min((bigint)READ_BUF_TARGET_ENTRIES, this->size);
+    const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
     uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
     bigint readBufEntryCount = 0;
     bigint readBufIndex = 0;
     const ubigint origStartPos = pos;
     bigint positionsChecked = 0;
     //std::cout << "+++++ ATTEMPTING to write to pos " << pos << "; size is " << this->size << std::endl;
-    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    //std::cout << "----- positions checked: " << positionsChecked << ", pos: " << pos << ", collisionAttempts: " << collisionAttempts << ", collisionSkip: " << collisionSkip << std::endl;
     this->benchmark->startProfile("fread");
     readBufEntryCount = this->readIntoReadBuf(readBuf, readBufEntryCapacity, pos, origStartPos);
     this->benchmark->stopProfile("fread");
@@ -253,6 +253,8 @@ void EncIndBase::writeToFirstEmptyBase(
         // this should be the only place we handle updating `pos`
         readBufIndex += collisionSkip;
         pos = (pos + collisionSkip) % this->size;
+
+        //std::cout << "----- positions checked: " << positionsChecked << ", pos: " << pos << ", collisionAttempts: " << collisionAttempts << ", collisionSkip: " << collisionSkip << std::endl;
 
         // if we've gotten to the end of the current `readBuf`, read the next part of the file
         // into it, and also reset its internal `readBufIndex` index
@@ -295,6 +297,9 @@ bigint EncIndBase::readIntoReadBuf(
     //          << ", entriesToRead: " << entriesToRead
     //          << ", entriesToReadUntilEof: " << entriesToReadUntilEof
     //          << std::endl;
+    this->benchmark->startProfile("fseek2");
+    std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
+    this->benchmark->stopProfile("fseek2");
     bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
     //std::cout << "read " << itemsRead << " into buffer" << std::endl;
     if (itemsRead < entriesToReadUntilEof) {

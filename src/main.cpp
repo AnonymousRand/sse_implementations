@@ -128,13 +128,13 @@ int main() {
     // free memory ASAP
     debugging.clearDb();
 
-    /*
     //--------------------------------------------------------------------------
     // all vs. DB size experiment
 
     app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp);
     allVsDbSize.printHeader();
 
+    /*
     std::cout << "================ PiBas =================" << std::endl << std::endl;
     allVsDbSize.run(piBas.get(), config::SHOULD_BENCHMARK);
 
@@ -161,6 +161,7 @@ int main() {
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
     allVsDbSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
+    */
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
     allVsDbSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
@@ -342,5 +343,4 @@ int main() {
         // free memory ASAP
         updateVsDbSize.clearDb();
     }
-    */
 }
