@@ -219,14 +219,13 @@ void EncIndBase::writeToFirstEmptyBase(
 ) {
     pos %= this->size;
 
-    this->benchmark->startProfile("fread2");
     // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
     // if it is, find the next available location, iterating forward by `collisionSkip` positions
     // at a time (this is also what USENIX'24's implementation does)
     // >>TODO if this works out, do similar optimizations for `findBase()`? or no since that is
     // where locality shines?
     // TODO: add fast setup config option and this buffer size
-    constexpr int READ_BUF_TARGET_ENTRIES = 512;
+    constexpr int READ_BUF_TARGET_ENTRIES = std::pow(2, 7);
     // (note that this isi always guaranteed to be small enough to be an `int`)
     const int readBufEntryCount = std::min((bigint)READ_BUF_TARGET_ENTRIES, this->size);
     uchar readBuf[readBufEntryCount * ENTRY_LEN];
@@ -234,7 +233,10 @@ void EncIndBase::writeToFirstEmptyBase(
     bigint positionsChecked = 0;
     //std::cout << "+++++ ATTEMPTING to write to pos " << pos << "; size is " << this->size << std::endl;
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    this->benchmark->startProfile("fread");
     this->readIntoReadBuf(readBuf, readBufEntryCount);
+    this->benchmark->stopProfile("fread");
+    this->benchmark->startProfile("fread2");
     while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0)
     {
         positionsChecked++;
