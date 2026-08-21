@@ -239,8 +239,8 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     pos %= this->size;
 
     // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
-    // if it is, find the next available location, iterating forward by `collisionSkip` positions
-    // at a time (this is also what USENIX'24's implementation does)
+    // if it is, find the next available location, iterating forward one position at a time
+    // (this is also what USENIX'24's implementation does)
     // >TODO if this works out, do similar optimizations for `findBase()`? or no since that is
     // where locality shines?
     // TODO: add fast setup config option and this buffer size
@@ -254,13 +254,8 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     bigint readBufIndex = 0;
     bool needsFseek = false;
     bigint positionsChecked = 0;
-    // note: the file pointer should be in the right position from the last `fread()`
-    // into `readBuf` IF AND ONLY IF `collisionSkip` <= `readBufEntryCount`, i.e.
-    // we don't advance `pos` by more than the size of the entire buffer at a time
-    // (assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
     this->benchmark->startProfile("fread2");
-    // >>TODO if current way of separating rand and loc writeToFirstEmpty() is faster, try to
-    // refactor this to a do-while loop as well, and then still share some common code in EncIndBase
+    // >>TODO try to stil share some code
     while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0) {
         positionsChecked++;
         // if we've done `collisionAttempts` iterations and still haven't found an available space,
@@ -273,15 +268,17 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
 
         pos = (pos + 1) % this->size;
         if (pos == 0) {
-            // (note: this cannot be just a raw `fseek(0)` call since we may only need to `fread()`
+            // the file pointer should be in the right position from the last `fread()` into
+            // `readBuf` (and hence doesn't need an `fseek()`) IF AND ONLY IF we do not wrap around
+            // (assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
+            // (also, this can't be just an `fseek(0)` call here since we may only need to `fread()`
             // to fill `readBuf` again later on, when we need to read pointer to not still be at 0)
             needsFseek = true;
         }
 
         // (this must come before we set `readBufIndex` to 0, or else we skip over an entry)
         readBufIndex++;
-        // if we've gotten to the end of the current `readBuf`, read the next part of the file
-        // into it, and also reset its internal `readBufIndex` index
+        // if we've read to the end of the current `readBuf`, read the next part of the file into it
         if (readBufIndex >= readBufEntryCount) {
             readBufEntryCount = this->readIntoReadBuf(
                 readBuf, readBufEntryCapacity, pos, origStartPos, needsFseek
@@ -361,10 +358,6 @@ void EncIndLoc::writeToFirstEmpty(
     // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
     // if it is, find the next available location, iterating forward by `collisionSkip` positions
     // at a time (this is also what USENIX'24's implementation does)
-    //readBufEntryCount = this->readIntoReadBuf(
-    //    readBuf, readBufEntryCapacity, pos, origStartPos, true
-    //);
-    //this->benchmark->stopProfile("fread");
     uchar currEntry[ENTRY_LEN];
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     this->readRaw(currEntry);
