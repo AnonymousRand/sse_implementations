@@ -125,6 +125,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             if (dbKwCounter == 0) {
                 // if first write to this bucket, get the first bucket start pos at or after
                 // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
+                //std::cout << "===== NLogN writing " << dbTuple << " to pos " << startPos << std::endl;
                 encIndLvls[lvl]->writeToFirstEmpty(
                     startPos, std::pair {label, std::pair {encDbTuple, iv}},
                     bcktSizeOnLvl, bcktCountOnLvl
@@ -132,6 +133,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             } else {
                 // after first write, just write consecutively as we are now guaranteed that
                 // there is a full bucket of contiguous space here
+                //std::cout << "===== NLogN writing " << dbTuple << " to pos " << startPos + dbKwCounter << std::endl;
                 encIndLvls[lvl]->write(
                     startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
                 );
@@ -227,6 +229,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
     bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
+    //std::cout << "===== NLogN searching for " << query << " at pos " << startPos << std::endl;
     std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, bcktCountOnLvl, label
     );

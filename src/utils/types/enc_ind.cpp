@@ -149,8 +149,8 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     this->benchmark->startProfile("fflush");
     std::fflush(this->file);
     this->benchmark->stopProfile("fflush");
-    //std::cout << "----- writing to pos " << pos << ": " << utils::debugging::ustrToHex(encIndEntry) << std::endl;
-    std::cout << "----- writing to pos " << pos << std::endl;
+    //std::cout << "----- writing to pos " << pos << std::endl;
+    //std::cout << "key is " << utils::debugging::ustrToHex(entry, KEY_LEN) << std::endl;
 }
 
 
@@ -180,10 +180,11 @@ bool EncIndBase::findBase(
     bigint positionsChecked = 0;
     while (std::memcmp(currEntry, targetKeyCstr, KEY_LEN) != 0) {
         positionsChecked++;
-        std::cout << "----- finding, pos is " << pos << ", positions checked is " << positionsChecked << ", collision attempts is " << collisionAttempts << std::endl;
+        //std::cout << "----- finding, pos is " << pos << ", positions checked is " << positionsChecked << ", collision attempts is " << collisionAttempts << std::endl;
+        //std::cout << "key is " << utils::debugging::ustrToHex(currEntry, KEY_LEN) << std::endl;
         // if still not found after `collisionAttempts` iterations forward, give up
         if (positionsChecked == collisionAttempts) {
-            std::cout << "----- DIDN'T FIND!" << std::endl;
+            //std::cout << "----- DIDN'T FIND!" << std::endl;
             return false;
         }
 
@@ -199,14 +200,14 @@ bool EncIndBase::findBase(
                 std::fseek(this->file, 0, SEEK_SET);
             }
         }
-        itemsRead = std::fread(currEntry, KEY_LEN, 1, this->file);
+        itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
         if (itemsRead != 1) {
             std::cerr << "Error: EncIndBase::findBase(): error reading from file " << this->filename
                       << " (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
-    std::cout << "===== FOUND!! at pos " << pos << std::endl;;
+    //std::cout << "----- FOUND!! at pos " << pos << std::endl;;
 
     // read and decode the kv pair at the matched location we found
     return this->read(pos, ret);

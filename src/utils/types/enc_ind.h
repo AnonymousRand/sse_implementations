@@ -109,6 +109,12 @@ public:
 
     bigint getSize() const { return this->size; }
 
+    //--------------------------------------------------------------------------
+    // debugging
+
+    EncIndEntry get(ubigint pos) const;
+    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
+
 protected:
     constexpr std::string FILE_DIR() const override { return "out/server"; }
     constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
@@ -149,12 +155,6 @@ protected:
     );
 
     void readIntoReadBuf(uchar* readBuf, int readBufEntryCount) const;
-
-    //--------------------------------------------------------------------------
-    // debugging
-
-    EncIndEntry get(ubigint pos) const;
-    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
 };
 
 

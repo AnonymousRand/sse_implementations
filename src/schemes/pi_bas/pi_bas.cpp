@@ -86,11 +86,12 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
                 this->encKey, dbTuple.toUstr(), iv, EncIndBase::DATA_LEN - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            std::cout << "===== PiBas writing " << dbTuple << " to pos " << pos << std::endl;
+            //std::cout << "===== PiBas writing " << dbTuple << " to pos " << pos << " with kw counter " << dbKwCounter << std::endl;
             encInd->writeToFirstEmpty(pos, std::pair {label, std::pair {encDbTuple, iv}});
         }
     }
 
+    //encInd->print();
     this->server->setEncInd(encInd);
 }
 
@@ -143,7 +144,7 @@ std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const 
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
-    std::cout << "===== PiBas searching for " << query << std::endl;
+    //std::cout << "===== PiBas searching for " << query << std::endl;
     std::vector<EncIndVal> encResults = this->server->searchEncInd(queryToken);
 
     // decrypt results on the client
