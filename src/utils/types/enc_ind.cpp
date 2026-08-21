@@ -260,14 +260,8 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
     bigint readBufEntryCount = 0;
     bigint readBufIndex = 0;
-    bigint positionsChecked = 0;
-
-    this->benchmark->startProfile("fread");
     bool needsFseek = true;
-    readBufEntryCount = this->readIntoReadBuf(
-        readBuf, readBufEntryCapacity, pos, origStartPos, true
-    );
-    this->benchmark->stopProfile("fread");
+    bigint positionsSeen = 0;
     // note: the file pointer should be in the right position from the last `fread()`
     // into `readBuf` IF AND ONLY IF `collisionSkip` <= `readBufEntryCount`, i.e.
     // we don't advance `pos` by more than the size of the entire buffer at a time
@@ -275,23 +269,18 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     this->benchmark->startProfile("fread2");
     // >>TODO if current way of separating rand and loc writeToFirstEmpty() is faster, try to
     // refactor this to a do-while loop as well, and then still share some common code in EncIndBase
-    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0) {
-        positionsChecked++;
+    do {
         // if we've done `collisionAttempts` iterations and still haven't found an available space,
         // throw an error (this usually means we are trying to write to a full index)
-        if (positionsChecked == this->size) {
+        if (positionsSeen == this->size) {
             std::cerr << "Error: EncIndRand::writeToFirstEmpty(): ran out of space writing to "
                       << this->filename << std::endl;
             std::exit(EXIT_FAILURE);
         }
 
-        // this should be the only place we handle updating `pos`
+        // (this has to be up here, or else if we do `readBufIndex++` right after setting it
+        // to 0 below, we will skip over that entry)
         readBufIndex++;
-        pos = (pos + 1) % this->size;
-        if (pos == 0) {
-            needsFseek = true;
-        }
-
         // if we've gotten to the end of the current `readBuf`, read the next part of the file
         // into it, and also reset its internal `readBufIndex` index
         if (readBufIndex >= readBufEntryCount) {
@@ -301,7 +290,13 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
             readBufIndex = 0;
             needsFseek = false;
         }
-    }
+        positionsSeen++;
+
+        pos = (pos + 1) % this->size;
+        if (pos == 0) {
+            needsFseek = true;
+        }
+    } while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0);
     this->benchmark->stopProfile("fread2");
 
     // write into the empty location we found
