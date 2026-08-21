@@ -1,4 +1,4 @@
-// for experiment-specific configs, set them in their own files in `app/experiments/`!
+// for experiment-specific configs/params, set them in their own files in `app/experiments/`!
 
 #pragma once
 
