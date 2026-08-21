@@ -234,9 +234,20 @@ void EncIndBase::writeToFirstEmptyBase(
     bigint positionsChecked = 0;
     //std::cout << "+++++ ATTEMPTING to write to pos " << pos << "; size is " << this->size << std::endl;
     //std::cout << "----- positions checked: " << positionsChecked << ", pos: " << pos << ", collisionAttempts: " << collisionAttempts << ", collisionSkip: " << collisionSkip << std::endl;
+
     this->benchmark->startProfile("fread");
-    readBufEntryCount = this->readIntoReadBuf(readBuf, readBufEntryCapacity, pos, origStartPos);
+    readBufEntryCount = this->readIntoReadBuf(
+        readBuf, readBufEntryCapacity, pos, origStartPos, true
+    );
     this->benchmark->stopProfile("fread");
+    // note: the file pointer should be in the right position from the last `fread()`
+    // into `readBuf` IF AND ONLY IF `collisionSkip` <= `readBufEntryCount`, i.e.
+    // we don't advance `pos` by more than the size of the entire buffer at a time
+    // (assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
+    auto isFseekAlwaysNeeded = [collisionSkip, &readBufEntryCount]() {
+        return collisionSkip > readBufEntryCount;
+    };
+    bool needsFseek = isFseekAlwaysNeeded();
     this->benchmark->startProfile("fread2");
     while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0)
     {
@@ -252,18 +263,21 @@ void EncIndBase::writeToFirstEmptyBase(
 
         // this should be the only place we handle updating `pos`
         readBufIndex += collisionSkip;
-        pos = (pos + collisionSkip) % this->size;
+        pos += collisionSkip;
+        if (pos >= this->size) {
+            pos %= this->size;
+            needsFseek = true;
+        }
 
         //std::cout << "----- positions checked: " << positionsChecked << ", pos: " << pos << ", collisionAttempts: " << collisionAttempts << ", collisionSkip: " << collisionSkip << std::endl;
 
         // if we've gotten to the end of the current `readBuf`, read the next part of the file
         // into it, and also reset its internal `readBufIndex` index
         if (readBufIndex >= readBufEntryCount) {
-            // (note: the file pointer should be in the right position from the last `fread()`,
-            // assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
             readBufEntryCount = this->readIntoReadBuf(
-                readBuf, readBufEntryCapacity, pos, origStartPos
+                readBuf, readBufEntryCapacity, pos, origStartPos, needsFseek
             );
+            needsFseek = isFseekAlwaysNeeded();
             readBufIndex = 0;
         }
         //std::cout << "about to check index " << readBufIndex << std::endl;
@@ -276,7 +290,8 @@ void EncIndBase::writeToFirstEmptyBase(
 
 
 bigint EncIndBase::readIntoReadBuf(
-    uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos
+    uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
+    bool shouldFseek
 ) const {
     bigint entriesUntilEof = this->size - readBufStartPos;
     bigint entriesUntilFullLoop;
@@ -298,7 +313,9 @@ bigint EncIndBase::readIntoReadBuf(
     //          << ", entriesToReadUntilEof: " << entriesToReadUntilEof
     //          << std::endl;
     this->benchmark->startProfile("fseek2");
-    std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
+    if (shouldFseek) {
+        std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
+    }
     this->benchmark->stopProfile("fseek2");
     bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
     //std::cout << "read " << itemsRead << " into buffer" << std::endl;

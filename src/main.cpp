@@ -77,6 +77,7 @@ int main() {
         config::DSSE_USE_SHORTCUT_SETUP, config::DSSE_SHOULD_BENCHMARK_UPDTS
     );
 
+    /*
     //--------------------------------------------------------------------------
     // debugging experiment
 
@@ -127,6 +128,7 @@ int main() {
 
     // free memory ASAP
     debugging.clearDb();
+    */
 
     //--------------------------------------------------------------------------
     // all vs. DB size experiment
