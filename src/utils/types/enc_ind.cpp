@@ -213,7 +213,7 @@ bool EncIndRand::find(ubigint pos, const ustring& key, EncIndVal& ret) const {
     bigint readBufIndex = 0;
     bool needsFseek = false;
     bigint positionsChecked = 0;
-    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0) {
+    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), targetKeyCstr, KEY_LEN) != 0) {
         positionsChecked++;
         // if we've done `collisionAttempts` iterations and still haven't found `key`, give up
         if (positionsChecked == this->size) {
