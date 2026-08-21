@@ -149,6 +149,8 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     this->benchmark->startProfile("fflush");
     std::fflush(this->file);
     this->benchmark->stopProfile("fflush");
+    //std::cout << "----- writing to pos " << pos << ": " << utils::debugging::ustrToHex(encIndEntry) << std::endl;
+    std::cout << "----- writing to pos " << pos << std::endl;
 }
 
 
@@ -174,12 +176,17 @@ bool EncIndBase::findBase(
 
     // if entry at `pos` did not match the target `key` (i.e. another kv pair overflowed here
     // first), scan subsequent locations for where the target `key` could've overflowed to
-    const uchar* targetKeyCStr = key.c_str();
-    bigint positionsChecked = 1;
-    while (positionsChecked < collisionAttempts
-           && std::memcmp(currEntry, targetKeyCStr, ENTRY_LEN) != 0)
-    {
+    const uchar* targetKeyCstr = key.c_str();
+    bigint positionsChecked = 0;
+    while (std::memcmp(currEntry, targetKeyCstr, KEY_LEN) != 0) {
         positionsChecked++;
+        std::cout << "----- finding, pos is " << pos << ", positions checked is " << positionsChecked << ", collision attempts is " << collisionAttempts << std::endl;
+        // if still not found after `collisionAttempts` iterations forward, give up
+        if (positionsChecked == collisionAttempts) {
+            std::cout << "----- DIDN'T FIND!" << std::endl;
+            return false;
+        }
+
         pos = (pos + collisionSkip) % this->size;
         // optimization: if we are only iterating forward one position at a time, the file
         // pointer from the previous `fread` does not need to be moved unless we have wrapped
@@ -192,20 +199,16 @@ bool EncIndBase::findBase(
                 std::fseek(this->file, 0, SEEK_SET);
             }
         }
-        itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
+        itemsRead = std::fread(currEntry, KEY_LEN, 1, this->file);
         if (itemsRead != 1) {
             std::cerr << "Error: EncIndBase::findBase(): error reading from file " << this->filename
                       << " (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
+    std::cout << "===== FOUND!! at pos " << pos << std::endl;;
 
-    // if still not found after `collisionAttempts` iterations forward, give up
-    if (std::memcmp(currEntry, targetKeyCStr, ENTRY_LEN) != 0) {
-        return false;
-    }
-
-    // otherwise, read and decode the kv pair at the matched location we found
+    // read and decode the kv pair at the matched location we found
     return this->read(pos, ret);
 }
 
@@ -219,17 +222,16 @@ void EncIndBase::writeToFirstEmptyBase(
     // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
     // if it is, find the next available location, iterating forward by `collisionSkip` positions
     // at a time (this is also what USENIX'24's implementation does)
-    // >>TODO: add fast setup config option, in which case this should maybe load a bunch of the file
-    // into memory first and then search through that instead of working inside the file?
-    // TODO if this works out, do similar optimizations for `findBase()`? or no since that is
+    // >>TODO if this works out, do similar optimizations for `findBase()`? or no since that is
     // where locality shines?
+    // TODO: add fast setup config option and this buffer size
     constexpr int READ_BUF_TARGET_ENTRIES = 512;
     // (note that this isi always guaranteed to be small enough to be an `int`)
     const int readBufEntryCount = std::min((bigint)READ_BUF_TARGET_ENTRIES, this->size);
     uchar readBuf[readBufEntryCount * ENTRY_LEN];
     int readBufIndex = 0;
     bigint positionsChecked = 0;
-    std::cout << "+++++ ATTEMPTING to write to pos " << pos << "; size is " << this->size << std::endl;
+    //std::cout << "+++++ ATTEMPTING to write to pos " << pos << "; size is " << this->size << std::endl;
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     this->readIntoReadBuf(readBuf, readBufEntryCount);
     while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0)
@@ -242,7 +244,7 @@ void EncIndBase::writeToFirstEmptyBase(
                       << this->filename << std::endl;
             std::exit(EXIT_FAILURE);
         }
-        std::cout << "positions seen: " << positionsChecked << "; pos: " << pos << "readBufIndex: " << readBufIndex << "; collisionSkip: " << collisionSkip << "; collisionAttempts: " << collisionAttempts << std::endl;
+        //std::cout << "positions seen: " << positionsChecked << "; pos: " << pos << "readBufIndex: " << readBufIndex << "; collisionSkip: " << collisionSkip << "; collisionAttempts: " << collisionAttempts << std::endl;
 
         // this should be the only place we handle updating `pos`
         readBufIndex += collisionSkip;
@@ -256,26 +258,25 @@ void EncIndBase::writeToFirstEmptyBase(
             this->readIntoReadBuf(readBuf, readBufEntryCount);
             readBufIndex = 0;
         }
-        std::cout << "about to check index " << readBufIndex << std::endl;
+        //std::cout << "about to check index " << readBufIndex << std::endl;
     }
     this->benchmark->stopProfile("fread2");
 
     // write into the empty location we found
-    std::cerr << "===== FOUND empty spot :3 writing to pos " << pos << std::endl;
     this->write(pos, encIndEntry);
 }
 
 
 void EncIndBase::readIntoReadBuf(uchar* readBuf, int readBufEntryCount) const {
     int itemsRead = std::fread(readBuf, ENTRY_LEN, readBufEntryCount, this->file);
-    std::cout << "read " << itemsRead << " into buffer" << std::endl;
+    //std::cout << "read " << itemsRead << " into buffer" << std::endl;
     // wrap around to beginning of file if we read less than the target number of entries
     if (itemsRead < readBufEntryCount) {
         std::fseek(this->file, 0, SEEK_SET);
         itemsRead += std::fread(
             readBuf + (itemsRead * ENTRY_LEN), ENTRY_LEN, readBufEntryCount - itemsRead, this->file
         );
-        std::cout << "read " << itemsRead << " more items into buffer" << std::endl;
+        //std::cout << "read " << itemsRead << " more items into buffer" << std::endl;
         if (itemsRead < readBufEntryCount) {
             std::cerr << "Error: EncIndBase::writeToFirstEmptyBase(): error reading "
                       << " from file " << this->filename

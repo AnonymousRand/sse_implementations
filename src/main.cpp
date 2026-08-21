@@ -128,6 +128,7 @@ int main() {
     // free memory ASAP
     debugging.clearDb();
 
+    /*
     //--------------------------------------------------------------------------
     // all vs. DB size experiment
 
@@ -341,4 +342,5 @@ int main() {
         // free memory ASAP
         updateVsDbSize.clearDb();
     }
+    */
 }
