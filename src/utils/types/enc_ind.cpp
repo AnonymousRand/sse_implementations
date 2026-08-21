@@ -255,7 +255,7 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     // where locality shines?
     // TODO: add fast setup config option and this buffer size
     const ubigint origStartPos = pos;
-    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 3);
+    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 8);
     const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
     uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
     bigint readBufEntryCount = 0;
