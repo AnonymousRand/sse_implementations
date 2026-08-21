@@ -225,16 +225,17 @@ void EncIndBase::writeToFirstEmptyBase(
     // >>TODO if this works out, do similar optimizations for `findBase()`? or no since that is
     // where locality shines?
     // TODO: add fast setup config option and this buffer size
-    constexpr int READ_BUF_TARGET_ENTRIES = std::pow(2, 7);
-    // (note that this isi always guaranteed to be small enough to be an `int`)
-    const int readBufEntryCount = std::min((bigint)READ_BUF_TARGET_ENTRIES, this->size);
-    uchar readBuf[readBufEntryCount * ENTRY_LEN];
-    int readBufIndex = 0;
+    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 7);
+    const bigint readBufEntryCapacity = std::min((bigint)READ_BUF_TARGET_ENTRIES, this->size);
+    uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
+    bigint readBufEntryCount = 0;
+    bigint readBufIndex = 0;
+    const ubigint origStartPos = pos;
     bigint positionsChecked = 0;
     //std::cout << "+++++ ATTEMPTING to write to pos " << pos << "; size is " << this->size << std::endl;
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     this->benchmark->startProfile("fread");
-    this->readIntoReadBuf(readBuf, readBufEntryCount);
+    readBufEntryCount = this->readIntoReadBuf(readBuf, readBufEntryCapacity, pos, origStartPos);
     this->benchmark->stopProfile("fread");
     this->benchmark->startProfile("fread2");
     while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0)
@@ -258,7 +259,9 @@ void EncIndBase::writeToFirstEmptyBase(
         if (readBufIndex >= readBufEntryCount) {
             // (note: the file pointer should be in the right position from the last `fread()`,
             // assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
-            this->readIntoReadBuf(readBuf, readBufEntryCount);
+            readBufEntryCount = this->readIntoReadBuf(
+                readBuf, readBufEntryCapacity, pos, origStartPos
+            );
             readBufIndex = 0;
         }
         //std::cout << "about to check index " << readBufIndex << std::endl;
@@ -270,24 +273,46 @@ void EncIndBase::writeToFirstEmptyBase(
 }
 
 
-void EncIndBase::readIntoReadBuf(uchar* readBuf, int readBufEntryCount) const {
-    int itemsRead = std::fread(readBuf, ENTRY_LEN, readBufEntryCount, this->file);
+bigint EncIndBase::readIntoReadBuf(
+    uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos
+) const {
+    bigint entriesUntilEof = this->size - readBufStartPos;
+    bigint entriesUntilFullLoop = readBufStartPos <= origStartPos ?
+        origStartPos - readBufStartPos : entriesUntilEof + origStartPos;
+    // we want to make sure we don't exceed where we had started doing this whole thing back in
+    // the caller (e.g. if we had already wrapped around and are getting close to a full loop)
+    bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);
+
+    bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
+    bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
     //std::cout << "read " << itemsRead << " into buffer" << std::endl;
+    if (itemsRead < entriesToReadUntilEof) {
+        std::cerr << "Error: EncIndBase::readIntoReadBuf(): error reading from file "
+                  << this->filename
+                  << " (only read " << itemsRead << " out of " << entriesToReadUntilEof << ")"
+                  << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     // wrap around to beginning of file if we read less than the target number of entries
-    if (itemsRead < readBufEntryCount) {
+    if (entriesToReadUntilEof < entriesToRead) {
         std::fseek(this->file, 0, SEEK_SET);
         itemsRead += std::fread(
-            readBuf + (itemsRead * ENTRY_LEN), ENTRY_LEN, readBufEntryCount - itemsRead, this->file
+            readBuf + (entriesToReadUntilEof * ENTRY_LEN),
+            ENTRY_LEN, entriesToRead - entriesToReadUntilEof,
+            this->file
         );
         //std::cout << "read " << itemsRead << " more items into buffer" << std::endl;
-        if (itemsRead < readBufEntryCount) {
-            std::cerr << "Error: EncIndBase::writeToFirstEmptyBase(): error reading "
-                      << " from file " << this->filename
-                      << " (only read " << itemsRead << " out of " << readBufEntryCount
+        if (itemsRead < entriesToRead) {
+            std::cerr << "Error: EncIndBase::writeToFirstEmptyBase(): error reading from file "
+                      << this->filename
+                      << " (only read " << itemsRead << " out of " << entriesToRead << ")"
                       << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
+    
+    return itemsRead;
 }
 
 

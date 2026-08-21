@@ -154,7 +154,13 @@ protected:
         ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
     );
 
-    void readIntoReadBuf(uchar* readBuf, int readBufEntryCount) const;
+    /**
+     * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
+     * buffer size does not divide enc ind size and there is a bit left over, for example).
+     */
+    bigint readIntoReadBuf(
+        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos
+    ) const;
 };
 
 
