@@ -208,126 +208,6 @@ bool EncIndBase::findBase(
 }
 
 
-void EncIndBase::writeToFirstEmptyBase(
-    ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
-) {
-    pos %= this->size;
-
-    // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
-    // if it is, find the next available location, iterating forward by `collisionSkip` positions
-    // at a time (this is also what USENIX'24's implementation does)
-    // >>TODO if this works out, do similar optimizations for `findBase()`? or no since that is
-    // where locality shines?
-    // TODO: add fast setup config option and this buffer size
-    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 10);
-    const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
-    uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
-    bigint readBufEntryCount = 0;
-    bigint readBufIndex = 0;
-    const ubigint origStartPos = pos;
-    bigint positionsChecked = 0;
-
-    this->benchmark->startProfile("fread");
-    readBufEntryCount = this->readIntoReadBuf(
-        readBuf, readBufEntryCapacity, pos, origStartPos, true
-    );
-    this->benchmark->stopProfile("fread");
-    // note: the file pointer should be in the right position from the last `fread()`
-    // into `readBuf` IF AND ONLY IF `collisionSkip` <= `readBufEntryCount`, i.e.
-    // we don't advance `pos` by more than the size of the entire buffer at a time
-    // (assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
-    auto isFseekAlwaysNeeded = [collisionSkip, &readBufEntryCount]() {
-        return collisionSkip > readBufEntryCount;
-    };
-    bool needsFseek = isFseekAlwaysNeeded();
-    this->benchmark->startProfile("fread2");
-    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0)
-    {
-        positionsChecked++;
-        // if we've done `collisionAttempts` iterations and still haven't found an available space,
-        // throw an error (this usually means we are trying to write to a full index)
-        if (positionsChecked == collisionAttempts) {
-            std::cerr << "Error: EncIndBase::writeToFirstEmptyBase(): ran out of space writing to "
-                      << this->filename << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-
-        // this should be the only place we handle updating `pos`
-        readBufIndex += collisionSkip;
-        pos += collisionSkip;
-        if (pos >= this->size) {
-            pos %= this->size;
-            needsFseek = true;
-        }
-
-        // if we've gotten to the end of the current `readBuf`, read the next part of the file
-        // into it, and also reset its internal `readBufIndex` index
-        if (readBufIndex >= readBufEntryCount) {
-            readBufEntryCount = this->readIntoReadBuf(
-                readBuf, readBufEntryCapacity, pos, origStartPos, needsFseek
-            );
-            needsFseek = isFseekAlwaysNeeded();
-            readBufIndex = 0;
-        }
-    }
-    this->benchmark->stopProfile("fread2");
-
-    // write into the empty location we found
-    this->write(pos, encIndEntry);
-}
-
-
-bigint EncIndBase::readIntoReadBuf(
-    uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
-    bool shouldFseek
-) const {
-    bigint entriesUntilEof = this->size - readBufStartPos;
-    bigint entriesUntilFullLoop;
-    if (readBufStartPos < origStartPos)      entriesUntilFullLoop = origStartPos - readBufStartPos;
-    else if (readBufStartPos > origStartPos) entriesUntilFullLoop = entriesUntilEof + origStartPos;
-    else                                     entriesUntilFullLoop = this->size;
-    // we want to make sure we don't exceed where we had started doing this whole thing back in
-    // the caller (e.g. if we had already wrapped around and are getting close to a full loop)
-    bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);
-
-    bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
-    this->benchmark->startProfile("fseek2");
-    if (shouldFseek) {
-        std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
-    }
-    this->benchmark->stopProfile("fseek2");
-    this->benchmark->startProfile("fread3");
-    bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
-    this->benchmark->stopProfile("fread3");
-    if (itemsRead < entriesToReadUntilEof) {
-        std::cerr << "Error: EncIndBase::readIntoReadBuf(): error reading (part 1) from file "
-                  << this->filename
-                  << " (only read " << itemsRead << " out of " << entriesToReadUntilEof << ")"
-                  << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    // wrap around to beginning of file if we read less than the target number of entries
-    if (entriesToReadUntilEof < entriesToRead) {
-        std::fseek(this->file, 0, SEEK_SET);
-        itemsRead += std::fread(
-            readBuf + (entriesToReadUntilEof * ENTRY_LEN),
-            ENTRY_LEN, entriesToRead - entriesToReadUntilEof,
-            this->file
-        );
-        if (itemsRead < entriesToRead) {
-            std::cerr << "Error: EncIndBase::writeToFirstEmptyBase(): error reading (part 2) "
-                      << "from file " << this->filename
-                      << " (only read " << itemsRead << " out of " << entriesToRead << ")"
-                      << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    }
-    
-    return itemsRead;
-}
-
-
 //------------------------------------------------------------------------------
 // debugging
 
@@ -357,4 +237,182 @@ void EncIndBase::print() const {
         std::cerr << pos << ": " << utils::debugging::ustrToHex(utils::enc_ind::toUstr(entry))
                   << std::endl << std::endl;
     }
+}
+
+
+//==============================================================================
+// `EncIndRand`
+//==============================================================================
+
+
+void EncIndRand::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry) {
+    pos %= this->size;
+
+    // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
+    // if it is, find the next available location, iterating forward by `collisionSkip` positions
+    // at a time (this is also what USENIX'24's implementation does)
+    // >>TODO if this works out, do similar optimizations for `findBase()`? or no since that is
+    // where locality shines?
+    // TODO: add fast setup config option and this buffer size
+    const ubigint origStartPos = pos;
+    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 9);
+    const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
+    uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
+    bigint readBufEntryCount = 0;
+    bigint readBufIndex = 0;
+    bigint positionsChecked = 0;
+
+    this->benchmark->startProfile("fread");
+    std::fseek(this->file, pos * ENTRY_POS, )
+    readBufEntryCount = this->readIntoReadBuf(
+        readBuf, readBufEntryCapacity, pos, origStartPos, true
+    );
+    this->benchmark->stopProfile("fread");
+    // note: the file pointer should be in the right position from the last `fread()`
+    // into `readBuf` IF AND ONLY IF `collisionSkip` <= `readBufEntryCount`, i.e.
+    // we don't advance `pos` by more than the size of the entire buffer at a time
+    // (assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
+    auto isFseekAlwaysNeeded = [collisionSkip, &readBufEntryCount]() {
+        return collisionSkip > readBufEntryCount;
+    };
+    bool needsFseek = isFseekAlwaysNeeded();
+    this->benchmark->startProfile("fread2");
+    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0)
+    {
+        positionsChecked++;
+        // if we've done `collisionAttempts` iterations and still haven't found an available space,
+        // throw an error (this usually means we are trying to write to a full index)
+        if (positionsChecked == collisionAttempts) {
+            std::cerr << "Error: EncIndRand::writeToFirstEmpty(): ran out of space writing to "
+                      << this->filename << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+
+        // this should be the only place we handle updating `pos`
+        readBufIndex += collisionSkip;
+        pos += collisionSkip;
+        if (pos >= this->size) {
+            pos %= this->size;
+            needsFseek = true;
+        }
+
+        // if we've gotten to the end of the current `readBuf`, read the next part of the file
+        // into it, and also reset its internal `readBufIndex` index
+        if (readBufIndex >= readBufEntryCount) {
+            readBufEntryCount = this->readIntoReadBuf(
+                readBuf, readBufEntryCapacity, pos, origStartPos, needsFseek
+            );
+            needsFseek = isFseekAlwaysNeeded();
+            readBufIndex = 0;
+        }
+    }
+    this->benchmark->stopProfile("fread2");
+
+    // write into the empty location we found
+    this->write(pos, encIndEntry);
+}
+
+
+bigint EncIndRand::readIntoReadBuf(
+    uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
+    bool shouldFseek
+) const {
+    bigint entriesUntilEof = this->size - readBufStartPos;
+    bigint entriesUntilFullLoop;
+    if (readBufStartPos < origStartPos)      entriesUntilFullLoop = origStartPos - readBufStartPos;
+    else if (readBufStartPos > origStartPos) entriesUntilFullLoop = entriesUntilEof + origStartPos;
+    else                                     entriesUntilFullLoop = this->size;
+    // we want to make sure we don't exceed where we had started doing this whole thing back in
+    // the caller (e.g. if we had already wrapped around and are getting close to a full loop)
+    bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);
+
+    bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
+    this->benchmark->startProfile("fseek2");
+    if (shouldFseek) {
+        std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
+    }
+    this->benchmark->stopProfile("fseek2");
+    this->benchmark->startProfile("fread3");
+    bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
+    this->benchmark->stopProfile("fread3");
+    if (itemsRead < entriesToReadUntilEof) {
+        std::cerr << "Error: EncIndRand::readIntoReadBuf(): error reading (part 1) "
+                  << "from file " << this->filename
+                  << " (only read " << itemsRead << " out of " << entriesToReadUntilEof << ")"
+                  << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    // wrap around to beginning of file if we read less than the target number of entries
+    if (entriesToReadUntilEof < entriesToRead) {
+        std::fseek(this->file, 0, SEEK_SET);
+        itemsRead += std::fread(
+            readBuf + (entriesToReadUntilEof * ENTRY_LEN),
+            ENTRY_LEN, entriesToRead - entriesToReadUntilEof,
+            this->file
+        );
+        if (itemsRead < entriesToRead) {
+            std::cerr << "Error: EncIndRand::writeToFirstEmpty(): error reading (part 2) "
+                      << "from file " << this->filename
+                      << " (only read " << itemsRead << " out of " << entriesToRead << ")"
+                      << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    }
+    
+    return itemsRead;
+}
+
+
+//==============================================================================
+// `EncIndLoc`
+//==============================================================================
+
+
+void EncIndLoc::writeToFirstEmpty(
+    ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
+) {
+    pos %= this->size;
+
+    // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
+    // if it is, find the next available location, iterating forward by `collisionSkip` positions
+    // at a time (this is also what USENIX'24's implementation does)
+    //readBufEntryCount = this->readIntoReadBuf(
+    //    readBuf, readBufEntryCapacity, pos, origStartPos, true
+    //);
+    //this->benchmark->stopProfile("fread");
+    uchar currEntry[ENTRY_LEN];
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    bigint positionsSeen = 0;
+    this->benchmark->startProfile("fread2");
+    do {
+        // if we've done `collisionAttempts` iterations and still haven't found an available space,
+        // throw an error (this usually means we are trying to write to a full index)
+        if (positionsSeen == collisionAttempts) {
+            std::cerr << "Error: EncIndLoc::writeToFirstEmpty(): ran out of space writing to "
+                      << this->filename << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+
+        bigint itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
+        if (itemsRead != 1) {
+            std::cerr << "Error: EncIndLoc::writeToFirstEmpty(): error reading from file "
+                      << this->filename " (nothing read)" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        positionsSeen++;
+
+        pos = (pos + collisionSkip) % this->size;
+        // if either we need to `fseek()` to further than we had `fread()` (i.e. `collisionSkip`
+        // > 1), or `pos` had been decreased this iteration (i.e. `pos < collisionSkip`) meaning
+        // we must've wrapped around, call `fseek()` to make sure we are on the correct position
+        // (otherwise the previous `fread()` automatically handles it, so we can save some time)
+        if (collisionSkip > 1 || pos < collisionSkip) {
+            std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+        }
+    } while (std::memcmp(currEntry, NULL_ENTRY, ENTRY_LEN) != 0);
+    this->benchmark->stopProfile("fread2");
+
+    // write into the empty location we found
+    this->write(pos, encIndEntry);
 }

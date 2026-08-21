@@ -148,20 +148,12 @@ protected:
      * write to first *empty* location at or after `pos`, iterating forward from `pos`
      * `collisionSkip` positions at a time until an empty location is found.
      *
-     * additionally, once this first empty location has been found, place it back in `pos`.
+     * returns: this final empty location (in case you may need it for e.g. contiguous
+     * writing of a locality-aware bucket).
      */
-    void writeToFirstEmptyBase(
-        ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
-    );
-
-    /**
-     * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
-     * buffer size does not divide enc ind size and there is a bit left over, for example).
-     */
-    bigint readIntoReadBuf(
-        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
-        bool shouldFseek
-    ) const;
+    virtual ubigint writeToFirstEmpty(
+        ubigint pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
+    ) = 0;
 };
 
 
@@ -223,9 +215,18 @@ public:
      * this does NOT change `pos` (as the actual first empty location should not be needed
      * for pseudorandom encrypted indexes).
      */
-    void writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) {
-        this->writeToFirstEmptyBase(pos, encIndEntry, 1, this->size);
-    }
+    ubigint writeToFirstEmpty(
+        ubigint pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
+    ) override;
+
+    /**
+     * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
+     * buffer size does not divide enc ind size and there is a bit left over, for example).
+     */
+    bigint readIntoReadBuf(
+        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
+        bool shouldFseek
+    ) const;
 };
 
 
@@ -273,9 +274,14 @@ public:
         return this->findBase(pos, key, ret, collisionSkip, collisionAttempts);
     }
 
-    void writeToFirstEmpty(
-        ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
-    ) {
-        this->writeToFirstEmptyBase(pos, encIndEntry, collisionSkip, collisionAttempts);
-    }
+    /**
+     * write to first *empty* location at or after `pos`, iterating forward from `pos`
+     * `collisionSkip` positions at a time until an empty location is found.
+     *
+     * returns: this final empty location (in case you may need it for e.g. contiguous
+     * writing of a locality-aware bucket).
+     */
+    ubigint writeToFirstEmpty(
+        ubigint pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
+    ) override;
 };
