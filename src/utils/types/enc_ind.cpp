@@ -103,12 +103,7 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret) const {
 
     uchar entry[ENTRY_LEN];
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    int itemsRead = std::fread(entry, ENTRY_LEN, 1, this->file);
-    if (itemsRead != 1) {
-        std::cerr << "Error: EncIndBase::read(): error reading from file " << this->filename
-                  << " (nothing read)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    this->readRaw(entry);
     if (std::memcmp(entry, NULL_ENTRY, ENTRY_LEN) == 0) {
         // if `pos` contains `NULL_ENTRY`
         return false;
@@ -156,6 +151,16 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
 // helpers
 
 
+void EncIndBase::readRaw(uchar* buf) const {
+    bigint itemsRead = std::fread(buf, ENTRY_LEN, 1, this->file);
+    if (itemsRead != 1) {
+        std::cerr << "Error: EncIndBase::readRaw(): error reading from file " << this->filename
+                  << " (nothing read)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+}
+
+
 bool EncIndBase::findBase(
     ubigint& pos, const ustring& key, EncIndVal& ret,
     bigint collisionSkip, bigint collisionAttempts
@@ -165,12 +170,7 @@ bool EncIndBase::findBase(
     // get entry at `pos`
     uchar currEntry[ENTRY_LEN];
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    int itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
-    if (itemsRead != 1) {
-        std::cerr << "Error: EncIndBase::findBase(): error reading from file " << this->filename
-                  << " (nothing read)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    this->readRaw(currEntry);
 
     // if entry at `pos` did not match the target `key` (i.e. another kv pair overflowed here
     // first), scan subsequent locations for where the target `key` could've overflowed to
@@ -195,12 +195,7 @@ bool EncIndBase::findBase(
                 std::fseek(this->file, 0, SEEK_SET);
             }
         }
-        itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
-        if (itemsRead != 1) {
-            std::cerr << "Error: EncIndBase::findBase(): error reading from file " << this->filename
-                      << " (nothing read)" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
+        this->readRaw(currEntry);
     }
 
     // read and decode the kv pair at the matched location we found
@@ -212,17 +207,12 @@ bool EncIndBase::findBase(
 // debugging
 
 
-EncIndEntry EncIndBase::get(ubigint pos) const {
+EncIndEntry EncIndBase::getEncIndEntry(ubigint pos) const {
     pos %= this->size;
 
     uchar entry[ENTRY_LEN];
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    int itemsRead = std::fread(entry, ENTRY_LEN, 1, this->file);
-    if (itemsRead != 1) {
-        std::cerr << "Error: EncIndBase::get(): error reading from file " << this->filename
-                  << " (nothing read)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    this->readRaw(entry);
 
     ustring key = ustring(&entry[0], KEY_LEN);
     ustring data = ustring(&entry[KEY_LEN], DATA_LEN);
@@ -233,7 +223,7 @@ EncIndEntry EncIndBase::get(ubigint pos) const {
 
 void EncIndBase::print() const {
     for (bigint pos = 0; pos < this->size; pos++) {
-        EncIndEntry entry = this->get(pos);
+        EncIndEntry entry = this->getEncIndEntry(pos);
         std::cerr << pos << ": " << utils::debugging::ustrToHex(utils::enc_ind::toUstr(entry))
                   << std::endl << std::endl;
     }
@@ -258,10 +248,12 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 8);
     const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
     uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
-    bigint readBufEntryCount = 0;
+    bigint readBufEntryCount = this->readIntoReadBuf(
+        readBuf, readBufEntryCapacity, pos, origStartPos, true
+    );
     bigint readBufIndex = 0;
-    bool needsFseek = true;
-    bigint positionsSeen = 0;
+    bool needsFseek = false;
+    bigint positionsChecked = 0;
     // note: the file pointer should be in the right position from the last `fread()`
     // into `readBuf` IF AND ONLY IF `collisionSkip` <= `readBufEntryCount`, i.e.
     // we don't advance `pos` by more than the size of the entire buffer at a time
@@ -269,17 +261,24 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     this->benchmark->startProfile("fread2");
     // >>TODO if current way of separating rand and loc writeToFirstEmpty() is faster, try to
     // refactor this to a do-while loop as well, and then still share some common code in EncIndBase
-    do {
+    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0) {
+        positionsChecked++;
         // if we've done `collisionAttempts` iterations and still haven't found an available space,
         // throw an error (this usually means we are trying to write to a full index)
-        if (positionsSeen == this->size) {
+        if (positionsChecked == this->size) {
             std::cerr << "Error: EncIndRand::writeToFirstEmpty(): ran out of space writing to "
                       << this->filename << std::endl;
             std::exit(EXIT_FAILURE);
         }
 
-        // (this has to be up here, or else if we do `readBufIndex++` right after setting it
-        // to 0 below, we will skip over that entry)
+        pos = (pos + 1) % this->size;
+        if (pos == 0) {
+            // (note: this cannot be just a raw `fseek(0)` call since we may only need to `fread()`
+            // to fill `readBuf` again later on, when we need to read pointer to not still be at 0)
+            needsFseek = true;
+        }
+
+        // (this must come before we set `readBufIndex` to 0, or else we skip over an entry)
         readBufIndex++;
         // if we've gotten to the end of the current `readBuf`, read the next part of the file
         // into it, and also reset its internal `readBufIndex` index
@@ -290,13 +289,7 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
             readBufIndex = 0;
             needsFseek = false;
         }
-        positionsSeen++;
-
-        pos = (pos + 1) % this->size;
-        if (pos == 0) {
-            needsFseek = true;
-        }
-    } while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0);
+    }
     this->benchmark->stopProfile("fread2");
 
     // write into the empty location we found
@@ -374,24 +367,18 @@ void EncIndLoc::writeToFirstEmpty(
     //this->benchmark->stopProfile("fread");
     uchar currEntry[ENTRY_LEN];
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    bigint positionsSeen = 0;
+    this->readRaw(currEntry);
+    bigint positionsChecked = 0;
     this->benchmark->startProfile("fread2");
-    do {
+    while (std::memcmp(currEntry, NULL_ENTRY, ENTRY_LEN) != 0) {
+        positionsChecked++;
         // if we've done `collisionAttempts` iterations and still haven't found an available space,
         // throw an error (this usually means we are trying to write to a full index)
-        if (positionsSeen == collisionAttempts) {
+        if (positionsChecked == collisionAttempts) {
             std::cerr << "Error: EncIndLoc::writeToFirstEmpty(): ran out of space writing to "
                       << this->filename << std::endl;
             std::exit(EXIT_FAILURE);
         }
-
-        bigint itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
-        if (itemsRead != 1) {
-            std::cerr << "Error: EncIndLoc::writeToFirstEmpty(): error reading from file "
-                      << this->filename << " (nothing read)" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-        positionsSeen++;
 
         pos = (pos + collisionSkip) % this->size;
         // if either we need to `fseek()` to further than we had `fread()` (i.e. `collisionSkip`
@@ -401,7 +388,9 @@ void EncIndLoc::writeToFirstEmpty(
         if (collisionSkip > 1 || pos < collisionSkip) {
             std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
         }
-    } while (std::memcmp(currEntry, NULL_ENTRY, ENTRY_LEN) != 0);
+
+        this->readRaw(currEntry);
+    }
     this->benchmark->stopProfile("fread2");
 
     // write into the empty location we found

@@ -112,7 +112,7 @@ public:
     //--------------------------------------------------------------------------
     // debugging
 
-    EncIndEntry get(ubigint pos) const;
+    EncIndEntry getEncIndEntry(ubigint pos) const;
     void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
 
 protected:
@@ -126,6 +126,8 @@ protected:
 
     //--------------------------------------------------------------------------
     // helpers
+
+    void readRaw(uchar* buf) const;
 
     /**
      * tries to find `key` starting at `pos`, iterating forward from `pos` by `collisionSkips`
