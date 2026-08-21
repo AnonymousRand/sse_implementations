@@ -17,7 +17,7 @@ using IdAlias = bigint; // Log-SRC-i "id aliases" (i.e. index 2 nodes/keywords)
 enum class Op : char {
     INS   = 'I',
     DEL   = 'D',
-    DUMMY = '-'
+    DUMMY = 'X'
 };
 
 

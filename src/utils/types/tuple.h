@@ -40,7 +40,9 @@ public:
     DbDoc getDbDoc() const { return this->dbDoc; }
     Range<DbKw> getDbKwRange() const { return this->dbKwRange; }
 
+    // `toStr()` should be the most compact possible unambiguous encoding, for efficient storage
     virtual std::string toStr() const = 0;
+    virtual std::string toPrintableStr() const = 0;
     ustring toUstr() const;
 
     template <class DbDoc2, class DbKw2>
@@ -96,6 +98,7 @@ public:
     Op getOp() const;
 
     std::string toStr() const override;
+    std::string toPrintableStr() const override;
     static Tuple fromStr(const std::string& str);
     static Tuple fromUstr(const ustring& ustr);
 
@@ -139,6 +142,7 @@ public:
     Range<IdAlias> getIdAliasRange() const;
 
     std::string toStr() const override;
+    std::string toPrintableStr() const override;
     static SrcIDb1Tuple fromStr(const std::string& str);
     static SrcIDb1Tuple fromUstr(const ustring& ustr);
 

@@ -1,23 +1,47 @@
+// for experiment-specific configs, set them in their own files in `app/experiments/`!
+
 #pragma once
+
+#include <cmath>
+
+#include "utils/types/basic_types.h"
 
 
 namespace config {
 
 
-inline constexpr bool SHOULD_BENCHMARK            = true;
-inline constexpr bool DSSE_USE_SHORTCUT_SETUP     = true;
-inline constexpr bool DSSE_SHOULD_BENCHMARK_UPDTS = true;
+//------------------------------------------------------------------------------
+// benchmarking
 
+
+inline constexpr bool SHOULD_BENCHMARK       = true;
+inline constexpr bool SHOULD_BENCHMARK_UPDTS = true;
+
+
+//------------------------------------------------------------------------------
+// performance/shortcuts
+
+
+inline constexpr bool USE_SHORTCUT_DSSE_SETUP = true;
 
 // set this to `true` for truly large (but much slower) DBs
 // otherwise DBs are stored in RAM
 inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 
+// this is the capacity in # of entries for the (non-locality) encrypted index read buffers,
+// which help speed up massive `setup()` calls
+// i find that 2^8 is a pretty good balance
+inline constexpr bigint ENC_IND_READ_BUF_CAPACITY = std::pow(2, 8);
+
+
+//------------------------------------------------------------------------------
+// other
+
 
 // this is the max number of decimal digits you want ids and keywords to be able to support
 // this is used to determine the size of each entry in encrypted indexes (see that file for details)
-// currently: 14 corresponds to each encrypted tuple taking 4 AES blocks (= 64 bytes)
-inline constexpr int MAX_VALUE_DIGITS = 14;
+// currently: 11 corresponds to each encrypted tuple taking 3 AES blocks (= 48 bytes)
+inline constexpr int MAX_VALUE_DIGITS = 11;
 
 
 } // namespace `config`

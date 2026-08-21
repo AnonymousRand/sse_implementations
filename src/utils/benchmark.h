@@ -240,7 +240,7 @@ public:
     using Benchmarked<Dsse>::Benchmarked;
 
     // reset necessary benchmarks per update if using `BenchmarkedUpdts` (e.g. if
-    // `config::DSSE_SHOULD_BENCHMARK_UPDTS` is set to `true`)
+    // `config::SHOULD_BENCHMARK_UPDTS` is set to `true`)
     void update(const Tuple<>& newTuple) override {
         this->benchmark->resetEphems();
 

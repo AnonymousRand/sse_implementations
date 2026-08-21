@@ -1,9 +1,9 @@
 #include "utils/types/tuple.h"
 
 #include <cstdlib>
+#include <format>
 #include <iostream>
 #include <regex>
-#include <sstream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -33,7 +33,7 @@ ustring IDbTuple<DbDoc, DbKw>::toUstr() const {
 
 template <class DbDoc, class DbKw>
 std::ostream& operator <<(std::ostream& os, const IDbTuple<DbDoc, DbKw>& iDbTuple) {
-    return os << iDbTuple.toStr();
+    return os << iDbTuple.toPrintableStr();
 }
 
 
@@ -49,8 +49,7 @@ bool operator ==(const IDbTuple<DbDoc, DbKw>& tuple1, const IDbTuple<DbDoc, DbKw
 
 
 template <class DbKw>
-const std::string Tuple<DbKw>::REGEX_STR =
-    "\\((-?[0-9]+),(-?[0-9]+),([I|D|-])\\),(-?[0-9]+--?[0-9]+)";
+const std::string Tuple<DbKw>::REGEX_STR = "(-?[0-9]+),(-?[0-9]+)([I|D|X])(-?[0-9]+--?[0-9]+)";
 
 
 template <class DbKw>
@@ -82,10 +81,21 @@ Op Tuple<DbKw>::getOp() const {
 
 template <class DbKw>
 std::string Tuple<DbKw>::toStr() const {
-    std::stringstream ss;
-    ss << "(" << this->getId() << "," << this->getKw() << "," << static_cast<char>(this->getOp())
-       << ")," << this->dbKwRange;
-    return ss.str();
+    // (IMPORTANT: `Op` encodings cannot be numerical for this encoding to be unambiguous for regex)
+    // this is a work of art
+    return std::format(
+        "{},{}{}{}",
+        this->getId(), this->getKw(), static_cast<char>(this->getOp()), this->getDbKwRange()
+    );
+}
+
+
+template <class DbKw>
+std::string Tuple<DbKw>::toPrintableStr() const {
+    return std::format(
+        "({},{},{}),{}",
+        this->getId(), this->getKw(), static_cast<char>(this->getOp()), this->getDbKwRange()
+    );
 }
 
 
@@ -151,8 +161,7 @@ template std::ostream& operator <<(
 //==============================================================================
 
 
-const std::string SrcIDb1Tuple::REGEX_STR =
-    "\\((-?[0-9]+),(-?[0-9]+--?[0-9]+)\\),(-?[0-9]+--?[0-9]+)";
+const std::string SrcIDb1Tuple::REGEX_STR = "(-?[0-9]+),(-?[0-9]+--?[0-9]+),(-?[0-9]+--?[0-9]+)";
 
 
 const std::regex SrcIDb1Tuple::REGEX(REGEX_STR);
@@ -173,9 +182,12 @@ Range<IdAlias> SrcIDb1Tuple::getIdAliasRange() const {
 
 
 std::string SrcIDb1Tuple::toStr() const {
-    std::stringstream ss;
-    ss << "(" << this->dbDoc.first << "," << this->dbDoc.second << ")," << this->dbKwRange;
-    return ss.str();
+    return std::format("{},{},{}", this->getKw(), this->getIdAliasRange(), this->getDbKwRange());
+}
+
+
+std::string SrcIDb1Tuple::toPrintableStr() const {
+    return std::format("({},{}),{}", this->getKw(), this->getIdAliasRange(), this->getDbKwRange());
 }
 
 

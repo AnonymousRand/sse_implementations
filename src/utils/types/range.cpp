@@ -2,9 +2,9 @@
 
 #include <concepts>
 #include <cstdlib>
+#include <format>
 #include <iostream>
 #include <regex>
-#include <sstream>
 #include <string>
 #include <utility>
 
@@ -51,9 +51,7 @@ bool Range<T>::isDisjointFrom(const Range<T>& target) const {
 
 template <std::integral T>
 std::string Range<T>::toStr() const {
-    std::stringstream ss;
-    ss << this->first << "-" << this->second;
-    return ss.str();
+    return std::format("{}-{}", this->first, this->second);
 }
 
 

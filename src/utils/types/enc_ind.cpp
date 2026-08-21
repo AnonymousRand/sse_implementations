@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "config.h"
+
 #include "utils/benchmark.h"
 #include "utils/debugging.h"
 #include "utils/types/basic_types.h"
@@ -204,8 +206,7 @@ bool EncIndRand::find(ubigint pos, const ustring& key, EncIndVal& ret) const {
     // get entry at `pos`, and if it doesn't match the target `key` (e.g. because of
     // `pos %= this->size`), iterate forward by `collisionSkip` positions at a time to search for it
     const ubigint origStartPos = pos;
-    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 8);
-    const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
+    const bigint readBufEntryCapacity = std::min(config::ENC_IND_READ_BUF_CAPACITY, this->size);
     uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
     bigint readBufEntryCount = this->readIntoReadBuf(
         readBuf, readBufEntryCapacity, pos, origStartPos, true
@@ -253,12 +254,8 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
     // if it is, find the next available location, iterating forward one position at a time
     // (this is also what USENIX'24's implementation does)
-    // >>TODO if this works out, do similar optimizations for `findBase()`? or no since that is
-    // where locality shines?
-    // TODO: add fast setup config option and this buffer size
     const ubigint origStartPos = pos;
-    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 8);
-    const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
+    const bigint readBufEntryCapacity = std::min(config::ENC_IND_READ_BUF_CAPACITY, this->size);
     uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
     bigint readBufEntryCount = this->readIntoReadBuf(
         readBuf, readBufEntryCapacity, pos, origStartPos, true
