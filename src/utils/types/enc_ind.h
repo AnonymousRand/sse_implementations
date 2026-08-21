@@ -143,17 +143,6 @@ protected:
         ubigint& pos, const ustring& key, EncIndVal& ret,
         bigint collisionSkip, bigint collisionAttempts
     ) const;
-
-    /**
-     * write to first *empty* location at or after `pos`, iterating forward from `pos`
-     * `collisionSkip` positions at a time until an empty location is found.
-     *
-     * returns: this final empty location (in case you may need it for e.g. contiguous
-     * writing of a locality-aware bucket).
-     */
-    virtual ubigint writeToFirstEmpty(
-        ubigint pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
-    ) = 0;
 };
 
 
@@ -215,17 +204,14 @@ public:
      * this does NOT change `pos` (as the actual first empty location should not be needed
      * for pseudorandom encrypted indexes).
      */
-    ubigint writeToFirstEmpty(
-        ubigint pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
-    ) override;
+    void writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry);
 
     /**
      * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
      * buffer size does not divide enc ind size and there is a bit left over, for example).
      */
     bigint readIntoReadBuf(
-        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
-        bool shouldFseek
+        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos
     ) const;
 };
 
@@ -278,10 +264,10 @@ public:
      * write to first *empty* location at or after `pos`, iterating forward from `pos`
      * `collisionSkip` positions at a time until an empty location is found.
      *
-     * returns: this final empty location (in case you may need it for e.g. contiguous
-     * writing of a locality-aware bucket).
+     * returns in `pos`: this final empty location (in case you may need it for e.g.
+     * contiguous writing of a locality-aware bucket).
      */
-    ubigint writeToFirstEmpty(
-        ubigint pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
-    ) override;
+    void writeToFirstEmpty(
+        ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
+    );
 };

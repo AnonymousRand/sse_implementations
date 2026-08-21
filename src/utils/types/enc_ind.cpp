@@ -245,13 +245,13 @@ void EncIndBase::print() const {
 //==============================================================================
 
 
-void EncIndRand::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry) {
+void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) {
     pos %= this->size;
 
     // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
     // if it is, find the next available location, iterating forward by `collisionSkip` positions
     // at a time (this is also what USENIX'24's implementation does)
-    // >>TODO if this works out, do similar optimizations for `findBase()`? or no since that is
+    // >TODO if this works out, do similar optimizations for `findBase()`? or no since that is
     // where locality shines?
     // TODO: add fast setup config option and this buffer size
     const ubigint origStartPos = pos;
@@ -263,46 +263,39 @@ void EncIndRand::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry)
     bigint positionsChecked = 0;
 
     this->benchmark->startProfile("fread");
-    std::fseek(this->file, pos * ENTRY_POS, )
-    readBufEntryCount = this->readIntoReadBuf(
-        readBuf, readBufEntryCapacity, pos, origStartPos, true
-    );
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    readBufEntryCount = this->readIntoReadBuf(readBuf, readBufEntryCapacity, pos, origStartPos);
     this->benchmark->stopProfile("fread");
     // note: the file pointer should be in the right position from the last `fread()`
     // into `readBuf` IF AND ONLY IF `collisionSkip` <= `readBufEntryCount`, i.e.
     // we don't advance `pos` by more than the size of the entire buffer at a time
     // (assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
-    auto isFseekAlwaysNeeded = [collisionSkip, &readBufEntryCount]() {
-        return collisionSkip > readBufEntryCount;
-    };
-    bool needsFseek = isFseekAlwaysNeeded();
     this->benchmark->startProfile("fread2");
-    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0)
-    {
+    // >>TODO if current way of separating rand and loc writeToFirstEmpty() is faster, try to
+    // refactor this to a do-while loop as well, and then still share some common code in EncIndBase
+    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0) {
         positionsChecked++;
         // if we've done `collisionAttempts` iterations and still haven't found an available space,
         // throw an error (this usually means we are trying to write to a full index)
-        if (positionsChecked == collisionAttempts) {
+        if (positionsChecked == this->size) {
             std::cerr << "Error: EncIndRand::writeToFirstEmpty(): ran out of space writing to "
                       << this->filename << std::endl;
             std::exit(EXIT_FAILURE);
         }
 
         // this should be the only place we handle updating `pos`
-        readBufIndex += collisionSkip;
-        pos += collisionSkip;
-        if (pos >= this->size) {
-            pos %= this->size;
-            needsFseek = true;
+        readBufIndex++;
+        pos = (pos + 1) % this->size;
+        if (pos == 0) {
+            std::fseek(this->file, 0, SEEK_SET);
         }
 
         // if we've gotten to the end of the current `readBuf`, read the next part of the file
         // into it, and also reset its internal `readBufIndex` index
         if (readBufIndex >= readBufEntryCount) {
             readBufEntryCount = this->readIntoReadBuf(
-                readBuf, readBufEntryCapacity, pos, origStartPos, needsFseek
+                readBuf, readBufEntryCapacity, pos, origStartPos
             );
-            needsFseek = isFseekAlwaysNeeded();
             readBufIndex = 0;
         }
     }
@@ -314,8 +307,7 @@ void EncIndRand::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry)
 
 
 bigint EncIndRand::readIntoReadBuf(
-    uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
-    bool shouldFseek
+    uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos
 ) const {
     bigint entriesUntilEof = this->size - readBufStartPos;
     bigint entriesUntilFullLoop;
@@ -327,11 +319,6 @@ bigint EncIndRand::readIntoReadBuf(
     bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);
 
     bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
-    this->benchmark->startProfile("fseek2");
-    if (shouldFseek) {
-        std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
-    }
-    this->benchmark->stopProfile("fseek2");
     this->benchmark->startProfile("fread3");
     bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
     this->benchmark->stopProfile("fread3");
@@ -397,7 +384,7 @@ void EncIndLoc::writeToFirstEmpty(
         bigint itemsRead = std::fread(currEntry, ENTRY_LEN, 1, this->file);
         if (itemsRead != 1) {
             std::cerr << "Error: EncIndLoc::writeToFirstEmpty(): error reading from file "
-                      << this->filename " (nothing read)" << std::endl;
+                      << this->filename << " (nothing read)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
         positionsSeen++;
