@@ -128,23 +128,6 @@ protected:
     // helpers
 
     void readRaw(uchar* buf) const;
-
-    /**
-     * tries to find `key` starting at `pos`, iterating forward from `pos` by `collisionSkips`
-     * at a time if the key at `pos` does not match `key` (e.g. from `pos % this->size` modulo
-     * collision, or if another kv pair overflowed there first).
-     *
-     * additionally, once `key` has been found, place the location it was found at back in `pos`
-     * (e.g. in case we want to read a bucket contiguously starting from there, for locality).
-     *
-     * returns:
-     *     - `true` if the kv pair corresponding to `key` was eventually found.
-     *     - `false` if the kv pair corresponding to `key` was not found in the entire index.
-     */
-    bool findBase(
-        ubigint& pos, const ustring& key, EncIndVal& ret,
-        bigint collisionSkip, bigint collisionAttempts
-    ) const;
 };
 
 
@@ -193,11 +176,7 @@ public:
      *     - `true` if the kv pair corresponding to `key` was eventually found.
      *     - `false` if the kv pair corresponding to `key` was not found in the entire index.
      */
-    bool find(ubigint pos, const ustring& key, EncIndVal& ret) const {
-        // (`pos` is passed by value to `find()`, so we can pass by reference into `findBase()`
-        // and still only a copy of it will be changed)
-        return this->findBase(pos, key, ret, 1, this->size);
-    }
+    bool find(ubigint pos, const ustring& key, EncIndVal& ret) const;
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos`
@@ -207,6 +186,10 @@ public:
      * for pseudorandom encrypted indexes).
      */
     void writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry);
+
+private:
+    //--------------------------------------------------------------------------
+    // helpers
 
     /**
      * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
@@ -253,22 +236,29 @@ public:
     //--------------------------------------------------------------------------
     // other interface
 
-    // NOTE: currently `EncIndLoc` is exactly the same as `EncIndBase`; we just still instantiate
-    // it as a child class to make its semantic meaning clearer (e.g. so that we don't have to have
-    // NLogN hold an `EncIndBase`, or make `EncIndRand` inherit from and hence "be an" `EncIndLoc`)
+    /**
+     * tries to find `key` starting at `pos`, iterating forward from `pos` by `collisionSkips`
+     * at a time if the key at `pos` does not match `key` (e.g. from `pos % this->size` modulo
+     * collision, or if another kv pair overflowed there first).
+     *
+     * returns in `pos`: the location at which `key` was found (in case you may need it for e.g.
+     * contiguous reading of a locality-aware bucket after determining its start position).
+     *
+     * returns:
+     *     - `true` if the kv pair corresponding to `key` was eventually found.
+     *     - `false` if the kv pair corresponding to `key` was not found in the entire index.
+     */
     bool find(
         ubigint& pos, const ustring& key, EncIndVal& ret,
         bigint collisionSkip, bigint collisionAttempts
-    ) const {
-        return this->findBase(pos, key, ret, collisionSkip, collisionAttempts);
-    }
+    ) const;
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos`
      * `collisionSkip` positions at a time until an empty location is found.
      *
      * returns in `pos`: this final empty location (in case you may need it for e.g.
-     * contiguous writing of a locality-aware bucket).
+     * contiguous writing of a locality-aware bucket after determining its start position).
      */
     void writeToFirstEmpty(
         ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts

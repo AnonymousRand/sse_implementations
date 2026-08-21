@@ -161,48 +161,6 @@ void EncIndBase::readRaw(uchar* buf) const {
 }
 
 
-bool EncIndBase::findBase(
-    ubigint& pos, const ustring& key, EncIndVal& ret,
-    bigint collisionSkip, bigint collisionAttempts
-) const {
-    pos %= this->size;
-
-    // get entry at `pos`
-    uchar currEntry[ENTRY_LEN];
-    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    this->readRaw(currEntry);
-
-    // if entry at `pos` did not match the target `key` (i.e. another kv pair overflowed here
-    // first), scan subsequent locations for where the target `key` could've overflowed to
-    const uchar* targetKeyCstr = key.c_str();
-    bigint positionsChecked = 0;
-    while (std::memcmp(currEntry, targetKeyCstr, KEY_LEN) != 0) {
-        positionsChecked++;
-        // if still not found after `collisionAttempts` iterations forward, give up
-        if (positionsChecked == collisionAttempts) {
-            return false;
-        }
-
-        pos = (pos + collisionSkip) % this->size;
-        // optimization: if we are only iterating forward one position at a time, the file
-        // pointer from the previous `fread` does not need to be moved unless we have wrapped
-        // around to the beginning, so we don't need extra `fseek()` in that case
-        // (this, like, triples the speed of PiBas)
-        if (collisionSkip != 1) {
-            std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-        } else {
-            if (pos == 0) {
-                std::fseek(this->file, 0, SEEK_SET);
-            }
-        }
-        this->readRaw(currEntry);
-    }
-
-    // read and decode the kv pair at the matched location we found
-    return this->read(pos, ret);
-}
-
-
 //------------------------------------------------------------------------------
 // debugging
 
@@ -233,6 +191,60 @@ void EncIndBase::print() const {
 //==============================================================================
 // `EncIndRand`
 //==============================================================================
+
+
+//------------------------------------------------------------------------------
+// other interface
+
+
+bool EncIndRand::find(ubigint pos, const ustring& key, EncIndVal& ret) const {
+    pos %= this->size;
+    const uchar* targetKeyCstr = key.c_str();
+
+    // get entry at `pos`, and if it doesn't match the target `key` (e.g. because of
+    // `pos %= this->size`), iterate forward by `collisionSkip` positions at a time to search for it
+    const ubigint origStartPos = pos;
+    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 8);
+    const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
+    uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
+    bigint readBufEntryCount = this->readIntoReadBuf(
+        readBuf, readBufEntryCapacity, pos, origStartPos, true
+    );
+    bigint readBufIndex = 0;
+    bool needsFseek = false;
+    bigint positionsChecked = 0;
+    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0) {
+        positionsChecked++;
+        // if we've done `collisionAttempts` iterations and still haven't found `key`, give up
+        if (positionsChecked == this->size) {
+            return false;
+        }
+
+        pos = (pos + 1) % this->size;
+        if (pos == 0) {
+            // the file pointer should be in the right position from the last `fread()` into
+            // `readBuf` (and hence doesn't need an `fseek()`) IF AND ONLY IF we do not wrap around
+            // (assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
+            // (also, this can't be just an `fseek(0)` call here since we may only need to `fread()`
+            // to fill `readBuf` again later on, when we need to read pointer to not still be at 0)
+            needsFseek = true;
+        }
+
+        // (this must come before we set `readBufIndex` to 0, or else we skip over an entry)
+        readBufIndex++;
+        // if we've read to the end of the current `readBuf`, read the next part of the file into it
+        if (readBufIndex >= readBufEntryCount) {
+            readBufEntryCount = this->readIntoReadBuf(
+                readBuf, readBufEntryCapacity, pos, origStartPos, needsFseek
+            );
+            readBufIndex = 0;
+            needsFseek = false;
+        }
+    }
+
+    // read and decode the kv pair at the matched location we found
+    return this->read(pos, ret);
+}
 
 
 void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) {
@@ -293,6 +305,10 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
 }
 
 
+//------------------------------------------------------------------------------
+// helpers
+
+
 bigint EncIndRand::readIntoReadBuf(
     uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
     bool needsFseek
@@ -349,6 +365,49 @@ bigint EncIndRand::readIntoReadBuf(
 //==============================================================================
 
 
+//------------------------------------------------------------------------------
+// other interface
+
+
+bool EncIndLoc::find(
+    ubigint& pos, const ustring& key, EncIndVal& ret, bigint collisionSkip, bigint collisionAttempts
+) const {
+    pos %= this->size;
+    const uchar* targetKeyCstr = key.c_str();
+
+    // get entry at `pos`, and if it doesn't match the target `key` (e.g. because of
+    // `pos %= this->size`), iterate forward by `collisionSkip` positions at a time to search for it
+    // 
+    // importantly, we get the massive optimization of only having to check the first entry of every
+    // bucket/every `collisionSkip` entries here, as locality guarantees contiguousness of buckets
+    uchar currEntry[ENTRY_LEN];
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    this->readRaw(currEntry);
+    bigint positionsChecked = 0;
+    while (std::memcmp(currEntry, targetKeyCstr, KEY_LEN) != 0) {
+        positionsChecked++;
+        // if we've done `collisionAttempts` iterations and still haven't found `key`, give up
+        if (positionsChecked == collisionAttempts) {
+            return false;
+        }
+
+        pos = (pos + collisionSkip) % this->size;
+        // if either we need to `fseek()` to further than we had `fread()` (i.e. `collisionSkip`
+        // > 1), or `pos` had been decreased this iteration (i.e. `pos < collisionSkip`) meaning
+        // we must've wrapped around, call `fseek()` to make sure we are on the correct position
+        // (otherwise the previous `fread()` automatically handles it, so we can save some time)
+        if (collisionSkip > 1 || pos < collisionSkip) {
+            std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+        }
+
+        this->readRaw(currEntry);
+    }
+
+    // read and decode the kv pair at the matched location we found
+    return this->read(pos, ret);
+}
+
+
 void EncIndLoc::writeToFirstEmpty(
     ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
 ) {
@@ -356,7 +415,10 @@ void EncIndLoc::writeToFirstEmpty(
 
     // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
     // if it is, find the next available location, iterating forward by `collisionSkip` positions
-    // at a time (this is also what USENIX'24's implementation does)
+    // at a time
+    // 
+    // importantly, we get the massive optimization of only having to check the first entry of every
+    // bucket/every `collisionSkip` entries here, as locality guarantees contiguousness of buckets
     uchar currEntry[ENTRY_LEN];
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     this->readRaw(currEntry);
