@@ -255,7 +255,7 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     // where locality shines?
     // TODO: add fast setup config option and this buffer size
     const ubigint origStartPos = pos;
-    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 9);
+    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 3);
     const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
     uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
     bigint readBufEntryCount = 0;
@@ -263,8 +263,10 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     bigint positionsChecked = 0;
 
     this->benchmark->startProfile("fread");
-    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    readBufEntryCount = this->readIntoReadBuf(readBuf, readBufEntryCapacity, pos, origStartPos);
+    bool needsFseek = true;
+    readBufEntryCount = this->readIntoReadBuf(
+        readBuf, readBufEntryCapacity, pos, origStartPos, true
+    );
     this->benchmark->stopProfile("fread");
     // note: the file pointer should be in the right position from the last `fread()`
     // into `readBuf` IF AND ONLY IF `collisionSkip` <= `readBufEntryCount`, i.e.
@@ -287,16 +289,17 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
         readBufIndex++;
         pos = (pos + 1) % this->size;
         if (pos == 0) {
-            std::fseek(this->file, 0, SEEK_SET);
+            needsFseek = true;
         }
 
         // if we've gotten to the end of the current `readBuf`, read the next part of the file
         // into it, and also reset its internal `readBufIndex` index
         if (readBufIndex >= readBufEntryCount) {
             readBufEntryCount = this->readIntoReadBuf(
-                readBuf, readBufEntryCapacity, pos, origStartPos
+                readBuf, readBufEntryCapacity, pos, origStartPos, needsFseek
             );
             readBufIndex = 0;
+            needsFseek = false;
         }
     }
     this->benchmark->stopProfile("fread2");
@@ -307,7 +310,8 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
 
 
 bigint EncIndRand::readIntoReadBuf(
-    uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos
+    uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
+    bool needsFseek
 ) const {
     bigint entriesUntilEof = this->size - readBufStartPos;
     bigint entriesUntilFullLoop;
@@ -319,6 +323,11 @@ bigint EncIndRand::readIntoReadBuf(
     bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);
 
     bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
+    this->benchmark->startProfile("fseek2");
+    if (needsFseek) {
+        std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
+    }
+    this->benchmark->stopProfile("fseek2");
     this->benchmark->startProfile("fread3");
     bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
     this->benchmark->stopProfile("fread3");

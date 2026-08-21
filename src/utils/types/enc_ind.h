@@ -211,7 +211,8 @@ public:
      * buffer size does not divide enc ind size and there is a bit left over, for example).
      */
     bigint readIntoReadBuf(
-        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos
+        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
+        bool needsFseek
     ) const;
 };
 
