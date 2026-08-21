@@ -84,20 +84,17 @@ public:
     EncIndBase& operator =(EncIndBase&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
-    // `IDiskStorage`
+    // interface
 
-    void init(bigint size);
+    virtual void init(bigint size);
     void clear() override;
-
-    //--------------------------------------------------------------------------
-    // other interface
 
     /**
      * reads and decodes the value at `pos` (without checking the "key`).
      *
      * returns:
-     *     - `true` if the kv pair at `pos` is valid.
-     *     - `false` if the kv pair at `pos` is the null kv pair.
+     *     - `true` if the entry at `pos` is valid.
+     *     - `false` if the entry at `pos` is the null entry.
      */
     bool read(ubigint pos, EncIndVal& ret) const;
 
@@ -106,6 +103,28 @@ public:
      * `pos % this->size`, and will overwrite it!).
      */
     void write(ubigint pos, const EncIndEntry& encIndEntry);
+
+    /**
+     * tries to find `key` starting at `pos`, iterating forward from `pos` if the key
+     * at `pos` does not match `key` (e.g. if another entry overflowed there first).
+     *
+     * returns in `pos`: the location at which `key` was found (in case you may need it for e.g.
+     * contiguous reading of a locality-aware bucket after determining its start position).
+     *
+     * returns:
+     *     - `true` if the entry corresponding to `key` was found.
+     *     - `false` if the entry corresponding to `key` was not found in the entire index.
+     */
+    bool find(ubigint& pos, const ustring& key, EncIndVal& ret) const;
+
+    /**
+     * write to first *empty* location at or after `pos`, iterating forward from `pos` until
+     * an empty location is found.
+     *
+     * returns in `pos`: this final empty location (in case you may need it for e.g.
+     * contiguous writing of a locality-aware bucket after determining its start position).
+     */
+    void writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry);
 
     bigint getSize() const { return this->size; }
 
@@ -126,6 +145,18 @@ protected:
 
     //--------------------------------------------------------------------------
     // helpers
+
+    /**
+     * advance forward from `pos` until the first `matchLen` bytes of the current entry
+     * matches `match`, or we've traversed the entire index.
+     *
+     * returned in `pos`: the final location that matched `match` (if we found one).
+     *
+     * returns:
+     *     - `true` if an entry matching `match` was found.
+     *     - `false` if an entry matching `match` was found was not found in the entire index.
+     */
+    virtual bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const = 0;
 
     void readRaw(uchar* buf) const;
 };
@@ -162,34 +193,23 @@ public:
     EncIndRand& operator =(EncIndRand&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
-    // other interface
+    // interface
 
-    /**
-     * tries to find `key` starting at `pos`, iterating forward *linearly* at a time
-     * if the key at `pos` does not match `key` (e.g. from `pos % this->size` modulo
-     * collision, or if another kv pair overflowed there first).
-     *
-     * this does NOT change `pos` (as the actual first empty location should not be needed
-     * for pseudorandom encrypted indexes).
-     *
-     * returns:
-     *     - `true` if the kv pair corresponding to `key` was eventually found.
-     *     - `false` if the kv pair corresponding to `key` was not found in the entire index.
-     */
-    bool find(ubigint pos, const ustring& key, EncIndVal& ret) const;
+    // new (non-virtual override!) versions of these methods that don't change `pos` by reference,
+    // as that shouldn't be needed for pseudorandom encrypted indexes and may cause bugs later
+    bool find(ubigint pos, const ustring& key, EncIndVal& ret) const {
+        return EncIndBase::find(pos, key, ret);
+    }
 
-    /**
-     * write to first *empty* location at or after `pos`, iterating forward from `pos`
-     * *linearly* until we find an empty location.
-     *
-     * this does NOT change `pos` (as the actual first empty location should not be needed
-     * for pseudorandom encrypted indexes).
-     */
-    void writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry);
+    void writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) {
+        EncIndBase::writeToFirstEmpty(pos, encIndEntry);
+    }
 
 private:
     //--------------------------------------------------------------------------
     // helpers
+
+    bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
 
     /**
      * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
@@ -234,33 +254,17 @@ public:
     EncIndLoc& operator =(EncIndLoc&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
-    // other interface
+    // interface
 
-    /**
-     * tries to find `key` starting at `pos`, iterating forward from `pos` by `collisionSkips`
-     * at a time if the key at `pos` does not match `key` (e.g. from `pos % this->size` modulo
-     * collision, or if another kv pair overflowed there first).
-     *
-     * returns in `pos`: the location at which `key` was found (in case you may need it for e.g.
-     * contiguous reading of a locality-aware bucket after determining its start position).
-     *
-     * returns:
-     *     - `true` if the kv pair corresponding to `key` was eventually found.
-     *     - `false` if the kv pair corresponding to `key` was not found in the entire index.
-     */
-    bool find(
-        ubigint& pos, const ustring& key, EncIndVal& ret,
-        bigint collisionSkip, bigint collisionAttempts
-    ) const;
+    void init(bigint bcktSize, bigint bcktCount);
+    void clear() override;
 
-    /**
-     * write to first *empty* location at or after `pos`, iterating forward from `pos`
-     * `collisionSkip` positions at a time until an empty location is found.
-     *
-     * returns in `pos`: this final empty location (in case you may need it for e.g.
-     * contiguous writing of a locality-aware bucket after determining its start position).
-     */
-    void writeToFirstEmpty(
-        ubigint& pos, const EncIndEntry& encIndEntry, bigint collisionSkip, bigint collisionAttempts
-    );
+private:
+    bigint bcktSize = 0;
+    bigint bcktCount = 0;
+
+    //--------------------------------------------------------------------------
+    // helpers
+
+    bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
 };

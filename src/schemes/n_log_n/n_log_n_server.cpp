@@ -87,7 +87,7 @@ std::vector<EncIndLoc*> NLogNServer<DbTuple>::getEncIndLvls() const {
 
 template <IsDbTuple DbTuple>
 std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
-    bigint lvl, ubigint startPos, bigint bcktSize, bigint bcktCountOnLvl, const ustring& label
+    bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
 ) const {
     this->benchmark->communication +=
         sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + sizeof(bigint) + label.length();
@@ -101,9 +101,7 @@ std::vector<EncIndVal> NLogNServer<DbTuple>::searchEncIndForBckt(
             // collision in encrypted index)
             // (note: dummies must also use the correct (not dummy) `label` so they
             // are still found by `find()`)
-            isFound = this->encIndLvls[lvl]->find(
-                startPos, label, encIndVal, bcktSize, bcktCountOnLvl
-            );
+            isFound = this->encIndLvls[lvl]->find(startPos, label, encIndVal);
         } else {
             // after first read, just read from the bucket consecutively as we are
             // now guaranteed that the full bucket is stored here contiguously

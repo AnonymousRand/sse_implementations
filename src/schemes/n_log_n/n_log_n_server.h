@@ -29,7 +29,7 @@ public:
     void setEncIndLvls(const std::vector<EncIndLoc*>& encIndLvls);
     std::vector<EncIndLoc*> getEncIndLvls() const;
     std::vector<EncIndVal> searchEncIndForBckt(
-        bigint lvl, ubigint startPos, bigint bcktSize, bigint bcktCountOnLvl, const ustring& label
+        bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
     ) const;
 
     void setDbKwCountsDict(EncIndRand* dbKwCountsDict);
