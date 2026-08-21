@@ -241,7 +241,7 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     // first check if location at `pos` is already filled (e.g. because of `pos %= this->size`)
     // if it is, find the next available location, iterating forward one position at a time
     // (this is also what USENIX'24's implementation does)
-    // >TODO if this works out, do similar optimizations for `findBase()`? or no since that is
+    // >>TODO if this works out, do similar optimizations for `findBase()`? or no since that is
     // where locality shines?
     // TODO: add fast setup config option and this buffer size
     const ubigint origStartPos = pos;
@@ -255,7 +255,6 @@ void EncIndRand::writeToFirstEmpty(ubigint pos, const EncIndEntry& encIndEntry) 
     bool needsFseek = false;
     bigint positionsChecked = 0;
     this->benchmark->startProfile("fread2");
-    // >>TODO try to stil share some code
     while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), NULL_ENTRY, ENTRY_LEN) != 0) {
         positionsChecked++;
         // if we've done `collisionAttempts` iterations and still haven't found an available space,
