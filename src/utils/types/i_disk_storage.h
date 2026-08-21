@@ -56,7 +56,7 @@ public:
 protected:
     FILE* file = nullptr;
     std::string filename = "";
-    // (`mutable` allows this to be modified in `const` contexts still)
+    // (`mutable` allows this to be modified in `const` contexts still, which we do need for reads)
     mutable bool isFlushed = true;
 
     //--------------------------------------------------------------------------

@@ -9,7 +9,7 @@
 #include "utils/crypto.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind.h"
+#include "utils/types/enc_ind/enc_ind_utils.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"

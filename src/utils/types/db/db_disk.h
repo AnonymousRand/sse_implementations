@@ -9,7 +9,7 @@
 
 #include "utils/types/basic_types.h"
 #include "utils/types/db/i_db.h"
-#include "utils/types/enc_ind.h"
+#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/i_disk_storage.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
