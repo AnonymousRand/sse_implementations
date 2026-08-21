@@ -225,7 +225,7 @@ void EncIndBase::writeToFirstEmptyBase(
     // >>TODO if this works out, do similar optimizations for `findBase()`? or no since that is
     // where locality shines?
     // TODO: add fast setup config option and this buffer size
-    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 7);
+    constexpr bigint READ_BUF_TARGET_ENTRIES = std::pow(2, 10);
     const bigint readBufEntryCapacity = std::min(READ_BUF_TARGET_ENTRIES, this->size);
     uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
     bigint readBufEntryCount = 0;
@@ -317,7 +317,9 @@ bigint EncIndBase::readIntoReadBuf(
         std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
     }
     this->benchmark->stopProfile("fseek2");
+    this->benchmark->startProfile("fread3");
     bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
+    this->benchmark->stopProfile("fread3");
     //std::cout << "read " << itemsRead << " into buffer" << std::endl;
     if (itemsRead < entriesToReadUntilEof) {
         std::cerr << "Error: EncIndBase::readIntoReadBuf(): error reading (part 1) from file "
