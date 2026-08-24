@@ -24,10 +24,6 @@
 template <IsDbTuple DbTuple>
 NLogNBase<DbTuple>::~NLogNBase() {
     this->clear();
-
-    if (this->getServer() != nullptr) {
-        this->deleteServer();
-    }
 }
 
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <memory>
 #include <vector>
 
 #include "schemes/n_log_n/n_log_n_base.h"
@@ -21,6 +20,8 @@ private:
 public:
     using NLogNBase<DbTuple>::NLogNBase;
 
+    ~NLogN();
+
     //--------------------------------------------------------------------------
     // `ISse`
 
@@ -39,9 +40,4 @@ protected:
 private:
     NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
     NLogNServer<DbTuple>* getServer() const override { return this->server; }
-
-    void deleteServer() override {
-        delete this->server;
-        this->server = nullptr;
-    }
 };

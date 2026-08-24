@@ -26,6 +26,8 @@ private:
 public:
     using NLogNBase<DbTuple>::NLogNBase;
 
+    ~Underly();
+
     //--------------------------------------------------------------------------
     // `ISse`
 
@@ -49,11 +51,6 @@ private:
 private:
     UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>(this->benchmark);
     UnderlyServer<DbTuple>* getServer() const override { return this->server; }
-
-    void deleteServer() override {
-        delete this->server;
-        this->server = nullptr;
-    }
 };
 
 

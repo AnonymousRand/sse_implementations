@@ -19,6 +19,15 @@
 namespace log_src_i_star {
 
 
+template <IsDbTuple DbTuple>
+Underly<DbTuple>::~Underly() {
+    if (this->server != nullptr) {
+        delete this->server;
+        this->server = nullptr;
+    }
+}
+
+
 //------------------------------------------------------------------------------
 // `ISse`
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -39,7 +38,6 @@ public:
 
 protected:
     virtual NLogNBaseServer<DbTuple>* getServer() const = 0;
-    virtual void deleteServer() = 0;
     bigint lvlCount = 0;
 
     //--------------------------------------------------------------------------

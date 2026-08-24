@@ -22,6 +22,15 @@
 #include "utils/types/ustring.h"
 
 
+template <IsDbTuple DbTuple>
+NLogN<DbTuple>::~NLogN() {
+    if (this->server != nullptr) {
+        delete this->server;
+        this->server = nullptr;
+    }
+}
+
+
 //------------------------------------------------------------------------------
 // `ISse`
 
