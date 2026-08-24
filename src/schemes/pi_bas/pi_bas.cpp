@@ -26,6 +26,7 @@
 template <IsDbTuple DbTuple>
 PiBas<DbTuple>::~PiBas() {
     this->clear();
+
     if (this->server != nullptr) {
         delete this->server;
         this->server = nullptr;
