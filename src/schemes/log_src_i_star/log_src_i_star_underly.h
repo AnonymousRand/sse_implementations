@@ -47,8 +47,8 @@ private:
     bigint calcBcktSizeOnLvl(bigint lvl) const override;
 
 private:
-    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>();
-    UnderlyServer* getServer() const override { return this->server; }
+    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>(this->benchmark);
+    UnderlyServer<DbTuple>* getServer() const override { return this->server; }
 };
 
 

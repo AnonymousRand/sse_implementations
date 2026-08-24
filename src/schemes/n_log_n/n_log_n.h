@@ -37,6 +37,6 @@ protected:
     bigint calcBcktSizeOnLvl(bigint lvl) const override;
 
 private:
-    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>();
-    NLogNServer* getServer() const override { return this->server; }
+    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
+    NLogNServer<DbTuple>* getServer() const override { return this->server; }
 };
