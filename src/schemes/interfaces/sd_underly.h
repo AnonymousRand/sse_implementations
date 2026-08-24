@@ -31,13 +31,9 @@ public:
     // shared code
 
     // handle clearing of `this->size`
-    void clear() override {
-        this->size = 0;
-    }
+    void clear() override { this->size = 0; }
 
-    bigint getSize() const {
-        return this->size;
-    }
+    bigint getSize() const { return this->size; }
 
 protected:
     /**
