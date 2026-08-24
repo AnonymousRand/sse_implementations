@@ -109,6 +109,29 @@ void PiBas<DbTuple>::clear() {
 
 
 //------------------------------------------------------------------------------
+// `IStaticPointSse`
+
+
+template <IsDbTuple DbTuple>
+std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const {
+    std::vector<DbTuple> results;
+
+    // PRF(K_1, w)
+    ustring queryToken = this->genQueryToken(query);
+    std::vector<EncIndVal> encResults = this->server->searchEncInd(queryToken);
+
+    // decrypt results on the client
+    results.reserve(encResults.size());
+    for (const EncIndVal& encResult : encResults) {
+        DbTuple result = this->decryptEncIndVal(encResult);
+        results.push_back(result);
+    }
+
+    return results;
+}
+
+
+//------------------------------------------------------------------------------
 // `ISdUnderly`
 
 
@@ -131,29 +154,6 @@ void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
         DbTuple newDbTuple(dbTuple.getDbDoc(), dbTuple.getDbKwRange());
         ret.push_back(newDbTuple);
     }
-}
-
-
-//------------------------------------------------------------------------------
-// `IStaticPointSse`
-
-
-template <IsDbTuple DbTuple>
-std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const {
-    std::vector<DbTuple> results;
-
-    // PRF(K_1, w)
-    ustring queryToken = this->genQueryToken(query);
-    std::vector<EncIndVal> encResults = this->server->searchEncInd(queryToken);
-
-    // decrypt results on the client
-    results.reserve(encResults.size());
-    for (const EncIndVal& encResult : encResults) {
-        DbTuple result = this->decryptEncIndVal(encResult);
-        results.push_back(result);
-    }
-
-    return results;
 }
 
 

@@ -31,6 +31,7 @@
 template <IsDbTuple DbTuple>
 NLogN<DbTuple>::~NLogN() {
     this->clear();
+
     if (this->server != nullptr) {
         delete this->server;
         this->server = nullptr;
@@ -158,41 +159,6 @@ void NLogN<DbTuple>::clear() {
 
 
 //------------------------------------------------------------------------------
-// `ISdUnderly`
-
-
-template <IsDbTuple DbTuple>
-void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
-    std::vector<EncIndLoc*> encIndLvls = this->server->getEncIndLvls();
-
-    for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncIndLoc* encIndLvl = encIndLvls[lvl];
-        // don't use `this->size` as the bound here as that doesn't include padding while
-        // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
-        for (bigint pos = 0; pos < encIndLvl->getSize(); pos++) {
-            EncIndVal encIndVal;
-            bool isValidVal = encIndLvl->read(pos, encIndVal);
-            if (!isValidVal) {
-                continue;
-            }
-
-            DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
-            // exclude dummies/padding (that are from NLogN's `setup()`, but not from any upstream
-            // SSE scheme which is using NLogN as an underlying scheme. while deleting those dummies
-            // too seems to work fine, we don't since we don't have an easy, general way to check
-            // for those here, and that should be the upstream scheme's concern anyway.)
-            if (!DbTuple::isDummy(dbTuple)) {
-                // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
-                // to easily access these `DbKw` ranges in plaintext
-                DbTuple newDbTuple(dbTuple.getDbDoc(), dbTuple.getDbKwRange());
-                ret.push_back(newDbTuple);
-            }
-        }
-    }
-}
-
-
-//------------------------------------------------------------------------------
 // `IStaticPointSse`
 
 
@@ -238,6 +204,41 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     }
 
     return results;
+}
+
+
+//------------------------------------------------------------------------------
+// `ISdUnderly`
+
+
+template <IsDbTuple DbTuple>
+void NLogN<DbTuple>::getDb(Db<DbTuple>& ret) const {
+    std::vector<EncIndLoc*> encIndLvls = this->server->getEncIndLvls();
+
+    for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
+        EncIndLoc* encIndLvl = encIndLvls[lvl];
+        // don't use `this->size` as the bound here as that doesn't include padding while
+        // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
+        for (bigint pos = 0; pos < encIndLvl->getSize(); pos++) {
+            EncIndVal encIndVal;
+            bool isValidVal = encIndLvl->read(pos, encIndVal);
+            if (!isValidVal) {
+                continue;
+            }
+
+            DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
+            // exclude dummies/padding (that are from NLogN's `setup()`, but not from any upstream
+            // SSE scheme which is using NLogN as an underlying scheme. while deleting those dummies
+            // too seems to work fine, we don't since we don't have an easy, general way to check
+            // for those here, and that should be the upstream scheme's concern anyway.)
+            if (!DbTuple::isDummy(dbTuple)) {
+                // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
+                // to easily access these `DbKw` ranges in plaintext
+                DbTuple newDbTuple(dbTuple.getDbDoc(), dbTuple.getDbKwRange());
+                ret.push_back(newDbTuple);
+            }
+        }
+    }
 }
 
 
