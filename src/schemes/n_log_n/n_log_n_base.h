@@ -22,8 +22,7 @@ protected:
     using DbKw = typename IStaticPointSse<DbTuple>::DbKw;
 
 public:
-    NLogNBase(std::shared_ptr<Benchmark> benchmark, NLogNBaseServer<DbTuple>* server) :
-        IStaticPointSse<DbTuple>(benchmark), server(server) {}
+    using IStaticPointSse<DbTuple>::IStaticPointSse;
     virtual ~NLogNBase();
 
     //--------------------------------------------------------------------------
@@ -37,7 +36,7 @@ public:
     void getDb(Db<DbTuple>& ret) const override;
 
 protected:
-    NLogNBaseServer<DbTuple>* server;
+    virtual NLogNBaseServer<DbTuple>* getServer() const = 0;
     bigint lvlCount = 0;
 
     //--------------------------------------------------------------------------

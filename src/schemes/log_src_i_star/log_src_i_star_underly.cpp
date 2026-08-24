@@ -57,7 +57,7 @@ std::vector<DbTuple> Underly<DbTuple>::searchBase(const Range<DbKw>& query) cons
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
+    std::vector<EncIndVal> encResults = this->getServer()->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 

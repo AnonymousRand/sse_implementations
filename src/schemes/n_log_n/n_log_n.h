@@ -19,8 +19,7 @@ private:
     using DbKw = typename NLogNBase<DbTuple>::DbKw;
 
 public:
-    NLogN(std::shared_ptr<Benchmark> benchmark) :
-        NLogNBase<DbTuple>(benchmark, new NLogNServer<DbTuple>()) {}
+    using NLogNBase<DbTuple>::NLogNBase;
 
     //--------------------------------------------------------------------------
     // `ISse`
@@ -36,4 +35,8 @@ protected:
     bigint calcLvlCount() const override;
     bigint calcBcktCountOnLvl(bigint lvl) const override;
     bigint calcBcktSizeOnLvl(bigint lvl) const override;
+
+private:
+    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>();
+    NLogNServer* getServer() const override { return this->server; }
 };

@@ -25,8 +25,6 @@ private:
 
 public:
     using NLogNBase<DbTuple>::NLogNBase;
-    Underly(std::shared_ptr<Benchmark> benchmark) :
-        NLogNBase<DbTuple>(benchmark, new UnderlyServer<DbTuple>()) {}
 
     //--------------------------------------------------------------------------
     // `ISse`
@@ -47,6 +45,10 @@ private:
     bigint calcLvlCount() const override;
     bigint calcBcktCountOnLvl(bigint lvl) const override;
     bigint calcBcktSizeOnLvl(bigint lvl) const override;
+
+private:
+    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>();
+    UnderlyServer* getServer() const override { return this->server; }
 };
 
 

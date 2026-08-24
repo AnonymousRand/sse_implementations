@@ -61,7 +61,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         dbKwCountsDict->writeToFirstEmpty(pos, std::pair {label, std::pair {encDbKwCount, iv}});
     }
 
-    this->server->setDbKwCountsDict(dbKwCountsDict);
+    this->getServer()->setDbKwCountsDict(dbKwCountsDict);
 }
 
 
@@ -81,7 +81,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     ustring labelDict;
     ubigint posDict = this->mapNoMod(queryToken, labelDict);
     EncIndVal encIndValDict;
-    bool isFoundDict = this->server->getDbKwCount(posDict, labelDict, encIndValDict);
+    bool isFoundDict = this->getServer()->getDbKwCount(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
         return results;
     }
@@ -99,7 +99,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResults = this->server->searchEncIndForBckt(
+    std::vector<EncIndVal> encResults = this->getServer()->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 

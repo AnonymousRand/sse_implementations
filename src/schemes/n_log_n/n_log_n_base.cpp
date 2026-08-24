@@ -25,9 +25,9 @@ template <IsDbTuple DbTuple>
 NLogNBase<DbTuple>::~NLogNBase() {
     this->clear();
 
-    if (this->server != nullptr) {
-        delete this->server;
-        this->server = nullptr;
+    if (this->getServer() != nullptr) {
+        delete this->getServer();
+        this->getServer() = nullptr;
     }
 }
 
@@ -119,13 +119,13 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         }
     }
 
-    this->server->setEncIndLvls(encIndLvls);
+    this->getServer()->setEncIndLvls(encIndLvls);
 }
 
 
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::clear() {
-    this->server->clear();
+    this->getServer()->clear();
     this->lvlCount = 0;
 
     // clears `this->size`
@@ -142,7 +142,7 @@ void NLogNBase<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
-    std::vector<EncIndLoc*> encIndLvls = this->server->getEncIndLvls();
+    std::vector<EncIndLoc*> encIndLvls = this->getServer()->getEncIndLvls();
 
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
         EncIndLoc* encIndLvl = encIndLvls[lvl];
