@@ -7,7 +7,7 @@
 
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind/enc_ind_rand.h"
-#include "utils/types/enc_ind/enc_ind_utils.h"
+#include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
 

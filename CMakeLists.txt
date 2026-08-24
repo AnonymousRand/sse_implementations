@@ -38,7 +38,7 @@ add_executable(main
     src/utils/types/enc_ind/enc_ind_base.cpp
     src/utils/types/enc_ind/enc_ind_rand.cpp
     src/utils/types/enc_ind/enc_ind_loc.cpp
-    src/utils/types/enc_ind/enc_ind_utils.cpp
+    src/utils/types/enc_ind/enc_ind_types.cpp
 
     src/utils/types/i_disk_storage.cpp
     src/utils/types/ind.cpp

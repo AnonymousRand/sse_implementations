@@ -8,7 +8,7 @@
 
 #include "utils/crypto.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_utils.h"
+#include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/i_disk_storage.h"
 #include "utils/types/ustring.h"
 
