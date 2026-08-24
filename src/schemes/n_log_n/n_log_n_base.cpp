@@ -27,7 +27,7 @@ NLogNBase<DbTuple>::~NLogNBase() {
 
     if (this->getServer() != nullptr) {
         delete this->getServer();
-        this->getServer() = nullptr;
+        this->setServer(nullptr);
     }
 }
 
@@ -37,7 +37,7 @@ NLogNBase<DbTuple>::~NLogNBase() {
 
 
 template <IsDbTuple DbTuple>
-void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
+void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -163,7 +163,7 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
             if (!DbTuple::isDummy(dbTuple)) {
                 // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
                 // to easily access these `DbKw` ranges in plaintext
-                DbTuple newDbTuple(dbTuple.getDbTuple(), dbTuple.getDbKwRange());
+                DbTuple newDbTuple(dbTuple.getDbDoc(), dbTuple.getDbKwRange());
                 ret.push_back(newDbTuple);
             }
         }
@@ -203,6 +203,6 @@ std::pair<ubigint, ubigint> NLogNBase<DbTuple>::map(
 }
 
 
-template class NLogNBase<Doc<>, Kw>;
-template class NLogNBase<SrcIDb1Doc, Kw>;
-//template class NLogNBase<Doc<IdAlias>, IdAlias>;
+template class NLogNBase<Tuple<>>;
+template class NLogNBase<SrcIDb1Tuple>;
+//template class NLogNBase<Tuple<IdAlias>>;

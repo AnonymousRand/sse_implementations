@@ -49,6 +49,7 @@ private:
 private:
     UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>(this->benchmark);
     UnderlyServer<DbTuple>* getServer() const override { return this->server; }
+    void setServer(NLogNBaseServer<DbTuple>* server) override { this->server = server; }
 };
 
 

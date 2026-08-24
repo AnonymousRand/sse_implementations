@@ -29,6 +29,7 @@ public:
     //--------------------------------------------------------------------------
     // `ISse`
 
+    void setup(int secParam, const Db<DbTuple>& db) override;
     void clear() override;
 
     //--------------------------------------------------------------------------
@@ -38,6 +39,7 @@ public:
 
 protected:
     virtual NLogNBaseServer<DbTuple>* getServer() const = 0;
+    virtual void setServer(NLogNBaseServer<DbTuple>* server) = 0;
     bigint lvlCount = 0;
 
     //--------------------------------------------------------------------------

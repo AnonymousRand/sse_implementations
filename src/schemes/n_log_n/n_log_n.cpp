@@ -52,6 +52,7 @@ void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
         Db<DbTuple> dbKwList = std::move(iter->second);
         bigint dbKwCount = dbKwList.size();
+        ustring queryToken = this->genQueryToken(dbKwRange);
         ustring label;
         ustring iv = utils::crypto::genIv();
         ustring encDbKwCount = utils::crypto::padAndEncrypt(
