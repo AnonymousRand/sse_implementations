@@ -6,18 +6,18 @@
 #include "schemes/interfaces/sse_server.h"
 
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_rand.h"
+#include "utils/types/enc_ind/enc_ind_loc.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
 
 
 template <IsDbTuple DbTuple = Tuple<>>
-class PiBasServer : public ISseServer<DbTuple> {
+class NLogNBaseServer : public ISseServer<DbTuple> {
 public:
     using ISseServer<DbTuple>::ISseServer;
 
-    ~PiBasServer();
+    virtual ~NLogNBaseServer();
 
     //--------------------------------------------------------------------------
     // `ISseServer`
@@ -27,10 +27,12 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    void setEncInd(EncIndRand* encInd);
-    EncIndRand* getEncInd() const;
-    std::vector<EncIndVal> searchEncInd(const ustring& queryToken) const;
+    void setEncIndLvls(const std::vector<EncIndLoc*>& encIndLvls);
+    std::vector<EncIndLoc*> getEncIndLvls() const;
+    std::vector<EncIndVal> searchEncIndForBckt(
+        bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
+    ) const;
 
-private:
-    EncIndRand* encInd = nullptr;
-};
+protected:
+    std::vector<EncIndLoc*> encIndLvls;
+}

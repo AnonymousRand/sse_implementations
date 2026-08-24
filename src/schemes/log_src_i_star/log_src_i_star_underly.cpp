@@ -5,6 +5,9 @@
 #include <utility>
 #include <vector>
 
+#include "schemes/log_src_i_star/log_src_i_star_underly_server.h"
+#include "schemes/n_log_n/n_log_n_base.h"
+
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
@@ -25,7 +28,7 @@ void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     Range<DbKw> dbKwBounds = db.getDbKwBounds();
     // remember to not use `db.size()` as TDAG leaves must be contiguous!
     this->leafCount = dbKwBounds.size();
-    NLogN<DbTuple>::setup(secParam, db);
+    NLogNBase<DbTuple>::setup(secParam, db);
 }
 
 
@@ -90,6 +93,12 @@ bigint Underly<DbTuple>::calcBcktCountOnLvl(bigint lvl) const {
         // this gives the TDAG-specific node/bucket count at level `lvl` (for `lvl` >= 1)
         return std::pow(2, this->lvlCount - lvl) - 1;
     }
+}
+
+
+template <IsDbTuple DbTuple>
+bigint Underly<DbTuple>::calcBcktSizeOnLvl(bigint lvl) const {
+    return std::pow(2, lvl);
 }
 
 

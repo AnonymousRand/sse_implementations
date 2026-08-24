@@ -20,7 +20,9 @@ add_executable(main
     src/schemes/log_src_i_star/log_src_i_star_underly.cpp
 
     src/schemes/n_log_n/n_log_n.cpp
+    src/schemes/n_log_n/n_log_n_base.cpp
     src/schemes/n_log_n/n_log_n_server.cpp
+    src/schemes/n_log_n/n_log_n_base_server.cpp
 
     src/schemes/pi_bas/pi_bas.cpp
     src/schemes/pi_bas/pi_bas_server.cpp
