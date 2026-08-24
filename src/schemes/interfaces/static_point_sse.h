@@ -5,7 +5,6 @@
 
 #include "schemes/interfaces/sse.h"
 
-#include "utils/benchmark.h"
 #include "utils/crypto.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
