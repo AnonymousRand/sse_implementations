@@ -39,5 +39,9 @@ protected:
 private:
     NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
     NLogNServer<DbTuple>* getServer() const override { return this->server; }
-    void setServer(NLogNBaseServer<DbTuple>* server) override { this->server = server; }
+
+    void deleteServer() override {
+        delete this->server;
+        this->server = nullptr;
+    }
 };

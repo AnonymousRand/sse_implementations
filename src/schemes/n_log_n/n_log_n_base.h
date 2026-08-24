@@ -39,7 +39,7 @@ public:
 
 protected:
     virtual NLogNBaseServer<DbTuple>* getServer() const = 0;
-    virtual void setServer(NLogNBaseServer<DbTuple>* server) = 0;
+    virtual void deleteServer() = 0;
     bigint lvlCount = 0;
 
     //--------------------------------------------------------------------------

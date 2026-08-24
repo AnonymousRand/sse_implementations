@@ -26,8 +26,7 @@ NLogNBase<DbTuple>::~NLogNBase() {
     this->clear();
 
     if (this->getServer() != nullptr) {
-        delete this->getServer();
-        this->setServer(nullptr);
+        this->deleteServer();
     }
 }
 
