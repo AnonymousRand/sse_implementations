@@ -15,6 +15,7 @@
 #include "utils/types/ustring.h"
 
 
+// common code between `NLogN` and `log_src_i_star::Underly`
 template <IsDbTuple DbTuple = Tuple<>>
 class NLogNBase : public IStaticPointSse<DbTuple>, public ISdUnderly<DbTuple> {
 protected:
