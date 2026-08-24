@@ -24,7 +24,7 @@ private:
     using DbKw = typename NLogNBase<DbTuple>::DbKw;
 
 public:
-    using NLogN<DbTuple>::NLogN;
+    using NLogNBase<DbTuple>::NLogNBase;
     Underly(std::shared_ptr<Benchmark> benchmark) :
         NLogNBase<DbTuple>(benchmark, new UnderlyServer<DbTuple>()) {}
 

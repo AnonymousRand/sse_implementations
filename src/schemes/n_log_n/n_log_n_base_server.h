@@ -35,4 +35,4 @@ public:
 
 protected:
     std::vector<EncIndLoc*> encIndLvls;
-}
+};

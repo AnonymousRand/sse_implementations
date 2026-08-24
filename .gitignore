@@ -1,4 +1,4 @@
-# generated program files
+g generated program files
 out/*
 *.out
 
@@ -6,6 +6,8 @@ out/*
 build_*
 conan2/
 CMakeUserPresets.json
+# (in case conan is being installed in a venv)
+venv/
 
 # vim
 *.swp

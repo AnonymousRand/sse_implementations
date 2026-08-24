@@ -2,7 +2,7 @@
 
 #include <concepts>
 
-#include "schemes/interfaces/n_log_n_base_server.h"
+#include "schemes/n_log_n/n_log_n_base_server.h"
 
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind/enc_ind_rand.h"

@@ -20,7 +20,7 @@ private:
 
 public:
     NLogN(std::shared_ptr<Benchmark> benchmark) :
-        NLogNBase(benchmark, new NLogNServer<DbTuple>()) {}
+        NLogNBase<DbTuple>(benchmark, new NLogNServer<DbTuple>()) {}
 
     //--------------------------------------------------------------------------
     // `ISse`

@@ -22,10 +22,8 @@ protected:
     using DbKw = typename IStaticPointSse<DbTuple>::DbKw;
 
 public:
-    using IStaticPointSse<DbTuple>::IStaticPointSse;
-
     NLogNBase(std::shared_ptr<Benchmark> benchmark, NLogNBaseServer<DbTuple>* server) :
-        NLogNBase(benchmark), server(server) {}
+        IStaticPointSse<DbTuple>(benchmark), server(server) {}
     virtual ~NLogNBase();
 
     //--------------------------------------------------------------------------
