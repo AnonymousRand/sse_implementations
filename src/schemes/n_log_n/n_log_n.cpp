@@ -102,7 +102,6 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::initSetupState() {
-    std::cout << "NLogN initing setup state" << std::endl;
     NLogNBase<DbTuple>::initSetupState();
 
     this->dbKwCountsDictTmp = new EncIndRand(this->benchmark);
