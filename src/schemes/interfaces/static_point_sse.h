@@ -61,7 +61,7 @@ protected:
     ustring encKey;
 
     //--------------------------------------------------------------------------
-    // methods to implement
+    // interface
 
     virtual std::vector<DbTuple> searchBase(const Range<DbKw>& query) const = 0;
     

@@ -19,7 +19,7 @@ public:
     using ISse<DbTuple>::ISse;
 
     //--------------------------------------------------------------------------
-    // methods to implement
+    // interface
 
     /**
      * append the DB most recently passed to `setup()` (WITHOUT any replications/

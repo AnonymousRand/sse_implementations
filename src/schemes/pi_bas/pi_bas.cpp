@@ -25,9 +25,11 @@
 
 template <IsDbTuple DbTuple>
 PiBas<DbTuple>::~PiBas() {
+    std::cout << "PiBas detructor" << this << std::endl;
     this->clear();
 
     if (this->server != nullptr) {
+        std::cout << "server being destroyed at " << this->server << std::endl;
         delete this->server;
         this->server = nullptr;
     }
@@ -40,6 +42,7 @@ PiBas<DbTuple>::~PiBas() {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
+    std::cout << "PiBas setup" << this << std::endl;
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -98,6 +101,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::clear() {
+    std::cout << "PiBas clear" << this << std::endl;
     this->server->clear();
 
     // clears `this->size`

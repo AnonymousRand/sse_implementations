@@ -27,7 +27,7 @@ public:
         ISse<DbTuple>(benchmark), useShortcutSetup(useShortcutSetup) {}
 
     //--------------------------------------------------------------------------
-    // methods to implement
+    // interface
 
     virtual void update(const DbTuple& newTuple) = 0;
 
