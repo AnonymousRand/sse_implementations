@@ -21,6 +21,8 @@ namespace log_src_i_star {
 
 template <IsDbTuple DbTuple>
 Underly<DbTuple>::~Underly() {
+    this->clear();
+
     if (this->server != nullptr) {
         delete this->server;
         this->server = nullptr;

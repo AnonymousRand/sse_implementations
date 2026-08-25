@@ -21,12 +21,6 @@
 #include "utils/types/ustring.h"
 
 
-template <IsDbTuple DbTuple>
-NLogNBase<DbTuple>::~NLogNBase() {
-    this->clear();
-}
-
-
 //------------------------------------------------------------------------------
 // `ISse`
 

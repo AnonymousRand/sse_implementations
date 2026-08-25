@@ -28,9 +28,7 @@ private:
     inline static constexpr bigint RESULT_SIZE = 100;
 
 public:
-    AllVsDbSize(bigint maxDbSizeExp) :
-        maxDbSizeExp(maxDbSizeExp)
-    {
+    AllVsDbSize(bigint maxDbSizeExp) : maxDbSizeExp(maxDbSizeExp) {
         bigint maxDbSize = std::pow(2, maxDbSizeExp);
         // make sure we can still run at least one setup/search by capping result size at DB size
         this->resultSize = std::min(RESULT_SIZE, maxDbSize);

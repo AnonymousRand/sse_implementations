@@ -24,6 +24,8 @@
 
 template <IsDbTuple DbTuple>
 NLogN<DbTuple>::~NLogN() {
+    this->clear();
+
     if (this->server != nullptr) {
         delete this->server;
         this->server = nullptr;

@@ -25,8 +25,6 @@ protected:
 public:
     using IStaticPointSse<DbTuple>::IStaticPointSse;
 
-    virtual ~NLogNBase();
-
     //--------------------------------------------------------------------------
     // `ISse`
 
