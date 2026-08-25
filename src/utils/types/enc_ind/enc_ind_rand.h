@@ -58,4 +58,3 @@ private:
         bool needsFseek
     ) const;
 };
-
