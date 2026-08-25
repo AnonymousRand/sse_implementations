@@ -21,11 +21,6 @@
 #include "utils/types/tuple.h"
 
 
-//==============================================================================
-// `LogSrcIBase`
-//==============================================================================
-
-
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 LogSrcIBase<Underly>::~LogSrcIBase() {
     this->clear();
