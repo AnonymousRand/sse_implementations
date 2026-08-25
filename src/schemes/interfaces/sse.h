@@ -20,8 +20,6 @@ protected:
     using DbKw = typename DbTuple::DbKwType;
 
 public:
-    std::shared_ptr<Benchmark> benchmark;
-
     //--------------------------------------------------------------------------
     // the big five
 
@@ -43,6 +41,8 @@ public:
 
     //--------------------------------------------------------------------------
     // interface
+
+    std::shared_ptr<Benchmark> benchmark;
 
     ISse(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 

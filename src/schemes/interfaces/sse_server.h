@@ -21,21 +21,22 @@ public:
     // IMPORTANT: this means SSE server classes can only be instantiated as pointers!
 
     // copy constructor
-    ISse(const ISse& other) = delete;
+    ISseServer(const ISseServer& other) = delete;
 
     // copy assignment operator
-    ISse& operator =(const ISse& other) = delete;
+    ISseServer& operator =(const ISseServer& other) = delete;
 
     // move constructor
-    ISse(ISse&& other) noexcept = delete;
+    ISseServer(ISseServer&& other) noexcept = delete;
 
     // move assignment operator
-    ISse& operator =(ISse&& other) noexcept = delete;
-    // this should be the client/controller's benchmarking struct
-    std::shared_ptr<Benchmark> benchmark;
+    ISseServer& operator =(ISseServer&& other) noexcept = delete;
 
     //--------------------------------------------------------------------------
     // interface
+
+    // this should be the client/controller's benchmarking struct
+    std::shared_ptr<Benchmark> benchmark;
 
     ISseServer(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
