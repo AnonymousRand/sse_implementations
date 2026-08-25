@@ -88,8 +88,8 @@ template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::initSetupState() {
     NLogNBase<DbTuple>::initSetupState();
 
-    this->dbKwCountsDict = new EncIndRand(this->benchmark);
-    this->dbKwCountsDict->init(this->size);
+    this->dbKwCountsDictTmp = new EncIndRand(this->benchmark);
+    this->dbKwCountsDictTmp->init(this->size);
 }
 
 
@@ -104,7 +104,9 @@ void NLogN<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& db
         this->encKey, utils::ustr::toUstr(dbKwCount), iv, EncIndBase::DATA_LEN - 1
     );
     ubigint pos = this->mapNoMod(queryToken, label);
-    this->dbKwCountsDict->writeToFirstEmpty(pos, std::pair {label, std::pair {encDbKwCount, iv}});
+    this->dbKwCountsDictTmp->writeToFirstEmpty(
+        pos, std::pair {label, std::pair {encDbKwCount, iv}}
+    );
 
     // do the rest from `NLogNBase` (we have to `std::move()` *after* we are done using `dbKwList`)
     NLogNBase<DbTuple>::setupDbKwList(std::move(dbKwList), dbKwRange);
@@ -115,7 +117,7 @@ template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::moveSetupStateToServer() {
     NLogNBase<DbTuple>::moveSetupStateToServer();
 
-    this->getServer()->setDbKwCountsDict(this->dbKwCountsDict);
+    this->getServer()->setDbKwCountsDict(this->dbKwCountsDictTmp);
     if (this->dbKwCountsDictTmp != nullptr) {
         delete this->dbKwCountsDictTmp;
         this->dbKwCountsDictTmp = nullptr;
