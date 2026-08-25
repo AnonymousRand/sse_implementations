@@ -177,8 +177,11 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
 
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::moveSetupStateToServer() {
-    // note: since this is a transfer of pointers, clearing it should be handled by the server!
+    // IMPORTANT: since this is a transfer of pointers, clearing it should be handled by the server!
     this->getServer()->setEncIndLvls(this->encIndLvlsTmp);
+    // however we still need to clear the vector in the client so it doesn't
+    // keep trying to call old instances later!!
+    this->encIndLvlsTmp.clear();
 }
 
 

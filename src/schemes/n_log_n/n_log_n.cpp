@@ -102,6 +102,7 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::initSetupState() {
+    std::cout << "NLogN initing setup state" << std::endl;
     NLogNBase<DbTuple>::initSetupState();
 
     this->dbKwCountsDictTmp = new EncIndRand(this->benchmark);
@@ -134,6 +135,8 @@ void NLogN<DbTuple>::moveSetupStateToServer() {
     NLogNBase<DbTuple>::moveSetupStateToServer();
 
     this->getServer()->setDbKwCountsDict(this->dbKwCountsDictTmp);
+    // don't `delete` this since server has the same copy, but still set it to `nullptr` to be safe
+    this->dbCountsDictTmp = nullptr;
 }
 
 
