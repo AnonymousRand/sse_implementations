@@ -15,8 +15,6 @@
 #include "schemes/sda/sda.h"
 
 #include "utils/types/basic_types.h"
-#include "utils/types/db/db.h"
-#include "utils/types/range.h"
 
 
 int main() {
