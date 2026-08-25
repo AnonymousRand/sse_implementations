@@ -96,7 +96,6 @@ void NLogN<DbTuple>::initSetupState() {
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList) {
     // add `(w, dbKwCount)` (non-padded size) to `dbKwCountsDict` to compute what level to search
-    Db<DbTuple> dbKwList = std::move(iter->second);
     bigint dbKwCount = dbKwList.size();
     ustring queryToken = this->genQueryToken(dbKwRange);
     ustring label;
