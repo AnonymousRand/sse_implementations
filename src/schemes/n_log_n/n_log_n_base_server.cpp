@@ -48,6 +48,7 @@ void NLogNBaseServer<DbTuple>::clear() {
     for (EncIndLoc* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
             this->benchmark->serverStorage -= lvl->getSize() * EncIndBase::ENTRY_LEN;
+            std::cout << "DELETING " << lvl << std::endl;
             delete lvl;
             lvl = nullptr;
         }
