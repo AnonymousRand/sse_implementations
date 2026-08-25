@@ -23,6 +23,11 @@ public:
 
     ~NLogN();
 
+    //--------------------------------------------------------------------------
+    // `ISse`
+
+    void clear() override;
+
 protected:
     EncIndRand* dbKwCountsDictTmp = nullptr;
 

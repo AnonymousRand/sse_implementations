@@ -32,6 +32,7 @@ public:
     // `ISse`
 
     void setup(int secParam, const Db<DbTuple>& db) override;
+    void clear() override;
 
 private:
     bigint leafCount;
