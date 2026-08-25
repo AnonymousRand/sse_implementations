@@ -118,10 +118,6 @@ void NLogN<DbTuple>::moveSetupStateToServer() {
     NLogNBase<DbTuple>::moveSetupStateToServer();
 
     this->getServer()->setDbKwCountsDict(this->dbKwCountsDictTmp);
-    if (this->dbKwCountsDictTmp != nullptr) {
-        delete this->dbKwCountsDictTmp;
-        this->dbKwCountsDictTmp = nullptr;
-    }
 }
 
 
