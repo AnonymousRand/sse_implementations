@@ -48,7 +48,7 @@ protected:
 
     // `setup()` helpers for code resuability
     virtual void initSetupState();
-    virtual void setupDbKwList(Db<DbTuple>&& dbKwList);
+    virtual void setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange);
     virtual void moveSetupStateToServer();
 
     ustring genQueryToken(const Range<DbKw>& query) const;

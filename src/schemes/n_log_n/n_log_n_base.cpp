@@ -63,7 +63,7 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             std::exit(EXIT_FAILURE);
         }
 
-        this->setupDbKwList(iter->second);
+        this->setupDbKwList(iter->second, dbKwRange);
        }
     }
 
@@ -136,7 +136,7 @@ void NLogNBase<DbTuple>::initSetupState() {
 
 
 template <IsDbTuple DbTuple>
-void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList) {
+void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange) {
     // pad keyword list to the next power of two
     dbKwList.padToPowOf2();
     // randomly permute documents associated with same keyword, i.e. shuffle within bucket
