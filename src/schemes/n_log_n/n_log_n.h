@@ -35,7 +35,7 @@ protected:
     // helpers
 
     void initSetupState() override;
-    void setupDbKwList(Db<DbTuple>&& dbKwList) override;
+    void setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange) override;
     void moveSetupStateToServer() override;
 
     bigint calcLvlCount() const override;
