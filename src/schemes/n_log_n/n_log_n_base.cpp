@@ -64,7 +64,6 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         }
 
         this->setupDbKwList(iter->second, dbKwRange);
-       }
     }
 
     this->moveSetupStateToServer();
