@@ -136,7 +136,7 @@ void NLogN<DbTuple>::moveSetupStateToServer() {
 
     this->getServer()->setDbKwCountsDict(this->dbKwCountsDictTmp);
     // don't `delete` this since server has the same copy, but still set it to `nullptr` to be safe
-    this->dbCountsDictTmp = nullptr;
+    this->dbKwCountsDictTmp = nullptr;
 }
 
 
