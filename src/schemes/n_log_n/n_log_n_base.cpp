@@ -63,7 +63,7 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             std::exit(EXIT_FAILURE);
         }
 
-        this->setupDbKwList(iter->second, dbKwRange);
+        this->setupDbKwList(std::move(iter->second), dbKwRange);
     }
 
     this->moveSetupStateToServer();
