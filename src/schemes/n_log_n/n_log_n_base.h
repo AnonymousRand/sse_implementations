@@ -10,6 +10,7 @@
 
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
+#include "utils/types/enc_ind/enc_ind_loc.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
@@ -39,10 +40,16 @@ public:
 
 protected:
     virtual NLogNBaseServer<DbTuple>* getServer() const = 0;
+    std::vector<EncIndLoc*> encIndLvlsTmp;
     bigint lvlCount = 0;
 
     //--------------------------------------------------------------------------
     // helpers
+
+    // `setup()` helpers for code resuability
+    virtual void initSetupState();
+    virtual void setupDbKwList(Db<DbTuple>&& dbKwList);
+    virtual void moveSetupStateToServer();
 
     ustring genQueryToken(const Range<DbKw>& query) const;
 

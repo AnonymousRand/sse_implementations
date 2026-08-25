@@ -34,14 +34,13 @@ std::unordered_set<Range<typename DbTuple::DbKwType>> IDb<DbTuple>::getUniqDbKwR
 
 
 template <IsDbTuple DbTuple>
-void IDb<DbTuple>::pad(DbKw& currMaxDbKw) {
+void IDb<DbTuple>::padToPowOf2() {
     bigint dbSize = this->_size;
     if (!std::has_single_bit((ubigint)dbSize)) {
         bigint amountToPad = std::pow(2, std::ceil(std::log2(dbSize))) - dbSize;
         this->reserve(this->_size + amountToPad);
         for (bigint i = 0; i < amountToPad; i++) {
-            currMaxDbKw++;
-            Range<DbKw> dbKwRange {currMaxDbKw, currMaxDbKw};
+            Range<DbKw> dbKwRange {this->maxDbKw + 1, this->maxDbKw + 1};
             DbTuple dummyTuple = DbTuple::DUMMY(dbKwRange);
             this->push_back(dummyTuple);
         }

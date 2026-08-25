@@ -8,6 +8,7 @@
 
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
+#include "utils/types/enc_ind/enc_ind_rand.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
 
@@ -22,16 +23,20 @@ public:
 
     ~NLogN();
 
-    //--------------------------------------------------------------------------
-    // `ISse`
-
-    void setup(int secParam, const Db<DbTuple>& db) override;
-
 protected:
+    EncIndRand* dbKwCountsDictTmp = nullptr;
+
     //--------------------------------------------------------------------------
     // `IStaticPointSse`
 
     std::vector<DbTuple> searchBase(const Range<DbKw>& query) const override;
+
+    //--------------------------------------------------------------------------
+    // helpers
+
+    void initSetupState() override;
+    void setupDbKwList(Db<DbTuple>&& dbKwList) override;
+    void moveSetupStateToServer() override;
 
     bigint calcLvlCount() const override;
     bigint calcBcktCountOnLvl(bigint lvl) const override;

@@ -24,7 +24,7 @@ void buildTdagDbFromLeaves(
 
     // pad if necessary
     if (shouldPadDb) {
-        db.pad(dbKwBounds.second);
+        db.padToPowOf2();
     }
 
     // construct TDAG

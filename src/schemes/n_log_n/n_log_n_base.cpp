@@ -44,16 +44,9 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
     this->prfKey = utils::crypto::genKey(secParam);
     this->encKey = utils::crypto::genKey(secParam);
-    
-    std::vector<EncIndLoc*> encIndLvls;
-    for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncIndLoc* encIndLvl = new EncIndLoc(this->benchmark);
-        bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
-        bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
-        encIndLvl->init(bcktSizeOnLvl, bcktCountOnLvl);
-        encIndLvls.push_back(encIndLvl);
-    }
 
+    this->initSetupState();
+    
     //--------------------------------------------------------------------------
     // build index
 
@@ -70,51 +63,11 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             std::exit(EXIT_FAILURE);
         }
 
-        // pad keyword list to the next power of two
-        Db<DbTuple> dbKwList = std::move(iter->second);
-        DbKw maxDbKw = db.getDbKwBounds().second;
-        dbKwList.pad(maxDbKw);
-        // randomly permute documents associated with same keyword, i.e. shuffle within bucket
-        dbKwList.shuffle();
-
-        // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
-        bigint dbKwPaddedCount = dbKwList.size();
-        // PRF(K_1, w)
-        ustring queryToken = this->genQueryToken(dbKwRange);
-        // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
-        ustring label;
-        std::pair<ubigint, ubigint> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
-        ubigint lvl = lvlAndPos.first;
-        ubigint pos = lvlAndPos.second;
-
-        // for each id in DB(w) (write into same bucket consecutively)
-        bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
-        ubigint startPos = pos * bcktSizeOnLvl;
-        for (bigint dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
-            DbTuple dbTuple = dbKwList[dbKwCounter];
-            // d <- Enc(K_2, w, id)
-            ustring iv = utils::crypto::genIv();
-            ustring encDbTuple = utils::crypto::padAndEncrypt(
-                this->encKey, dbTuple.toUstr(), iv, EncIndBase::DATA_LEN - 1
-            );
-            // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            if (dbKwCounter == 0) {
-                // if first write to this bucket, get the first bucket start pos at or after
-                // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
-                encIndLvls[lvl]->writeToFirstEmpty(
-                    startPos, std::pair {label, std::pair {encDbTuple, iv}}
-                );
-            } else {
-                // after first write, just write consecutively as we are now guaranteed that
-                // there is a full bucket of contiguous space here
-                encIndLvls[lvl]->write(
-                    startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
-                );
-            }
-        }
+        this->setupDbKwList(iter->second);
+       }
     }
 
-    this->getServer()->setEncIndLvls(encIndLvls);
+    this->moveSetupStateToServer();
 }
 
 
@@ -168,6 +121,76 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
 
 //------------------------------------------------------------------------------
 // helpers
+
+
+template <IsDbTuple DbTuple>
+void NLogNBase<DbTuple>::initSetupState() {
+    for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
+        EncIndLoc* encIndLvl = new EncIndLoc(this->benchmark);
+        bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
+        bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
+        encIndLvl->init(bcktSizeOnLvl, bcktCountOnLvl);
+        this->encIndLvls.push_back(encIndLvl);
+    }
+}
+
+
+template <IsDbTuple DbTuple>
+void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList) {
+    // pad keyword list to the next power of two
+    dbKwList.padToPowOf2();
+    // randomly permute documents associated with same keyword, i.e. shuffle within bucket
+    dbKwList.shuffle();
+
+    // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
+    bigint dbKwPaddedCount = dbKwList.size();
+    // PRF(K_1, w)
+    ustring queryToken = this->genQueryToken(dbKwRange);
+    // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`
+    ustring label;
+    std::pair<ubigint, ubigint> lvlAndPos = this->map(queryToken, dbKwPaddedCount, label);
+    ubigint lvl = lvlAndPos.first;
+    ubigint pos = lvlAndPos.second;
+
+    // for each id in DB(w) (write into same bucket consecutively)
+    bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
+    ubigint startPos = pos * bcktSizeOnLvl;
+    for (bigint dbKwCounter = 0; dbKwCounter < dbKwPaddedCount; dbKwCounter++) {
+        DbTuple dbTuple = dbKwList[dbKwCounter];
+        // d <- Enc(K_2, w, id)
+        ustring iv = utils::crypto::genIv();
+        ustring encDbTuple = utils::crypto::padAndEncrypt(
+            this->encKey, dbTuple.toUstr(), iv, EncIndBase::DATA_LEN - 1
+        );
+        // store `(l, d)` into key-value store, and also store IV in plain along with `d`
+        if (dbKwCounter == 0) {
+            // if first write to this bucket, get the first bucket start pos at or after
+            // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
+            this->encIndLvlsTmp[lvl]->writeToFirstEmpty(
+                startPos, std::pair {label, std::pair {encDbTuple, iv}}
+            );
+        } else {
+            // after first write, just write consecutively as we are now guaranteed that
+            // there is a full bucket of contiguous space here
+            this->encIndLvlsTmp[lvl]->write(
+                startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
+            );
+        }
+    }
+}
+
+
+template <IsDbTuple DbTuple>
+void NLogNBase<DbTuple>::moveSetupStateToServer() {
+    this->getServer()->setEncIndLvls(this->encIndLvlsTmp);
+    for (EncIndLoc* encIndLvl : this->encIndLvlsTmp) {
+        if (encIndLvl != nullptr) {
+            delete encIndLvl;
+            encIndLvl = nullptr;
+        }
+    }
+    this->encIndLvlsTmp.clear();
+}
 
 
 template <IsDbTuple DbTuple>

@@ -32,50 +32,6 @@ NLogN<DbTuple>::~NLogN() {
 
 
 //------------------------------------------------------------------------------
-// `ISse`
-
-
-template <IsDbTuple DbTuple>
-void NLogN<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
-    NLogNBase<DbTuple>::setup(secParam, db);
-    
-    //--------------------------------------------------------------------------
-    // build `dbKwCountsDict`
-
-    EncIndRand* dbKwCountsDict = new EncIndRand(this->benchmark);
-    dbKwCountsDict->init(this->size);
-
-    // generate (plaintext) index of keywords to documents/ids mapping
-    Ind<DbTuple> ind(db);
-
-    // for each w in W
-    std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
-    for (const Range<DbKw>& dbKwRange : uniqDbKwRanges) {
-        auto iter = ind.find(dbKwRange);
-        if (iter == ind.end()) {
-            std::cerr << "Error: NLogN::setup(): DB kw range " << dbKwRange
-                      << " not found in index" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-
-        // add `(w, dbKwCount)` (non-padded size) to dict to compute what level to search
-        Db<DbTuple> dbKwList = std::move(iter->second);
-        bigint dbKwCount = dbKwList.size();
-        ustring queryToken = this->genQueryToken(dbKwRange);
-        ustring label;
-        ustring iv = utils::crypto::genIv();
-        ustring encDbKwCount = utils::crypto::padAndEncrypt(
-            this->encKey, utils::ustr::toUstr(dbKwCount), iv, EncIndBase::DATA_LEN - 1
-        );
-        ubigint pos = this->mapNoMod(queryToken, label);
-        dbKwCountsDict->writeToFirstEmpty(pos, std::pair {label, std::pair {encDbKwCount, iv}});
-    }
-
-    this->getServer()->setDbKwCountsDict(dbKwCountsDict);
-}
-
-
-//------------------------------------------------------------------------------
 // `IStaticPointSse`
 
 
@@ -126,6 +82,46 @@ std::vector<DbTuple> NLogN<DbTuple>::searchBase(const Range<DbKw>& query) const 
 
 //------------------------------------------------------------------------------
 // helpers
+
+
+template <IsDbTuple DbTuple>
+void NLogN<DbTuple>::initSetupState() {
+    NLogNBase<DbTuple>::initSetupState();
+
+    this->dbKwCountsDict = new EncIndRand(this->benchmark);
+    this->dbKwCountsDict->init(this->size);
+}
+
+
+template <IsDbTuple DbTuple>
+void NLogN<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList) {
+    // add `(w, dbKwCount)` (non-padded size) to `dbKwCountsDict` to compute what level to search
+    Db<DbTuple> dbKwList = std::move(iter->second);
+    bigint dbKwCount = dbKwList.size();
+    ustring queryToken = this->genQueryToken(dbKwRange);
+    ustring label;
+    ustring iv = utils::crypto::genIv();
+    ustring encDbKwCount = utils::crypto::padAndEncrypt(
+        this->encKey, utils::ustr::toUstr(dbKwCount), iv, EncIndBase::DATA_LEN - 1
+    );
+    ubigint pos = this->mapNoMod(queryToken, label);
+    this->dbKwCountsDict->writeToFirstEmpty(pos, std::pair {label, std::pair {encDbKwCount, iv}});
+
+    // do the rest from `NLogNBase` (we have to `std::move()` *after* we are done using `dbKwList`)
+    NLogNBase<DbTuple>::setupDbKwList(std::move(dbKwList));
+}
+
+
+template <IsDbTuple DbTuple>
+void NLogN<DbTuple>::moveSetupStateToServer() {
+    NLogNBase<DbTuple>::moveSetupStateToServer();
+
+    this->getServer()->setDbKwCountsDict(this->dbKwCountsDict);
+    if (this->dbKwCountsDictTmp != nullptr) {
+        delete this->dbKwCountsDictTmp;
+        this->dbKwCountsDictTmp = nullptr;
+    }
+}
 
 
 template <IsDbTuple DbTuple>

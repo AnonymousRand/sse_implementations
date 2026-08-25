@@ -66,7 +66,7 @@ public:
     ) = 0;
 
     std::unordered_set<Range<DbKw>> getUniqDbKwRanges() const;
-    void pad(DbKw& currMaxDbKw);
+    void padToPowOf2();
 
 protected:
     bigint _size = 0;
