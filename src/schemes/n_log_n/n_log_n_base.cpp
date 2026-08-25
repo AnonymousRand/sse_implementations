@@ -21,6 +21,11 @@
 #include "utils/types/ustring.h"
 
 
+// (note: we don't call the virtual `this->clear()` in `NLogNBase`'s destructor here since
+// that may call `this->server->clear()`, but child class destructors may have already
+// made `this->server` nullptr since only children have and are responsible for `this->server`)
+
+
 //------------------------------------------------------------------------------
 // `ISse`
 
