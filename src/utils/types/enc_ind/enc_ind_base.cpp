@@ -43,15 +43,15 @@ EncIndBase::EncIndBase(const EncIndBase& other) {
 // interface
 
 
-void EncIndBase::init(bigint size) {
+void EncIndBase::init(bigint capacity) {
     // inits DB file and file pointer
     IDiskStorage::init();
 
-    this->size = size;
+    this->capacity = capacity;
 
     // fill file with zero bits
     this->benchmark->startProfile("init");
-    for (bigint i = 0; i < this->size; i++) {
+    for (bigint i = 0; i < this->capacity; i++) {
         int itemsWritten = std::fwrite(NULL_ENTRY, ENTRY_LEN, 1, this->file);
         if (itemsWritten != 1) {
             std::cerr << "Error: EncIndBase::init(): error initializing file " << this->filename
@@ -65,7 +65,7 @@ void EncIndBase::init(bigint size) {
 
 
 void EncIndBase::clear() {
-    this->size = 0;
+    this->capacity = 0;
 
     // clears DB file and file pointer
     IDiskStorage::clear();
@@ -73,7 +73,7 @@ void EncIndBase::clear() {
 
 
 bool EncIndBase::read(ubigint pos, EncIndVal& ret) const {
-    pos %= this->size;
+    pos %= this->capacity;
 
     uchar entry[ENTRY_LEN];
     this->benchmark->startProfile("fseek");
@@ -92,7 +92,7 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret) const {
 
 
 void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
-    pos %= this->size;
+    pos %= this->capacity;
 
     // encode `encIndEntry` into one string
     this->benchmark->startProfile("encode");
@@ -172,7 +172,7 @@ void EncIndBase::readRaw(uchar* buf) const {
 
 
 EncIndEntry EncIndBase::getEncIndEntry(ubigint pos) const {
-    pos %= this->size;
+    pos %= this->capacity;
 
     uchar entry[ENTRY_LEN];
     this->benchmark->startProfile("fseek");
@@ -188,7 +188,7 @@ EncIndEntry EncIndBase::getEncIndEntry(ubigint pos) const {
 
 
 void EncIndBase::print() const {
-    for (bigint pos = 0; pos < this->size; pos++) {
+    for (bigint pos = 0; pos < this->capacity; pos++) {
         EncIndEntry entry = this->getEncIndEntry(pos);
         std::cerr << pos << ": " << utils::debugging::ustrToHex(utils::enc_ind::toUstr(entry))
                   << std::endl << std::endl;

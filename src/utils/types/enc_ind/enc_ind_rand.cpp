@@ -19,12 +19,12 @@
 
 
 bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const {
-    pos %= this->size;
+    pos %= this->capacity;
 
-    // get entry at `pos`, and if it doesn't match `match` (e.g. because of `pos %= this->size`),
+    // get entry at `pos`, and if it doesn't match `match` (e.g. because of `pos %= this->capacity`),
     // iterate forward one position at a time to search for it
     const ubigint origStartPos = pos;
-    const bigint readBufEntryCapacity = std::min(config::ENC_IND_READ_BUF_CAPACITY, this->size);
+    const bigint readBufEntryCapacity = std::min(config::ENC_IND_READ_BUF_CAPACITY, this->capacity);
     uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
     bigint readBufEntryCount = this->readIntoReadBuf(
         readBuf, readBufEntryCapacity, pos, origStartPos, true
@@ -34,11 +34,11 @@ bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLe
     bigint positionsChecked = 0;
     while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), match, matchLen) != 0) {
         positionsChecked++;
-        if (positionsChecked == this->size) {
+        if (positionsChecked == this->capacity) {
             return false;
         }
 
-        pos = (pos + 1) % this->size;
+        pos = (pos + 1) % this->capacity;
         if (pos == 0) {
             // the file pointer should be in the right position from the last `fread()` into
             // `readBuf` (and hence doesn't need an `fseek()`) IF AND ONLY IF we do not wrap around
@@ -68,11 +68,11 @@ bigint EncIndRand::readIntoReadBuf(
     uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
     bool needsFseek
 ) const {
-    bigint entriesUntilEof = this->size - readBufStartPos;
+    bigint entriesUntilEof = this->capacity - readBufStartPos;
     bigint entriesUntilFullLoop;
     if (readBufStartPos < origStartPos)      entriesUntilFullLoop = origStartPos - readBufStartPos;
     else if (readBufStartPos > origStartPos) entriesUntilFullLoop = entriesUntilEof + origStartPos;
-    else                                     entriesUntilFullLoop = this->size;
+    else                                     entriesUntilFullLoop = this->capacity;
     // we want to make sure we don't exceed where we had started doing this whole thing back in
     // the caller (e.g. if we had already wrapped around and are getting close to a full loop)
     bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);

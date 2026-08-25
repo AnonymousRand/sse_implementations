@@ -19,7 +19,7 @@ namespace {
 bigint calcAllEncIndLvlsBytes(const std::vector<EncIndLoc*>& encIndLvls) {
     bigint bytes = 0;
     for (EncIndLoc* encIndLvl : encIndLvls) {
-        bytes += encIndLvl->getSize() * EncIndBase::ENTRY_LEN;
+        bytes += encIndLvl->getCapacity() * EncIndBase::ENTRY_LEN;
     }
     return bytes;
 }
@@ -47,7 +47,7 @@ template <IsDbTuple DbTuple>
 void NLogNBaseServer<DbTuple>::clear() {
     for (EncIndLoc* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
-            this->benchmark->serverStorage -= lvl->getSize() * EncIndBase::ENTRY_LEN;
+            this->benchmark->serverStorage -= lvl->getCapacity() * EncIndBase::ENTRY_LEN;
             delete lvl;
             lvl = nullptr;
         }

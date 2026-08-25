@@ -32,6 +32,9 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 // which help speed up massive `setup()` calls
 // i find that 2^8 is a pretty good balance
 inline constexpr bigint ENC_IND_READ_BUF_CAPACITY = std::pow(2, 8);
+static_assert(
+    ENC_IND_READ_BUF_CAPACITY > 0, "Error: `ENC_IND_READ_BUF_CAPACITY` must be strictly positive!"
+);
 
 
 //------------------------------------------------------------------------------

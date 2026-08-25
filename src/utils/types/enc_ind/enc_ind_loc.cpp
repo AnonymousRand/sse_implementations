@@ -33,9 +33,9 @@ void EncIndLoc::clear() {
 
 
 bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const {
-    pos %= this->size;
+    pos %= this->capacity;
 
-    // get entry at `pos`, and if it doesn't match `match` (e.g. because of `pos %= this->size`),
+    // get entry at `pos`, and if it doesn't match `match` (e.g. because of `pos %= this->capacity`),
     // iterate forward by `this->bcktSize` positions at a time to search for it
     // 
     // importantly, we get the massive optimization of only having to check the first entry of every
@@ -52,7 +52,7 @@ bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen
             return false;
         }
 
-        pos = (pos + this->bcktSize) % this->size;
+        pos = (pos + this->bcktSize) % this->capacity;
         // if either we need to `fseek()` to further than we had `fread()` (i.e.
         // `this->bcktSize` > 1), or `pos` had been decreased this iteration (i.e.
         // `pos < this->bcktSize`) meaning we must've wrapped around, call `fseek()`

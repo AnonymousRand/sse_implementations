@@ -20,7 +20,8 @@
 template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::clear() {
     if (this->dbKwCountsDict != nullptr) {
-        this->benchmark->serverStorage -= this->dbKwCountsDict->getSize() * EncIndBase::ENTRY_LEN;
+        this->benchmark->serverStorage -=
+            this->dbKwCountsDict->getCapacity() * EncIndBase::ENTRY_LEN;
         delete this->dbKwCountsDict;
         this->dbKwCountsDict = nullptr;
     }
@@ -35,7 +36,7 @@ void NLogNServer<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::setDbKwCountsDict(EncIndRand* dbKwCountsDict) {
-    bigint dbKwCountsDictBytes = dbKwCountsDict->getSize() * EncIndBase::ENTRY_LEN;
+    bigint dbKwCountsDictBytes = dbKwCountsDict->getCapacity() * EncIndBase::ENTRY_LEN;
     this->benchmark->serverStorage += dbKwCountsDictBytes;
     this->benchmark->communication += dbKwCountsDictBytes;
     this->dbKwCountsDict = dbKwCountsDict;

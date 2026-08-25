@@ -51,7 +51,7 @@ private:
 
     /**
      * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
-     * buffer size does not divide enc ind size and there is a bit left over, for example).
+     * buffer size does not divide enc ind capacity and there is a bit left over, for example).
      */
     bigint readIntoReadBuf(
         uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,

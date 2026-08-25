@@ -59,7 +59,7 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    virtual void init(bigint size);
+    virtual void init(bigint capacity);
     void clear() override;
 
     /**
@@ -73,7 +73,7 @@ public:
 
     /**
      * write to `pos` (but does not check if there is already something there, e.g. from
-     * `pos % this->size`, and will overwrite it!).
+     * `pos % this->capacity`, and will overwrite it!).
      */
     void write(ubigint pos, const EncIndEntry& encIndEntry);
 
@@ -99,7 +99,7 @@ public:
      */
     void writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry);
 
-    bigint getSize() const { return this->size; }
+    bigint getCapacity() const { return this->capacity; }
 
     //--------------------------------------------------------------------------
     // debugging
@@ -113,7 +113,7 @@ protected:
 
     static const uchar NULL_ENTRY[ENTRY_LEN];
 
-    bigint size = 0;
+    bigint capacity = 0;
     std::shared_ptr<Benchmark> benchmark;
 
     //--------------------------------------------------------------------------

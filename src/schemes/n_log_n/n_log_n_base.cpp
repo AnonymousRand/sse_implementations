@@ -96,7 +96,7 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
         EncIndLoc* encIndLvl = encIndLvls[lvl];
         // don't use `this->size` as the bound here as that doesn't include padding while
         // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
-        for (bigint pos = 0; pos < encIndLvl->getSize(); pos++) {
+        for (bigint pos = 0; pos < encIndLvl->getCapacity(); pos++) {
             EncIndVal encIndVal;
             bool isValidVal = encIndLvl->read(pos, encIndVal);
             if (!isValidVal) {
