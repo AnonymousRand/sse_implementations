@@ -194,4 +194,3 @@ void EncIndBase::print() const {
                   << std::endl << std::endl;
     }
 }
-
