@@ -59,9 +59,6 @@ protected:
     // (`mutable` allows this to be modified in `const` contexts still, which we do need for reads)
     mutable bool isFlushed = true;
 
-    //--------------------------------------------------------------------------
-    // methods to implement
-
     virtual constexpr std::string FILE_DIR() const = 0;
     virtual constexpr std::string FILENAME_PREFIX() const = 0;
 
