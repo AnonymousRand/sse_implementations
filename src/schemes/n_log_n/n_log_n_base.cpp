@@ -72,7 +72,6 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::clear() {
-    this->getServer()->clear();
     this->lvlCount = 0;
 
     // clears `this->size`
