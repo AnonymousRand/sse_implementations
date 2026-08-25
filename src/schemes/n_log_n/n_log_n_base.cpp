@@ -72,6 +72,9 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::clear() {
+    // IMPORTANT: `this->getServer()->clear()` cannot be done here as `getServer()`
+    // is a pure virtual method, and `NLogNBase::clear()` is called in destructor
+    // so, child classes having a concrete server member variable MUST handle that instead!
     this->lvlCount = 0;
 
     // clears `this->size`

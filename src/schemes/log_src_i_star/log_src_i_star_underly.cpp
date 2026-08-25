@@ -43,8 +43,6 @@ void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
 template <IsDbTuple DbTuple>
 void Underly<DbTuple>::clear() {
-    // (note: this cannot be done in `NLogNBase::clear()` via `this->getServer()->clear()`
-    // as `getServer()` is a pure virtual method and `NLogNBase::clear()` is called in destructor)
     this->server->clear();
 
     NLogNBase<DbTuple>::clear();
