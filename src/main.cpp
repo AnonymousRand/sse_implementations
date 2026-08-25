@@ -307,7 +307,7 @@ int main() {
     searchVsFalsePos.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
 
     //--------------------------------------------------------------------------
-    // updates experiment
+    // update vs. DB size experiment
 
     if (config::SHOULD_BENCHMARK_UPDTS) {
         app::experiments::UpdateVsDbSize updateVsDbSize(maxDbSizeExp);
