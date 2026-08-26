@@ -111,10 +111,10 @@ ustring encrypt(
 
     // initialize encryption
     const uchar* ucharIv;
-    if (iv == ustring()) {
-        ucharIv = nullptr;
-    } else {
+    if (iv.length() > 0) {
         ucharIv = &iv[0];
+    } else {
+        ucharIv = nullptr;
     }
     if (EVP_EncryptInit_ex(ctx, cipher, nullptr, &key[0], ucharIv) != 1) {
         handleErrors();
@@ -162,10 +162,10 @@ ustring decrypt(
 
     // initialize decryption
     const uchar* ucharIv;
-    if (iv == ustring()) {
-        ucharIv = nullptr;
-    } else {
+    if (iv.length() > 0) {
         ucharIv = &iv[0];
+    } else {
+        ucharIv = nullptr;
     }
     if (EVP_DecryptInit_ex(ctx, cipher, nullptr, &key[0], ucharIv) != 1) {
         handleErrors();

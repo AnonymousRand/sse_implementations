@@ -180,9 +180,9 @@ EncIndEntry EncIndBase::getEncIndEntry(ubigint pos) const {
     this->benchmark->stopProfile("fseek");
     this->readEncoded(entry);
 
-    ustring key = ustring(&entry[0], KEY_LEN);
-    ustring data = ustring(&entry[KEY_LEN], DATA_LEN);
-    ustring iv = ustring(&entry[KEY_LEN + DATA_LEN], utils::crypto::IV_LEN);
+    ustring key(&entry[0], KEY_LEN);
+    ustring data(&entry[KEY_LEN], DATA_LEN);
+    ustring iv(&entry[KEY_LEN + DATA_LEN], utils::crypto::IV_LEN);
     return EncIndEntry {key, EncIndVal {data, iv}};
 };
 
