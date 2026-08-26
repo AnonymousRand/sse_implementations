@@ -30,7 +30,7 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // init things
 
     this->secParam = secParam;
-    this->size = db.size();
+    this->size = db.getSize();
 
     //--------------------------------------------------------------------------
     // init sub-DBs
@@ -42,13 +42,13 @@ void LogSrcI<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // leaves with this information
     Db<SrcIDb1Tuple> db1;
     Db<Tuple<IdAlias>> db2;
-    db1.reserve(sortedDb.size());
-    db2.reserve(sortedDb.size());
+    db1.reserve(sortedDb.getSize());
+    db2.reserve(sortedDb.getSize());
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
-        db1.push_back(newTuple);
+        db1.append(newTuple);
     };
     log_src_i::utils::initDbsLeaves(sortedDb, db2, addDb1Leaf);
 

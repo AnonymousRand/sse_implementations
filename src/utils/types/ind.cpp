@@ -20,7 +20,7 @@ Ind<DbTuple>::Ind(const Db<DbTuple>& db, bool shouldShuffleKwLists) {
         if (!this->contains(dbKwRange)) {
             (*this)[dbKwRange] = Db<DbTuple> {dbTuple};
         } else {
-            (*this)[dbKwRange].push_back(dbTuple);
+            (*this)[dbKwRange].append(dbTuple);
         }
     }
 

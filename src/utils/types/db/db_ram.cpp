@@ -23,7 +23,7 @@ DbRam<DbTuple>::DbRam(const DbRam& other, bigint startIndex, bigint endIndex) {
     this->vec.reserve(endIndex - startIndex);
     for (bigint index = startIndex; index < endIndex; index++) {
         DbTuple dbTuple = other[index];
-        this->push_back(dbTuple);
+        this->append(dbTuple);
     }
 }
 
@@ -32,7 +32,7 @@ template <IsDbTuple DbTuple>
 DbRam<DbTuple>::DbRam(std::initializer_list<DbTuple> initList) {
     this->vec.reserve(initList.size());
     for (const DbTuple& dbTuple : initList) {
-        this->push_back(dbTuple);
+        this->append(dbTuple);
     }
 }
 
@@ -46,13 +46,13 @@ void DbRam<DbTuple>::clear() {
     // clears DB vector
     this->vec.clear();
 
-    // clears `this->_size`
+    // clears `this->size`
     IDb<DbTuple>::clear();
 }
 
 
 template <IsDbTuple DbTuple>
-void DbRam<DbTuple>::push_back(const DbTuple& dbTuple) {
+void DbRam<DbTuple>::append(const DbTuple& dbTuple) {
     this->vec.push_back(dbTuple);
 
     // update member variables as needed

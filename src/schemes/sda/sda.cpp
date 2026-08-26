@@ -38,12 +38,12 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
     if (this->useShortcutSetup) {
         // need this special case to avoid things like indexing issues later
-        if (db.size() == 0) {
+        if (db.getSize() == 0) {
             this->firstEmptyInd = 0;
             return;
         }
 
-        bigint lastFilledInd = std::log2(db.size());
+        bigint lastFilledInd = std::log2(db.getSize());
 
         // this is the shortcut way: simply initialize and fill in all subindexes in one go
         // (note that the non-shortcut `setup()` places earlier items in `db` into larger
@@ -53,11 +53,11 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         for (bigint i = lastFilledInd; i >= 0; i--) {
             bigint indSize = (bigint)std::pow(2, i);
             Db<Tuple<>> indDb;
-            if (dbPos < db.size()) {
-                if (dbPos + indSize < db.size()) {
+            if (dbPos < db.getSize()) {
+                if (dbPos + indSize < db.getSize()) {
                     indDb = Db<Tuple<>>(db, dbPos, dbPos + indSize);
                 } else {
-                    indDb = Db<Tuple<>>(db, dbPos, db.size());
+                    indDb = Db<Tuple<>>(db, dbPos, db.getSize());
                 }
             } else {
                 indDb = Db<Tuple<>> {};
@@ -148,7 +148,7 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
         // (`getDb()` appends to the passed-in container)
         this->underlys[i]->getDb(mergedDb);
     }
-    mergedDb.push_back(newTuple);
+    mergedDb.append(newTuple);
     if (this->firstEmptyInd >= this->underlys.size() - 1) {
         // if we need to create a new, larger index
         Underly* newUnderly = new Underly(this->benchmark);

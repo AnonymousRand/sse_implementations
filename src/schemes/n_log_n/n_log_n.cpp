@@ -113,7 +113,7 @@ void NLogN<DbTuple>::initSetupState() {
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange) {
     // add `(w, dbKwCount)` (non-padded size) to `dbKwCountsDict` to compute what level to search
-    bigint dbKwCount = dbKwList.size();
+    bigint dbKwCount = dbKwList.getSize();
     ustring queryToken = this->genQueryToken(dbKwRange);
     ustring label;
     ustring iv = utils::crypto::genIv();

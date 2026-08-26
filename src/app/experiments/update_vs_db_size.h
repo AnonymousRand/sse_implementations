@@ -46,7 +46,7 @@ public:
         dsse->setup(utils::crypto::KEY_LEN, Db<> {});
 
         // updates
-        for (bigint i = 0; i < this->db.size(); i++) {
+        for (bigint i = 0; i < this->db.getSize(); i++) {
             Tuple<> tuple = this->db[i];
             dsse->update(tuple);
             dsse->benchmark->print(shouldBenchmark, "Update", std::to_string(i));

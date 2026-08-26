@@ -39,7 +39,7 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     // init things
 
     this->secParam = secParam;
-    this->size = db.size();
+    this->size = db.getSize();
     this->lvlCount = this->calcLvlCount();
 
     this->prfKey = utils::crypto::genKey(secParam);
@@ -113,7 +113,7 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
                 // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
                 // to easily access these `DbKw` ranges in plaintext
                 DbTuple newDbTuple(dbTuple.getDbDoc(), dbTuple.getDbKwRange());
-                ret.push_back(newDbTuple);
+                ret.append(newDbTuple);
             }
         }
     }
@@ -144,7 +144,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
     dbKwList.shuffle();
 
     // generate a single `lvl`, `pos`, and `l` for each keyword list/bucket
-    bigint dbKwPaddedCount = dbKwList.size();
+    bigint dbKwPaddedCount = dbKwList.getSize();
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(dbKwRange);
     // l <- Hash(PRF(K_1, w) || c), and also generate associated `lvl` and `pos`

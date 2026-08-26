@@ -23,7 +23,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // init things
 
     this->secParam = secParam;
-    this->size = db.size();
+    this->size = db.getSize();
 
     //--------------------------------------------------------------------------
     // init sub-DBs
@@ -35,13 +35,13 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // leaves with this information
     Db<SrcIDb1Tuple> db1;
     Db<Tuple<IdAlias>> db2;
-    db1.reserve(sortedDb.size());
-    db2.reserve(sortedDb.size());
+    db1.reserve(sortedDb.getSize());
+    db2.reserve(sortedDb.getSize());
     auto addDb1Leaf = [&db1](Kw prevKw, IdAlias firstIdAliasWithKw, IdAlias lastIdAliasWithKw) {
         Range<IdAlias> idAliasRangeWithKw {firstIdAliasWithKw, lastIdAliasWithKw};
         Range<Kw> kwRange {prevKw, prevKw};
         SrcIDb1Tuple newTuple {prevKw, idAliasRangeWithKw, kwRange};
-        db1.push_back(newTuple);
+        db1.append(newTuple);
     };
     log_src_i::utils::initDbsLeaves(sortedDb, db2, addDb1Leaf);
 
@@ -55,10 +55,10 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // Log-SRC-i since tuples are placed pseudorandomly in the index, but here we
     // have to pad to avoid empty buckets in the index that the server knows
     // corresponds to a lack of tuples with that keyword)
-    if (sortedDb.size() > 0) {
+    if (sortedDb.getSize() > 0) {
         Tuple<> tuple = sortedDb[0];
         Kw prevKw = tuple.getKw();
-        for (bigint i = 1; i < sortedDb.size(); i++) {
+        for (bigint i = 1; i < sortedDb.getSize(); i++) {
             tuple = sortedDb[i];
             Kw kw = tuple.getKw();
             // if non-contiguous `Kw`s detected, fill in the gap with dummies
@@ -66,7 +66,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
                 for (Kw paddingKw = prevKw + 1; paddingKw < kw; paddingKw++) {
                     Range<Kw> paddingKwRange {paddingKw, paddingKw};
                     SrcIDb1Tuple dummyTuple = SrcIDb1Tuple::DUMMY(paddingKwRange);
-                    db1.push_back(dummyTuple);
+                    db1.append(dummyTuple);
                 }
             }
             prevKw = kw;

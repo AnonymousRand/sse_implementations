@@ -56,7 +56,7 @@ public:
     // `IDb`
 
     void clear() override;
-    void push_back(const DbTuple& dbTuple) override;
+    void append(const DbTuple& dbTuple) override;
 
     DbTuple operator [](bigint index) const override;
 

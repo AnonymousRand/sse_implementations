@@ -37,7 +37,7 @@ Underly<DbTuple>::~Underly() {
 template <IsDbTuple DbTuple>
 void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     Range<DbKw> dbKwBounds = db.getDbKwBounds();
-    // remember to not use `db.size()` as TDAG leaves must be contiguous!
+    // remember to not use `db.getSize()` as TDAG leaves must be contiguous!
     this->leafCount = dbKwBounds.size();
     NLogNBase<DbTuple>::setup(secParam, db);
 }

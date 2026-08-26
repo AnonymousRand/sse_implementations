@@ -43,7 +43,7 @@ public:
         // then, querying 0-(2^i - 1) should produce exactly 2^i results
         bigint dbSize = std::pow(2, this->dbSizeExp);
         Db<> db;
-        db.push_back(Tuple<> {0, 0, Op::INS, Range<Kw> {0, 0}});
+        db.append(Tuple<> {0, 0, Op::INS, Range<Kw> {0, 0}});
         for (bigint i = 1; i <= this->dbSizeExp; i++) {
             bigint chunkSize = std::pow(2, i - 1);
             Kw minKw = std::pow(2, i - 1);

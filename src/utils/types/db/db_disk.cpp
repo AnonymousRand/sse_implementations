@@ -39,7 +39,7 @@ DbDisk<DbTuple>::DbDisk(const DbDisk<DbTuple>& other, bigint startIndex, bigint 
 {
     for (bigint index = startIndex; index < endIndex; index++) {
         DbTuple dbTuple = other[index];
-        this->push_back(dbTuple);
+        this->append(dbTuple);
     }
 }
 
@@ -49,7 +49,7 @@ DbDisk<DbTuple>::DbDisk(std::initializer_list<DbTuple> initList) :
     DbDisk<DbTuple>()
 {
     for (const DbTuple& dbTuple : initList) {
-        this->push_back(dbTuple);
+        this->append(dbTuple);
     }
 }
 
@@ -74,7 +74,7 @@ DbDisk<DbTuple>::DbDisk(const DbDisk& other) :
 
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::clear() {
-    // clears `this->_size`
+    // clears `this->size`
     IDb<DbTuple>::clear();
 
     // clears DB file and file pointer
@@ -83,13 +83,13 @@ void DbDisk<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-void DbDisk<DbTuple>::push_back(const DbTuple& dbTuple) {
+void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
     std::string dbTupleStr = dbTuple.toStr();
 
     // make sure every encoded tuple is stored into the same fixed-length size for easy lookups,
     // padding with '\0' bytes if necessary
     if (dbTupleStr.length() > TUPLE_LEN) {
-        std::cerr << "Error: DbDisk::push_back(): write of length " << dbTupleStr.length()
+        std::cerr << "Error: DbDisk::append(): write of length " << dbTupleStr.length()
                   << " bytes is not allowed! (want " << TUPLE_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -99,7 +99,7 @@ void DbDisk<DbTuple>::push_back(const DbTuple& dbTuple) {
     std::fseek(this->file, 0, SEEK_END);
     int itemsWritten = std::fwrite(dbTupleStr.c_str(), TUPLE_LEN, 1, this->file);
     if (itemsWritten != 1) {
-        std::cerr << "Error: DbDisk::push_back(): error writing to file " << this->filename
+        std::cerr << "Error: DbDisk::append(): error writing to file " << this->filename
                   << " (nothing written)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -112,9 +112,9 @@ void DbDisk<DbTuple>::push_back(const DbTuple& dbTuple) {
 
 template <IsDbTuple DbTuple>
 DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
-    if (index >= this->_size) {
+    if (index >= this->size) {
         std::cerr << "Error: DbDisk::operator []: index out of bounds "
-                  << "(index is " << index << ", size is " << this->_size << ")" << std::endl;
+                  << "(index is " << index << ", size is " << this->size << ")" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -177,8 +177,8 @@ DbDisk<DbTuple> DbDisk<DbTuple>::applyAlgoViaIndices(
     const std::function<void(std::vector<bigint>& dbIndices)>& algoOnIndices
 ) const {
     std::vector<bigint> dbIndices;
-    dbIndices.reserve(this->_size);
-    for (bigint index = 0; index < this->_size; index++) {
+    dbIndices.reserve(this->size);
+    for (bigint index = 0; index < this->size; index++) {
         dbIndices.push_back(index);
     }
 
@@ -187,7 +187,7 @@ DbDisk<DbTuple> DbDisk<DbTuple>::applyAlgoViaIndices(
     // now build output DB using this vector of indices
     DbDisk<DbTuple> outputDbDisk;
     for (bigint index : dbIndices) {
-        outputDbDisk.push_back((*this)[index]);
+        outputDbDisk.append((*this)[index]);
     }
     return outputDbDisk;
 }

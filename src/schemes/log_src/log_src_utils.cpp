@@ -39,7 +39,7 @@ template <IsDbTuple DbTuple>
 void replTdagDb(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tdag) {
     using DbKw = typename DbTuple::DbKwType;
 
-    bigint dbSize = db.size();
+    bigint dbSize = db.getSize();
     db.reserve(dbSize + ::utils::tdag::calcTdagTupleCount(dbSize));
     for (bigint i = 0; i < dbSize; i++) {
         DbTuple tuple = db[i];
@@ -50,7 +50,7 @@ void replTdagDb(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tda
                 continue;
             }
             DbTuple newTuple(tuple.getDbDoc(), ancestor);
-            db.push_back(newTuple);
+            db.append(newTuple);
         }
     }
 }

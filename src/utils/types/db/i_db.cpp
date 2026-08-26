@@ -16,7 +16,7 @@
 
 template <IsDbTuple DbTuple>
 void IDb<DbTuple>::clear() {
-    this->_size = 0;
+    this->size = 0;
     this->minDbKw = DUMMY;
     this->maxDbKw = DUMMY;
 }
@@ -35,14 +35,14 @@ std::unordered_set<Range<typename DbTuple::DbKwType>> IDb<DbTuple>::getUniqDbKwR
 
 template <IsDbTuple DbTuple>
 void IDb<DbTuple>::padToPowOf2() {
-    bigint dbSize = this->_size;
+    bigint dbSize = this->size;
     if (!std::has_single_bit((ubigint)dbSize)) {
         bigint amountToPad = std::pow(2, std::ceil(std::log2(dbSize))) - dbSize;
-        this->reserve(this->_size + amountToPad);
+        this->reserve(this->size + amountToPad);
         for (bigint i = 0; i < amountToPad; i++) {
             Range<DbKw> dbKwRange {this->maxDbKw + 1, this->maxDbKw + 1};
             DbTuple dummyTuple = DbTuple::DUMMY(dbKwRange);
-            this->push_back(dummyTuple);
+            this->append(dummyTuple);
         }
     }
 }
@@ -50,7 +50,7 @@ void IDb<DbTuple>::padToPowOf2() {
 
 template <IsDbTuple DbTuple>
 void IDb<DbTuple>::onNewDbTuple(const DbTuple& dbTuple) {
-    this->_size++;
+    this->size++;
 
     Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
     if (dbKwRange.first < this->minDbKw || this->minDbKw == DUMMY) {

@@ -147,7 +147,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
             Db<Tuple<IdAlias>> dbKwList = std::move(iter->second);
             for (const Tuple<IdAlias>& db2Tuple : dbKwList) {
                 Tuple<> newTuple(db2Tuple.getDbDoc(), kwRange);
-                ret.push_back(newTuple);
+                ret.append(newTuple);
             }
         }
     }

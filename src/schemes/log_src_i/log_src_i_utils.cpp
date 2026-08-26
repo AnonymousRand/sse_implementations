@@ -33,12 +33,12 @@ void initDbsLeaves(
     IdAlias firstIdAliasWithKw;
     IdAlias lastIdAliasWithKw;
 
-    for (bigint idAlias = 0; idAlias < sortedDb.size(); idAlias++) {
+    for (bigint idAlias = 0; idAlias < sortedDb.getSize(); idAlias++) {
         Tuple<> tuple = sortedDb[idAlias];
         // populate `db2` leaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};
         Tuple<IdAlias> newTuple(tuple.getDbDoc(), idAliasRange);
-        db2.push_back(newTuple);
+        db2.append(newTuple);
 
         // populate `db1` leaves
         Kw kw = tuple.getKw();

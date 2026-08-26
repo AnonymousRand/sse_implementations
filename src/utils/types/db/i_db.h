@@ -48,15 +48,14 @@ public:
     // interface
 
     virtual void clear();
-    virtual void push_back(const DbTuple& dbTuple) = 0;
+    virtual void append(const DbTuple& dbTuple) = 0;
 
     // read-only accessing using `[]` (note we don't provide writing capabilities
     // since that requires returning a reference, but children of `IDb` need not
     // have persistent `DbTuple` objects physically stored somewhere)
     virtual DbTuple operator [](bigint index) const = 0;
 
-    bigint size() const { return this->_size; }
-    bool empty() const { return this->_size == 0; }
+    bigint getSize() const { return this->size; }
     virtual void reserve(bigint size) = 0;
     Range<bigint> getDbKwBounds() const { return Range<bigint> {this->minDbKw, this->maxDbKw}; }
 
@@ -69,7 +68,7 @@ public:
     void padToPowOf2();
 
 protected:
-    bigint _size = 0;
+    bigint size = 0;
     bigint minDbKw = DUMMY;
     bigint maxDbKw = DUMMY;
 
@@ -129,7 +128,7 @@ public:
     }
 
     Iter<DbTuple> end() {
-        return Iter<DbTuple>(this, this->_size);
+        return Iter<DbTuple>(this, this->size);
     }
 
     // const iterators
@@ -138,6 +137,6 @@ public:
     }
 
     Iter<const DbTuple> end() const {
-        return Iter<const DbTuple>(this, this->_size);
+        return Iter<const DbTuple>(this, this->size);
     }
 };

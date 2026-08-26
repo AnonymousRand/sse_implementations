@@ -56,9 +56,9 @@ public:
             Range<Kw> kwRange2 {kw2, kw2};
             Range<Kw> query {1, dbSize};
             for (bigint i = 0; i < dbSize - 1; i++) {
-                db.push_back(Tuple<> {i, kw1, Op::INS, kwRange1});
+                db.append(Tuple<> {i, kw1, Op::INS, kwRange1});
             }
-            db.push_back(Tuple<> {dbSize - 1, kw2, Op::INS, kwRange2});
+            db.append(Tuple<> {dbSize - 1, kw2, Op::INS, kwRange2});
 
             // setup
             sse->setup(utils::crypto::KEY_LEN, db);

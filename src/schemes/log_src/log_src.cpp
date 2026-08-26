@@ -39,7 +39,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     // init things
 
     this->secParam = secParam;
-    this->size = db.size();
+    this->size = db.getSize();
 
     //--------------------------------------------------------------------------
     // build index
@@ -93,7 +93,7 @@ void LogSrc<Underly>::getDb(Db<Tuple<>>& ret) const {
     for (const Tuple<>& tuple : underlyDb) {
         Range<Kw> kwRange = tuple.getDbKwRange();
         if (kwRange.size() == 1) {
-            ret.push_back(tuple);
+            ret.append(tuple);
         };
     }
 }

@@ -47,7 +47,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     // init things
 
     this->secParam = secParam;
-    this->size = db.size();
+    this->size = db.getSize();
 
     this->prfKey = utils::crypto::genKey(secParam);
     this->encKey = utils::crypto::genKey(secParam);
@@ -78,7 +78,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         Db<DbTuple> dbKwList = std::move(iter->second);
 
         // for each id in DB(w)
-        for (bigint dbKwCounter = 0; dbKwCounter < dbKwList.size(); dbKwCounter++) {
+        for (bigint dbKwCounter = 0; dbKwCounter < dbKwList.getSize(); dbKwCounter++) {
             DbTuple dbTuple = dbKwList[dbKwCounter];
             // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
             ustring label;
@@ -153,7 +153,7 @@ void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
         // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
         // to easily access these `DbKw` ranges in plaintext
         DbTuple newDbTuple(dbTuple.getDbDoc(), dbTuple.getDbKwRange());
-        ret.push_back(newDbTuple);
+        ret.append(newDbTuple);
     }
 }
 
