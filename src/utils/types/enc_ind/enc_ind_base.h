@@ -99,6 +99,9 @@ public:
      */
     void writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry);
 
+    // (mostly for debugging)
+    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
+
     bigint getCapacity() const { return this->capacity; }
 
 protected:
@@ -125,8 +128,6 @@ protected:
      */
     virtual bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const = 0;
 
-    void readEncoded(uchar* buf) const;
-
     /**
      * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
      *
@@ -134,10 +135,9 @@ protected:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool readEncIndEntry(ubigint pos, EncIndEntry& ret) const;
+    bool readEntry(ubigint pos, EncIndEntry& ret) const;
+
+    void readEncoded(uchar* buf) const;
 
     void writeEncoded(ubigint pos, const uchar* encodedEntry);
-
-    // (mostly for debugging)
-    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
 };
