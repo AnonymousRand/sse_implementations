@@ -171,10 +171,6 @@ void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry) {
 }
 
 
-//------------------------------------------------------------------------------
-// debugging
-
-
 EncIndEntry EncIndBase::getEncIndEntry(ubigint pos) const {
     pos %= this->capacity;
 

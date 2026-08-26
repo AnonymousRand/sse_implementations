@@ -101,12 +101,6 @@ public:
 
     bigint getCapacity() const { return this->capacity; }
 
-    //--------------------------------------------------------------------------
-    // debugging
-
-    EncIndEntry getEncIndEntry(ubigint pos) const;
-    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
-
 protected:
     constexpr std::string FILE_DIR() const override { return "out/server"; }
     constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
@@ -133,4 +127,8 @@ protected:
 
     void readEncoded(uchar* buf) const;
     void writeEncoded(ubigint pos, const uchar* encodedEntry);
+
+    // (mostly for debugging)
+    EncIndEntry getEncIndEntry(ubigint pos) const;
+    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
 };
