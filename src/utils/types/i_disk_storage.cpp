@@ -173,3 +173,11 @@ std::string IDiskStorage::genFilename() const {
     std::string randomHexStr = std::format("{:016x}", randomHex);
     return std::format("{}/{}{}.dat", this->FILE_DIR(), this->FILENAME_PREFIX(), randomHexStr);
 }
+
+
+void IDiskStorage::flushIfNotFlushed() const {
+    if (!this->isFlushed) {
+        std::fflush(this->file);
+        this->isFlushed = true;
+    }
+}

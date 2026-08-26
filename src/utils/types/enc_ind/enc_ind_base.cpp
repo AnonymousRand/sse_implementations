@@ -118,10 +118,7 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
         std::exit(EXIT_FAILURE);
     }
     this->benchmark->stopProfile("fwrite");
-    // flush immediately to mark space as occupied (and so we always have `this->isFlushed = true`)
-    this->benchmark->startProfile("fflush");
-    std::fflush(this->file);
-    this->benchmark->stopProfile("fflush");
+    this->isFlushed = false;
 }
 
 
@@ -156,6 +153,10 @@ void EncIndBase::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry)
 
 
 void EncIndBase::readRaw(uchar* buf) const {
+    this->benchmark->startProfile("fflush");
+    this->flushIfNotFlushed();
+    this->benchmark->stopProfile("fflush");
+
     this->benchmark->startProfile("fread");
     bigint itemsRead = std::fread(buf, ENTRY_LEN, 1, this->file);
     this->benchmark->stopProfile("fread");

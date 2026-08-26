@@ -66,4 +66,5 @@ protected:
     // helpers
 
     std::string genFilename() const;
+    void flushIfNotFlushed() const;
 };

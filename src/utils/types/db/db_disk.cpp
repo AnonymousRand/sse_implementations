@@ -119,10 +119,7 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     }
 
     // make sure to flush if more writes have been done since the last manual flush
-    if (!this->isFlushed) {
-        std::fflush(this->file);
-        this->isFlushed = true;
-    }
+    this->flushIfNotFlushed();
 
     // read from DB
     char dbTupleCstr[TUPLE_LEN];
