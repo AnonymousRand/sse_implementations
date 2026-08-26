@@ -44,7 +44,7 @@ bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen
     this->benchmark->startProfile("fseek");
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     this->benchmark->stopProfile("fseek");
-    this->readRaw(currEntry);
+    this->readEncoded(currEntry);
     bigint positionsChecked = 0;
     while (std::memcmp(currEntry, match, matchLen) != 0) {
         positionsChecked++;
@@ -64,7 +64,7 @@ bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen
             this->benchmark->stopProfile("fseek");
         }
 
-        this->readRaw(currEntry);
+        this->readEncoded(currEntry);
     }
     
     return true;

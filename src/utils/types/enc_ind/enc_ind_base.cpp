@@ -79,7 +79,7 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret) const {
     this->benchmark->startProfile("fseek");
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     this->benchmark->stopProfile("fseek");
-    this->readRaw(entry);
+    this->readEncoded(entry);
     if (std::memcmp(entry, NULL_ENTRY, ENTRY_LEN) == 0) {
         // if `pos` contains `NULL_ENTRY`
         return false;
@@ -106,30 +106,17 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     pos %= this->capacity;
 
     // encode `encIndEntry` into one string
-    this->benchmark->startProfile("encode");
     ustring key = encIndEntry.first;
     EncIndVal val = encIndEntry.second;
-    ustring entry = key + val.first + val.second;
-    if (entry.length() != ENTRY_LEN) {
-        std::cerr << "Error: EncIndBase::write(): write of length " << entry.length()
+    ustring encodedEntry = key + val.first + val.second;
+    if (encodedEntry.length() != ENTRY_LEN) {
+        std::cerr << "Error: EncIndBase::write(): write of length " << encodedEntry.length()
                   << " bytes is not allowed! (want " << ENTRY_LEN << " bytes)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    this->benchmark->stopProfile("encode");
 
     // then go to `pos` and write the encoded `encIndEntry`
-    this->benchmark->startProfile("fseek");
-    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    this->benchmark->stopProfile("fseek");
-    this->benchmark->startProfile("fwrite");
-    int itemsWritten = std::fwrite(entry.c_str(), ENTRY_LEN, 1, this->file);
-    if (itemsWritten != 1) {
-        std::cerr << "Error: EncIndBase::write(): error writing to file " << this->filename
-                  << " (nothing written)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    this->benchmark->stopProfile("fwrite");
-    this->isFlushed = false;
+    this->writeEncoded(pos, encodedEntry.c_str());
 }
 
 
@@ -152,7 +139,7 @@ void EncIndBase::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry)
 // helpers
 
 
-void EncIndBase::readRaw(uchar* buf) const {
+void EncIndBase::readEncoded(uchar* buf) const {
     this->benchmark->startProfile("fflush");
     this->flushIfNotFlushed();
     this->benchmark->stopProfile("fflush");
@@ -161,10 +148,26 @@ void EncIndBase::readRaw(uchar* buf) const {
     bigint itemsRead = std::fread(buf, ENTRY_LEN, 1, this->file);
     this->benchmark->stopProfile("fread");
     if (itemsRead != 1) {
-        std::cerr << "Error: EncIndBase::readRaw(): error reading from file " << this->filename
+        std::cerr << "Error: EncIndBase::readEncoded(): error reading from file " << this->filename
                   << " (nothing read)" << std::endl;
         std::exit(EXIT_FAILURE);
     }
+}
+
+
+void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry) {
+    this->benchmark->startProfile("fseek");
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    this->benchmark->stopProfile("fseek");
+    this->benchmark->startProfile("fwrite");
+    int itemsWritten = std::fwrite(encodedEntry, ENTRY_LEN, 1, this->file);
+    if (itemsWritten != 1) {
+        std::cerr << "Error: EncIndBase::writeEncoded(): error writing to file " << this->filename
+                  << " (nothing written)" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    this->benchmark->stopProfile("fwrite");
+    this->isFlushed = false;
 }
 
 
@@ -179,7 +182,7 @@ EncIndEntry EncIndBase::getEncIndEntry(ubigint pos) const {
     this->benchmark->startProfile("fseek");
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
     this->benchmark->stopProfile("fseek");
-    this->readRaw(entry);
+    this->readEncoded(entry);
 
     ustring key = ustring(&entry[0], KEY_LEN);
     ustring data = ustring(&entry[KEY_LEN], DATA_LEN);

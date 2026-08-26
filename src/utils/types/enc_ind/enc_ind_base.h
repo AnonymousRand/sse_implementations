@@ -131,5 +131,6 @@ protected:
      */
     virtual bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const = 0;
 
-    void readRaw(uchar* buf) const;
+    void readEncoded(uchar* buf) const;
+    void writeEncoded(ubigint pos, const uchar* encodedEntry);
 };
