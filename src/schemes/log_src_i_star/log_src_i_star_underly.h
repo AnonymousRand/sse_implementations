@@ -18,6 +18,9 @@ namespace log_src_i_star {
 // this is specifcally designed to avoid using NLogN as a black box for Log-SRC-i*
 // (the same way one may use PiBas) which blows up the storage unnecessarily,
 // as observed in the TODS'18 paper (Section 7.1)
+//
+// also this doesn't technically have to be templated, but we need it so it can be passed
+// as a template template parameter to `LogSrcIStar` like with other range schemes here
 template <IsDbTuple DbTuple = Tuple<>>
 class Underly : public NLogNBase<DbTuple> {
 private:
