@@ -56,7 +56,7 @@ void Underly<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-std::vector<DbTuple> Underly<DbTuple>::searchBase(const Range<DbKw>& query) const {
+std::vector<DbTuple> Underly<DbTuple>::searchRaw(const Range<DbKw>& query) const {
     std::vector<DbTuple> results;
 
     // PRF(K_1, w)

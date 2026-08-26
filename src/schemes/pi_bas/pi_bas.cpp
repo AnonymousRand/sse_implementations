@@ -114,7 +114,7 @@ void PiBas<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-std::vector<DbTuple> PiBas<DbTuple>::searchBase(const Range<DbKw>& query) const {
+std::vector<DbTuple> PiBas<DbTuple>::searchRaw(const Range<DbKw>& query) const {
     std::vector<DbTuple> results;
 
     // PRF(K_1, w)

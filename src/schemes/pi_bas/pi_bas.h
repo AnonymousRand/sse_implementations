@@ -43,7 +43,7 @@ private:
     //--------------------------------------------------------------------------
     // `IStaticPointSse`
 
-    std::vector<DbTuple> searchBase(const Range<DbKw>& query) const override;
+    std::vector<DbTuple> searchRaw(const Range<DbKw>& query) const override;
 
     //--------------------------------------------------------------------------
     // helpers

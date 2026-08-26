@@ -15,7 +15,7 @@
 
 
 // subclasses of this include `PiBas`, `NLogN`, and `log_src_i_star::Underly`
-// provide shared code for `search()` (depending on `searchBase()`)
+// provide shared code for `search()` (depending on `searchRaw()`)
 template <IsDbTuple DbTuple = Tuple<>>
 class IStaticPointSse : public virtual ISse<DbTuple> {
 protected:
@@ -35,13 +35,13 @@ public:
         if (isNaive) {
             // naive, insecure range search: just individually query every point in range
             for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-                std::vector<DbTuple> results = this->searchBase(Range {dbKw, dbKw});
+                std::vector<DbTuple> results = this->searchRaw(Range {dbKw, dbKw});
                 allResults.insert(allResults.end(), results.begin(), results.end());
             }
         } else {
             // search entire range in one go (i.e. `query` itself must be in the db),
             // e.g. as the underlying scheme for a range scheme like Log-SRC
-            allResults = this->searchBase(query);
+            allResults = this->searchRaw(query);
         }
 
         if (shouldCleanUpResults) {
@@ -63,7 +63,7 @@ protected:
     //--------------------------------------------------------------------------
     // interface
 
-    virtual std::vector<DbTuple> searchBase(const Range<DbKw>& query) const = 0;
+    virtual std::vector<DbTuple> searchRaw(const Range<DbKw>& query) const = 0;
     
     //--------------------------------------------------------------------------
     // shared code
