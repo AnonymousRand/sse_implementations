@@ -25,7 +25,6 @@ ubigint hashToPos(const ustring& hash);
 template <class CharType>
 void padStr(std::basic_string<CharType>& str, bigint targetLen);
 
-
 /**
  * remove all trailing '\0' bits from `str` (except for one, which is the usual null terminator).
  */
