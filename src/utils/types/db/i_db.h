@@ -9,8 +9,6 @@
 #include "utils/types/tuple.h"
 
 
-// implementations of this interface should essentially be `std::vector`s
-// (hence we also try to match `std::vector`'s method names as much as possible here)
 template <IsDbTuple DbTuple = Tuple<>>
 class IDb {
 protected:
