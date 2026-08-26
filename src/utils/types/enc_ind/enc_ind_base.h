@@ -126,9 +126,16 @@ protected:
     virtual bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const = 0;
 
     void readEncoded(uchar* buf) const;
+
+    /**
+     * returns:
+     *     - `true` if the entry at `pos` is valid.
+     *     - `false` if the entry at `pos` is the null entry.
+     */
+    bool readEncIndEntry(ubigint pos, EncIndEntry& ret) const;
+
     void writeEncoded(ubigint pos, const uchar* encodedEntry);
 
     // (mostly for debugging)
-    EncIndEntry getEncIndEntry(ubigint pos) const;
     void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
 };

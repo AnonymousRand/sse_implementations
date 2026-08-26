@@ -155,6 +155,26 @@ void EncIndBase::readEncoded(uchar* buf) const {
 }
 
 
+bool EncIndBase::readEncIndEntry(ubigint pos, EncIndEntry& ret) const {
+    pos %= this->capacity;
+
+    uchar entry[ENTRY_LEN];
+    this->benchmark->startProfile("fseek");
+    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    this->benchmark->stopProfile("fseek");
+    this->readEncoded(entry);
+    if (std::memcmp(entry, NULL_ENTRY, ENTRY_LEN) == 0) {
+        // if `pos` contains `NULL_ENTRY`
+        return false;
+    }
+
+    ustring key(&entry[0], KEY_LEN);
+    ustring data(&entry[KEY_LEN], DATA_LEN);
+    ustring iv(&entry[KEY_LEN + DATA_LEN], utils::crypto::IV_LEN);
+    ret = EncIndEntry {key, EncIndVal {data, iv}};
+};
+
+
 void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry) {
     this->benchmark->startProfile("fseek");
     std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
@@ -171,26 +191,11 @@ void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry) {
 }
 
 
-EncIndEntry EncIndBase::getEncIndEntry(ubigint pos) const {
-    pos %= this->capacity;
-
-    uchar entry[ENTRY_LEN];
-    this->benchmark->startProfile("fseek");
-    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
-    this->benchmark->stopProfile("fseek");
-    this->readEncoded(entry);
-
-    ustring key(&entry[0], KEY_LEN);
-    ustring data(&entry[KEY_LEN], DATA_LEN);
-    ustring iv(&entry[KEY_LEN + DATA_LEN], utils::crypto::IV_LEN);
-    return EncIndEntry {key, EncIndVal {data, iv}};
-};
-
-
 void EncIndBase::print() const {
     for (bigint pos = 0; pos < this->capacity; pos++) {
-        EncIndEntry entry = this->getEncIndEntry(pos);
-        std::cerr << pos << ": " << utils::debugging::ustrToHex(utils::enc_ind::toUstr(entry))
+        EncIndEntry encIndEntry;
+        this->readEncIndEntry(pos, encIndEntry);
+        std::cerr << pos << ": " << utils::debugging::ustrToHex(utils::enc_ind::toUstr(encIndEntry))
                   << std::endl << std::endl;
     }
 }
