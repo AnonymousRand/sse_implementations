@@ -63,7 +63,7 @@ public:
     void clear() override;
 
     /**
-     * reads and decodes the value at `pos` (without checking the "key`).
+     * read and decode the value at `pos` (without checking the "key`).
      *
      * returns:
      *     - `true` if the entry at `pos` is valid.
@@ -72,7 +72,7 @@ public:
     bool read(ubigint pos, EncIndVal& ret) const;
 
     /**
-     * tries to find `key` starting at `pos`, iterating forward from `pos` if the key
+     * try to find `key` starting at `pos`, iterating forward from `pos` if the key
      * at `pos` does not match `key` (e.g. if another entry overflowed there first).
      *
      * returns in `pos`: the location at which `key` was found (in case you may need it for e.g.
@@ -128,6 +128,8 @@ protected:
     void readEncoded(uchar* buf) const;
 
     /**
+     * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
+     *
      * returns:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
