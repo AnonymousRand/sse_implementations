@@ -72,12 +72,6 @@ public:
     bool read(ubigint pos, EncIndVal& ret) const;
 
     /**
-     * write to `pos` (but does not check if there is already something there, e.g. from
-     * `pos % this->capacity`, and will overwrite it!).
-     */
-    void write(ubigint pos, const EncIndEntry& encIndEntry);
-
-    /**
      * tries to find `key` starting at `pos`, iterating forward from `pos` if the key
      * at `pos` does not match `key` (e.g. if another entry overflowed there first).
      *
@@ -89,6 +83,12 @@ public:
      *     - `false` if the entry corresponding to `key` was not found in the entire index.
      */
     bool find(ubigint& pos, const ustring& key, EncIndVal& ret) const;
+
+    /**
+     * write to `pos` (but does not check if there is already something there, e.g. from
+     * `pos % this->capacity`, and will overwrite it!).
+     */
+    void write(ubigint pos, const EncIndEntry& encIndEntry);
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos` until

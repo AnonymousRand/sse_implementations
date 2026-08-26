@@ -91,6 +91,17 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret) const {
 }
 
 
+bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
+    bool isFound = this->advanceUntilMatch(pos, key.c_str(), KEY_LEN);
+    if (!isFound) {
+        return false;
+    }
+
+    // read and decode the kv pair at the matched location we found
+    return this->read(pos, ret);
+}
+
+
 void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     pos %= this->capacity;
 
@@ -119,17 +130,6 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     }
     this->benchmark->stopProfile("fwrite");
     this->isFlushed = false;
-}
-
-
-bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
-    bool isFound = this->advanceUntilMatch(pos, key.c_str(), KEY_LEN);
-    if (!isFound) {
-        return false;
-    }
-
-    // read and decode the kv pair at the matched location we found
-    return this->read(pos, ret);
 }
 
 
