@@ -61,7 +61,7 @@ protected:
     ustring encKey;
 
     //--------------------------------------------------------------------------
-    // interface
+    // helpers
 
     virtual std::vector<DbTuple> searchRaw(const Range<DbKw>& query) const = 0;
     

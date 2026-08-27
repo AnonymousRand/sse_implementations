@@ -45,7 +45,7 @@ public:
 
 private:
     //--------------------------------------------------------------------------
-    // helpers
+    // `EncIndBase`
 
     bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
 

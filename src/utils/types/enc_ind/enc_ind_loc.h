@@ -41,7 +41,7 @@ private:
     bigint bcktCount = 0;
 
     //--------------------------------------------------------------------------
-    // helpers
+    // `EncIndBase`
 
     bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
 };
