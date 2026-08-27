@@ -105,13 +105,16 @@ public:
     bigint getCapacity() const { return this->capacity; }
 
 protected:
-    constexpr std::string FILE_DIR() const override { return "out/server"; }
-    constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
-
     static const uchar NULL_ENTRY[ENTRY_LEN];
 
     bigint capacity = 0;
     std::shared_ptr<Benchmark> benchmark;
+
+    //--------------------------------------------------------------------------
+    // `IDiskStorage`
+
+    constexpr std::string FILE_DIR() const override { return "out/server"; }
+    constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
 
     //--------------------------------------------------------------------------
     // helpers

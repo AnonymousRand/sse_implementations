@@ -77,10 +77,13 @@ public:
     ) override;
 
 private:
+    inline static const int TUPLE_LEN = EncIndBase::DATA_LEN;
+
+    //--------------------------------------------------------------------------
+    // `IDiskStorage`
+
     constexpr std::string FILE_DIR() const override { return "out/client"; }
     constexpr std::string FILENAME_PREFIX() const override { return "db_"; }
-
-    inline static const int TUPLE_LEN = EncIndBase::DATA_LEN;
 
     //--------------------------------------------------------------------------
     // helpers
