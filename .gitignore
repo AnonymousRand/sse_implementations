@@ -1,6 +1,5 @@
-g generated program files
+# generated program files
 out/*
-*.out
 
 # build
 build_*
