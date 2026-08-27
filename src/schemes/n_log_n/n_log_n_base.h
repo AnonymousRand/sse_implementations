@@ -44,7 +44,7 @@ protected:
     //--------------------------------------------------------------------------
     // helpers
 
-    // `setup()` helpers for code resuability
+    // `setup()` helpers for code reusability
     virtual void initSetupState();
     virtual void setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange);
     virtual void moveSetupStateToServer();
