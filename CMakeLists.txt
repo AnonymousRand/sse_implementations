@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(SSEImplementations LANGUAGES CXX)
-#set(CMAKE_CXX_COMPILER /usr/bin/g++-15) # change if needed! C++20 required
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(CMAKE_CXX_COMPILER /usr/bin/g++-15) # change if needed! C++20 required
 
 find_package(OpenSSL REQUIRED CONFIG)
 
