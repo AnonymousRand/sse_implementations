@@ -38,6 +38,9 @@ public:
     void clear() override;
 
 private:
+    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>(this->benchmark);
+    UnderlyServer<DbTuple>* getServer() const override { return this->server; }
+
     bigint leafCount;
 
     //--------------------------------------------------------------------------
@@ -51,10 +54,6 @@ private:
     bigint calcLvlCount() const override;
     bigint calcBcktCountOnLvl(bigint lvl) const override;
     bigint calcBcktSizeOnLvl(bigint lvl) const override;
-
-private:
-    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>(this->benchmark);
-    UnderlyServer<DbTuple>* getServer() const override { return this->server; }
 };
 
 

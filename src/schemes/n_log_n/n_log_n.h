@@ -28,7 +28,10 @@ public:
 
     void clear() override;
 
-protected:
+private:
+    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
+    NLogNServer<DbTuple>* getServer() const override { return this->server; }
+
     EncIndRand* dbKwCountsDictTmp = nullptr;
 
     //--------------------------------------------------------------------------
@@ -46,8 +49,4 @@ protected:
     bigint calcLvlCount() const override;
     bigint calcBcktCountOnLvl(bigint lvl) const override;
     bigint calcBcktSizeOnLvl(bigint lvl) const override;
-
-private:
-    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
-    NLogNServer<DbTuple>* getServer() const override { return this->server; }
 };
