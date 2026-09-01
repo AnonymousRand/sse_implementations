@@ -170,7 +170,7 @@ std::list<const TdagNode<T>*> TdagNode<T>::traverseHelper(
     std::list<const TdagNode<T>*> nodes;
     nodes.push_front(this);
 
-    // `list` returned so this splicing is fast
+    // we return `list`s as opposed to `vector`s so that this merging is much faster
     if (this->left != nullptr) {
         nodes.splice(nodes.end(), this->left->traverseHelper(extraParents));
     }
