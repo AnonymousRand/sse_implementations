@@ -1,12 +1,12 @@
 # SSE Implementations
 
-Implementations of the following [searchable symmetric encryption](https://en.wikipedia.org/wiki/Searchable_symmetric_encryption) (SSE) schemes:
-- PiBas ([Cash et al., NDSS'14](https://eprint.iacr.org/2014/853.pdf)) (specifically the result-hiding variant used in [Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf) figure 12, similar to PiBasRo)
-- NLogN ([Asharov et al., STOC'16](https://eprint.iacr.org/2016/251.pdf), approach #3 "Improving the Cash–Tessaro Scheme")
-- Logarithmic-SRC ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
-- Logarithmic-SRC-i ([Demertzis et al., SIGMOD'16](https://idemertzis.com/Papers/sigmod16.pdf))
-- Logarithmic-SRC-i\* ([Demertzis et al., TODS'18](https://dl.acm.org/doi/pdf/10.1145/3167971))
-- SDa ([Demertzis et al., NDSS'20](https://www.ndss-symposium.org/wp-content/uploads/2020/02/24423-paper.pdf))
+Implementations of the following [searchable symmetric encryption](https://wikipedia.org/wiki/Searchable_symmetric_encryption) (SSE) schemes:
+- π<sub>bas</sub> or "PiBas" ([Cash et al., NDSS'14](https://doi.org/10.14722/ndss.2014.23264) (specifically the result-hiding variant used in [Demertzis et al., NDSS'20](https://doi.org/10.14722/ndss.2020.24423) figure 12, similar to π<sub>bas</sub><sup>ro</sup> or "PiBasRo")
+- NLogN ([Asharov et al., STOC'16](https://doi.org/10.1145/2897518.2897562), approach #3 "Improving the Cash–Tessaro Scheme")
+- Logarithmic-SRC ([Demertzis et al., SIGMOD'16](https://doi.org/10.1145/2882903.2882911))
+- Logarithmic-SRC-i ([Demertzis et al., SIGMOD'16](https://doi.org/10.1145/2882903.2882911))
+- Logarithmic-SRC-i\* ([Demertzis et al., TODS'18](https://doi.org/10.1145/3167971))
+- SD<sub>a</sub> ([Demertzis et al., NDSS'20](https://doi.org/10.14722/ndss.2020.24423))
 
 Since many of these can be instantiated with various underlying schemes, the following instantiations are possible (not all of these are secure, though!):
 - PiBas
@@ -16,13 +16,13 @@ Since many of these can be instantiated with various underlying schemes, the fol
 - Logarithmic-SRC-i[PiBas]
 - Logarithmic-SRC-i[NLogN]
 - Logarithmic-SRC-i\*
-- SDa[PiBas]
-- SDa[NLogN]
-- SDa[Logarithmic-SRC[PiBas]]
-- SDa[Logarithmic-SRC[NLogN]]
-- SDa[Logarithmic-SRC-i[PiBas]]
-- SDa[Logarithmic-SRC-i[NLogN]]
-- SDa[Logarithmic-SRC-i\*]
+- SD<sub>a</sub>[PiBas]
+- SD<sub>a</sub>[NLogN]
+- SD<sub>a</sub>[Logarithmic-SRC[PiBas]]
+- SD<sub>a</sub>[Logarithmic-SRC[NLogN]]
+- SD<sub>a</sub>[Logarithmic-SRC-i[PiBas]]
+- SD<sub>a</sub>[Logarithmic-SRC-i[NLogN]]
+- SD<sub>a</sub>[Logarithmic-SRC-i\*]
 
 See [src/main.cpp](src/main.cpp), [src/app/sse_factory.cpp](src/app/sse_factory.cpp), and [src/app/experiments/](src/app/experiments/) for usage examples :3
 
