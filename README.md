@@ -1,7 +1,7 @@
 # SSE Implementations
 
 Implementations of the following [searchable symmetric encryption](https://wikipedia.org/wiki/Searchable_symmetric_encryption) (SSE) schemes:
-- π<sub>bas</sub> or "PiBas" ([Cash et al., NDSS'14](https://doi.org/10.14722/ndss.2014.23264) (specifically the result-hiding variant used in [Demertzis et al., NDSS'20](https://doi.org/10.14722/ndss.2020.24423) figure 12, similar to π<sub>bas</sub><sup>ro</sup> or "PiBasRo")
+- π<sub>bas</sub> or "PiBas" ([Cash et al., NDSS'14](https://doi.org/10.14722/ndss.2014.23264) (specifically the result-hiding variant used in [Demertzis et al., NDSS'20](https://doi.org/10.14722/ndss.2020.24423) Figure 12, similar to π<sub>bas</sub><sup>ro</sup> or "PiBasRo")
 - NLogN ([Asharov et al., STOC'16](https://doi.org/10.1145/2897518.2897562), approach #3 "Improving the Cash–Tessaro Scheme")
 - Logarithmic-SRC ([Demertzis et al., SIGMOD'16](https://doi.org/10.1145/2882903.2882911))
 - Logarithmic-SRC-i ([Demertzis et al., SIGMOD'16](https://doi.org/10.1145/2882903.2882911))
