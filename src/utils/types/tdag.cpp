@@ -47,8 +47,8 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
     }
 
     // array to hold nodes while building; initialize with leaves
-    // (`deque` seems to perform marginally better than `list` or `vector` and seems to be
-    // the most natural choice here)
+    // (`deque` seems to perform marginally better than `list` or `vector`, and it
+    // seems to be the most natural choice here)
     std::deque<TdagNode<T>*> l;
     for (const Range<T>& leaf : leafs) {
         l.push_back(new TdagNode<T>(leaf));
