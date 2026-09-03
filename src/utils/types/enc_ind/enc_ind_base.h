@@ -25,10 +25,10 @@ public:
     // exactly n block length plaintext with AES should produce the exact same block ciphertext,
     // so all but 3 bytes are divided up between `id`, `kw`, and 2 `dbKw`s. however, we actually
     // must restrict our plaintexts by one more byte or else AES' PCKS #7 padding will generate
-    // an extra block if our plaintext is exactly an integer number of blocks long, thus the `+8`.
+    // an extra block if our plaintext is exactly an integer number of blocks long, thus the `+4`.
     // we also round up to the next AES block. and also, `SrcIDb1Tuple`s have the same max length.)
     inline static const int     DATA_LEN  =
-        std::ceil((4 * config::MAX_VALUE_DIGITS + 3) / (float)utils::crypto::BLOCK_SIZE)
+        std::ceil((4 * config::MAX_VALUE_DIGITS + 4) / (float)utils::crypto::BLOCK_SIZE)
         * utils::crypto::BLOCK_SIZE;
     inline static constexpr int VAL_LEN   = DATA_LEN + utils::crypto::IV_LEN;
     inline static constexpr int ENTRY_LEN = KEY_LEN + VAL_LEN;
