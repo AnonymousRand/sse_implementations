@@ -104,7 +104,7 @@ Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
     std::smatch matches;
     if (!std::regex_search(str, matches, REGEX) || matches.size() != 5) {
         std::cerr << "Error: Tuple::fromStr(): bad string \"" << str << "\" passed" << std::endl
-                  << "Regex to match is \"" << REGEX_STR << "\"; " << "matched groups are:"
+                  << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                   << std::endl;
         for (auto match : matches) {
             std::cerr << match.str() << std::endl;
