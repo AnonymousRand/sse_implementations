@@ -130,7 +130,7 @@ public:
                       << std::format("| {:<{}} ", "Communication (B)", PRINT_COL_WIDTH)
                       // (trailing spaces to match bottom border, which should extend until
                       // the right border of the first profile output in the table body)
-                      << std::format("| {:<{}}  ", "Profiling (ms)", PRINT_COL_WIDTH)
+                      << std::format("| {:<{}}  ", "Profiling (ms) ...", PRINT_COL_WIDTH)
                       << std::endl;
             std::cout << std::format("--{:-<{}}-", "", PRINT_LABEL_WIDTH)
                       << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
