@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "utils/debug.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/range.h"
 #include "utils/types/ustring.h"
@@ -102,15 +103,18 @@ std::string Tuple<DbKw>::toPrintableStr() const {
 template <class DbKw>
 Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
     std::smatch matches;
-    if (!std::regex_search(str, matches, REGEX) || matches.size() != 5) {
-        std::cerr << "Error: Tuple::fromStr(): bad string \"" << str << "\" passed" << std::endl
-                  << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
-                  << std::endl;
-        for (auto match : matches) {
-            std::cerr << match.str() << std::endl;
+    bool isMatchFound = std::regex_search(str, matches, REGEX);
+    DEBUG_ONLY({
+        if (!isMatchFound || matches.size() != 5) {
+            std::cerr << "Error: Tuple::fromStr(): bad string \"" << str << "\" passed" << std::endl
+                      << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
+                      << std::endl;
+            for (auto match : matches) {
+                std::cerr << match.str() << std::endl;
+            }
+            std::exit(EXIT_FAILURE);
         }
-        std::exit(EXIT_FAILURE);
-    }
+    });
 
     Id id = std::stoll(matches[1].str());
     Kw kw = std::stoll(matches[2].str());
@@ -193,16 +197,19 @@ std::string SrcIDb1Tuple::toPrintableStr() const {
 
 SrcIDb1Tuple SrcIDb1Tuple::fromStr(const std::string& str) {
     std::smatch matches;
-    if (!std::regex_search(str, matches, REGEX) || matches.size() != 4) {
-        std::cerr << "Error: SrcIDb1Tuple::fromStr(): bad string \"" << str << "\" passed"
-                  << std::endl
-                  << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
-                  << std::endl;
-        for (auto match : matches) {
-            std::cerr << match.str() << std::endl;
+    bool isMatchFound = std::regex_search(str, matches, REGEX);
+    DEBUG_ONLY({
+        if (!isMatchFound || matches.size() != 4) {
+            std::cerr << "Error: SrcIDb1Tuple::fromStr(): bad string \"" << str << "\" passed"
+                      << std::endl
+                      << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
+                      << std::endl;
+            for (auto match : matches) {
+                std::cerr << match.str() << std::endl;
+            }
+            std::exit(EXIT_FAILURE);
         }
-        std::exit(EXIT_FAILURE);
-    }
+    });
 
     Kw kw = std::stol(matches[1].str());
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());

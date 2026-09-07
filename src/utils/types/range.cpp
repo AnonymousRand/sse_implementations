@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "utils/debug.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/ustring.h"
 
@@ -64,14 +65,18 @@ ustring Range<T>::toUstr() const {
 template <std::integral T>
 Range<T> Range<T>::fromStr(const std::string& str) {
     std::smatch matches;
-    if (!std::regex_search(str, matches, REGEX) || matches.size() != 3) {
-        std::cerr << "Error: Range::fromStr(): bad string \"" << str << "\" passed" << std::endl
-                  << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:" << std::endl;
-        for (auto match : matches) {
-            std::cerr << match.str() << std::endl;
+    bool isMatchFound = std::regex_search(str, matches, REGEX);
+    DEBUG_ONLY({
+        if (!isMatchFound || matches.size() != 3) {
+            std::cerr << "Error: Range::fromStr(): bad string \"" << str << "\" passed" << std::endl
+                      << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
+                      << std::endl;
+            for (auto match : matches) {
+                std::cerr << match.str() << std::endl;
+            }
+            std::exit(EXIT_FAILURE);
         }
-        std::exit(EXIT_FAILURE);
-    }
+    });
 
     return Range<T> {
         T(std::stoll(matches[1].str())),
