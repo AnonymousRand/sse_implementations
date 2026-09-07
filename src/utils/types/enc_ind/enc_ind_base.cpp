@@ -200,6 +200,7 @@ void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry) {
     this->benchmark->stopProfile("fseek");
     this->benchmark->startProfile("fwrite");
     int itemsWritten = std::fwrite(encodedEntry, ENTRY_LEN, 1, this->file);
+    this->benchmark->stopProfile("fwrite");
     DEBUG_ONLY({
         if (itemsWritten != 1) {
             std::cerr << "Error: EncIndBase::writeEncoded(): error writing to file "
@@ -207,6 +208,5 @@ void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry) {
             std::exit(EXIT_FAILURE);
         }
     });
-    this->benchmark->stopProfile("fwrite");
     this->isFlushed = false;
 }

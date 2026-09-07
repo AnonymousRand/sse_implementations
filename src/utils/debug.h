@@ -14,6 +14,7 @@
  * when no exception is thrown.)
  */
 #ifndef NDEBUG
+    // (the do-while is standard practice to make this not break control logic like `if` statements)
     #define DEBUG_ONLY(code) do {} while (false)
 #else
     #define DEBUG_ONLY(code) do { code } while (false)
