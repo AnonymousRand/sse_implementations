@@ -8,7 +8,7 @@
 #include <string>
 
 #include "utils/benchmark.h"
-#include "utils/debugging.h"
+#include "utils/debug.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/i_disk_storage.h"
 #include "utils/types/ustring.h"
@@ -145,7 +145,7 @@ void EncIndBase::print() const {
     for (bigint pos = 0; pos < this->capacity; pos++) {
         EncIndEntry encIndEntry;
         this->readEntry(pos, encIndEntry);
-        std::cerr << pos << ": " << utils::debugging::ustrToHex(utils::enc_ind::toUstr(encIndEntry))
+        std::cerr << pos << ": " << utils::debug::ustrToHex(utils::enc_ind::toUstr(encIndEntry))
                   << std::endl << std::endl;
     }
 }

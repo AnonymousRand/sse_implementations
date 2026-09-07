@@ -9,7 +9,7 @@
 #include "config.h"
 
 #include "utils/benchmark.h"
-#include "utils/debugging.h"
+#include "utils/debug.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/ustring.h"

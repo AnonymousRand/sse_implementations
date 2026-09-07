@@ -8,7 +8,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "utils/debugging.h"
+#include "utils/debug.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/range.h"

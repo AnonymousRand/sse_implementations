@@ -17,7 +17,7 @@
 #endif
 
 
-namespace utils::debugging {
+namespace utils::debug {
 
 
 std::string ustrToHex(const ustring& str);
@@ -25,4 +25,4 @@ std::string ustrToHex(const ustring& str, int len);
 std::string ustrToHex(const uchar* str, int len);
 
 
-} // namespace `utils::debugging`
+} // namespace `utils::debug`

@@ -30,7 +30,7 @@ add_executable(main
     src/schemes/sda/sda.cpp
 
     src/utils/crypto.cpp
-    src/utils/debugging.cpp
+    src/utils/debug.cpp
     src/utils/misc.cpp
 
     src/utils/types/db/db_disk.cpp

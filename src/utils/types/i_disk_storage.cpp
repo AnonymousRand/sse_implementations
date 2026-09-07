@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "utils/debugging.h"
+#include "utils/debug.h"
 #include "utils/random.h"
 #include "utils/types/basic_types.h"
 

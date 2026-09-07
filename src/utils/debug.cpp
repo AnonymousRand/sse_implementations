@@ -1,4 +1,4 @@
-#include "utils/debugging.h"
+#include "utils/debug.h"
 
 #include <format>
 #include <string>
@@ -6,7 +6,7 @@
 #include "utils/types/ustring.h"
 
 
-namespace utils::debugging {
+namespace utils::debug {
 
 
 std::string ustrToHex(const ustring& str) {
@@ -29,4 +29,4 @@ std::string ustrToHex(const uchar* str, int len) {
 }
 
 
-} // namespace `utils::debugging`
+} // namespace `utils::debug`

@@ -12,7 +12,7 @@
 #include "schemes/pi_bas/pi_bas_server.h"
 
 #include "utils/crypto.h"
-#include "utils/debugging.h"
+#include "utils/debug.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
