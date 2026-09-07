@@ -112,7 +112,7 @@ public:
 
         // reset profiles (but do not clear `this->profiles`, for speed and since it makes sense)
         for (auto& profilePair : this->profiles) {
-            // bypass slower `resetProfile()` method here
+            // (bypass the slower `resetProfile()` method here)
             profilePair.second.reset();
         }
     }
@@ -149,15 +149,15 @@ public:
                 Profile profile = profilePair.second;
                 // (you are advised to keep profile names short because of this :3)
                 profileOutputs += std::format(
-                    "| {0:<{1}.{1}} ", std::format(
-                        "{}: {}", profileName, profile.time
-                    ), PRINT_COL_WIDTH
+                    "| {0:<{1}.{1}} ",
+                    std::format("{}: {}", profileName, profile.time), PRINT_COL_WIDTH
                 );
             }
 
 
             std::cout << std::format("| {:<{}} ", label, PRINT_LABEL_WIDTH)
-                      // explicitly cast doubles to string so that `.` controls exact string length
+                      // explicitly cast doubles to string so that `.` controls exact string length,
+                      // instead of sigfigs for doubles (where e.g. .01 & .10 are different lengths)
                       << std::format("| {0:<{1}.{1}} ", std::to_string(this->time), PRINT_COL_WIDTH)
                       << std::format("| {:<{}} ", this->serverStorage, PRINT_COL_WIDTH)
                       << std::format("| {:<{}} ", this->communication, PRINT_COL_WIDTH)
