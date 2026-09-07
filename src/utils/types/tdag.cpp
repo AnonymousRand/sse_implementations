@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "utils/debugging.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/range.h"
@@ -86,10 +87,12 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
         if (joinNodes(node1, l.begin())) {
             continue;
         } 
-        if (!joinNodes(node1, l.end() - 1)) {
-            std::cerr << "Error: TdagNode::TdagNode(): im sorry what" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
+        DEBUG_ONLY({
+            if (!joinNodes(node1, l.end() - 1)) {
+                std::cerr << "Error: TdagNode::TdagNode(): im sorry what" << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        });
     }
 
     // add extra TDAG nodes

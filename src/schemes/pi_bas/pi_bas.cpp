@@ -12,6 +12,7 @@
 #include "schemes/pi_bas/pi_bas_server.h"
 
 #include "utils/crypto.h"
+#include "utils/debugging.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
@@ -67,11 +68,13 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
     for (const Range<DbKw>& dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
-        if (iter == ind.end()) {
-            std::cerr << "Error: PiBas::setup(): DB kw range " << dbKwRange
-                      << " not found in index" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
+        DEBUG_ONLY({
+            if (iter == ind.end()) {
+                std::cerr << "Error: PiBas::setup(): DB kw range " << dbKwRange
+                          << " not found in index" << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        });
 
         // PRF(K_1, w)
         ustring queryToken = this->genQueryToken(dbKwRange);

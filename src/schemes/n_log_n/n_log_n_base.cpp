@@ -10,6 +10,7 @@
 #include "schemes/n_log_n/n_log_n_base_server.h"
 
 #include "utils/crypto.h"
+#include "utils/debugging.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
@@ -57,11 +58,13 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     std::unordered_set<Range<DbKw>> uniqDbKwRanges = db.getUniqDbKwRanges();
     for (const Range<DbKw>& dbKwRange : uniqDbKwRanges) {
         auto iter = ind.find(dbKwRange);
-        if (iter == ind.end()) {
-            std::cerr << "Error: NLogNBase::setup(): DB kw range " << dbKwRange
-                      << " not found in index" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
+        DEBUG_ONLY({
+            if (iter == ind.end()) {
+                std::cerr << "Error: NLogNBase::setup(): DB kw range " << dbKwRange
+                          << " not found in index" << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        });
 
         this->setupDbKwList(std::move(iter->second), dbKwRange);
     }

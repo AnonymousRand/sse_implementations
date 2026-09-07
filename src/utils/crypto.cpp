@@ -7,6 +7,7 @@
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 
+#include "utils/debugging.h"
 #include "utils/misc.h"
 #include "utils/types/ustring.h"
 
@@ -142,11 +143,13 @@ ustring encrypt(
 ustring padAndEncrypt(
     const ustring& key, ustring ptext, const ustring& iv, int targetLen, const EVP_CIPHER* cipher
 ) {
-    if (ptext.length() > targetLen) {
-        std::cerr << "Error: padAndEncrypt(): plaintext of length " << ptext.length()
-                  << " bytes is too long! " << "(want " << targetLen << " bytes)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    DEBUG_ONLY({
+        if (ptext.length() > targetLen) {
+            std::cerr << "Error: padAndEncrypt(): plaintext of length " << ptext.length()
+                      << " bytes is too long! " << "(want " << targetLen << " bytes)" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
     utils::misc::padStr(ptext, targetLen);
     return encrypt(key, ptext, iv, cipher);
 }

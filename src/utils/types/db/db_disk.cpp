@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "utils/debugging.h"
 #include "utils/misc.h"
 #include "utils/random.h"
 #include "utils/types/basic_types.h"
@@ -88,21 +89,25 @@ void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
 
     // make sure every encoded tuple is stored into the same fixed-length size for easy lookups,
     // padding with '\0' bytes if necessary
-    if (dbTupleStr.length() > TUPLE_LEN) {
-        std::cerr << "Error: DbDisk::append(): write of length " << dbTupleStr.length()
-                  << " bytes is not allowed! (want " << TUPLE_LEN << " bytes)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    DEBUG_ONLY({
+        if (dbTupleStr.length() > TUPLE_LEN) {
+            std::cerr << "Error: DbDisk::append(): write of length " << dbTupleStr.length()
+                      << " bytes is not allowed! (want " << TUPLE_LEN << " bytes)" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
     utils::misc::padStr(dbTupleStr, TUPLE_LEN);
 
     // write to DB
     std::fseek(this->file, 0, SEEK_END);
     int itemsWritten = std::fwrite(dbTupleStr.c_str(), TUPLE_LEN, 1, this->file);
-    if (itemsWritten != 1) {
-        std::cerr << "Error: DbDisk::append(): error writing to file " << this->filename
-                  << " (nothing written)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    DEBUG_ONLY({
+        if (itemsWritten != 1) {
+            std::cerr << "Error: DbDisk::append(): error writing to file " << this->filename
+                      << " (nothing written)" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
     this->isFlushed = false;
 
     // update member variables as needed
@@ -112,11 +117,13 @@ void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
 
 template <IsDbTuple DbTuple>
 DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
-    if (index >= this->size) {
-        std::cerr << "Error: DbDisk::operator []: index out of bounds "
-                  << "(index is " << index << ", size is " << this->size << ")" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    DEBUG_ONLY({
+        if (index >= this->size) {
+            std::cerr << "Error: DbDisk::operator []: index out of bounds "
+                      << "(index is " << index << ", size is " << this->size << ")" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
 
     // make sure to flush if more writes have been done since the last manual flush
     this->flushIfNotFlushed();
@@ -125,11 +132,13 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     char dbTupleCstr[TUPLE_LEN];
     std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
     int itemsRead = std::fread(dbTupleCstr, TUPLE_LEN, 1, this->file);
-    if (itemsRead != 1) {
-        std::cerr << "Error: DbDisk::operator []: error reading from file " << this->filename
-                  << " (nothing read)" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    DEBUG_ONLY({
+        if (itemsRead != 1) {
+            std::cerr << "Error: DbDisk::operator []: error reading from file " << this->filename
+                      << " (nothing read)" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
     std::string dbTupleStr(dbTupleCstr, TUPLE_LEN);
 
     // unpad as necessary so that decoding works properly

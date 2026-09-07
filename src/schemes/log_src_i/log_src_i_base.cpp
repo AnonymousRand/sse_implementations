@@ -13,6 +13,7 @@
 #include "schemes/n_log_n/n_log_n.h"
 #include "schemes/pi_bas/pi_bas.h"
 
+#include "utils/debugging.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/ind.h"
@@ -138,11 +139,13 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
         for (IdAlias idAlias = idAliasRange.first; idAlias <= idAliasRange.second; idAlias++) {
             Range<IdAlias> idAliasRange {idAlias, idAlias};
             auto iter = ind2.find(idAliasRange);
-            if (iter == ind2.end()) {
-                std::cerr << "Error: LogSrcIBase::getDb(): id alias range " << idAliasRange
-                          << " not found in index 2" << std::endl;
-                std::exit(EXIT_FAILURE);
-            }
+            DEBUG_ONLY({
+                if (iter == ind2.end()) {
+                    std::cerr << "Error: LogSrcIBase::getDb(): id alias range " << idAliasRange
+                              << " not found in index 2" << std::endl;
+                    std::exit(EXIT_FAILURE);
+                }
+            });
 
             Db<Tuple<IdAlias>> dbKwList = std::move(iter->second);
             for (const Tuple<IdAlias>& db2Tuple : dbKwList) {

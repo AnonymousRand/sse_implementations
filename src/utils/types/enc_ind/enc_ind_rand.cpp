@@ -9,6 +9,7 @@
 #include "config.h"
 
 #include "utils/benchmark.h"
+#include "utils/debugging.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/ustring.h"
@@ -86,13 +87,15 @@ bigint EncIndRand::readIntoReadBuf(
     this->benchmark->startProfile("fread");
     bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
     this->benchmark->stopProfile("fread");
-    if (itemsRead < entriesToReadUntilEof) {
-        std::cerr << "Error: EncIndRand::readIntoReadBuf(): error reading (part 1) "
-                  << "from file " << this->filename
-                  << " (only read " << itemsRead << " out of " << entriesToReadUntilEof << ")"
-                  << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    DEBUG_ONLY({
+        if (itemsRead < entriesToReadUntilEof) {
+            std::cerr << "Error: EncIndRand::readIntoReadBuf(): error reading (part 1) "
+                      << "from file " << this->filename
+                      << " (only read " << itemsRead << " out of " << entriesToReadUntilEof << ")"
+                      << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
 
     // wrap around to beginning of file if we read less than the target number of entries
     if (entriesToReadUntilEof < entriesToRead) {
@@ -106,13 +109,15 @@ bigint EncIndRand::readIntoReadBuf(
             this->file
         );
         this->benchmark->stopProfile("fread");
-        if (itemsRead < entriesToRead) {
-            std::cerr << "Error: EncIndRand::writeToFirstEmpty(): error reading (part 2) "
-                      << "from file " << this->filename
-                      << " (only read " << itemsRead << " out of " << entriesToRead << ")"
-                      << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
+        DEBUG_ONLY({
+            if (itemsRead < entriesToRead) {
+                std::cerr << "Error: EncIndRand::writeToFirstEmpty(): error reading (part 2) "
+                          << "from file " << this->filename
+                          << " (only read " << itemsRead << " out of " << entriesToRead << ")"
+                          << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        });
     }
     
     return itemsRead;
