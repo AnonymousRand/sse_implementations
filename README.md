@@ -74,7 +74,7 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 
 # Notes
 
-- This is NOT intended for actual, real-world use! It's more a proof of concept or a simulation for doing experimental evaluation.
+- This is **not** intended for actual, real-world use! It's more a proof of concept or a simulation for doing experimental evaluation.
 - The client-server distinction is fairly minimal and is only meant for benchmarking things like network communication. This implementation does not actually run across two separate hosts or have a well-defined client/server program.
     - The "client" classes for each scheme also function as the "controller", exposing the SSE API and implementing the client-side logic. These classes in turn may own "server" classes, which mostly serve to just store and perform basic retrieval operations on encrypted indexes.
     - At the moment, only the "most underlying" schemes like static point SSEs—PiBas and NLogN—have a server class; other schemes just keep one or more instances of these underlying schemes (specifically, of the underlying schemes' client classes, which hence also includes the servers).
