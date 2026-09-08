@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "config.h"
+
 #include "utils/debug.h"
 #include "utils/misc.h"
 #include "utils/random.h"
@@ -90,17 +92,18 @@ void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
     // make sure every encoded tuple is stored into the same fixed-length size for easy lookups,
     // padding with '\0' bytes if necessary
     DEBUG_ONLY({
-        if (dbTupleStr.length() > TUPLE_LEN) {
+        if (dbTupleStr.length() > config::TUPLE_ENCOD_LEN) {
             std::cerr << "Error: DbDisk::append(): write of length " << dbTupleStr.length()
-                      << " bytes is not allowed! (want " << TUPLE_LEN << " bytes)" << std::endl;
+                      << " bytes is not allowed! (want " << config::TUPLE_ENCOD_LEN << " bytes)"
+                      << std::endl;
             std::exit(EXIT_FAILURE);
         }
     });
-    utils::misc::padStr(dbTupleStr, TUPLE_LEN);
+    utils::misc::padStr(dbTupleStr, config::TUPLE_ENCOD_LEN);
 
     // write to DB
     std::fseek(this->file, 0, SEEK_END);
-    int itemsWritten = std::fwrite(dbTupleStr.c_str(), TUPLE_LEN, 1, this->file);
+    int itemsWritten = std::fwrite(dbTupleStr.c_str(), config::TUPLE_ENCOD_LEN, 1, this->file);
     DEBUG_ONLY({
         if (itemsWritten != 1) {
             std::cerr << "Error: DbDisk::append(): error writing to file " << this->filename
@@ -129,9 +132,9 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     this->flushIfNotFlushed();
 
     // read from DB
-    char dbTupleCstr[TUPLE_LEN];
-    std::fseek(this->file, index * TUPLE_LEN, SEEK_SET);
-    int itemsRead = std::fread(dbTupleCstr, TUPLE_LEN, 1, this->file);
+    char dbTupleCstr[config::TUPLE_ENCOD_LEN];
+    std::fseek(this->file, index * config::TUPLE_ENCOD_LEN, SEEK_SET);
+    int itemsRead = std::fread(dbTupleCstr, config::TUPLE_ENCOD_LEN, 1, this->file);
     DEBUG_ONLY({
         if (itemsRead != 1) {
             std::cerr << "Error: DbDisk::operator []: error reading from file " << this->filename
@@ -139,7 +142,7 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
             std::exit(EXIT_FAILURE);
         }
     });
-    std::string dbTupleStr(dbTupleCstr, TUPLE_LEN);
+    std::string dbTupleStr(dbTupleCstr, config::TUPLE_ENCOD_LEN);
 
     // unpad as necessary so that decoding works properly
     utils::misc::unpadStr(dbTupleStr);

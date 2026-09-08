@@ -40,9 +40,9 @@ bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen
     // 
     // importantly, we get the massive optimization of only having to check the first entry of every
     // bucket/every `this->bcktSize` entries, as locality guarantees contiguousness of buckets
-    uchar currEntry[ENTRY_LEN];
+    uchar currEntry[this->ENTRY_LEN()];
     this->benchmark->startProfile("fseek");
-    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
     this->benchmark->stopProfile("fseek");
     this->readEncoded(currEntry);
     bigint positionsChecked = 0;
@@ -60,7 +60,7 @@ bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen
         // automatically handles it, so we can save some time)
         if (this->bcktSize > 1 || pos < this->bcktSize) {
             this->benchmark->startProfile("fseek");
-            std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+            std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
             this->benchmark->stopProfile("fseek");
         }
 

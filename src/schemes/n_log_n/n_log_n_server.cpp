@@ -6,7 +6,6 @@
 
 #include "utils/benchmark.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_rand.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/tuple.h"
@@ -45,7 +44,8 @@ void NLogNServer<DbTuple>::setDbKwCountsDict(EncIndRand* dbKwCountsDict) {
 
 template <IsDbTuple DbTuple>
 bool NLogNServer<DbTuple>::getDbKwCount(ubigint pos, const ustring& label, EncIndVal& ret) const {
-    this->benchmark->communication += sizeof(ubigint) + label.length() + EncIndBase::VAL_LEN;
+    this->benchmark->communication +=
+        sizeof(ubigint) + label.length() + this->dbKwCountsDict->VAL_LEN();
     return this->dbKwCountsDict->find(pos, label, ret);
 }
 

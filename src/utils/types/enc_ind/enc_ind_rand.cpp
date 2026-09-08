@@ -26,14 +26,14 @@ bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLe
     // iterate forward one position at a time to search for it
     const ubigint origStartPos = pos;
     const bigint readBufEntryCapacity = std::min(config::ENC_IND_READ_BUF_CAPACITY, this->capacity);
-    uchar readBuf[readBufEntryCapacity * ENTRY_LEN];
+    uchar readBuf[readBufEntryCapacity * this->ENTRY_LEN()];
     bigint readBufEntryCount = this->readIntoReadBuf(
         readBuf, readBufEntryCapacity, pos, origStartPos, true
     );
     bigint readBufIndex = 0;
     bool needsFseek = false;
     bigint positionsChecked = 0;
-    while (std::memcmp(readBuf + (readBufIndex * ENTRY_LEN), match, matchLen) != 0) {
+    while (std::memcmp(readBuf + (readBufIndex * this->ENTRY_LEN()), match, matchLen) != 0) {
         positionsChecked++;
         if (positionsChecked == this->capacity) {
             return false;
@@ -81,11 +81,11 @@ bigint EncIndRand::readIntoReadBuf(
     bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
     this->benchmark->startProfile("fseek");
     if (needsFseek) {
-        std::fseek(this->file, readBufStartPos * ENTRY_LEN, SEEK_SET);
+        std::fseek(this->file, readBufStartPos * this->ENTRY_LEN(), SEEK_SET);
     }
     this->benchmark->stopProfile("fseek");
     this->benchmark->startProfile("fread");
-    bigint itemsRead = std::fread(readBuf, ENTRY_LEN, entriesToReadUntilEof, this->file);
+    bigint itemsRead = std::fread(readBuf, this->ENTRY_LEN(), entriesToReadUntilEof, this->file);
     this->benchmark->stopProfile("fread");
     DEBUG_ONLY({
         if (itemsRead < entriesToReadUntilEof) {
@@ -104,8 +104,8 @@ bigint EncIndRand::readIntoReadBuf(
         this->benchmark->stopProfile("fseek");
         this->benchmark->startProfile("fread");
         itemsRead += std::fread(
-            readBuf + (entriesToReadUntilEof * ENTRY_LEN),
-            ENTRY_LEN, entriesToRead - entriesToReadUntilEof,
+            readBuf + (entriesToReadUntilEof * this->ENTRY_LEN()),
+            this->ENTRY_LEN(), entriesToRead - entriesToReadUntilEof,
             this->file
         );
         this->benchmark->stopProfile("fread");

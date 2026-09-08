@@ -14,19 +14,13 @@
 #include "utils/types/ustring.h"
 
 
-// this initializes `NULL_ENTRY` to a contiguous block of zero bits
-// (technically it is possible that some encrypted tuple happened to be all `0` bytes
-// and thus get mistaken for a null kv pair, but currently `ENTRY_LEN` is in the
-// thousands of bits so there's a 2^{>1000} chance of this happening...and USENIX'24's
-// implementation seems to just do this too)
-const uchar EncIndBase::NULL_ENTRY[ENTRY_LEN] = {};
-
-
 //------------------------------------------------------------------------------
 // constructors/destructors
 
 
-EncIndBase::EncIndBase(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
+EncIndBase::~EncIndBase() {
+    this->clear();
+}
 
 
 //------------------------------------------------------------------------------
@@ -47,12 +41,18 @@ void EncIndBase::init(bigint capacity) {
     // inits DB file and file pointer
     IDiskStorage::init();
 
+    // this initializes `this->NULL_ENTRY` to a contiguous block of zero bits, which we do here
+    // instead of in the constructor since `this->ENTRY_LEN()()` relies on virtual methods
+    // (technically it is possible that an encrypted tuple happens to be all '0' bytes and thus gets
+    // mistaken for a null kv pair, but currently `this->ENTRY_LEN()` is >1000 bits so there's
+    // a 2^{>1000} chance of this happening...and USENIX'24's implementation just does this too)
+    this->NULL_ENTRY = new uchar[this->ENTRY_LEN()] {};
     this->capacity = capacity;
 
     // fill file with zero bits
     this->benchmark->startProfile("init");
     for (bigint i = 0; i < this->capacity; i++) {
-        int itemsWritten = std::fwrite(NULL_ENTRY, ENTRY_LEN, 1, this->file);
+        int itemsWritten = std::fwrite(this->NULL_ENTRY, this->ENTRY_LEN(), 1, this->file);
         DEBUG_ONLY({
             if (itemsWritten != 1) {
                 std::cerr << "Error: EncIndBase::init(): error initializing file " << this->filename
@@ -67,6 +67,10 @@ void EncIndBase::init(bigint capacity) {
 
 
 void EncIndBase::clear() {
+    if (this->NULL_ENTRY != nullptr) {
+        delete[] this->NULL_ENTRY;
+        this->NULL_ENTRY = nullptr;
+    }
     this->capacity = 0;
 
     // clears DB file and file pointer
@@ -77,24 +81,24 @@ void EncIndBase::clear() {
 bool EncIndBase::read(ubigint pos, EncIndVal& ret) const {
     pos %= this->capacity;
 
-    uchar entry[ENTRY_LEN];
+    uchar entry[this->ENTRY_LEN()];
     this->benchmark->startProfile("fseek");
-    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
     this->benchmark->stopProfile("fseek");
     this->readEncoded(entry);
-    if (std::memcmp(entry, NULL_ENTRY, ENTRY_LEN) == 0) {
-        // if `pos` contains `NULL_ENTRY`
+    if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
+        // if `pos` contains `this->NULL_ENTRY`
         return false;
     }
 
-    ret.first = ustring(&entry[KEY_LEN], DATA_LEN);
-    ret.second = ustring(&entry[KEY_LEN + DATA_LEN], utils::crypto::IV_LEN);
+    ret.first = ustring(&entry[this->KEY_LEN()], this->DATA_LEN());
+    ret.second = ustring(&entry[this->KEY_LEN() + this->DATA_LEN()], utils::crypto::IV_LEN);
     return true;
 }
 
 
 bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
-    bool isFound = this->advanceUntilMatch(pos, key.c_str(), KEY_LEN);
+    bool isFound = this->advanceUntilMatch(pos, key.c_str(), this->KEY_LEN());
     if (!isFound) {
         return false;
     }
@@ -112,9 +116,9 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     EncIndVal val = encIndEntry.second;
     ustring encodedEntry = key + val.first + val.second;
     DEBUG_ONLY({
-        if (encodedEntry.length() != ENTRY_LEN) {
+        if (encodedEntry.length() != this->ENTRY_LEN()) {
             std::cerr << "Error: EncIndBase::write(): write of length " << encodedEntry.length()
-                      << " bytes is not allowed! (want " << ENTRY_LEN << " bytes)" << std::endl;
+                      << " bytes is not allowed! (want " << this->ENTRY_LEN() << " bytes)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     });
@@ -125,7 +129,7 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
 
 
 void EncIndBase::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry) {
-    bool isEmptyAvailable = this->advanceUntilMatch(pos, NULL_ENTRY, ENTRY_LEN);
+    bool isEmptyAvailable = this->advanceUntilMatch(pos, this->NULL_ENTRY, this->ENTRY_LEN());
     // if we've scoured the whole index and still haven't found an available space,
     // throw an error: we are trying to write to a full index
     DEBUG_ONLY({
@@ -158,19 +162,19 @@ void EncIndBase::print() const {
 bool EncIndBase::readEntry(ubigint pos, EncIndEntry& ret) const {
     pos %= this->capacity;
 
-    uchar entry[ENTRY_LEN];
+    uchar entry[this->ENTRY_LEN()];
     this->benchmark->startProfile("fseek");
-    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
     this->benchmark->stopProfile("fseek");
     this->readEncoded(entry);
-    if (std::memcmp(entry, NULL_ENTRY, ENTRY_LEN) == 0) {
-        // if `pos` contains `NULL_ENTRY`
+    if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
+        // if `pos` contains `this->NULL_ENTRY`
         return false;
     }
 
-    ustring key(&entry[0], KEY_LEN);
-    ustring data(&entry[KEY_LEN], DATA_LEN);
-    ustring iv(&entry[KEY_LEN + DATA_LEN], utils::crypto::IV_LEN);
+    ustring key(&entry[0], this->KEY_LEN());
+    ustring data(&entry[this->KEY_LEN()], this->DATA_LEN());
+    ustring iv(&entry[this->KEY_LEN() + this->DATA_LEN()], utils::crypto::IV_LEN);
     ret = EncIndEntry {key, EncIndVal {data, iv}};
     return true;
 };
@@ -182,7 +186,7 @@ void EncIndBase::readEncoded(uchar* buf) const {
     this->benchmark->stopProfile("fflush");
 
     this->benchmark->startProfile("fread");
-    bigint itemsRead = std::fread(buf, ENTRY_LEN, 1, this->file);
+    bigint itemsRead = std::fread(buf, this->ENTRY_LEN(), 1, this->file);
     this->benchmark->stopProfile("fread");
     DEBUG_ONLY({
         if (itemsRead != 1) {
@@ -196,10 +200,10 @@ void EncIndBase::readEncoded(uchar* buf) const {
 
 void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry) {
     this->benchmark->startProfile("fseek");
-    std::fseek(this->file, pos * ENTRY_LEN, SEEK_SET);
+    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
     this->benchmark->stopProfile("fseek");
     this->benchmark->startProfile("fwrite");
-    int itemsWritten = std::fwrite(encodedEntry, ENTRY_LEN, 1, this->file);
+    int itemsWritten = std::fwrite(encodedEntry, this->ENTRY_LEN(), 1, this->file);
     this->benchmark->stopProfile("fwrite");
     DEBUG_ONLY({
         if (itemsWritten != 1) {

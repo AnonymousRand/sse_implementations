@@ -14,7 +14,6 @@
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_loc.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/ind.h"
@@ -164,7 +163,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
         // d <- Enc(K_2, w, id)
         ustring iv = utils::crypto::genIv();
         ustring encDbTuple = utils::crypto::padAndEncrypt(
-            this->encKey, dbTuple.toUstr(), iv, EncIndBase::DATA_LEN - 1
+            this->encKey, dbTuple.toUstr(), iv, this->encIndLvlsTmp[lvl]->DATA_LEN() - 1
         );
         // store `(l, d)` into key-value store, and also store IV in plain along with `d`
         if (dbKwCounter == 0) {

@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+#include "utils/crypto.h"
 #include "utils/types/basic_types.h"
 
 
@@ -45,6 +46,14 @@ static_assert(
 // this is used to determine the size of each entry in encrypted indexes (see that file for details)
 // currently: 11 corresponds to each encrypted tuple taking 3 AES blocks (= 48 bytes)
 inline constexpr int MAX_VALUE_DIGITS = 11;
+
+// currently, encoding a `Tuple<>` is of the form `id,kw[op]dbKw-dbKw`, so all but 3 bytes are
+// divided up between `id`, `kw`, and 2 `dbKw`s. however, we actually must restrict our plaintexts
+// by one more byte or else AES' PCKS #7 padding will generate an extra block if our plaintext is
+// exactly block-aligned, thus the `+ 4`. also, `SrcIDb1Tuple`s have the same max length encoding.
+inline constexpr int TUPLE_ENCOD_LEN =
+    std::ceil((4 * MAX_VALUE_DIGITS + 4) / (float)utils::crypto::BLOCK_SIZE)
+    * utils::crypto::BLOCK_SIZE;
 
 
 } // namespace `config`

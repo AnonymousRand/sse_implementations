@@ -7,7 +7,6 @@
 
 #include "utils/benchmark.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_loc.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/tuple.h"
@@ -105,9 +104,9 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
         }
 
         encResults.push_back(encIndVal);
+        this->benchmark->communication += this->encIndLvls[lvl]->VAL_LEN();
     }
 
-    this->benchmark->communication += encResults.size() * EncIndBase::VAL_LEN;
     return encResults;
 }
 

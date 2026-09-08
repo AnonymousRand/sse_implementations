@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cmath>
 #include <memory>
 #include <string>
 
@@ -19,30 +18,25 @@ struct Benchmark;
 
 class EncIndBase : public IDiskStorage {
 public:
-    // (both PRF (default) and hash (res-hiding) have 512 bit output)
-    inline static constexpr int KEY_LEN   = utils::crypto::HASH_OUTPUT_LEN;
-    // (currently, encoding a `Tuple<>` is of the form `id,kw[op]dbKw-dbKw`, and encrypting an
-    // exactly n block length plaintext with AES should produce the exact same block ciphertext,
-    // so all but 3 bytes are divided up between `id`, `kw`, and 2 `dbKw`s. however, we actually
-    // must restrict our plaintexts by one more byte or else AES' PCKS #7 padding will generate
-    // an extra block if our plaintext is exactly an integer number of blocks long, thus the `+ 4`.
-    // we also round up to the next AES block. and also, `SrcIDb1Tuple`s have the same max length.)
-    inline static const int     DATA_LEN  =
-        std::ceil((4 * config::MAX_VALUE_DIGITS + 4) / (float)utils::crypto::BLOCK_SIZE)
-        * utils::crypto::BLOCK_SIZE;
-    inline static constexpr int VAL_LEN   = DATA_LEN + utils::crypto::IV_LEN;
-    inline static constexpr int ENTRY_LEN = KEY_LEN + VAL_LEN;
+    // (currently, all schemes are result-hiding, which uses a hash as the final key here)
+    // IMPORTANT: change if this is no longer the case!
+    virtual constexpr int KEY_LEN() const { return utils::crypto::HASH_OUTPUT_LEN; }
+    // (we can use the encoded (plaintext) tuple length here for encrypted tuples too, as encrypting
+    // an exactly `n`-block-length plaintext with AES-CBC produces a ciphertext of the same size)
+    // IMPORTANT: change if this is no longer the case!
+    virtual const int DATA_LEN() const { return config::TUPLE_ENCOD_LEN; }
+    const int VAL_LEN() const { return this->DATA_LEN() + utils::crypto::IV_LEN; }
+    const int ENTRY_LEN() const { return this->KEY_LEN() + this->VAL_LEN(); }
 
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    EncIndBase(std::shared_ptr<Benchmark> benchmark);
+    EncIndBase(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
+
+    virtual ~EncIndBase();
 
     //--------------------------------------------------------------------------
     // the big five
-
-    // destructor
-    ~EncIndBase() = default;
 
     // copy constructor
     EncIndBase(const EncIndBase& other);
@@ -103,11 +97,10 @@ public:
     void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
 
     bigint getCapacity() const { return this->capacity; }
-    bigint getBytes() const { return this->capacity * ENTRY_LEN; }
+    bigint getBytes() const { return this->capacity * this->ENTRY_LEN(); }
 
 protected:
-    static const uchar NULL_ENTRY[ENTRY_LEN];
-
+    uchar* NULL_ENTRY = nullptr;
     bigint capacity = 0;
     std::shared_ptr<Benchmark> benchmark;
 
