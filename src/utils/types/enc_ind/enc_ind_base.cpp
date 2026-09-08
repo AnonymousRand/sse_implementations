@@ -118,7 +118,8 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     DEBUG_ONLY({
         if (encodedEntry.length() != this->ENTRY_LEN()) {
             std::cerr << "Error: EncIndBase::write(): write of length " << encodedEntry.length()
-                      << " bytes is not allowed! (want " << this->ENTRY_LEN() << " bytes)" << std::endl;
+                      << " bytes is not allowed! (want " << this->ENTRY_LEN() << " bytes)"
+                      << std::endl;
             std::exit(EXIT_FAILURE);
         }
     });

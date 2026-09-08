@@ -35,7 +35,7 @@ void EncIndLoc::clear() {
 bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const {
     pos %= this->capacity;
 
-    // get entry at `pos`, and if it doesn't match `match` (e.g. because of `pos %= this->capacity`),
+    // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward by `this->bcktSize` positions at a time to search for it
     // 
     // importantly, we get the massive optimization of only having to check the first entry of every

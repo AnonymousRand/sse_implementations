@@ -22,7 +22,7 @@
 bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const {
     pos %= this->capacity;
 
-    // get entry at `pos`, and if it doesn't match `match` (e.g. because of `pos %= this->capacity`),
+    // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward one position at a time to search for it
     const ubigint origStartPos = pos;
     const bigint readBufEntryCapacity = std::min(config::ENC_IND_READ_BUF_CAPACITY, this->capacity);
