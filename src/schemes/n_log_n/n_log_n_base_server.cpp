@@ -74,6 +74,7 @@ void NLogNBaseServer<DbTuple>::setEncIndLvls(const std::vector<EncIndLoc*>& encI
 template <IsDbTuple DbTuple>
 std::vector<EncIndLoc*> NLogNBaseServer<DbTuple>::getEncIndLvls() const {
     utils::benchmark::communication += ::calcAllEncIndLvlsBytes(this->encIndLvls);
+
     return this->encIndLvls;
 }
 
@@ -84,8 +85,8 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
 ) const {
     utils::benchmark::communication +=
         sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + label.length();
-    std::vector<EncIndVal> encResults;
 
+    std::vector<EncIndVal> encResults;
     for (bigint dbKwCounter = 0; dbKwCounter < bcktSize; dbKwCounter++) {
         EncIndVal encIndVal;
         bool isFound;
