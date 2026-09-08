@@ -3,7 +3,7 @@
 #include <concepts>
 #include <vector>
 
-#include "schemes/interfaces/sse_server.h"
+#include "schemes/interfaces/i_sse_server.h"
 
 #include "types/basic_types.h"
 #include "types/enc_ind/enc_ind_loc.h"

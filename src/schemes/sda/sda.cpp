@@ -5,7 +5,7 @@
 #include <cmath>
 #include <vector>
 
-#include "schemes/interfaces/sd_underly.h"
+#include "schemes/interfaces/i_sd_underly.h"
 
 // for explicit template instantiation
 #include "schemes/log_src/log_src.h"

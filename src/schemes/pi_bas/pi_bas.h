@@ -3,8 +3,8 @@
 #include <concepts>
 #include <vector>
 
-#include "schemes/interfaces/sd_underly.h"
-#include "schemes/interfaces/static_point_sse.h"
+#include "schemes/interfaces/i_sd_underly.h"
+#include "schemes/interfaces/i_static_point_sse.h"
 #include "schemes/pi_bas/pi_bas_server.h"
 
 #include "types/basic_types.h"

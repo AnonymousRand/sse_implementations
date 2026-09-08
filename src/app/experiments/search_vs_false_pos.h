@@ -8,7 +8,7 @@
 
 #include "app/experiments/i_experiment.h"
 
-#include "schemes/interfaces/sse.h"
+#include "schemes/interfaces/i_sse.h"
 
 #include "types/basic_types.h"
 #include "types/db/db.h"

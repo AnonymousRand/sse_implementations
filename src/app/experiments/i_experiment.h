@@ -2,7 +2,7 @@
 
 #include <concepts>
 
-#include "schemes/interfaces/sse.h"
+#include "schemes/interfaces/i_sse.h"
 
 
 namespace app::experiments {

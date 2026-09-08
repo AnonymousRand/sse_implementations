@@ -3,7 +3,7 @@
 #include <concepts>
 #include <vector>
 
-#include "schemes/interfaces/sse.h"
+#include "schemes/interfaces/i_sse.h"
 #include "schemes/log_src/log_src_utils.h"
 
 // for explicit template instantiation

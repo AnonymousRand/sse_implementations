@@ -4,8 +4,8 @@
 #include <utility>
 #include <vector>
 
-#include "schemes/interfaces/sd_underly.h"
-#include "schemes/interfaces/static_point_sse.h"
+#include "schemes/interfaces/i_sd_underly.h"
+#include "schemes/interfaces/i_static_point_sse.h"
 #include "schemes/n_log_n/n_log_n_base_server.h"
 
 #include "types/basic_types.h"

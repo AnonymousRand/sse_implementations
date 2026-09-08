@@ -3,8 +3,8 @@
 #include <concepts>
 #include <memory>
 
-#include "schemes/interfaces/dsse.h"
-#include "schemes/interfaces/sse.h"
+#include "schemes/interfaces/i_dsse.h"
+#include "schemes/interfaces/i_sse.h"
 
 #include "utils/benchmark.h"
 

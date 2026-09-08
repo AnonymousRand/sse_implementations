@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "schemes/interfaces/sse.h"
+#include "schemes/interfaces/i_sse.h"
 
 // for explicit template instantiation
 #include "schemes/log_src_i_star/log_src_i_star_underly.h"

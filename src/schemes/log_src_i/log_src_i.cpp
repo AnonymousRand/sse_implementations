@@ -2,7 +2,7 @@
 
 #include <concepts>
 
-#include "schemes/interfaces/sse.h"
+#include "schemes/interfaces/i_sse.h"
 #include "schemes/log_src/log_src_utils.h"
 #include "schemes/log_src_i/log_src_i_base.h"
 #include "schemes/log_src_i/log_src_i_utils.h"
