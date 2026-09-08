@@ -3,11 +3,11 @@
 #include <concepts>
 #include <list>
 
-#include "utils/types/basic_types.h"
-#include "utils/types/db/db.h"
-#include "utils/types/range.h"
-#include "utils/types/tdag.h"
-#include "utils/types/tuple.h"
+#include "types/basic_types.h"
+#include "types/db/db.h"
+#include "types/range.h"
+#include "types/tdag.h"
+#include "types/tuple.h"
 
 
 namespace log_src::utils {

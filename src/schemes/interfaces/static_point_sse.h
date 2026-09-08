@@ -5,13 +5,14 @@
 
 #include "schemes/interfaces/sse.h"
 
+#include "types/basic_types.h"
+#include "types/enc_ind/enc_ind_types.h"
+#include "types/range.h"
+#include "types/tuple.h"
+#include "types/ustring.h"
+
 #include "utils/crypto.h"
 #include "utils/misc.h"
-#include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
-#include "utils/types/range.h"
-#include "utils/types/tuple.h"
-#include "utils/types/ustring.h"
 
 
 // subclasses of this include `PiBas`, `NLogN`, and `log_src_i_star::Underly`

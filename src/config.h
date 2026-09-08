@@ -4,8 +4,9 @@
 
 #include <cmath>
 
+#include "types/basic_types.h"
+
 #include "utils/crypto.h"
-#include "utils/types/basic_types.h"
 
 
 namespace config {

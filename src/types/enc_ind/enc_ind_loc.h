@@ -1,8 +1,8 @@
 #pragma once
 
-#include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
-#include "utils/types/ustring.h"
+#include "types/basic_types.h"
+#include "types/enc_ind/enc_ind_base.h"
+#include "types/ustring.h"
 
 
 class EncIndLoc : public EncIndBase {

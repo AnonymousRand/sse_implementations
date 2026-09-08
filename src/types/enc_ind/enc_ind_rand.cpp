@@ -1,4 +1,4 @@
-#include "utils/types/enc_ind/enc_ind_rand.h"
+#include "types/enc_ind/enc_ind_rand.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -8,11 +8,12 @@
 
 #include "config.h"
 
+#include "types/basic_types.h"
+#include "types/enc_ind/enc_ind_base.h"
+#include "types/ustring.h"
+
 #include "utils/benchmark.h"
 #include "utils/debug.h"
-#include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
-#include "utils/types/ustring.h"
 
 
 //------------------------------------------------------------------------------

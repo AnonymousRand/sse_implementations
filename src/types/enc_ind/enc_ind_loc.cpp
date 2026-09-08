@@ -1,11 +1,12 @@
-#include "utils/types/enc_ind/enc_ind_loc.h"
+#include "types/enc_ind/enc_ind_loc.h"
 
 #include <cstdio>
 #include <cstring>
 
+#include "types/enc_ind/enc_ind_base.h"
+#include "types/basic_types.h"
+
 #include "utils/benchmark.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
-#include "utils/types/basic_types.h"
 
 
 //------------------------------------------------------------------------------

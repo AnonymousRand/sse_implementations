@@ -2,9 +2,9 @@
 
 #include <concepts>
 
-#include "utils/types/db/db.h"
-#include "utils/types/tdag.h"
-#include "utils/types/tuple.h"
+#include "types/db/db.h"
+#include "types/tdag.h"
+#include "types/tuple.h"
 
 
 namespace log_src::utils {

@@ -9,11 +9,12 @@
 
 #include "schemes/interfaces/dsse.h"
 
+#include "types/basic_types.h"
+#include "types/db/db.h"
+#include "types/tuple.h"
+
 #include "utils/benchmark.h"
 #include "utils/crypto.h"
-#include "utils/types/basic_types.h"
-#include "utils/types/db/db.h"
-#include "utils/types/tuple.h"
 
 
 namespace app::experiments {

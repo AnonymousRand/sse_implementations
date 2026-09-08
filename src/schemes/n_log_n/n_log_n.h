@@ -6,11 +6,11 @@
 #include "schemes/n_log_n/n_log_n_base.h"
 #include "schemes/n_log_n/n_log_n_server.h"
 
-#include "utils/types/basic_types.h"
-#include "utils/types/db/db.h"
-#include "utils/types/enc_ind/enc_ind_rand.h"
-#include "utils/types/range.h"
-#include "utils/types/tuple.h"
+#include "types/basic_types.h"
+#include "types/db/db.h"
+#include "types/enc_ind/enc_ind_rand.h"
+#include "types/range.h"
+#include "types/tuple.h"
 
 
 template <IsDbTuple DbTuple = Tuple<>>

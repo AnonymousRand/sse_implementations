@@ -5,11 +5,11 @@
 
 #include "schemes/interfaces/sse_server.h"
 
-#include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_rand.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
-#include "utils/types/tuple.h"
-#include "utils/types/ustring.h"
+#include "types/basic_types.h"
+#include "types/enc_ind/enc_ind_rand.h"
+#include "types/enc_ind/enc_ind_types.h"
+#include "types/tuple.h"
+#include "types/ustring.h"
 
 
 template <IsDbTuple DbTuple = Tuple<>>

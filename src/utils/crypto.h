@@ -2,7 +2,7 @@
 
 #include <openssl/evp.h>
 
-#include "utils/types/ustring.h"
+#include "types/ustring.h"
 
 
 namespace utils::crypto {

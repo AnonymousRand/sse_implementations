@@ -1,13 +1,13 @@
-#include "utils/types/db/i_db.h"
+#include "types/db/i_db.h"
 
 #include <bit>
 #include <cmath>
 #include <concepts>
 #include <unordered_set>
 
-#include "utils/types/basic_types.h"
-#include "utils/types/range.h"
-#include "utils/types/tuple.h"
+#include "types/basic_types.h"
+#include "types/range.h"
+#include "types/tuple.h"
 
 
 //------------------------------------------------------------------------------

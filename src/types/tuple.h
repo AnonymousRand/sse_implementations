@@ -9,9 +9,9 @@
 #include <unordered_map>
 #include <utility>
 
-#include "utils/types/basic_types.h"
-#include "utils/types/range.h"
-#include "utils/types/ustring.h"
+#include "types/basic_types.h"
+#include "types/range.h"
+#include "types/ustring.h"
 
 
 //==============================================================================

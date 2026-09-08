@@ -2,8 +2,8 @@
 
 #include <concepts>
 
-#include "utils/types/basic_types.h"
-#include "utils/types/tuple.h"
+#include "types/basic_types.h"
+#include "types/tuple.h"
 
 
 template <IsDbTuple DbTuple = Tuple<>>

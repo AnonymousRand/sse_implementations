@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "utils/types/basic_types.h"
-#include "utils/types/tuple.h"
-#include "utils/types/ustring.h"
+#include "types/basic_types.h"
+#include "types/tuple.h"
+#include "types/ustring.h"
 
 
 namespace utils::misc {
