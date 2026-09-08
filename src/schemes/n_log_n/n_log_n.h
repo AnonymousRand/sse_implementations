@@ -27,10 +27,13 @@ public:
     void clear() override;
 
 private:
+    EncIndRand* dbKwCountsDictTmp = nullptr;
+
+    //--------------------------------------------------------------------------
+    // `NLogNBase`
+
     NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>();
     NLogNServer<DbTuple>* getServer() const override { return this->server; }
-
-    EncIndRand* dbKwCountsDictTmp = nullptr;
 
     //--------------------------------------------------------------------------
     // `IStaticPointSse`

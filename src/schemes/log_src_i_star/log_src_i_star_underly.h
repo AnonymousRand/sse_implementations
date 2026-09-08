@@ -36,10 +36,13 @@ public:
     void clear() override;
 
 private:
+    bigint leafCount;
+
+    //--------------------------------------------------------------------------
+    // `NLogNBase`
+
     UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>();
     UnderlyServer<DbTuple>* getServer() const override { return this->server; }
-
-    bigint leafCount;
 
     //--------------------------------------------------------------------------
     // `IStaticPointSse`
