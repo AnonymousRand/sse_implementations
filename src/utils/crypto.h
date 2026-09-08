@@ -27,16 +27,19 @@ ustring hash(
 ustring prf(const ustring& key, const ustring& input);
 
 
+/**
+ * note: pass an empty ustring to `iv` if using a scheme with no IV.
+ */
 ustring encrypt(
-    const ustring& key, const ustring& ptext, const ustring& iv = ustring(),
+    const ustring& key, const ustring& ptext, const ustring& iv,
     const EVP_CIPHER* cipher = ENC_CIPHER
 );
 
 /**
  * pad `ptext` to `targetLen` before encrypting.
  *
- * IMPORTANT: for some reason padding to exactly n blocks generates n + 1 blocks,
- * so always pad to one less byte!
+ * IMPORTANT: because of AES' PCKS #7 padding, padding to exactly `n` blocks here
+ * actually generates `n + 1` blocks, so always pad to one less byte!
  */
 ustring padAndEncrypt(
     const ustring& key, ustring ptext, const ustring& iv, int targetLen,
@@ -45,7 +48,7 @@ ustring padAndEncrypt(
 
 
 ustring decrypt(
-    const ustring& key, const ustring& ctext, const ustring& iv = ustring(),
+    const ustring& key, const ustring& ctext, const ustring& iv,
     const EVP_CIPHER* cipher = ENC_CIPHER
 );
 
