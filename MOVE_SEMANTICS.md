@@ -51,6 +51,6 @@
 
     (again, similarly, default constructors are not be automatically generated if any other constructor is manually defined (including a copy or move constructor!).) if you wish to call a Thing that does not get automatically generated, you MUST declare it explicitly, using `= default` if you want the same default behavior as if it had been automatically generated.
 
-- thus, if you want to manually define any one of the Things to override the automatically generated default behavior, **you should almost always manually define ALL the Things,** using `= default` for the ones you want to keep the automatically generated behavior of. (this along with the destructor is often called the c++ "rule of five".)
+- thus, if you want to manually define any one of the Things to override the automatically generated default behavior, **you should almost always manually define ALL the Things,** using `= default` for the ones you want to keep the automatically generated behavior of. (this along with the destructor is often called the c++ "rule of five".) an explicit default constructor is also often needed along with these, since defining the copy or move constructor prevents a default constructor from being automatically generated as well.
 
-- examples can be found in [src/utils/types/i_disk_storage.h](src/utils/types/i_disk_storage.h) and [src/utils/types/db/](src/utils/types/db/) ("the big five" methods).
+- examples can be found in [src/utils/types/i_disk_storage.h](src/utils/types/i_disk_storage.h) and [src/utils/types/db/](src/utils/types/db/) ("the rule of five" methods).

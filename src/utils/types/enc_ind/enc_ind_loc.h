@@ -8,12 +8,10 @@
 class EncIndLoc : public EncIndBase {
 public:
     //--------------------------------------------------------------------------
-    // constructors/destructors
+    // rule of five
 
-    using EncIndBase::EncIndBase;
-
-    //--------------------------------------------------------------------------
-    // the big five
+    // bring back default constructor
+    EncIndLoc() = default;
 
     // destructor
     ~EncIndLoc() = default;

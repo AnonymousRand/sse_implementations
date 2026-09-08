@@ -104,7 +104,7 @@ template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::initSetupState() {
     NLogNBase<DbTuple>::initSetupState();
 
-    this->dbKwCountsDictTmp = new EncIndRand(this->benchmark);
+    this->dbKwCountsDictTmp = new EncIndRand();
     this->dbKwCountsDictTmp->init(this->size);
 }
 

@@ -14,8 +14,6 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class NLogNServer : public NLogNBaseServer<DbTuple> {
 public:
-    using NLogNBaseServer<DbTuple>::NLogNBaseServer;
-
     //--------------------------------------------------------------------------
     // `ISseServer`
 

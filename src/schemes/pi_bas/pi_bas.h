@@ -22,8 +22,6 @@ private:
     using DbKw = typename IStaticPointSse<DbTuple>::DbKw;
 
 public:
-    using IStaticPointSse<DbTuple>::IStaticPointSse;
-
     ~PiBas();
 
     //--------------------------------------------------------------------------
@@ -38,7 +36,7 @@ public:
     void getDb(Db<DbTuple>& ret) const override;
 
 private:
-    PiBasServer<DbTuple>* server = new PiBasServer<DbTuple>(this->benchmark);
+    PiBasServer<DbTuple>* server = new PiBasServer<DbTuple>();
 
     //--------------------------------------------------------------------------
     // `IStaticPointSse`

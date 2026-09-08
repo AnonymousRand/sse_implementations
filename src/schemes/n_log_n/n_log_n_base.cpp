@@ -129,7 +129,7 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::initSetupState() {
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncIndLoc* encIndLvl = new EncIndLoc(this->benchmark);
+        EncIndLoc* encIndLvl = new EncIndLoc();
         bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
         bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
         encIndLvl->init(bcktSizeOnLvl, bcktCountOnLvl);

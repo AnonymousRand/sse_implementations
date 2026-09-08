@@ -19,8 +19,6 @@ private:
     using DbKw = typename NLogNBase<DbTuple>::DbKw;
 
 public:
-    using NLogNBase<DbTuple>::NLogNBase;
-
     ~NLogN();
 
     //--------------------------------------------------------------------------
@@ -29,7 +27,7 @@ public:
     void clear() override;
 
 private:
-    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>(this->benchmark);
+    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>();
     NLogNServer<DbTuple>* getServer() const override { return this->server; }
 
     EncIndRand* dbKwCountsDictTmp = nullptr;

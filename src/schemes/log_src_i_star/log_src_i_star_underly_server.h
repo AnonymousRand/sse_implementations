@@ -10,10 +10,7 @@ namespace log_src_i_star {
 
 // (currently this is identical to `NLogNBaseServer`, but we still create a subclass for semantics)
 template <IsDbTuple DbTuple>
-class UnderlyServer : public NLogNBaseServer<DbTuple> {
-public:
-    using NLogNBaseServer<DbTuple>::NLogNBaseServer;
-};
+class UnderlyServer : public NLogNBaseServer<DbTuple> {};
 
 
 } // namespace `log_src_i_star`

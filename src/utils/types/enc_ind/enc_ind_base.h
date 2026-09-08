@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string>
 
 #include "config.h"
@@ -10,10 +9,6 @@
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/i_disk_storage.h"
 #include "utils/types/ustring.h"
-
-
-// still need to forward declare here to avoid some circular dependency
-struct Benchmark;
 
 
 class EncIndBase : public IDiskStorage {
@@ -31,12 +26,13 @@ public:
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    EncIndBase(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
-
     virtual ~EncIndBase();
 
     //--------------------------------------------------------------------------
-    // the big five
+    // rule of five
+
+    // bring back default constructor
+    EncIndBase() = default;
 
     // copy constructor
     EncIndBase(const EncIndBase& other);
@@ -102,7 +98,6 @@ public:
 protected:
     uchar* NULL_ENTRY = nullptr;
     bigint capacity = 0;
-    std::shared_ptr<Benchmark> benchmark;
 
     //--------------------------------------------------------------------------
     // `IDiskStorage`

@@ -27,8 +27,6 @@ private:
     using DbKw = typename NLogNBase<DbTuple>::DbKw;
 
 public:
-    using NLogNBase<DbTuple>::NLogNBase;
-
     ~Underly();
 
     //--------------------------------------------------------------------------
@@ -38,7 +36,7 @@ public:
     void clear() override;
 
 private:
-    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>(this->benchmark);
+    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>();
     UnderlyServer<DbTuple>* getServer() const override { return this->server; }
 
     bigint leafCount;

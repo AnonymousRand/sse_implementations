@@ -23,8 +23,6 @@ protected:
     using DbKw = typename IStaticPointSse<DbTuple>::DbKw;
 
 public:
-    using IStaticPointSse<DbTuple>::IStaticPointSse;
-
     //--------------------------------------------------------------------------
     // `ISse`
 

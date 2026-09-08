@@ -31,7 +31,7 @@ void PiBasServer<DbTuple>::clear() {
     // pointer assignment, so if we don't delete we would make this memory inaccessible
     // the next time we assign `encInd`)
     if (this->encInd != nullptr) {
-        this->benchmark->serverStorage -= this->encInd->getBytes();
+        utils::benchmark::serverStorage -= this->encInd->getBytes();
         delete this->encInd;
         this->encInd = nullptr;
     };
@@ -45,22 +45,22 @@ void PiBasServer<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void PiBasServer<DbTuple>::setEncInd(EncIndRand* encInd) {
     bigint encIndBytes = encInd->getBytes();
-    this->benchmark->serverStorage += encIndBytes;
-    this->benchmark->communication += encIndBytes;
+    utils::benchmark::serverStorage += encIndBytes;
+    utils::benchmark::communication += encIndBytes;
     this->encInd = encInd;
 }
 
 
 template <IsDbTuple DbTuple>
 EncIndRand* PiBasServer<DbTuple>::getEncInd() const {
-    this->benchmark->communication += this->encInd->getBytes();
+    utils::benchmark::communication += this->encInd->getBytes();
     return this->encInd;
 }
 
 
 template <IsDbTuple DbTuple>
 std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryToken) const {
-    this->benchmark->communication += queryToken.length();
+    utils::benchmark::communication += queryToken.length();
     std::vector<EncIndVal> encResults;
 
     // for c = 0 until `Get` returns error
@@ -78,7 +78,7 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
         }
 
         encResults.push_back(encIndVal);
-        this->benchmark->communication += this->encInd->VAL_LEN();
+        utils::benchmark::communication += this->encInd->VAL_LEN();
         dbKwCounter++;
     }
 

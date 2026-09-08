@@ -1,17 +1,12 @@
 #pragma once
 
 #include <concepts>
-#include <memory>
 #include <vector>
 
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
-
-
-// forward declare instead of include to avoid a circular include with `benchmark.h`
-struct Benchmark;
 
 
 template <IsDbTuple DbTuple = Tuple<>>
@@ -21,11 +16,14 @@ protected:
 
 public:
     //--------------------------------------------------------------------------
-    // the big five
+    // rule of five
 
     // delete all these to prevent copying and moving! as they cause double frees
     // and all that yummy stuff with raw pointer members
     // IMPORTANT: this means SSE scheme classes can only be instantiated as pointers!
+
+    // bring back default constructor
+    ISse() = default;
 
     // copy constructor
     ISse(const ISse& other) = delete;
@@ -41,10 +39,6 @@ public:
 
     //--------------------------------------------------------------------------
     // interface
-
-    std::shared_ptr<Benchmark> benchmark;
-
-    ISse(std::shared_ptr<Benchmark> benchmark) : benchmark(benchmark) {}
 
     virtual void setup(int secParam, const Db<DbTuple>& db) = 0;
     

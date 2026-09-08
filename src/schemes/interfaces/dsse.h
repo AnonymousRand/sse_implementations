@@ -1,16 +1,11 @@
 #pragma once
 
 #include <concepts>
-#include <memory>
 
 #include "schemes/interfaces/sse.h"
 
 #include "utils/types/basic_types.h"
 #include "utils/types/tuple.h"
-
-
-// forward declare instead of include to avoid a circular include with `benchmark.h`
-struct Benchmark;
 
 
 // (note: no virtual inheritance here as otherwise things extending `IDsse` will skip over `IDsse`'s
@@ -21,10 +16,7 @@ protected:
     using DbKw = typename ISse<DbTuple>::DbKw;
 
 public:
-    using ISse<DbTuple>::ISse;
-
-    IDsse(std::shared_ptr<Benchmark> benchmark, bool useShortcutSetup) :
-        ISse<DbTuple>(benchmark), useShortcutSetup(useShortcutSetup) {}
+    IDsse(bool useShortcutSetup) : useShortcutSetup(useShortcutSetup) {}
 
     //--------------------------------------------------------------------------
     // interface

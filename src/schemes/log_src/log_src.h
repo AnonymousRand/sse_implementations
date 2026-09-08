@@ -19,8 +19,6 @@ private:
     using DbKw = typename ISdUnderly<Tuple<>>::DbKw;
 
 public:
-    using ISdUnderly<Tuple<>>::ISdUnderly;
-
     ~LogSrc();
 
     //--------------------------------------------------------------------------
@@ -38,6 +36,6 @@ public:
     void getDb(Db<Tuple<>>& ret) const override;
 
 private:
-    Underly<Tuple<>>* underly = new Underly<Tuple<>>(this->benchmark);
+    Underly<Tuple<>>* underly = new Underly<Tuple<>>();
     TdagNode<Kw>* tdag = nullptr;
 };

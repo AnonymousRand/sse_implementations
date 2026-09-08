@@ -15,8 +15,6 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class PiBasServer : public ISseServer<DbTuple> {
 public:
-    using ISseServer<DbTuple>::ISseServer;
-
     ~PiBasServer();
 
     //--------------------------------------------------------------------------

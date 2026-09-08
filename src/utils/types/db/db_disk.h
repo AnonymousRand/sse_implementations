@@ -39,7 +39,7 @@ public:
     DbDisk(std::initializer_list<DbTuple> initList);
 
     //--------------------------------------------------------------------------
-    // the big five
+    // rule of five
 
     // destructor
     ~DbDisk() = default;

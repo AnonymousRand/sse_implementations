@@ -16,8 +16,6 @@ private:
     using DbKw = typename LogSrcIBase<Underly>::DbKw;
 
 public:
-    using LogSrcIBase<Underly>::LogSrcIBase;
-
     //--------------------------------------------------------------------------
     // `ISse`
 

@@ -47,7 +47,7 @@ template <IsDbTuple DbTuple>
 void NLogNBaseServer<DbTuple>::clear() {
     for (EncIndLoc* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
-            this->benchmark->serverStorage -= lvl->getBytes();
+            utils::benchmark::serverStorage -= lvl->getBytes();
             delete lvl;
             lvl = nullptr;
         }
@@ -63,8 +63,8 @@ void NLogNBaseServer<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void NLogNBaseServer<DbTuple>::setEncIndLvls(const std::vector<EncIndLoc*>& encIndLvls) {
     bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(encIndLvls);
-    this->benchmark->serverStorage += allEncIndLvlsBytes;
-    this->benchmark->communication += allEncIndLvlsBytes;
+    utils::benchmark::serverStorage += allEncIndLvlsBytes;
+    utils::benchmark::communication += allEncIndLvlsBytes;
 
     this->encIndLvls = encIndLvls;
 }
@@ -72,7 +72,7 @@ void NLogNBaseServer<DbTuple>::setEncIndLvls(const std::vector<EncIndLoc*>& encI
 
 template <IsDbTuple DbTuple>
 std::vector<EncIndLoc*> NLogNBaseServer<DbTuple>::getEncIndLvls() const {
-    this->benchmark->communication += ::calcAllEncIndLvlsBytes(this->encIndLvls);
+    utils::benchmark::communication += ::calcAllEncIndLvlsBytes(this->encIndLvls);
     return this->encIndLvls;
 }
 
@@ -81,7 +81,7 @@ template <IsDbTuple DbTuple>
 std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
     bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
 ) const {
-    this->benchmark->communication +=
+    utils::benchmark::communication +=
         sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + label.length();
     std::vector<EncIndVal> encResults;
 
@@ -104,7 +104,7 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
         }
 
         encResults.push_back(encIndVal);
-        this->benchmark->communication += this->encIndLvls[lvl]->VAL_LEN();
+        utils::benchmark::communication += this->encIndLvls[lvl]->VAL_LEN();
     }
 
     return encResults;

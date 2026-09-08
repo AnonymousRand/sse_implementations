@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <memory>
 #include <string>
 
 #include "utils/benchmark.h"
@@ -24,7 +23,7 @@ EncIndBase::~EncIndBase() {
 
 
 //------------------------------------------------------------------------------
-// the big five
+// rule of five
 
 
 // copy constructor
@@ -50,7 +49,7 @@ void EncIndBase::init(bigint capacity) {
     this->capacity = capacity;
 
     // fill file with zero bits
-    this->benchmark->startProfile("init");
+    utils::benchmark::startProfile("init");
     for (bigint i = 0; i < this->capacity; i++) {
         int itemsWritten = std::fwrite(this->NULL_ENTRY, this->ENTRY_LEN(), 1, this->file);
         DEBUG_ONLY({
@@ -62,7 +61,7 @@ void EncIndBase::init(bigint capacity) {
         });
     }
     std::fflush(this->file);
-    this->benchmark->stopProfile("init");
+    utils::benchmark::stopProfile("init");
 }
 
 
@@ -82,9 +81,9 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret) const {
     pos %= this->capacity;
 
     uchar entry[this->ENTRY_LEN()];
-    this->benchmark->startProfile("fseek");
+    utils::benchmark::startProfile("fseek");
     std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    this->benchmark->stopProfile("fseek");
+    utils::benchmark::stopProfile("fseek");
     this->readEncoded(entry);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
@@ -164,9 +163,9 @@ bool EncIndBase::readEntry(ubigint pos, EncIndEntry& ret) const {
     pos %= this->capacity;
 
     uchar entry[this->ENTRY_LEN()];
-    this->benchmark->startProfile("fseek");
+    utils::benchmark::startProfile("fseek");
     std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    this->benchmark->stopProfile("fseek");
+    utils::benchmark::stopProfile("fseek");
     this->readEncoded(entry);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
@@ -182,13 +181,13 @@ bool EncIndBase::readEntry(ubigint pos, EncIndEntry& ret) const {
 
 
 void EncIndBase::readEncoded(uchar* buf) const {
-    this->benchmark->startProfile("fflush");
+    utils::benchmark::startProfile("fflush");
     this->flushIfNotFlushed();
-    this->benchmark->stopProfile("fflush");
+    utils::benchmark::stopProfile("fflush");
 
-    this->benchmark->startProfile("fread");
+    utils::benchmark::startProfile("fread");
     bigint itemsRead = std::fread(buf, this->ENTRY_LEN(), 1, this->file);
-    this->benchmark->stopProfile("fread");
+    utils::benchmark::stopProfile("fread");
     DEBUG_ONLY({
         if (itemsRead != 1) {
             std::cerr << "Error: EncIndBase::readEncoded(): error reading from file "
@@ -200,12 +199,12 @@ void EncIndBase::readEncoded(uchar* buf) const {
 
 
 void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry) {
-    this->benchmark->startProfile("fseek");
+    utils::benchmark::startProfile("fseek");
     std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    this->benchmark->stopProfile("fseek");
-    this->benchmark->startProfile("fwrite");
+    utils::benchmark::stopProfile("fseek");
+    utils::benchmark::startProfile("fwrite");
     int itemsWritten = std::fwrite(encodedEntry, this->ENTRY_LEN(), 1, this->file);
-    this->benchmark->stopProfile("fwrite");
+    utils::benchmark::stopProfile("fwrite");
     DEBUG_ONLY({
         if (itemsWritten != 1) {
             std::cerr << "Error: EncIndBase::writeEncoded(): error writing to file "

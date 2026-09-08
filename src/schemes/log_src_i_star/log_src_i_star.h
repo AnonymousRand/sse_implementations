@@ -13,8 +13,6 @@ private:
     using DbKw = typename LogSrcIBase<log_src_i_star::Underly>::DbKw;
 
 public:
-    using LogSrcIBase<log_src_i_star::Underly>::LogSrcIBase;
-
     //--------------------------------------------------------------------------
     // `ISse`
 

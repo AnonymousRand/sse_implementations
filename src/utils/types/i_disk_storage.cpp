@@ -38,7 +38,7 @@ IDiskStorage::~IDiskStorage() {
 
 
 //------------------------------------------------------------------------------
-// the big five
+// rule of five
 
 
 void IDiskStorage::copyFrom(const IDiskStorage& other) {

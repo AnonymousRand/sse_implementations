@@ -16,8 +16,6 @@ protected:
     using DbKw = typename ISse<DbTuple>::DbKw;
 
 public:
-    using ISse<DbTuple>::ISse;
-
     //--------------------------------------------------------------------------
     // interface
 

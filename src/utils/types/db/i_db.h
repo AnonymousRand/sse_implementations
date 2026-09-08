@@ -30,7 +30,7 @@ public:
     IDb() = default;
 
     //--------------------------------------------------------------------------
-    // the big five
+    // rule of five
 
     // destructor
     ~IDb() = default;

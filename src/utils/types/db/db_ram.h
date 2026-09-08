@@ -35,7 +35,7 @@ public:
 
 
     //--------------------------------------------------------------------------
-    // the big five
+    // rule of five
 
     // destructor
     ~DbRam() = default;

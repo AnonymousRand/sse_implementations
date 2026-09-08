@@ -19,7 +19,7 @@ public:
     ~IDiskStorage();
 
     //--------------------------------------------------------------------------
-    // the big five
+    // rule of five
 
 protected:
     // unified functions for copying and moving

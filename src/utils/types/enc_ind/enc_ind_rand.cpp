@@ -79,14 +79,14 @@ bigint EncIndRand::readIntoReadBuf(
     bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);
 
     bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
-    this->benchmark->startProfile("fseek");
+    utils::benchmark::startProfile("fseek");
     if (needsFseek) {
         std::fseek(this->file, readBufStartPos * this->ENTRY_LEN(), SEEK_SET);
     }
-    this->benchmark->stopProfile("fseek");
-    this->benchmark->startProfile("fread");
+    utils::benchmark::stopProfile("fseek");
+    utils::benchmark::startProfile("fread");
     bigint itemsRead = std::fread(readBuf, this->ENTRY_LEN(), entriesToReadUntilEof, this->file);
-    this->benchmark->stopProfile("fread");
+    utils::benchmark::stopProfile("fread");
     DEBUG_ONLY({
         if (itemsRead < entriesToReadUntilEof) {
             std::cerr << "Error: EncIndRand::readIntoReadBuf(): error reading (part 1) "
@@ -99,16 +99,16 @@ bigint EncIndRand::readIntoReadBuf(
 
     // wrap around to beginning of file if we read less than the target number of entries
     if (entriesToReadUntilEof < entriesToRead) {
-        this->benchmark->startProfile("fseek");
+        utils::benchmark::startProfile("fseek");
         std::fseek(this->file, 0, SEEK_SET);
-        this->benchmark->stopProfile("fseek");
-        this->benchmark->startProfile("fread");
+        utils::benchmark::stopProfile("fseek");
+        utils::benchmark::startProfile("fread");
         itemsRead += std::fread(
             readBuf + (entriesToReadUntilEof * this->ENTRY_LEN()),
             this->ENTRY_LEN(), entriesToRead - entriesToReadUntilEof,
             this->file
         );
-        this->benchmark->stopProfile("fread");
+        utils::benchmark::stopProfile("fread");
         DEBUG_ONLY({
             if (itemsRead < entriesToRead) {
                 std::cerr << "Error: EncIndRand::writeToFirstEmpty(): error reading (part 2) "

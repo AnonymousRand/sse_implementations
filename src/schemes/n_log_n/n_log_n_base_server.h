@@ -15,8 +15,6 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class NLogNBaseServer : public ISseServer<DbTuple> {
 public:
-    using ISseServer<DbTuple>::ISseServer;
-
     virtual ~NLogNBaseServer();
 
     //--------------------------------------------------------------------------

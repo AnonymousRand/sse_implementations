@@ -52,7 +52,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->prfKey = utils::crypto::genKey(secParam);
     this->encKey = utils::crypto::genKey(secParam);
 
-    EncIndRand* encInd = new EncIndRand(this->benchmark);
+    EncIndRand* encInd = new EncIndRand();
     encInd->init(this->size);
 
     //--------------------------------------------------------------------------

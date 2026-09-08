@@ -20,7 +20,7 @@
 template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::clear() {
     if (this->dbKwCountsDict != nullptr) {
-        this->benchmark->serverStorage -= this->dbKwCountsDict->getBytes();
+        utils::benchmark::serverStorage -= this->dbKwCountsDict->getBytes();
         delete this->dbKwCountsDict;
         this->dbKwCountsDict = nullptr;
     }
@@ -36,15 +36,15 @@ void NLogNServer<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::setDbKwCountsDict(EncIndRand* dbKwCountsDict) {
     bigint dbKwCountsDictBytes = dbKwCountsDict->getBytes();
-    this->benchmark->serverStorage += dbKwCountsDictBytes;
-    this->benchmark->communication += dbKwCountsDictBytes;
+    utils::benchmark::serverStorage += dbKwCountsDictBytes;
+    utils::benchmark::communication += dbKwCountsDictBytes;
     this->dbKwCountsDict = dbKwCountsDict;
 }
 
 
 template <IsDbTuple DbTuple>
 bool NLogNServer<DbTuple>::getDbKwCount(ubigint pos, const ustring& label, EncIndVal& ret) const {
-    this->benchmark->communication +=
+    utils::benchmark::communication +=
         sizeof(ubigint) + label.length() + this->dbKwCountsDict->VAL_LEN();
     return this->dbKwCountsDict->find(pos, label, ret);
 }
