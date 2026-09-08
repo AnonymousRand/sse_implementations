@@ -88,8 +88,9 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
         if (joinNodes(node1, l.begin())) {
             continue;
         } 
+        bool isNodeJoinable = joinNodes(node1, l.end() - 1);
         DEBUG_ONLY({
-            if (!joinNodes(node1, l.end() - 1)) {
+            if (!isNodeJoinable) {
                 std::cerr << "Error: TdagNode::TdagNode(): im sorry what" << std::endl;
                 std::exit(EXIT_FAILURE);
             }
