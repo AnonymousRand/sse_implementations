@@ -26,8 +26,7 @@ inline constexpr bool SHOULD_BENCHMARK_UPDTS = true;
 
 inline constexpr bool USE_SHORTCUT_DSSE_SETUP = false;
 
-// set this to `true` for truly large (but much slower) DBs
-// otherwise DBs are stored in RAM
+// set this to `true` for truly large (but much slower) DBs (otherwise DBs are stored in RAM)
 inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 
 // this is the capacity in # of entries for the (non-locality) encrypted index read buffers,
