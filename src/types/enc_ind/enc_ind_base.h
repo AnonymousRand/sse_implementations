@@ -20,9 +20,9 @@ public:
     // (we can use the encoded (plaintext) tuple length here for encrypted tuples too, as encrypting
     // an exactly `n`-block-length plaintext with AES-CBC produces a ciphertext of the same size)
     // IMPORTANT: change if this is no longer the case!
-    virtual const int DATA_LEN() const { return config::TUPLE_ENCOD_LEN; }
-    const int VAL_LEN() const { return this->DATA_LEN() + utils::crypto::IV_LEN; }
-    const int ENTRY_LEN() const { return this->KEY_LEN() + this->VAL_LEN(); }
+    virtual constexpr int DATA_LEN() const { return config::TUPLE_ENCOD_LEN; }
+    constexpr int VAL_LEN() const { return this->DATA_LEN() + utils::crypto::IV_LEN; }
+    constexpr int ENTRY_LEN() const { return this->KEY_LEN() + this->VAL_LEN(); }
 
     //--------------------------------------------------------------------------
     // constructors/destructors
