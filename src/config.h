@@ -24,7 +24,7 @@ inline constexpr bool SHOULD_BENCHMARK_UPDTS = true;
 // performance/shortcuts
 
 
-inline constexpr bool USE_SHORTCUT_DSSE_SETUP = true;
+inline constexpr bool USE_SHORTCUT_DSSE_SETUP = false;
 
 // set this to `true` for truly large (but much slower) DBs
 // otherwise DBs are stored in RAM
@@ -47,6 +47,9 @@ static_assert(
 // this is used to determine the size of each entry in encrypted indexes (see that file for details)
 // currently: 11 corresponds to each encrypted tuple taking 3 AES blocks (= 48 bytes)
 inline constexpr int MAX_VALUE_DIGITS = 11;
+static_assert(
+    MAX_VALUE_DIGITS > 0, "Error: `MAX_VALUE_DIGITS` must be strictly positive!"
+);
 
 // currently, encoding a `Tuple<>` is of the form `id,kw[op]dbKw-dbKw`, so all but 3 bytes are
 // divided up between `id`, `kw`, and 2 `dbKw`s. however, we actually must restrict our plaintexts
