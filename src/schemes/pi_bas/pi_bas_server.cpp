@@ -32,7 +32,7 @@ void PiBasServer<DbTuple>::clear() {
     // pointer assignment, so if we don't delete we would make this memory inaccessible
     // the next time we assign `encInd`)
     if (this->encInd != nullptr) {
-        this->benchmark->serverStorage -= this->encInd->getCapacity() * EncIndBase::ENTRY_LEN;
+        this->benchmark->serverStorage -= this->encInd->getBytes();
         delete this->encInd;
         this->encInd = nullptr;
     };
@@ -45,7 +45,7 @@ void PiBasServer<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void PiBasServer<DbTuple>::setEncInd(EncIndRand* encInd) {
-    bigint encIndBytes = encInd->getCapacity() * EncIndBase::ENTRY_LEN;
+    bigint encIndBytes = encInd->getBytes();
     this->benchmark->serverStorage += encIndBytes;
     this->benchmark->communication += encIndBytes;
     this->encInd = encInd;
@@ -54,7 +54,7 @@ void PiBasServer<DbTuple>::setEncInd(EncIndRand* encInd) {
 
 template <IsDbTuple DbTuple>
 EncIndRand* PiBasServer<DbTuple>::getEncInd() const {
-    this->benchmark->communication += this->encInd->getCapacity() * EncIndBase::ENTRY_LEN;
+    this->benchmark->communication += this->encInd->getBytes();
     return this->encInd;
 }
 

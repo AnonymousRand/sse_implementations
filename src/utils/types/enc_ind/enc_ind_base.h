@@ -103,6 +103,7 @@ public:
     void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
 
     bigint getCapacity() const { return this->capacity; }
+    bigint getBytes() const { return this->capacity * ENTRY_LEN; }
 
 protected:
     static const uchar NULL_ENTRY[ENTRY_LEN];
