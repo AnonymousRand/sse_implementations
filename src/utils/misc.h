@@ -13,7 +13,7 @@ namespace utils::misc {
 
 
 template <IsDbTuple DbTuple>
-std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples);
+void cleanUpResults(std::vector<DbTuple>& results);
 
 
 ubigint hashToPos(const ustring& hash);

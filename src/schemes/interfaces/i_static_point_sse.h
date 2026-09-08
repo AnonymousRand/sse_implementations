@@ -44,7 +44,7 @@ public:
         }
 
         if (shouldCleanUpResults) {
-            allResults = utils::misc::cleanUpResults(allResults);
+            utils::misc::cleanUpResults(allResults);
         }
         return allResults;
     }

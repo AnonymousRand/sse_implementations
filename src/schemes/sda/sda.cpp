@@ -102,7 +102,7 @@ std::vector<Tuple<>> Sda<Underly>::search(
     }
 
     if (shouldCleanUpResults) {
-        allResults = utils::misc::cleanUpResults(allResults);
+        utils::misc::cleanUpResults(allResults);
     }
     return allResults;
 }

@@ -16,16 +16,13 @@ namespace utils::misc {
 // (we need the general case of this function to be able to call it from within the general context
 // of `IStaticPointSse`; it just does nothing except in the template specialization below)
 template <IsDbTuple DbTuple>
-std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples) {
-    return dbTuples;
-}
+void cleanUpResults(std::vector<DbTuple>& results) {}
 
 
 // template specialize this method for just `Tuple<>` instead of all
 // SSE classes that use it
 template <>
-std::vector<Tuple<>> cleanUpResults(const std::vector<Tuple<>>& results) {
-    std::vector<Tuple<>> newTuples;
+void cleanUpResults(std::vector<Tuple<>>& results) {
     std::unordered_set<Id> deletedIds;
 
     // find all cancellation tuples
@@ -35,21 +32,18 @@ std::vector<Tuple<>> cleanUpResults(const std::vector<Tuple<>>& results) {
             deletedIds.emplace(result.getId());
         }
     }
-    // copy over vector without deleted (or dummy) tuples, as well as no dummy ids
-    for (const Tuple<>& result : results) {
+
+    // remove all deleted tuples and deletion tuples from `results` in-place
+    std::erase_if(results, [&deletedIds](const Tuple<>& result) {
         Id id = result.getId();
         Op op = result.getOp();
-        if (id != DUMMY && op == Op::INS && !deletedIds.contains(id)) {
-            newTuples.push_back(result);
-        }
-    }
-
-    return newTuples;
+        return id == DUMMY || op != Op::INS || deletedIds.contains(id);
+    });
 }
 
 
 ubigint hashToPos(const ustring& hash) {
-    // this conversion mess is from USENIX'24
+    // this conversion mess is from USENIX'24's implementation
     return (*((ubigint*)hash.c_str()));
 }
 
@@ -81,8 +75,8 @@ void unpadStr(std::basic_string<CharType>& str) {
 
 
 // remaining explicit template specializations beyond the one earlier
-template std::vector<SrcIDb1Tuple> cleanUpResults(const std::vector<SrcIDb1Tuple>& results);
-//template std::vector<Tuple<IdAlias>> cleanUpResults(const std::vector<Tuple<IdAlias>>& results);
+template void cleanUpResults(std::vector<SrcIDb1Tuple>& results);
+//template void cleanUpResults(std::vector<Tuple<IdAlias>>& results);
 
 
 template void padStr(std::basic_string<char>& str, bigint targetLen);
