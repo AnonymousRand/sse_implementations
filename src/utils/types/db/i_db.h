@@ -9,6 +9,11 @@
 #include "utils/types/tuple.h"
 
 
+//==============================================================================
+// `IDb`
+//==============================================================================
+
+
 template <IsDbTuple DbTuple = Tuple<>>
 class IDb {
 protected:
@@ -79,8 +84,11 @@ protected:
      */
     void onNewDbTuple(const DbTuple& dbTuple);
 
-//------------------------------------------------------------------------------
-// iterator
+
+//==============================================================================
+// `IDb` iterator
+//==============================================================================
+
 
 // this allows us to iterate through an `IDb` using range-based `for` loop or iterators,
 // implementing the bare minimum operator overloads necessary to do so
