@@ -24,23 +24,23 @@ std::vector<DbTuple> cleanUpResults(const std::vector<DbTuple>& dbTuples) {
 // template specialize this method for just `Tuple<>` instead of all
 // SSE classes that use it
 template <>
-std::vector<Tuple<>> cleanUpResults(const std::vector<Tuple<>>& tuples) {
+std::vector<Tuple<>> cleanUpResults(const std::vector<Tuple<>>& results) {
     std::vector<Tuple<>> newTuples;
     std::unordered_set<Id> deletedIds;
 
     // find all cancellation tuples
-    for (const Tuple<>& tuple : tuples) {
-        Op op = tuple.getOp();
+    for (const Tuple<>& result : results) {
+        Op op = result.getOp();
         if (op == Op::DEL) {
-            deletedIds.emplace(tuple.getId());
+            deletedIds.emplace(result.getId());
         }
     }
     // copy over vector without deleted (or dummy) tuples, as well as no dummy ids
-    for (const Tuple<>& tuple : tuples) {
-        Id id = tuple.getId();
-        Op op = tuple.getOp();
+    for (const Tuple<>& result : results) {
+        Id id = result.getId();
+        Op op = result.getOp();
         if (id != DUMMY && op == Op::INS && !deletedIds.contains(id)) {
-            newTuples.push_back(tuple);
+            newTuples.push_back(result);
         }
     }
 
@@ -81,8 +81,8 @@ void unpadStr(std::basic_string<CharType>& str) {
 
 
 // remaining explicit template specializations beyond the one earlier
-template std::vector<SrcIDb1Tuple> cleanUpResults(const std::vector<SrcIDb1Tuple>& tuples);
-//template std::vector<Tuple<IdAlias>> cleanUpResults(const std::vector<Tuple<IdAlias>>& tuples);
+template std::vector<SrcIDb1Tuple> cleanUpResults(const std::vector<SrcIDb1Tuple>& results);
+//template std::vector<Tuple<IdAlias>> cleanUpResults(const std::vector<Tuple<IdAlias>>& results);
 
 
 template void padStr(std::basic_string<char>& str, bigint targetLen);
