@@ -24,54 +24,33 @@ int main() {
     const bigint maxDbSize = std::pow(2, maxDbSizeExp);
     std::cout << std::endl << std::endl;
 
-    std::unique_ptr<PiBas<>> piBas               = app::createSse<PiBas<>>(
-        config::SHOULD_BENCHMARK
-    );
-    std::unique_ptr<NLogN<>> nLogN               = app::createSse<NLogN<>>(
-        config::SHOULD_BENCHMARK
-    );
-    std::unique_ptr<LogSrc<PiBas>> logSrcPiBas   = app::createSse<LogSrc<PiBas>>(
-        config::SHOULD_BENCHMARK
-    );
-    std::unique_ptr<LogSrc<NLogN>> logSrcNLogN   = app::createSse<LogSrc<NLogN>>(
-        config::SHOULD_BENCHMARK
-    );
-    std::unique_ptr<LogSrcI<PiBas>> logSrcIPiBas = app::createSse<LogSrcI<PiBas>>(
-        config::SHOULD_BENCHMARK
-    );
-    std::unique_ptr<LogSrcI<NLogN>> logSrcINLogN = app::createSse<LogSrcI<NLogN>>(
-        config::SHOULD_BENCHMARK
-    );
-    std::unique_ptr<LogSrcIStar> logSrcIStar     = app::createSse<LogSrcIStar>(
-        config::SHOULD_BENCHMARK
-    );
+    std::unique_ptr<PiBas<>>        piBas         = app::createSse<PiBas<>>();
+    std::unique_ptr<NLogN<>>        nLogN         = app::createSse<NLogN<>>();
+    std::unique_ptr<LogSrc<PiBas>>  logSrcPiBas   = app::createSse<LogSrc<PiBas>>();
+    std::unique_ptr<LogSrc<NLogN>>  logSrcNLogN   = app::createSse<LogSrc<NLogN>>();
+    std::unique_ptr<LogSrcI<PiBas>> logSrcIPiBas  = app::createSse<LogSrcI<PiBas>>();
+    std::unique_ptr<LogSrcI<NLogN>> logSrcINLogN  = app::createSse<LogSrcI<NLogN>>();
+    std::unique_ptr<LogSrcIStar>    logSrcIStar   = app::createSse<LogSrcIStar>();
 
-    std::unique_ptr<Sda<PiBas<>>> sdaPiBas               = app::createDsse<Sda<PiBas<>>>(
-        config::SHOULD_BENCHMARK,
+    std::unique_ptr<Sda<PiBas<>>>        sdaPiBas           = app::createDsse<Sda<PiBas<>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<NLogN<>>> sdaNLogN               = app::createDsse<Sda<NLogN<>>>(
-        config::SHOULD_BENCHMARK,
+    std::unique_ptr<Sda<NLogN<>>>        sdaNLogN           = app::createDsse<Sda<NLogN<>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrc<PiBas>>> sdaLogSrcPiBas   = app::createDsse<Sda<LogSrc<PiBas>>>(
-        config::SHOULD_BENCHMARK,
+    std::unique_ptr<Sda<LogSrc<PiBas>>>  sdaLogSrcPiBas     = app::createDsse<Sda<LogSrc<PiBas>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrc<NLogN>>> sdaLogSrcNLogN   = app::createDsse<Sda<LogSrc<NLogN>>>(
-        config::SHOULD_BENCHMARK,
+    std::unique_ptr<Sda<LogSrc<NLogN>>>  sdaLogSrcNLogN     = app::createDsse<Sda<LogSrc<NLogN>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas = app::createDsse<Sda<LogSrcI<PiBas>>>(
-        config::SHOULD_BENCHMARK,
+    std::unique_ptr<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas    = app::createDsse<Sda<LogSrcI<PiBas>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrcI<NLogN>>> sdaLogSrcINLogN = app::createDsse<Sda<LogSrcI<NLogN>>>(
-        config::SHOULD_BENCHMARK,
+    std::unique_ptr<Sda<LogSrcI<NLogN>>> sdaLogSrcINLogN    = app::createDsse<Sda<LogSrcI<NLogN>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrcIStar>> sdaLogSrcIStar     = app::createDsse<Sda<LogSrcIStar>>(
-        config::SHOULD_BENCHMARK,
+    std::unique_ptr<Sda<LogSrcIStar>>    sdaLogSrcIStar     = app::createDsse<Sda<LogSrcIStar>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
 
@@ -82,46 +61,46 @@ int main() {
     debugging.printHeader();
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    debugging.run(piBas.get(), config::SHOULD_BENCHMARK);
+    debugging.run(piBas.get());
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    debugging.run(nLogN.get(), config::SHOULD_BENCHMARK);
+    debugging.run(nLogN.get());
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    debugging.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    debugging.run(logSrcPiBas.get());
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    debugging.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    debugging.run(logSrcNLogN.get());
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    debugging.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    debugging.run(logSrcIPiBas.get());
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    debugging.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    debugging.run(logSrcINLogN.get());
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    debugging.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
+    debugging.run(logSrcIStar.get());
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    debugging.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
+    debugging.run(sdaPiBas.get());
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    debugging.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
+    debugging.run(sdaNLogN.get());
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    debugging.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    debugging.run(sdaLogSrcPiBas.get());
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    debugging.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    debugging.run(sdaLogSrcNLogN.get());
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    debugging.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    debugging.run(sdaLogSrcIPiBas.get());
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    debugging.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    debugging.run(sdaLogSrcINLogN.get());
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    debugging.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
+    debugging.run(sdaLogSrcIStar.get());
 
     // free memory ASAP
     debugging.clearDb();
@@ -133,46 +112,46 @@ int main() {
     allVsDbSize.printHeader();
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    allVsDbSize.run(piBas.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(piBas.get());
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    allVsDbSize.run(nLogN.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(nLogN.get());
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    allVsDbSize.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(logSrcPiBas.get());
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    allVsDbSize.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(logSrcNLogN.get());
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    allVsDbSize.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(logSrcIPiBas.get());
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    allVsDbSize.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(logSrcINLogN.get());
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    allVsDbSize.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(logSrcIStar.get());
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    allVsDbSize.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(sdaPiBas.get());
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    allVsDbSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(sdaNLogN.get());
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    allVsDbSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(sdaLogSrcPiBas.get());
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    allVsDbSize.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(sdaLogSrcNLogN.get());
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    allVsDbSize.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(sdaLogSrcIPiBas.get());
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    allVsDbSize.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(sdaLogSrcINLogN.get());
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    allVsDbSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
+    allVsDbSize.run(sdaLogSrcIStar.get());
 
     //--------------------------------------------------------------------------
     // search vs. result size experiment
@@ -181,46 +160,46 @@ int main() {
     searchVsResultSize.printHeader();
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    searchVsResultSize.run(piBas.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(piBas.get());
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    searchVsResultSize.run(nLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(nLogN.get());
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    searchVsResultSize.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(logSrcPiBas.get());
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    searchVsResultSize.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(logSrcNLogN.get());
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    searchVsResultSize.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(logSrcIPiBas.get());
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    searchVsResultSize.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(logSrcINLogN.get());
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    searchVsResultSize.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(logSrcIStar.get());
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    searchVsResultSize.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(sdaPiBas.get());
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    searchVsResultSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(sdaNLogN.get());
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    searchVsResultSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(sdaLogSrcPiBas.get());
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    searchVsResultSize.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(sdaLogSrcNLogN.get());
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    searchVsResultSize.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(sdaLogSrcIPiBas.get());
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    searchVsResultSize.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(sdaLogSrcINLogN.get());
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    searchVsResultSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
+    searchVsResultSize.run(sdaLogSrcIStar.get());
 
     //--------------------------------------------------------------------------
     // search vs. range size experiment
@@ -229,46 +208,46 @@ int main() {
     searchVsRangeSize.printHeader();
 
     std::cout << "================ PiBas =================" << std::endl << std::endl;
-    searchVsRangeSize.run(piBas.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(piBas.get());
 
     std::cout << "================ NLogN =================" << std::endl << std::endl;
-    searchVsRangeSize.run(nLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(nLogN.get());
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    searchVsRangeSize.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(logSrcPiBas.get());
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    searchVsRangeSize.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(logSrcNLogN.get());
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    searchVsRangeSize.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(logSrcIPiBas.get());
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    searchVsRangeSize.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(logSrcINLogN.get());
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    searchVsRangeSize.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(logSrcIStar.get());
 
     std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-    searchVsRangeSize.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(sdaPiBas.get());
 
     std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-    searchVsRangeSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(sdaNLogN.get());
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    searchVsRangeSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(sdaLogSrcPiBas.get());
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    searchVsRangeSize.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(sdaLogSrcNLogN.get());
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    searchVsRangeSize.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(sdaLogSrcIPiBas.get());
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    searchVsRangeSize.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(sdaLogSrcINLogN.get());
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    searchVsRangeSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
+    searchVsRangeSize.run(sdaLogSrcIStar.get());
     
     //--------------------------------------------------------------------------
     // search vs. false positives experiment
@@ -277,34 +256,34 @@ int main() {
     searchVsFalsePos.printHeader();
 
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-    searchVsFalsePos.run(logSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(logSrcPiBas.get());
 
     std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-    searchVsFalsePos.run(logSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(logSrcIPiBas.get());
 
     std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-    searchVsFalsePos.run(logSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(logSrcNLogN.get());
 
     std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-    searchVsFalsePos.run(logSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(logSrcINLogN.get());
 
     std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-    searchVsFalsePos.run(logSrcIStar.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(logSrcIStar.get());
 
     std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-    searchVsFalsePos.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(sdaLogSrcPiBas.get());
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-    searchVsFalsePos.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(sdaLogSrcIPiBas.get());
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-    searchVsFalsePos.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(sdaLogSrcNLogN.get());
 
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-    searchVsFalsePos.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(sdaLogSrcINLogN.get());
 
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-    searchVsFalsePos.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
+    searchVsFalsePos.run(sdaLogSrcIStar.get());
 
     //--------------------------------------------------------------------------
     // update vs. DB size experiment
@@ -314,27 +293,27 @@ int main() {
         updateVsDbSize.printHeader();
 
         std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-        updateVsDbSize.run(sdaPiBas.get(), config::SHOULD_BENCHMARK);
+        updateVsDbSize.run(sdaPiBas.get());
 
         std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-        updateVsDbSize.run(sdaNLogN.get(), config::SHOULD_BENCHMARK);
+        updateVsDbSize.run(sdaNLogN.get());
 
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcPiBas.get(), config::SHOULD_BENCHMARK);
+        updateVsDbSize.run(sdaLogSrcPiBas.get());
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcNLogN.get(), config::SHOULD_BENCHMARK);
+        updateVsDbSize.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcIPiBas.get(), config::SHOULD_BENCHMARK);
+        updateVsDbSize.run(sdaLogSrcIPiBas.get());
 
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcINLogN.get(), config::SHOULD_BENCHMARK);
+        updateVsDbSize.run(sdaLogSrcINLogN.get());
 
         // (note that this has horrendous storage and performance as randomized keywords lets
         // individual SDa subindexes have HUGE TDAG 1s. for the same reason this is not secure)
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcIStar.get(), config::SHOULD_BENCHMARK);
+        updateVsDbSize.run(sdaLogSrcIStar.get());
 
         // free memory ASAP
         updateVsDbSize.clearDb();

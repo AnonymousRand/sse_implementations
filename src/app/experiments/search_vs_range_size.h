@@ -34,8 +34,8 @@ public:
         std::cout << std::endl << std::endl;
     }
 
-    void run(ISse<>* sse, bool shouldBenchmark) const override {
-        utils::benchmark::printHeader(shouldBenchmark);
+    void run(ISse<>* sse) const override {
+        utils::benchmark::printHeader();
 
         bigint dbSize = std::pow(2, this->dbSizeExp);
         Db<> db;
@@ -48,9 +48,7 @@ public:
         for (bigint rangeSizeExp = 0; rangeSizeExp <= this->dbSizeExp; rangeSizeExp++) {
             Range<Kw> query {0, (bigint)std::pow(2, rangeSizeExp) - 1};
             sse->search(query);
-            utils::benchmark::print(
-                shouldBenchmark, "Search", std::format("(range size 2^{})", rangeSizeExp)
-            );
+            utils::benchmark::print("Search", std::format("(range size 2^{})", rangeSizeExp));
         }
         std::cout << std::endl;
 

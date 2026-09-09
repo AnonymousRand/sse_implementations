@@ -13,27 +13,17 @@ namespace app {
 
 
 template <class Sse> requires IsSse<Sse>
-std::unique_ptr<Sse> createSse(bool shouldBenchmark) {
-    if (shouldBenchmark) {
-        return std::make_unique<Benchmarked<Sse>>();
-    } else {
-        return std::make_unique<Sse>();
-    }
+std::unique_ptr<Sse> createSse() {
+    return std::make_unique<Benchmarked<Sse>>();
 }
 
 
 template <class Dsse> requires IsDsse<Dsse>
-std::unique_ptr<Dsse> createDsse(
-    bool shouldBenchmark, bool useShortcutSetup, bool shouldBenchmarkUpdts
-) {
-    if (shouldBenchmark) {
-        if (shouldBenchmarkUpdts) {
-            return std::make_unique<BenchmarkedUpdts<Dsse>>(useShortcutSetup);
-        } else {
-            return std::make_unique<Benchmarked<Dsse>>(useShortcutSetup);
-        }
+std::unique_ptr<Dsse> createDsse(bool useShortcutSetup, bool shouldBenchmarkUpdts) {
+    if (shouldBenchmarkUpdts) {
+        return std::make_unique<BenchmarkedUpdts<Dsse>>(useShortcutSetup);
     } else {
-        return std::make_unique<Dsse>(useShortcutSetup);
+        return std::make_unique<Benchmarked<Dsse>>(useShortcutSetup);
     }
 }
 

@@ -145,78 +145,68 @@ inline void resetEphems() {
 // 
 // the ugly workaround i have is just to print profile header names alongside their
 // values inside the *body* of the table (in `print()` below)
-inline void printHeader(bool shouldBenchmark) {
-    if (shouldBenchmark) {
-        std::cout << std::format("| {:<{}} ", "Params", PRINT_LABEL_WIDTH)
-                  << std::format("| {:<{}} ", "Time (ms)", PRINT_COL_WIDTH)
-                  << std::format("| {:<{}} ", "Server Storage (B)", PRINT_COL_WIDTH)
-                  << std::format("| {:<{}} ", "Communication (B)", PRINT_COL_WIDTH)
-                  // (trailing spaces to match bottom border, which should extend until
-                  // the right border of the first profile output in the table body)
-                  << std::format("| {:<{}}  ", "Profiling (ms) ...", PRINT_COL_WIDTH)
-                  << std::endl;
-        std::cout << std::format("--{:-<{}}-", "", PRINT_LABEL_WIDTH)
-                  << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
-                  << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
-                  << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
-                  << std::format("--{:-<{}}--", "", PRINT_COL_WIDTH)
-                  << std::endl;
-    }
+inline void printHeader() {
+    std::cout << std::format("| {:<{}} ", "Params", PRINT_LABEL_WIDTH)
+              << std::format("| {:<{}} ", "Time (ms)", PRINT_COL_WIDTH)
+              << std::format("| {:<{}} ", "Server Storage (B)", PRINT_COL_WIDTH)
+              << std::format("| {:<{}} ", "Communication (B)", PRINT_COL_WIDTH)
+              // (trailing spaces to match bottom border, which should extend until
+              // the right border of the first profile output in the table body)
+              << std::format("| {:<{}}  ", "Profiling (ms) ...", PRINT_COL_WIDTH)
+              << std::endl;
+    std::cout << std::format("--{:-<{}}-", "", PRINT_LABEL_WIDTH)
+              << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
+              << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
+              << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
+              << std::format("--{:-<{}}--", "", PRINT_COL_WIDTH)
+              << std::endl;
 }
 
 
-inline void print(bool shouldBenchmark, const std::string& label) {
-    if (shouldBenchmark) {
-        std::string profileOutputs = "";
-        for (const auto& profilePair : profiles) {
-            std::string profileName = profilePair.first;
-            Profile profile = profilePair.second;
-            // (you are advised to keep profile names short because of this :3)
-            profileOutputs += std::format(
-                "| {0:<{1}.{1}} ",
-                std::format("{}: {}", profileName, profile.time), PRINT_COL_WIDTH
-            );
-        }
-
-
-        std::cout << std::format("| {:<{}} ", label, PRINT_LABEL_WIDTH)
-                  // explicitly cast doubles to string so that `.` controls exact string length,
-                  // instead of sigfigs for doubles (where e.g. .01 & .10 are different lengths)
-                  << std::format("| {0:<{1}.{1}} ", std::to_string(time), PRINT_COL_WIDTH)
-                  << std::format("| {:<{}} ", serverStorage, PRINT_COL_WIDTH)
-                  << std::format("| {:<{}} ", communication, PRINT_COL_WIDTH)
-                  << profileOutputs << "|"
-                  << std::endl;
+inline void print(const std::string& label) {
+    std::string profileOutputs = "";
+    for (const auto& profilePair : profiles) {
+        std::string profileName = profilePair.first;
+        Profile profile = profilePair.second;
+        // (you are advised to keep profile names short because of this :3)
+        profileOutputs += std::format(
+            "| {0:<{1}.{1}} ", std::format("{}: {}", profileName, profile.time), PRINT_COL_WIDTH
+        );
     }
+
+    std::cout << std::format("| {:<{}} ", label, PRINT_LABEL_WIDTH)
+              // explicitly cast doubles to string so that `.` controls exact string length,
+              // instead of sigfigs for doubles (where e.g. .01 & .10 are different lengths)
+              << std::format("| {0:<{1}.{1}} ", std::to_string(time), PRINT_COL_WIDTH)
+              << std::format("| {:<{}} ", serverStorage, PRINT_COL_WIDTH)
+              << std::format("| {:<{}} ", communication, PRINT_COL_WIDTH)
+              << profileOutputs << "|"
+              << std::endl;
 }
 
 
-inline void print(bool shouldBenchmark, const std::string& label1, const std::string& label2) {
+inline void print(const std::string& label1, const std::string& label2) {
     std::string label = std::format(
         "{:<{}} {:<{}}",
         label1, PRINT_LABEL_FIRST_HALF_WIDTH,
         // (`- 1` because of the space between the first and second halves)
         label2, PRINT_LABEL_WIDTH - PRINT_LABEL_FIRST_HALF_WIDTH - 1
     );
-    print(shouldBenchmark, label);
+    print(label);
 }
 
 
-inline void printUpdtAvgs(bool shouldBenchmark, const std::string& label) {
-    if (shouldBenchmark) {
-        double avgUpdtTime          = totalUpdtTime          / totalUpdtCount;
-        double avgUpdtCommunication = totalUpdtCommunication / totalUpdtCount;
+inline void printUpdtAvgs(const std::string& label) {
+    double avgUpdtTime          = totalUpdtTime          / totalUpdtCount;
+    double avgUpdtCommunication = totalUpdtCommunication / totalUpdtCount;
 
-        std::cout << std::format("| {:<25} ", label)
-                  << std::format(
-                      "| {0:<{1}.{1}} ", std::to_string(avgUpdtTime), PRINT_COL_WIDTH
-                  )
-                  << std::format("| {:<{}} ", "-", PRINT_COL_WIDTH)
-                  << std::format(
-                      "| {0:<{1}.{1}} |", std::to_string(avgUpdtCommunication), PRINT_COL_WIDTH
-                  )
-                  << std::endl;
-    }
+    std::cout << std::format("| {:<25} ", label)
+              << std::format("| {0:<{1}.{1}} ", std::to_string(avgUpdtTime), PRINT_COL_WIDTH)
+              << std::format("| {:<{}} ", "-", PRINT_COL_WIDTH)
+              << std::format(
+                  "| {0:<{1}.{1}} |", std::to_string(avgUpdtCommunication), PRINT_COL_WIDTH
+              )
+              << std::endl;
 }
 
 

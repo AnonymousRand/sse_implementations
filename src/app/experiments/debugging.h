@@ -43,7 +43,7 @@ public:
     }
 
     // experiment for debugging with fixed query and printed results
-    void run(ISse<>* sse, bool shouldBenchmark) const override {
+    void run(ISse<>* sse) const override {
         // setup
         sse->setup(utils::crypto::KEY_LEN, this->db);
 

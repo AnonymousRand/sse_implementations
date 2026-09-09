@@ -39,8 +39,8 @@ public:
         std::cout << std::endl << std::endl;
     }
 
-    void run(IDsse<>* dsse, bool shouldBenchmark) const override {
-        utils::benchmark::printHeader(shouldBenchmark);
+    void run(IDsse<>* dsse) const override {
+        utils::benchmark::printHeader();
 
         // setup (with empty DB, just to init keys and stuff)
         dsse->setup(utils::crypto::KEY_LEN, Db<> {});
@@ -49,9 +49,9 @@ public:
         for (bigint i = 0; i < this->db.getSize(); i++) {
             Tuple<> tuple = this->db[i];
             dsse->update(tuple);
-            utils::benchmark::print(shouldBenchmark, "Update", std::to_string(i));
+            utils::benchmark::print("Update", std::to_string(i));
         }
-        utils::benchmark::printUpdtAvgs(shouldBenchmark, "Averages");
+        utils::benchmark::printUpdtAvgs("Averages");
         std::cout << std::endl;
 
         dsse->clear();

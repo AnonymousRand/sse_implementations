@@ -45,8 +45,8 @@ public:
         std::cout << std::endl << std::endl;
     }
 
-    void run(ISse<>* sse, bool shouldBenchmark) const override {
-        utils::benchmark::printHeader(shouldBenchmark);
+    void run(ISse<>* sse) const override {
+        utils::benchmark::printHeader();
 
         // (start `dbSizeExp` big enough for the query with `this->resultSize` results
         // to make sense)
@@ -61,13 +61,11 @@ public:
 
             // setup
             sse->setup(utils::crypto::KEY_LEN, db);
-            utils::benchmark::print(
-                shouldBenchmark, "Setup", std::format("(size 2^{})", dbSizeExp)
-            );
+            utils::benchmark::print("Setup", std::format("(size 2^{})", dbSizeExp));
 
             // search
             sse->search(query);
-            utils::benchmark::print(shouldBenchmark, "Search");
+            utils::benchmark::print("Search");
 
             sse->clear();
         }

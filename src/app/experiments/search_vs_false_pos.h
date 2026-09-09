@@ -36,8 +36,8 @@ public:
         std::cout << std::endl << std::endl;
     }
 
-    void run(ISse<>* sse, bool shouldBenchmark) const override {
-        utils::benchmark::printHeader(shouldBenchmark);
+    void run(ISse<>* sse) const override {
+        utils::benchmark::printHeader();
 
         // (start `dbSizeExp` at 2 as otherwise the query doesn't really make sense, and we also
         // want `dbSize` >= 4 at all times; see later comment)
@@ -65,9 +65,7 @@ public:
 
             // search
             sse->search(query);
-            utils::benchmark::print(
-                shouldBenchmark, "Search", std::format("(false pos 2^{}-1)", dbSizeExp)
-            );
+            utils::benchmark::print("Search", std::format("(false pos 2^{}-1)", dbSizeExp));
 
             sse->clear();
         }
