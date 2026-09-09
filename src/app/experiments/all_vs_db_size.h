@@ -24,13 +24,13 @@ namespace app::experiments {
 
 class AllVsDbSize : public IExperiment<ISse<>> {
 private:
-    // CONFIG
-    inline static constexpr bigint RESULT_SIZE = 100;
+    // CONFIG; adjust at will!
+    static constexpr bigint RESULT_SIZE = 100;
 
 public:
     AllVsDbSize(int maxDbSizeExp) : maxDbSizeExp(maxDbSizeExp) {
-        bigint maxDbSize = std::pow(2, maxDbSizeExp);
         // make sure we can still run at least one setup/search by capping result size at DB size
+        bigint maxDbSize = std::pow(2, maxDbSizeExp);
         this->resultSize = std::min(RESULT_SIZE, maxDbSize);
     }
 

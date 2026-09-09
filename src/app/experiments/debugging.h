@@ -23,7 +23,7 @@ namespace app::experiments {
 class Debugging : public IExperiment<ISse<>> {
 public:
     Debugging(int dbSizeExp) : dbSizeExp(dbSizeExp) {
-        // CONFIG; adjust at will!!
+        // CONFIG; adjust at will!
 
         // DB and query declared as member variables so that they don't change between
         // calls to `run()`, for different SSE schemes

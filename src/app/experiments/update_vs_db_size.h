@@ -1,9 +1,13 @@
+// WARNING: this is a slow experiment to run since `update()` is slow!!
+
 #pragma once
 
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <string>
+
+#include "config.h"
 
 #include "app/db_factory.h"
 #include "app/experiments/i_experiment.h"
@@ -21,12 +25,16 @@ namespace app::experiments {
 
 
 class UpdateVsDbSize : public IExperiment<IDsse<>> {
+private:
+    // CONFIG; adjust at will!
+    static constexpr int DB_SIZE_EXP_LIMIT = config::SHOULD_PRINT_EACH_UPDT ? 14 : 16;
+
 public:
     UpdateVsDbSize(int dbSizeExp) {
         // CONFIG; adjust at will!
 
         // prevent this experiment from taking far too long and outputting far too much text
-        this->dbSizeExp = std::min(dbSizeExp, 12);
+        this->dbSizeExp = std::min(dbSizeExp, DB_SIZE_EXP_LIMIT);
 
         // DB and declared as a member variable so that it doesn't change between
         // calls to `run()`, for different SSE schemes
@@ -53,7 +61,9 @@ public:
         for (bigint i = 0; i < this->db.getSize(); i++) {
             Tuple<> tuple = this->db[i];
             dsse->update(tuple);
-            utils::benchmark::print("Update", std::to_string(i));
+            if (config::SHOULD_PRINT_EACH_UPDT) {
+                utils::benchmark::print("Update", std::to_string(i));
+            }
         }
         utils::benchmark::printUpdtAvgs("Averages");
         std::cout << std::endl;

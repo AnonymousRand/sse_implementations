@@ -17,6 +17,12 @@ namespace config {
 
 inline constexpr bool SHOULD_BENCHMARK_UPDTS = true;
 
+/**
+ * whether update benchmarking stats should be printed after every single update,
+ * or only print an average at the end (as there can be very many updates!).
+ */
+inline constexpr bool SHOULD_PRINT_EACH_UPDT = true;
+
 
 //------------------------------------------------------------------------------
 // performance/shortcuts
