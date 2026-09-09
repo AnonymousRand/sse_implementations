@@ -40,6 +40,7 @@ public:
     virtual std::string toPrintableStr() const = 0;
     ustring toUstr() const;
 
+    // (note that the `= default` seems to remove the need to template this friended method)
     friend bool operator ==(const IDbTuple& dbTuple1, const IDbTuple& dbTuple2) = default;
     template <IsDbDoc DbDoc2, class DbKw2>
     friend std::ostream& operator <<(std::ostream& os, const IDbTuple<DbDoc2, DbKw2>& iDbTuple);
