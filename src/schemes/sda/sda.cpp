@@ -44,12 +44,11 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
             return;
         }
 
-        bigint lastFilledInd = std::log2(db.getSize());
-
         // this is the shortcut way: simply initialize and fill in all subindexes in one go
         // (note that the non-shortcut `setup()` places earlier items in `db` into larger
         // subindexes, so we preserve that behavior here by starting from the earlier tuples
         // in `db` up the largest subindexes first (this was needed anyway))
+        bigint lastFilledInd = std::log2(db.getSize());
         bigint dbPos = 0;
         for (bigint i = lastFilledInd; i >= 0; i--) {
             bigint indSize = std::pow(2, i);
