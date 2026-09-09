@@ -18,7 +18,7 @@
 
 
 int main() {
-    bigint maxDbSizeExp;
+    int maxDbSizeExp;
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
     const bigint maxDbSize = std::pow(2, maxDbSizeExp);

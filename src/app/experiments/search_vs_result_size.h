@@ -21,7 +21,7 @@ namespace app::experiments {
 
 class SearchVsResultSize : public IExperiment<ISse<>> {
 public:
-    SearchVsResultSize(bigint dbSizeExp) : dbSizeExp(dbSizeExp) {}
+    SearchVsResultSize(int dbSizeExp) : dbSizeExp(dbSizeExp) {}
 
     void printHeader() const override {
         std::cout << std::endl;
@@ -55,8 +55,8 @@ public:
         sse->setup(utils::crypto::KEY_LEN, db);
 
         // searches
-        for (bigint i = 0; i <= this->dbSizeExp; i++) {
-            Range<Kw> query {0, (bigint)std::pow(2, i) - 1};
+        for (int i = 0; i <= this->dbSizeExp; i++) {
+            Range<Kw> query {0, (Kw)std::pow(2, i) - 1};
             sse->search(query);
             utils::benchmark::print("Search", std::format("(result size 2^{})", i));
         }
@@ -66,7 +66,7 @@ public:
     }
 
 private:
-    bigint dbSizeExp;
+    int dbSizeExp;
 };
 
 

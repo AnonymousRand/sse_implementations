@@ -23,7 +23,7 @@ namespace app::experiments {
 
 class SearchVsFalsePos : public IExperiment<ISse<>> {
 public:
-    SearchVsFalsePos(bigint maxDbSizeExp) : maxDbSizeExp(maxDbSizeExp) {}
+    SearchVsFalsePos(int maxDbSizeExp) : maxDbSizeExp(maxDbSizeExp) {}
 
     void printHeader() const override {
         std::cout << std::endl;
@@ -41,7 +41,7 @@ public:
 
         // (start `dbSizeExp` at 2 as otherwise the query doesn't really make sense, and we also
         // want `dbSize` >= 4 at all times; see later comment)
-        for (bigint dbSizeExp = 2; dbSizeExp <= this->maxDbSizeExp; dbSizeExp++) {
+        for (int dbSizeExp = 2; dbSizeExp <= this->maxDbSizeExp; dbSizeExp++) {
             bigint dbSize = std::pow(2, dbSizeExp);
 
             // create a DB where all but one tuple have keyword 0, and the remaining tuple
@@ -73,7 +73,7 @@ public:
     }
 
 private:
-    bigint maxDbSizeExp;
+    int maxDbSizeExp;
 };
 
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -21,12 +22,15 @@ namespace app::experiments {
 
 class UpdateVsDbSize : public IExperiment<IDsse<>> {
 public:
-    UpdateVsDbSize(bigint dbSizeExp) : dbSizeExp(dbSizeExp) {
+    UpdateVsDbSize(int dbSizeExp) {
         // CONFIG; adjust at will!
+
+        // prevent this experiment from taking far too long and outputting far too much text
+        this->dbSizeExp = std::min(dbSizeExp, 3);
 
         // DB and declared as a member variable so that it doesn't change between
         // calls to `run()`, for different SSE schemes
-        createDb(this->db, std::pow(2, dbSizeExp), true, true);
+        createDb(this->db, std::pow(2, this->dbSizeExp), true, true);
     }
 
     void printHeader() const override {
@@ -63,7 +67,7 @@ public:
     }
 
 private:
-    bigint dbSizeExp;
+    int dbSizeExp;
     Db<> db;
 };
 

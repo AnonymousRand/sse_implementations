@@ -22,12 +22,12 @@ namespace app::experiments {
 
 class Debugging : public IExperiment<ISse<>> {
 public:
-    Debugging(bigint dbSizeExp) : dbSizeExp(dbSizeExp) {
+    Debugging(int dbSizeExp) : dbSizeExp(dbSizeExp) {
         // CONFIG; adjust at will!!
 
         // DB and query declared as member variables so that they don't change between
         // calls to `run()`, for different SSE schemes
-        createDb(this->db, std::pow(2, dbSizeExp), true, true);
+        createDb(this->db, std::pow(2, this->dbSizeExp), true, true);
         this->query = Range<Kw> {3, 5};
     }
 
@@ -76,7 +76,7 @@ public:
     }
 
 private:
-    bigint dbSizeExp;
+    int dbSizeExp;
     Db<> db;
     Range<Kw> query;
 };

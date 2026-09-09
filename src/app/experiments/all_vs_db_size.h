@@ -28,7 +28,7 @@ private:
     inline static constexpr bigint RESULT_SIZE = 100;
 
 public:
-    AllVsDbSize(bigint maxDbSizeExp) : maxDbSizeExp(maxDbSizeExp) {
+    AllVsDbSize(int maxDbSizeExp) : maxDbSizeExp(maxDbSizeExp) {
         bigint maxDbSize = std::pow(2, maxDbSizeExp);
         // make sure we can still run at least one setup/search by capping result size at DB size
         this->resultSize = std::min(RESULT_SIZE, maxDbSize);
@@ -50,7 +50,7 @@ public:
 
         // (start `dbSizeExp` big enough for the query with `this->resultSize` results
         // to make sense)
-        for (bigint dbSizeExp = std::ceil(std::log2(this->resultSize));
+        for (int dbSizeExp = std::ceil(std::log2(this->resultSize));
              dbSizeExp <= this->maxDbSizeExp; dbSizeExp++)
         {
             bigint dbSize = std::pow(2, dbSizeExp);
@@ -73,7 +73,7 @@ public:
     }
 
 private:
-    bigint maxDbSizeExp;
+    int maxDbSizeExp;
     bigint resultSize;
 };
 
