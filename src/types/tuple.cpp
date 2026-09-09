@@ -37,8 +37,7 @@ std::ostream& operator <<(std::ostream& os, const IDbTuple<DbDoc, DbKw>& iDbTupl
 
 
 template <class DbKw>
-const std::string Tuple<DbKw>::REGEX_STR = "(" + Doc::REGEX_STR + ")(-?[0-9]+--?[0-9]+)";
-
+const std::string Tuple<DbKw>::REGEX_STR = Doc::REGEX_STR + "(-?[0-9]+--?[0-9]+)";
 
 template <class DbKw>
 const std::regex Tuple<DbKw>::REGEX(REGEX_STR);
@@ -68,7 +67,7 @@ Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
     std::smatch matches;
     bool isMatchFound = std::regex_search(str, matches, REGEX);
     DEBUG_ONLY({
-        if (!isMatchFound || matches.size() != 3) {
+        if (!isMatchFound || matches.size() != Doc::REGEX_SUBMATCH_COUNT + 2) {
             std::cerr << "Error: Tuple::fromStr(): bad string \"" << str << "\" passed\n"
                       << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                       << std::endl;
@@ -79,8 +78,8 @@ Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
         }
     });
 
-    Doc doc = Doc::fromStr(matches[1].str());
-    Range<DbKw> dbKwRange = Range<DbKw>::fromStr(matches[2].str());
+    Doc doc = Doc::fromRegexMatches(matches);
+    Range<DbKw> dbKwRange = Range<DbKw>::fromStr(matches[Doc::REGEX_SUBMATCH_COUNT + 1].str());
     return Tuple<DbKw> {doc, dbKwRange};
 }
 
@@ -112,8 +111,7 @@ template std::ostream& operator <<(std::ostream& os, const IDbTuple<Doc, Kw>& iD
 //==============================================================================
 
 
-const std::string SrcIDb1Tuple::REGEX_STR = "(" + SrcIDb1Doc::REGEX_STR + "),(-?[0-9]+--?[0-9]+)";
-
+const std::string SrcIDb1Tuple::REGEX_STR = SrcIDb1Doc::REGEX_STR + ",(-?[0-9]+--?[0-9]+)";
 
 const std::regex SrcIDb1Tuple::REGEX(REGEX_STR);
 
@@ -136,7 +134,7 @@ SrcIDb1Tuple SrcIDb1Tuple::fromStr(const std::string& str) {
     std::smatch matches;
     bool isMatchFound = std::regex_search(str, matches, REGEX);
     DEBUG_ONLY({
-        if (!isMatchFound || matches.size() != 3) {
+        if (!isMatchFound || matches.size() != SrcIDb1Doc::REGEX_SUBMATCH_COUNT + 2) {
             std::cerr << "Error: SrcIDb1Tuple::fromStr(): bad string \"" << str << "\" passed\n"
                       << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                       << std::endl;
@@ -147,8 +145,8 @@ SrcIDb1Tuple SrcIDb1Tuple::fromStr(const std::string& str) {
         }
     });
 
-    SrcIDb1Doc doc = SrcIDb1Doc::fromStr(matches[1].str());
-    Range<Kw> kwRange = Range<Kw>::fromStr(matches[2].str());
+    SrcIDb1Doc doc = SrcIDb1Doc::fromRegexMatches(matches);
+    Range<Kw> kwRange = Range<Kw>::fromStr(matches[SrcIDb1Doc::REGEX_SUBMATCH_COUNT + 1].str());
     return SrcIDb1Tuple {doc, kwRange};
 }
 

@@ -36,8 +36,9 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc& iDbDoc) {
 
 const std::string Doc::REGEX_STR = "(-?[0-9]+),(-?[0-9]+)([I|D|X])";
 
-
 const std::regex Doc::REGEX(REGEX_STR);
+
+const int Doc::REGEX_SUBMATCH_COUNT = 3;
 
 
 std::string Doc::toStr() const {
@@ -50,13 +51,11 @@ std::string Doc::toPrintableStr() const {
 }
 
 
-Doc Doc::fromStr(const std::string& str) {
-    std::smatch matches;
-    bool isMatchFound = std::regex_search(str, matches, REGEX);
+Doc Doc::fromRegexMatches(const std::smatch& matches) {
     DEBUG_ONLY({
-        if (!isMatchFound || matches.size() != 4) {
-            std::cerr << "Error: Doc::fromStr(): bad string \"" << str << "\" passed\n"
-                      << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
+        if (!isMatchFound || matches.size() != REGEX_SUBMATCH_COUNT + 1) {
+            std::cerr << "Error: Doc::fromRegexMatches(): bad string \"" << str
+                      << "\" passed\nRegex to match is \"" << REGEX_STR << "\"; matched groups are:"
                       << std::endl;
             for (auto match : matches) {
                 std::cerr << match.str() << std::endl;
@@ -72,11 +71,6 @@ Doc Doc::fromStr(const std::string& str) {
 }
 
 
-Doc Doc::fromUstr(const ustring& ustr) {
-    return fromStr(::utils::ustr::toStr(ustr));
-}
-
-
 //==============================================================================
 // `SrcIDb1Doc`
 //==============================================================================
@@ -84,8 +78,9 @@ Doc Doc::fromUstr(const ustring& ustr) {
 
 const std::string SrcIDb1Doc::REGEX_STR = "(-?[0-9]+),(-?[0-9]+--?[0-9]+)";
 
-
 const std::regex SrcIDb1Doc::REGEX(REGEX_STR);
+
+const int SrcIDb1Doc::REGEX_SUBMATCH_COUNT = 2;
 
 
 std::string SrcIDb1Doc::toStr() const {
@@ -98,13 +93,11 @@ std::string SrcIDb1Doc::toPrintableStr() const {
 }
 
 
-SrcIDb1Doc SrcIDb1Doc::fromStr(const std::string& str) {
-    std::smatch matches;
-    bool isMatchFound = std::regex_search(str, matches, REGEX);
+SrcIDb1Doc SrcIDb1Doc::fromRegexMatches(const std::smatch& matches) {
     DEBUG_ONLY({
-        if (!isMatchFound || matches.size() != 3) {
-            std::cerr << "Error: SrcIDb1Doc::fromStr(): bad string \"" << str << "\" passed\n"
-                      << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
+        if (!isMatchFound || matches.size() != REGEX_SUBMATCH_COUNT + 1) {
+            std::cerr << "Error: SrcIDb1Doc::fromRegexMatches(): bad string \"" << str
+                      << "\" passed\nRegex to match is \"" << REGEX_STR << "\"; matched groups are:"
                       << std::endl;
             for (auto match : matches) {
                 std::cerr << match.str() << std::endl;
@@ -116,9 +109,4 @@ SrcIDb1Doc SrcIDb1Doc::fromStr(const std::string& str) {
     Kw kw = std::stoll(matches[1].str());
     Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
     return SrcIDb1Doc {kw, idAliasRange};
-}
-
-
-SrcIDb1Doc SrcIDb1Doc::fromUstr(const ustring& ustr) {
-    return fromStr(::utils::ustr::toStr(ustr));
 }

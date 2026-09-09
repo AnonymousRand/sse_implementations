@@ -68,8 +68,7 @@ public:
 
     std::string toStr() const override;
     std::string toPrintableStr() const override;
-    static Doc fromStr(const std::string& str);
-    static Doc fromUstr(const ustring& ustr);
+    static Doc fromRegexMatches(const std::smatch& matches);
 
     // need to explicitly declare this again since we have additional member variables in this child
     friend bool operator ==(const Doc& doc1, const Doc& doc2) = default;
@@ -77,6 +76,7 @@ public:
 private:
     static const std::string REGEX_STR;
     static const std::regex REGEX;
+    static const int REGEX_SUBMATCH_COUNT;
 };
 
 
@@ -106,12 +106,12 @@ public:
 
     std::string toStr() const override;
     std::string toPrintableStr() const override;
-    static SrcIDb1Doc fromStr(const std::string& str);
-    static SrcIDb1Doc fromUstr(const ustring& ustr);
+    static SrcIDb1Doc fromRegexMatches(const std::smatch& matches);
 
     friend bool operator ==(const SrcIDb1Doc& doc1, const SrcIDb1Doc& doc2) = default;
 
 private:
     static const std::string REGEX_STR;
     static const std::regex REGEX;
+    static const int REGEX_SUBMATCH_COUNT;
 };
