@@ -19,6 +19,7 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class PiBas : public IStaticPointSse<DbTuple>, public ISdUnderly<DbTuple> {
 private:
+    using DbDoc = typename IStaticPointSse<DbTuple>::DbDoc;
     using DbKw = typename IStaticPointSse<DbTuple>::DbKw;
 
 public:
@@ -41,7 +42,7 @@ private:
     //--------------------------------------------------------------------------
     // `IStaticPointSse`
 
-    std::vector<DbTuple> searchRaw(const Range<DbKw>& query) const override;
+    std::vector<DbDoc> searchRaw(const Range<DbKw>& query) const override;
 
     //--------------------------------------------------------------------------
     // helpers

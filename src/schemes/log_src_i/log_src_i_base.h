@@ -8,6 +8,7 @@
 
 #include "types/basic_types.h"
 #include "types/db/db.h"
+#include "types/doc.h"
 #include "types/range.h"
 #include "types/tdag.h"
 #include "types/tuple.h"
@@ -17,6 +18,7 @@
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 class LogSrcIBase : public ISdUnderly<Tuple<>> {
 protected:
+    using DbDoc = typename ISdUnderly<Tuple<>>::DbDoc;
     using DbKw = typename ISdUnderly<Tuple<>>::DbKw;
 
 public:
@@ -25,7 +27,7 @@ public:
     //--------------------------------------------------------------------------
     // `ISse`
 
-    std::vector<Tuple<>> search(
+    std::vector<Doc> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override;
     void clear() override;

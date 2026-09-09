@@ -13,9 +13,18 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class ISdUnderly : public virtual ISse<DbTuple> {
 protected:
+    using DbDoc = typename ISse<DbTuple>::DbDoc;
     using DbKw = typename ISse<DbTuple>::DbKw;
 
 public:
+    //--------------------------------------------------------------------------
+    // `ISse`
+
+    // handle clearing of `this->size`
+    void clear() override {
+        this->size = 0;
+    }
+
     //--------------------------------------------------------------------------
     // interface
 
@@ -24,12 +33,6 @@ public:
      * padding/processing!) to `ret`.
      */
     virtual void getDb(Db<DbTuple>& ret) const = 0;
-
-    //--------------------------------------------------------------------------
-    // shared code
-
-    // handle clearing of `this->size`
-    void clear() override { this->size = 0; }
 
     bigint getSize() const { return this->size; }
 

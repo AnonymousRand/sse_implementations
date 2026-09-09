@@ -10,6 +10,7 @@
 
 class LogSrcIStar : public LogSrcIBase<log_src_i_star::Underly> {
 private:
+    using DbDoc = typename LogSrcIBase<log_src_i_star::Underly>::DbDoc;
     using DbKw = typename LogSrcIBase<log_src_i_star::Underly>::DbKw;
 
 public:

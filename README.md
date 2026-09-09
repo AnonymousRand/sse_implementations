@@ -87,9 +87,11 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 # dev notes/conventions
 
 - uh mostly just keep the existing conventions ig
-- generally, each class should define constructors/destructors/init methods/clear methods etc. that are responsible for the members defined by that class. children inheriting from these classes should call each parent's version of these methods in their own implementation.
+- files are almost always include what you use, i.e. include everything that has a relevant symbol in the file. also, includes should almost always be relative to [./src/](./src/), and just keep the existing include ordering/formatting.
 - see [src/utils/types/MOVE_SEMANTICS.md](src/utils/types/MOVE_SEMANTICS.md) for notes about move semantics and the big five.
-- currently, one-line getters/setters/very simple methods like `bool IDb::empty()` are implemented inside the class declaration in the header. very broad interfaces like in [src/schemes/interfaces/](src/schemes/interfaces/) have all implementations of methods in the header and have no .cpp file, which avoids massive explicit template instantiation.
-- public destructors in classes that are meant to be inherited from should almost always be `virtual`.
+- generally, each class should define constructors/destructors/init methods/clear methods etc. that are responsible for the members defined by that class. children inheriting from these classes should call each parent's version of these methods in their own implementation.
 - call parent `clear()` methods at the end, in reverse order of `init()` or constructor (just like destructor/constructor). if no `init()` or constructor to reference, the unofficial convention i'm using is the reverse order of inheritance.
-- currently, files are almost always include what you use, i.e. include everything that has a relevant symbol in the file. also, includes should almost always be relative to [./src/](./src/), and just keep the existing include ordering/formatting.
+- one-line getters/setters/very simple methods like `bool IDb::empty()` should be implemented inside the class declaration in the header (with simple getters/setters having the function body collapsed into the same line as the signature, whereas methods where the implementation does matter a bit more can  be laid out normally). very broad interfaces like in [src/schemes/interfaces/](src/schemes/interfaces/) have all implementations of methods in the header and have no .cpp file, which avoids massive explicit template instantiation.
+- public destructors in classes that are meant to be inherited from should almost always be `virtual`.
+- generally, use direct access for members within the same class, and getters for members declared by parent classes (unless the parent has more of a "code-sharing" role rather an an "encapsulation" role—this is a bit subjective).
+- referencing static members within the same class (or children of that class) should generally be done without an explicit "namespace"/class name specifier.

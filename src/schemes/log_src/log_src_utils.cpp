@@ -43,13 +43,14 @@ void replTdagDb(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tda
     db.reserve(dbSize + ::utils::tdag::calcTdagTupleCount(dbSize));
     for (bigint i = 0; i < dbSize; i++) {
         DbTuple tuple = db[i];
-        Range<DbKw> dbKwRange = tuple.getDbKwRange();
+        Range<DbKw> dbKwRange = tuple.dbKwRange;
         std::list<Range<DbKw>> ancestors = tdag->getLeafAncestors(dbKwRange);
         for (const Range<DbKw>& ancestor : ancestors) {
             if (ancestor == dbKwRange) {
                 continue;
             }
-            DbTuple newTuple(tuple.getDbDoc(), ancestor);
+            // TODO copy constructor (is it possible to be default?)
+            DbTuple newTuple(tuple.dbDoc, ancestor);
             db.append(newTuple);
         }
     }

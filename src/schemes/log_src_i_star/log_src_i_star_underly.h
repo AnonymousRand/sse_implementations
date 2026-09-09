@@ -15,7 +15,7 @@
 namespace log_src_i_star {
 
 
-// this is specifcally designed to avoid using NLogN as a black box for Log-SRC-i*
+// this is specifically designed to avoid using NLogN as a black box for Log-SRC-i*
 // (the same way one may use PiBas) which blows up the storage unnecessarily,
 // as observed in the TODS'18 paper (Section 7.1)
 //
@@ -24,6 +24,7 @@ namespace log_src_i_star {
 template <IsDbTuple DbTuple = Tuple<>>
 class Underly : public NLogNBase<DbTuple> {
 private:
+    using DbDoc = typename NLogNBase<DbTuple>::DbDoc;
     using DbKw = typename NLogNBase<DbTuple>::DbKw;
 
 public:
@@ -47,7 +48,7 @@ private:
     //--------------------------------------------------------------------------
     // `IStaticPointSse`
 
-    std::vector<DbTuple> searchRaw(const Range<DbKw>& query) const override;
+    std::vector<DbDoc> searchRaw(const Range<DbKw>& query) const override;
 
     //--------------------------------------------------------------------------
     // helpers

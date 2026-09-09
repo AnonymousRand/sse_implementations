@@ -13,23 +13,24 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class IDsse : public ISse<DbTuple> {
 protected:
+    using DbDoc = typename ISse<DbTuple>::DbDoc;
     using DbKw = typename ISse<DbTuple>::DbKw;
 
 public:
     IDsse(bool useShortcutSetup) : useShortcutSetup(useShortcutSetup) {}
 
     //--------------------------------------------------------------------------
-    // interface
-
-    virtual void update(const DbTuple& newTuple) = 0;
-
-    //--------------------------------------------------------------------------
-    // shared code
+    // `ISse`
 
     // handle clearing of this class' member variables
     void clear() override {
         this->updateCount = 0;
     }
+
+    //--------------------------------------------------------------------------
+    // interface
+
+    virtual void update(const DbTuple& newTuple) = 0;
 
 protected:
     /**

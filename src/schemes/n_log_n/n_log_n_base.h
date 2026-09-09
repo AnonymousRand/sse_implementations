@@ -20,6 +20,7 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class NLogNBase : public IStaticPointSse<DbTuple>, public ISdUnderly<DbTuple> {
 protected:
+    using DbDoc = typename IStaticPointSse<DbTuple>::DbDoc;
     using DbKw = typename IStaticPointSse<DbTuple>::DbKw;
 
 public:

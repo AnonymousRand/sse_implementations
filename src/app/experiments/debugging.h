@@ -11,6 +11,7 @@
 
 #include "types/basic_types.h"
 #include "types/db/db.h"
+#include "types/doc.h"
 #include "types/range.h"
 #include "types/tuple.h"
 
@@ -48,11 +49,11 @@ public:
         sse->setup(utils::crypto::KEY_LEN, this->db);
 
         // search
-        std::vector<Tuple<>> results = sse->search(this->query);
-        std::vector<Tuple<>> falsePositives;
-        std::cout << "Results ((id,kw,op),kwrange):" << std::endl;
-        for (const Tuple<>& result : results) {
-            Kw kw = result.getKw();
+        std::vector<Doc> results = sse->search(this->query);
+        std::vector<Doc> falsePositives;
+        std::cout << "Results (id,kw,op):" << std::endl;
+        for (const Doc& result : results) {
+            Kw kw = result.kw;
             if (query.contains(kw)) {
                 std::cout << result << " with keyword " << kw << std::endl;
             } else {
@@ -61,9 +62,9 @@ public:
         }
         std::cout << std::endl;
 
-        std::cout << "False positives ((id,kw,op),kwrange):" << std::endl;
-        for (const Tuple<>& result : falsePositives) {
-            std::cout << result << " with keyword " << result.getKw() << std::endl;
+        std::cout << "False positives (id,kw,op):" << std::endl;
+        for (const Doc& result : falsePositives) {
+            std::cout << result << " with keyword " << result.kw << std::endl;
         }
         std::cout << std::endl;
 

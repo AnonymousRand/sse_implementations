@@ -27,7 +27,7 @@ std::unordered_set<Range<typename DbTuple::DbKwType>> IDb<DbTuple>::getUniqDbKwR
     std::unordered_set<Range<DbKw>> uniqDbKwRanges;
     for (const DbTuple& dbTuple : *this) {
         // (`unordered_set` will not insert duplicate elements)
-        uniqDbKwRanges.emplace(dbTuple.getDbKwRange());
+        uniqDbKwRanges.emplace(dbTuple.dbKwRange);
     }
     return uniqDbKwRanges;
 }
@@ -52,7 +52,7 @@ template <IsDbTuple DbTuple>
 void IDb<DbTuple>::onNewDbTuple(const DbTuple& dbTuple) {
     this->size++;
 
-    Range<DbKw> dbKwRange = dbTuple.getDbKwRange();
+    Range<DbKw> dbKwRange = dbTuple.dbKwRange;
     if (dbKwRange.first < this->minDbKw || this->minDbKw == DUMMY) {
         this->minDbKw = dbKwRange.first;
     }

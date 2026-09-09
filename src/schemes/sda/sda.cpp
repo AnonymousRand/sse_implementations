@@ -1,8 +1,8 @@
 #include "schemes/sda/sda.h"
 
 #include <algorithm>
-#include <concepts>
 #include <cmath>
+#include <concepts>
 #include <vector>
 
 #include "schemes/interfaces/i_sd_underly.h"
@@ -16,6 +16,7 @@
 
 #include "types/basic_types.h"
 #include "types/db/db.h"
+#include "types/doc.h"
 #include "types/range.h"
 #include "types/tuple.h"
 
@@ -83,10 +84,10 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
 
 template <IsSdUnderly Underly>
-std::vector<Tuple<>> Sda<Underly>::search(
+std::vector<Doc> Sda<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
-    std::vector<Tuple<>> allResults;
+    std::vector<Doc> allResults;
 
     // search through all non-empty indexes
     for (Underly* underly : this->underlys) {
@@ -97,8 +98,8 @@ std::vector<Tuple<>> Sda<Underly>::search(
         // is `true`; the cancellation tuple for a document is not guaranteed to be in
         // the same index as the inserting tuple, so we can't rely on the individual
         // underlying instances to filter out all deleted documents
-        std::vector<Tuple<>> results = underly->search(query, false, isNaive);
-        allResults.insert(allResults.end(), results.begin(), results.end());
+        std::vector<Doc> results = underly->search(query, false, isNaive);
+        std::move(results.begin(), results.end(), std::back_inserter(allResults));
     }
 
     if (shouldCleanUpResults) {

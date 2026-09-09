@@ -16,6 +16,7 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class NLogN : public NLogNBase<DbTuple> {
 private:
+    using DbDoc = typename NLogNBase<DbTuple>::DbDoc;
     using DbKw = typename NLogNBase<DbTuple>::DbKw;
 
 public:
@@ -38,7 +39,7 @@ private:
     //--------------------------------------------------------------------------
     // `IStaticPointSse`
 
-    std::vector<DbTuple> searchRaw(const Range<DbKw>& query) const override;
+    std::vector<DbDoc> searchRaw(const Range<DbKw>& query) const override;
 
     //--------------------------------------------------------------------------
     // helpers

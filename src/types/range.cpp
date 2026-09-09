@@ -69,7 +69,7 @@ Range<T> Range<T>::fromStr(const std::string& str) {
     bool isMatchFound = std::regex_search(str, matches, REGEX);
     DEBUG_ONLY({
         if (!isMatchFound || matches.size() != 3) {
-            std::cerr << "Error: Range::fromStr(): bad string \"" << str << "\" passed" << std::endl
+            std::cerr << "Error: Range::fromStr(): bad string \"" << str << "\" passed\n"
                       << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                       << std::endl;
             for (auto match : matches) {

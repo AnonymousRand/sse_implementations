@@ -16,15 +16,16 @@
  * preconditions:
  *     - range end is greater than or equal to range start.
  */
+// >TODO make this a struct too? what members do we need from pair?
+// first, second, and that's it!
 template <std::integral T>
-class Range : public std::pair<T, T> {
+struct Range : public std::pair<T, T> {
 public:
-    inline static const Range DUMMY() {
+    static const Range DUMMY() {
         return Range {::DUMMY, ::DUMMY};
     }
-
-    static const bool isDummy(const Range& range) {
-        return range == DUMMY();
+    const bool isDummy() const {
+        return *this == DUMMY();
     }
 
     //--------------------------------------------------------------------------

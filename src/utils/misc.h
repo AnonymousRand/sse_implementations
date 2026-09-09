@@ -5,15 +5,15 @@
 #include <vector>
 
 #include "types/basic_types.h"
-#include "types/tuple.h"
+#include "types/doc.h"
 #include "types/ustring.h"
 
 
 namespace utils::misc {
 
 
-template <IsDbTuple DbTuple>
-void cleanUpResults(std::vector<DbTuple>& results);
+template <IsDbDoc DbDoc>
+void cleanUpResults(std::vector<DbDoc>& results);
 
 
 ubigint hashToPos(const ustring& hash);

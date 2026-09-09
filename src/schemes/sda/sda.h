@@ -8,6 +8,7 @@
 
 #include "types/basic_types.h"
 #include "types/db/db.h"
+#include "types/doc.h"
 #include "types/range.h"
 #include "types/tuple.h"
 
@@ -18,6 +19,7 @@
 template <IsSdUnderly Underly>
 class Sda : public IDsse<Tuple<>> {
 private:
+    using DbDoc = typename IDsse<Tuple<>>::DbDoc;
     using DbKw = typename IDsse<Tuple<>>::DbKw;
 
 public:
@@ -29,7 +31,7 @@ public:
     // `ISse`
 
     void setup(int secParam, const Db<Tuple<>>& db) override;
-    std::vector<Tuple<>> search(
+    std::vector<Doc> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override;
     void clear() override;

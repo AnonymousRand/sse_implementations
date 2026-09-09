@@ -5,6 +5,7 @@
 
 #include "types/basic_types.h"
 #include "types/db/db.h"
+#include "types/doc.h"
 #include "types/range.h"
 #include "types/tuple.h"
 
@@ -12,6 +13,7 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class ISse {
 protected:
+    using DbDoc = typename DbTuple::DbDocType;
     using DbKw = typename DbTuple::DbKwType;
 
 public:
@@ -49,7 +51,7 @@ public:
      *       or the entire range in one go (i.e. `query` itself must be in the db),
      *       e.g. as the underlying scheme for a range scheme like Log-SRC.
      */
-    virtual std::vector<DbTuple> search(
+    virtual std::vector<DbDoc> search(
         const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const = 0;
 
@@ -68,6 +70,9 @@ protected:
 };
 
 
+// black magic to detect if `T` is derived from `ISse` regardless of template params
+// (`std::derived_from` only works for non-templated types)
+// (Java generics `extends`: look what they need to mimic a fraction of my power)
 template <class T>
 concept IsSse = requires(T t) {
     []<class ... Args>(ISse<Args ...>&){}(t);

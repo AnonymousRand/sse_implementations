@@ -12,6 +12,7 @@
 
 #include "types/basic_types.h"
 #include "types/db/db.h"
+#include "types/doc.h"
 #include "types/range.h"
 #include "types/tdag.h"
 #include "types/tuple.h"
@@ -53,12 +54,12 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
-std::vector<Tuple<>> LogSrc<Underly>::search(
+std::vector<Doc> LogSrc<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
     Range<Kw> src = this->tdag->findSrc(query);
-    if (Range<Kw>::isDummy(src)) {
-        return std::vector<Tuple<>> {};
+    if (src.isDummy()) {
+        return std::vector<Doc> {};
     }
     return this->underly->search(src, shouldCleanUpResults, false);
 }
@@ -91,7 +92,7 @@ void LogSrc<Underly>::getDb(Db<Tuple<>>& ret) const {
     underlyDb.reserve(utils::tdag::calcTdagTupleCount(this->size));
     this->underly->getDb(underlyDb);
     for (const Tuple<>& tuple : underlyDb) {
-        Range<Kw> kwRange = tuple.getDbKwRange();
+        Range<Kw> kwRange = tuple.dbKwRange;
         if (kwRange.size() == 1) {
             ret.append(tuple);
         };

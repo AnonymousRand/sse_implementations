@@ -112,10 +112,10 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
             // SSE scheme which is using NLogN as an underlying scheme. while deleting those dummies
             // too seems to work fine, we don't since we don't have an easy, general way to check
             // for those here, and that should be the upstream scheme's concern anyway.)
-            if (!DbTuple::isDummy(dbTuple)) {
+            if (!dbTuple.isDummy()) {
                 // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
                 // to easily access these `DbKw` ranges in plaintext
-                DbTuple newDbTuple(dbTuple.getDbDoc(), dbTuple.getDbKwRange());
+                DbTuple newDbTuple(dbTuple.dbDoc, dbTuple.dbKwRange);
                 ret.append(newDbTuple);
             }
         }

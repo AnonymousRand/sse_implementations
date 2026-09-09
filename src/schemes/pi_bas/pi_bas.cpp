@@ -117,18 +117,20 @@ void PiBas<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-std::vector<DbTuple> PiBas<DbTuple>::searchRaw(const Range<DbKw>& query) const {
-    std::vector<DbTuple> results;
+std::vector<typename PiBas<DbTuple>::DbDoc> PiBas<DbTuple>::searchRaw(
+    const Range<DbKw>& query
+) const {
+    std::vector<DbDoc> results;
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
-    std::vector<EncIndVal> encResults = this->server->searchEncInd(queryToken);
+    std::vector<EncIndVal> encResultTups = this->server->searchEncInd(queryToken);
 
-    // decrypt results on the client
-    results.reserve(encResults.size());
-    for (const EncIndVal& encResult : encResults) {
-        DbTuple result = this->decryptEncIndVal(encResult);
-        results.push_back(result);
+    // decrypt results (on the client)
+    results.reserve(encResultTups.size());
+    for (const EncIndVal& encResultTup : encResultTups) {
+        DbTuple resultTup = this->decryptEncIndVal(encResultTup);
+        results.push_back(resultTup.dbDoc);
     }
 
     return results;
@@ -155,7 +157,7 @@ void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
         DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
         // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
         // to easily access these `DbKw` ranges in plaintext
-        DbTuple newDbTuple(dbTuple.getDbDoc(), dbTuple.getDbKwRange());
+        DbTuple newDbTuple(dbTuple.dbDoc, dbTuple.dbKwRange);
         ret.append(newDbTuple);
     }
 }

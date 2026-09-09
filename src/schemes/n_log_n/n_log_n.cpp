@@ -53,8 +53,10 @@ void NLogN<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-std::vector<DbTuple> NLogN<DbTuple>::searchRaw(const Range<DbKw>& query) const {
-    std::vector<DbTuple> results {};
+std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
+    const Range<DbKw>& query
+) const {
+    std::vector<DbDoc> results {};
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
@@ -82,15 +84,15 @@ std::vector<DbTuple> NLogN<DbTuple>::searchRaw(const Range<DbKw>& query) const {
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResults = this->getServer()->searchEncIndForBckt(
+    std::vector<EncIndVal> encResultTups = this->getServer()->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 
-    // decrypt results on the client
-    results.reserve(encResults.size());
-    for (const EncIndVal& encResult : encResults) {
-        DbTuple result = this->decryptEncIndVal(encResult);
-        results.push_back(result);
+    // decrypt results (on the client)
+    results.reserve(encResultTups.size());
+    for (const EncIndVal& encResultTup : encResultTups) {
+        DbTuple resultTup = this->decryptEncIndVal(encResultTup);
+        results.push_back(resultTup.dbDoc);
     }
 
     return results;

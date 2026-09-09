@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <concepts>
 #include <vector>
 
@@ -20,22 +21,24 @@
 template <IsDbTuple DbTuple = Tuple<>>
 class IStaticPointSse : public virtual ISse<DbTuple> {
 protected:
+    using DbDoc = typename ISse<DbTuple>::DbDoc;
     using DbKw = typename ISse<DbTuple>::DbKw;
 
 public:
     //--------------------------------------------------------------------------
     // shared code
 
-    std::vector<DbTuple> search(
+    std::vector<DbDoc> search(
         const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override {
-        std::vector<DbTuple> allResults;
+        std::vector<DbDoc> allResults;
 
         if (isNaive) {
             // naive, insecure range search: just individually query every point in range
             for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
-                std::vector<DbTuple> results = this->searchRaw(Range {dbKw, dbKw});
-                allResults.insert(allResults.end(), results.begin(), results.end());
+                std::vector<DbDoc> results = this->searchRaw(Range {dbKw, dbKw});
+                // (this uses move instead of copy)
+                std::move(results.begin(), results.end(), std::back_inserter(allResults));
             }
         } else {
             // search entire range in one go (i.e. `query` itself must be in the db),
@@ -62,7 +65,7 @@ protected:
     //--------------------------------------------------------------------------
     // helpers
 
-    virtual std::vector<DbTuple> searchRaw(const Range<DbKw>& query) const = 0;
+    virtual std::vector<DbDoc> searchRaw(const Range<DbKw>& query) const = 0;
     
     //--------------------------------------------------------------------------
     // shared code

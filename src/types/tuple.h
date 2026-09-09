@@ -5,11 +5,9 @@
 #include <iostream>
 #include <regex>
 #include <string>
-#include <tuple>
-#include <unordered_map>
-#include <utility>
 
 #include "types/basic_types.h"
+#include "types/doc.h"
 #include "types/range.h"
 #include "types/ustring.h"
 
@@ -22,48 +20,35 @@
 /**
  * interface for database tuples.
  *
- * note that we also store their `DbKw` range, which is the same as the size 1 range corresponding
+ * note: we also store their `DbKw` range, which is the same as the size 1 range corresponding
  * to their `Kw` value for tuples inputted to the DB, but allows us to be general enough for
  * Log-SRC replications, for example, where this is not the case. we need to be able to easily
  * fetch this in plaintext for things like SDa (otherwise it might be only accessible via the
  * encrypted "label" in the encrypted index, which can be a hash/PRF and hence not easily
  * reversible, unlike `DbTuple`s which are just encrypted and can be easily decrypted).
  */
-template <class DbDoc, class DbKw>
-class IDbTuple {
+template <IsDbDoc DbDoc, class DbKw>
+struct IDbTuple {
 public:
     using DbDocType = DbDoc;
     using DbKwType  = DbKw;
 
-    IDbTuple(const DbDoc& val, const Range<DbKw>& dbKwRange);
+    DbDoc dbDoc;
+    Range<DbKw> dbKwRange;
 
-    DbDoc getDbDoc() const { return this->dbDoc; }
-    Range<DbKw> getDbKwRange() const { return this->dbKwRange; }
+    IDbTuple(const DbDoc& dbDoc, const Range<DbKw>& dbKwRange) :
+        dbDoc(dbDoc), dbKwRange(dbKwRange) {}
 
-    // `toStr()` should be the most compact possible unambiguous encoding, for efficient storage
     virtual std::string toStr() const = 0;
     virtual std::string toPrintableStr() const = 0;
     ustring toUstr() const;
 
-    template <class DbDoc2, class DbKw2>
-    friend bool operator ==(
-        const IDbTuple<DbDoc2, DbKw2>& tuple1, const IDbTuple<DbDoc2, DbKw2>& tuple2
-    );
-
-    template <class DbDoc2, class DbKw2>
+    friend bool operator ==(const IDbTuple& dbTuple1, const IDbTuple& dbTuple2) = default;
+    template <IsDbDoc DbDoc2, class DbKw2>
     friend std::ostream& operator <<(std::ostream& os, const IDbTuple<DbDoc2, DbKw2>& iDbTuple);
-
-protected:
-    DbDoc dbDoc;
-    Range<DbKw> dbKwRange;
 };
 
 
-// black magic to detect if `T` is derived from `IDbTuple` regardless of `IDbTuple`'s
-// template param, i.e. without needing to know what the template param `T2` of
-// `IDbTuple` is, unlike `std::derived_from` for example (Java generics `extends`:
-// look what they need to mimic a fraction of my power) (and this doesn't even enforce
-// existence of instance methods as clearly as Java, so just pretend that it does)
 template <class T>
 concept IsDbTuple = requires(T t) {
     []<class ... Args>(IDbTuple<Args ...>&){}(t);
@@ -77,30 +62,30 @@ concept IsDbTuple = requires(T t) {
 
 // these are the "database tuples"; accommodate dynamic SSE by also storing the operation
 template <class DbKw = Kw>
-class Tuple : public IDbTuple<std::tuple<Id, Kw, Op>, DbKw> {
+struct Tuple : public IDbTuple<Doc, DbKw> {
 public:
-    inline static const Tuple DUMMY(const Range<DbKw>& dbKwRange) {
-        return Tuple {::DUMMY, ::DUMMY, Op::DUMMY, dbKwRange};
+    // TODO test if these can be constexpr
+    static const Tuple DUMMY(const Range<DbKw>& dbKwRange) {
+        return Tuple {Doc::DUMMY(), dbKwRange};
     }
-
-    static bool isDummy(const Tuple& tuple) {
-        return tuple == DUMMY(tuple.getDbKwRange());
+    const bool isDummy() const {
+        return *this == DUMMY(this->dbKwRange);
     }
 
     //--------------------------------------------------------------------------
+    // `IDbTuple`
 
-    using IDbTuple<std::tuple<Id, Kw, Op>, DbKw>::IDbTuple;
-
+    using IDbTuple<Doc, DbKw>::IDbTuple;
     Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange);
-
-    Id getId() const;
-    Kw getKw() const;
-    Op getOp() const;
 
     std::string toStr() const override;
     std::string toPrintableStr() const override;
     static Tuple fromStr(const std::string& str);
     static Tuple fromUstr(const ustring& ustr);
+
+    Id getId() const { return this->dbDoc.id; }
+    Kw getKw() const { return this->dbDoc.kw; }
+    Op getOp() const { return this->dbDoc.op; }
 
 private:
     static const std::string REGEX_STR;
@@ -122,29 +107,28 @@ struct std::hash<Tuple<DbKw>> {
 //==============================================================================
 
 
-class SrcIDb1Tuple : public IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw> {
+struct SrcIDb1Tuple : public IDbTuple<SrcIDb1Doc, Kw> {
 public:
-    inline static const SrcIDb1Tuple DUMMY(const Range<Kw>& kwRange) {
-        return SrcIDb1Tuple {::DUMMY, Range<IdAlias>::DUMMY(), kwRange};
+    static const SrcIDb1Tuple DUMMY(const Range<Kw>& kwRange) {
+        return SrcIDb1Tuple {SrcIDb1Doc::DUMMY(), kwRange};
     }
-
-    static bool isDummy(const SrcIDb1Tuple& tuple) {
-        return tuple == DUMMY(tuple.getDbKwRange());
+    const bool isDummy() const {
+        return *this == DUMMY(this->dbKwRange);
     }
 
     //--------------------------------------------------------------------------
+    // `IDbTuple`
 
-    using IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>::IDbTuple;
-
+    using IDbTuple<SrcIDb1Doc, Kw>::IDbTuple;
     SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange);
-
-    Kw getKw() const;
-    Range<IdAlias> getIdAliasRange() const;
 
     std::string toStr() const override;
     std::string toPrintableStr() const override;
     static SrcIDb1Tuple fromStr(const std::string& str);
     static SrcIDb1Tuple fromUstr(const ustring& ustr);
+
+    Kw getKw() const { return this->dbDoc.kw; }
+    Range<IdAlias> getIdAliasRange() const { return this->dbDoc.idAliasRange; }
 
 private:
     static const std::string REGEX_STR;

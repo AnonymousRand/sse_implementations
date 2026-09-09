@@ -14,6 +14,7 @@
 
 #include "types/basic_types.h"
 #include "types/db/db.h"
+#include "types/doc.h"
 #include "types/range.h"
 #include "types/tuple.h"
 
@@ -247,13 +248,13 @@ public:
         utils::benchmark::time = elapsed.count();
     }
 
-    std::vector<Tuple<>> search(
+    std::vector<Doc> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override {
         utils::benchmark::resetEphems();
 
         auto start = std::chrono::high_resolution_clock::now();
-        std::vector<Tuple<>> results = Sse::search(query, shouldCleanUpResults, isNaive);
+        std::vector<Doc> results = Sse::search(query, shouldCleanUpResults, isNaive);
         auto end = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double, std::milli> elapsed = end - start;

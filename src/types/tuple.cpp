@@ -5,10 +5,9 @@
 #include <iostream>
 #include <regex>
 #include <string>
-#include <tuple>
-#include <utility>
 
 #include "types/basic_types.h"
+#include "types/doc.h"
 #include "types/range.h"
 #include "types/ustring.h"
 
@@ -20,28 +19,15 @@
 //==============================================================================
 
 
-template <class DbDoc, class DbKw>
-IDbTuple<DbDoc, DbKw>::IDbTuple(const DbDoc& dbDoc, const Range<DbKw>& dbKwRange) {
-    this->dbDoc = dbDoc;
-    this->dbKwRange = dbKwRange;
-}
-
-
-template <class DbDoc, class DbKw>
+template <IsDbDoc DbDoc, class DbKw>
 ustring IDbTuple<DbDoc, DbKw>::toUstr() const {
     return ::utils::ustr::toUstr(this->toStr());
 }
 
 
-template <class DbDoc, class DbKw>
+template <IsDbDoc DbDoc, class DbKw>
 std::ostream& operator <<(std::ostream& os, const IDbTuple<DbDoc, DbKw>& iDbTuple) {
     return os << iDbTuple.toPrintableStr();
-}
-
-
-template <class DbDoc, class DbKw>
-bool operator ==(const IDbTuple<DbDoc, DbKw>& tuple1, const IDbTuple<DbDoc, DbKw>& tuple2) {
-    return tuple1.dbDoc == tuple2.dbDoc && tuple1.dbKwRange == tuple2.dbKwRange;
 }
 
 
@@ -51,7 +37,7 @@ bool operator ==(const IDbTuple<DbDoc, DbKw>& tuple1, const IDbTuple<DbDoc, DbKw
 
 
 template <class DbKw>
-const std::string Tuple<DbKw>::REGEX_STR = "(-?[0-9]+),(-?[0-9]+)([I|D|X])(-?[0-9]+--?[0-9]+)";
+const std::string Tuple<DbKw>::REGEX_STR = "(" + Doc::REGEX_STR + ")(-?[0-9]+--?[0-9]+)";
 
 
 template <class DbKw>
@@ -60,44 +46,20 @@ const std::regex Tuple<DbKw>::REGEX(REGEX_STR);
 
 template <class DbKw>
 Tuple<DbKw>::Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) :
-    Tuple<DbKw>(std::tuple {id, kw, op}, dbKwRange) {}
-
-
-template <class DbKw>
-Id Tuple<DbKw>::getId() const {
-    return std::get<0>(this->dbDoc);
-}
-
-
-template <class DbKw>
-Kw Tuple<DbKw>::getKw() const {
-    return std::get<1>(this->dbDoc);
-}
-
-
-template <class DbKw>
-Op Tuple<DbKw>::getOp() const {
-    return std::get<2>(this->dbDoc);
-}
+    Tuple<DbKw>(Doc {id, kw, op}, dbKwRange) {}
 
 
 template <class DbKw>
 std::string Tuple<DbKw>::toStr() const {
-    // (IMPORTANT: `Op` encodings cannot be numerical for this encoding to be unambiguous for regex)
+    // IMPORTANT: `Op` encodings cannot be numerical for this encoding to be unambiguous for regex!
     // this is a work of art
-    return std::format(
-        "{},{}{}{}",
-        this->getId(), this->getKw(), static_cast<char>(this->getOp()), this->getDbKwRange()
-    );
+    return this->dbDoc.toStr() + std::format("{}", this->dbKwRange);
 }
 
 
 template <class DbKw>
 std::string Tuple<DbKw>::toPrintableStr() const {
-    return std::format(
-        "({},{},{}),{}",
-        this->getId(), this->getKw(), static_cast<char>(this->getOp()), this->getDbKwRange()
-    );
+    return this->dbDoc.toPrintableStr() + std::format(",{}", this->dbKwRange);
 }
 
 
@@ -106,8 +68,8 @@ Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
     std::smatch matches;
     bool isMatchFound = std::regex_search(str, matches, REGEX);
     DEBUG_ONLY({
-        if (!isMatchFound || matches.size() != 5) {
-            std::cerr << "Error: Tuple::fromStr(): bad string \"" << str << "\" passed" << std::endl
+        if (!isMatchFound || matches.size() != 3) {
+            std::cerr << "Error: Tuple::fromStr(): bad string \"" << str << "\" passed\n"
                       << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                       << std::endl;
             for (auto match : matches) {
@@ -117,48 +79,32 @@ Tuple<DbKw> Tuple<DbKw>::fromStr(const std::string& str) {
         }
     });
 
-    Id id = std::stoll(matches[1].str());
-    Kw kw = std::stoll(matches[2].str());
-    Op op = static_cast<Op>(matches[3].str()[0]);
-    Range<DbKw> dbKwRange = Range<DbKw>::fromStr(matches[4].str());
-    return Tuple<DbKw> {id, kw, op, dbKwRange};
+    Doc doc = Doc::fromStr(matches[1].str());
+    Range<DbKw> dbKwRange = Range<DbKw>::fromStr(matches[2].str());
+    return Tuple<DbKw> {doc, dbKwRange};
 }
 
 
 template <class DbKw>
 Tuple<DbKw> Tuple<DbKw>::fromUstr(const ustring& ustr) {
-    return Tuple<DbKw>::fromStr(::utils::ustr::toStr(ustr));
+    return fromStr(::utils::ustr::toStr(ustr));
 }
 
 
 //------------------------------------------------------------------------------
-// explicit template instantiations (for `IDbTuple`)
+// explicit template instantiations for `IDbTuple`
 
 
-template class IDbTuple<std::tuple<Id, Kw, Op>, Kw>;
-//template class IDbTuple<std::tuple<Id, Kw, Op>, IdAlias>;
+template class IDbTuple<Doc, Kw>;
+//template class IDbTuple<Doc, IdAlias>;
 
 
 template class Tuple<Kw>;
 //template class Tuple<IdAlias>;
 
 
-template bool operator ==(
-    const IDbTuple<std::tuple<Id, Kw, Op>, Kw>& tuple1,
-    const IDbTuple<std::tuple<Id, Kw, Op>, Kw>& tuple2
-);
-//template bool operator ==(
-//    const IDbTuple<std::tuple<Id, Kw, Op>, IdAlias>& tuple1,
-//    const IDbTuple<std::tuple<Id, Kw, Op>, IdAlias>& tuple2
-//);
-
-
-template std::ostream& operator <<(
-    std::ostream& os, const IDbTuple<std::tuple<Id, Kw, Op>, Kw>& iDbTuple
-);
-//template std::ostream& operator <<(
-//    std::ostream& os, const IDbTuple<std::tuple<Id, Kw, Op>, IdAlias>& iDbTuple
-//);
+template std::ostream& operator <<(std::ostream& os, const IDbTuple<Doc, Kw>& iDbTuple);
+//template std::ostream& operator <<(std::ostream& os, const IDbTuple<Doc, IdAlias>& iDbTuple);
 
 
 //==============================================================================
@@ -166,33 +112,23 @@ template std::ostream& operator <<(
 //==============================================================================
 
 
-const std::string SrcIDb1Tuple::REGEX_STR = "(-?[0-9]+),(-?[0-9]+--?[0-9]+),(-?[0-9]+--?[0-9]+)";
+const std::string SrcIDb1Tuple::REGEX_STR = "(" + SrcIDb1Doc::REGEX_STR + "),(-?[0-9]+--?[0-9]+)";
 
 
 const std::regex SrcIDb1Tuple::REGEX(REGEX_STR);
 
 
 SrcIDb1Tuple::SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange) :
-    SrcIDb1Tuple(std::pair {kw, idAliasRange}, kwRange) {}
-
-
-Kw SrcIDb1Tuple::getKw() const {
-    return this->dbDoc.first;
-}
-
-
-Range<IdAlias> SrcIDb1Tuple::getIdAliasRange() const {
-    return this->dbDoc.second;
-}
+    SrcIDb1Tuple(SrcIDb1Doc {kw, idAliasRange}, kwRange) {}
 
 
 std::string SrcIDb1Tuple::toStr() const {
-    return std::format("{},{},{}", this->getKw(), this->getIdAliasRange(), this->getDbKwRange());
+    return this->dbDoc.toStr() + std::format(",{}", this->dbKwRange);
 }
 
 
 std::string SrcIDb1Tuple::toPrintableStr() const {
-    return std::format("({},{}),{}", this->getKw(), this->getIdAliasRange(), this->getDbKwRange());
+    return this->dbDoc.toPrintableStr() + std::format(",{}", this->dbKwRange);
 }
 
 
@@ -200,9 +136,8 @@ SrcIDb1Tuple SrcIDb1Tuple::fromStr(const std::string& str) {
     std::smatch matches;
     bool isMatchFound = std::regex_search(str, matches, REGEX);
     DEBUG_ONLY({
-        if (!isMatchFound || matches.size() != 4) {
-            std::cerr << "Error: SrcIDb1Tuple::fromStr(): bad string \"" << str << "\" passed"
-                      << std::endl
+        if (!isMatchFound || matches.size() != 3) {
+            std::cerr << "Error: SrcIDb1Tuple::fromStr(): bad string \"" << str << "\" passed\n"
                       << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
                       << std::endl;
             for (auto match : matches) {
@@ -212,31 +147,22 @@ SrcIDb1Tuple SrcIDb1Tuple::fromStr(const std::string& str) {
         }
     });
 
-    Kw kw = std::stol(matches[1].str());
-    Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
-    Range<Kw> kwRange = Range<Kw>::fromStr(matches[3].str());
-    return SrcIDb1Tuple {kw, idAliasRange, kwRange};
+    SrcIDb1Doc doc = SrcIDb1Doc::fromStr(matches[1].str());
+    Range<Kw> kwRange = Range<Kw>::fromStr(matches[2].str());
+    return SrcIDb1Tuple {doc, kwRange};
 }
 
 
 SrcIDb1Tuple SrcIDb1Tuple::fromUstr(const ustring& ustr) {
-    return SrcIDb1Tuple::fromStr(::utils::ustr::toStr(ustr));
+    return fromStr(::utils::ustr::toStr(ustr));
 }
 
 
 //------------------------------------------------------------------------------
-// explicit template instantiations (for `IDbTuple`)
+// explicit template instantiations for `IDbTuple`
 
 
-template class IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>;
+template class IDbTuple<SrcIDb1Doc, Kw>;
 
 
-template bool operator ==(
-    const IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>& tuple1,
-    const IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>& tuple2
-);
-
-
-template std::ostream& operator <<(
-    std::ostream& os, const IDbTuple<std::pair<Kw, Range<IdAlias>>, Kw>& iDbTuple
-);
+template std::ostream& operator <<(std::ostream& os, const IDbTuple<SrcIDb1Doc, Kw>& iDbTuple);

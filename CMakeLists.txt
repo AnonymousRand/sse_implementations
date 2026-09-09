@@ -38,6 +38,7 @@ add_executable(main
     src/types/enc_ind/enc_ind_loc.cpp
     src/types/enc_ind/enc_ind_types.cpp
 
+    src/types/doc.cpp
     src/types/i_disk_storage.cpp
     src/types/ind.cpp
     src/types/range.cpp

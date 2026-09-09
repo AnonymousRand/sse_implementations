@@ -56,8 +56,10 @@ void Underly<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-std::vector<DbTuple> Underly<DbTuple>::searchRaw(const Range<DbKw>& query) const {
-    std::vector<DbTuple> results;
+std::vector<typename Underly<DbTuple>::DbDoc> Underly<DbTuple>::searchRaw(
+    const Range<DbKw>& query
+) const {
+    std::vector<DbDoc> results;
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
@@ -66,7 +68,7 @@ std::vector<DbTuple> Underly<DbTuple>::searchRaw(const Range<DbKw>& query) const
     // to search is exactly the size of the queried range/SRC node, so we don't have to
     // additionally store an encrypted map (and result size is leaked to server anyway)
     bigint dbKwCount = query.size();
-    bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
+    bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // (this is bucket size)
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
@@ -76,15 +78,15 @@ std::vector<DbTuple> Underly<DbTuple>::searchRaw(const Range<DbKw>& query) const
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResults = this->getServer()->searchEncIndForBckt(
+    std::vector<EncIndVal> encResultTups = this->getServer()->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 
-    // decrypt results on the client
-    results.reserve(encResults.size());
-    for (const EncIndVal& encResult : encResults) {
-        DbTuple result = this->decryptEncIndVal(encResult);
-        results.push_back(result);
+    // decrypt results (on the client)
+    results.reserve(encResultTups.size());
+    for (const EncIndVal& encResultTup : encResultTups) {
+        DbTuple resultTup = this->decryptEncIndVal(encResultTup);
+        results.push_back(resultTup.dbDoc);
     }
 
     return results;

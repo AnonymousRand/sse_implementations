@@ -15,6 +15,7 @@
 
 #include "types/basic_types.h"
 #include "types/db/db.h"
+#include "types/doc.h"
 #include "types/ind.h"
 #include "types/range.h"
 #include "types/tdag.h"
@@ -43,17 +44,17 @@ LogSrcIBase<Underly>::~LogSrcIBase() {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
-std::vector<Tuple<>> LogSrcIBase<Underly>::search(
+std::vector<Doc> LogSrcIBase<Underly>::search(
     const Range<Kw>& query, bool shouldCleanUpResults, bool isNaive
 ) const {
     //--------------------------------------------------------------------------
     // query 1
 
     Range<Kw> src1 = this->tdag1->findSrc(query);
-    if (Range<Kw>::isDummy(src1)) {
-        return std::vector<Tuple<>> {};
+    if (src1.isDummy()) {
+        return std::vector<Doc> {};
     }
-    std::vector<SrcIDb1Tuple> query1Results = this->underly1->search(src1, false, false);
+    std::vector<SrcIDb1Doc> query1Results = this->underly1->search(src1, false, false);
 
     //--------------------------------------------------------------------------
     // query 2
@@ -62,12 +63,12 @@ std::vector<Tuple<>> LogSrcIBase<Underly>::search(
     // (filter out unnecessary choices and merge remaining ones into a single id range)
     IdAlias minIdAlias = DUMMY;
     IdAlias maxIdAlias = DUMMY;
-    for (const SrcIDb1Tuple& query1Result : query1Results) {
-        Kw kw = query1Result.getKw();
+    for (const SrcIDb1Doc& query1Result : query1Results) {
+        Kw kw = query1Result.kw;
         if (!query.contains(kw)) {
             continue;
         }
-        Range<IdAlias> idAliasRange = query1Result.getIdAliasRange();
+        Range<IdAlias> idAliasRange = query1Result.idAliasRange;
         if (idAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
             minIdAlias = idAliasRange.first;
         }
@@ -77,14 +78,14 @@ std::vector<Tuple<>> LogSrcIBase<Underly>::search(
     }
     // if there are no choices or something went wrong
     if (minIdAlias == DUMMY || maxIdAlias == DUMMY) {
-        return std::vector<Tuple<>> {};
+        return std::vector<Doc> {};
     }
 
     // perform query 2
     Range<IdAlias> query2 {minIdAlias, maxIdAlias};
     Range<IdAlias> src2 = this->tdag2->findSrc(query2);
-    if (Range<IdAlias>::isDummy(src2)) {
-        return std::vector<Tuple<>> {};
+    if (src2.isDummy()) {
+        return std::vector<Doc> {};
     }
     return this->underly2->search(src2, shouldCleanUpResults, false);
 }
@@ -126,17 +127,17 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
     Ind<Tuple<IdAlias>> ind2(db2);
 
     for (const SrcIDb1Tuple& db1Tuple : db1) {
-        Range<Kw> kwRange = db1Tuple.getDbKwRange();
+        Range<Kw> kwRange = db1Tuple.dbKwRange;
         // only iterate through leaf nodes in DB 1
         if (kwRange.size() > 1) {
             continue;
         }
         // also exclude ALL dummies (this is done client-side so it's fine to reveal sizes)
-        Range<IdAlias> idAliasRange = db1Tuple.getIdAliasRange();
-        if (Range<IdAlias>::isDummy(idAliasRange)) {
+        if (db1Tuple.isDummy()) {
             continue;
         }
 
+        Range<IdAlias> idAliasRange = db1Tuple.getIdAliasRange();
         for (IdAlias idAlias = idAliasRange.first; idAlias <= idAliasRange.second; idAlias++) {
             Range<IdAlias> idAliasRange {idAlias, idAlias};
             auto iter = ind2.find(idAliasRange);
@@ -150,7 +151,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
 
             Db<Tuple<IdAlias>> dbKwList = std::move(iter->second);
             for (const Tuple<IdAlias>& db2Tuple : dbKwList) {
-                Tuple<> newTuple(db2Tuple.getDbDoc(), kwRange);
+                Tuple<> newTuple(db2Tuple.dbDoc, kwRange);
                 ret.append(newTuple);
             }
         }

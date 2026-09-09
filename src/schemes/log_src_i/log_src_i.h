@@ -13,6 +13,7 @@
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 class LogSrcI : public LogSrcIBase<Underly> {
 private:
+    using DbDoc = typename LogSrcIBase<Underly>::DbDoc;
     using DbKw = typename LogSrcIBase<Underly>::DbKw;
 
 public:

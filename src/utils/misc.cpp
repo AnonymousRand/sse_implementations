@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "types/basic_types.h"
-#include "types/tuple.h"
+#include "types/doc.h"
 #include "types/ustring.h"
 
 
@@ -15,28 +15,27 @@ namespace utils::misc {
 
 // (we need the general case of this function to be able to call it from within the general context
 // of `IStaticPointSse`; it just does nothing except in the template specialization below)
-template <IsDbTuple DbTuple>
-void cleanUpResults(std::vector<DbTuple>& results) {}
+template <IsDbDoc DbDoc>
+void cleanUpResults(std::vector<DbDoc>& results) {}
 
 
-// template specialize this method for just `Tuple<>` instead of all
-// SSE classes that use it
+// template specialize this method for just `Tuple<>` (i.e. results of type `Doc`)
 template <>
-void cleanUpResults(std::vector<Tuple<>>& results) {
+void cleanUpResults(std::vector<Doc>& results) {
     std::unordered_set<Id> deletedIds;
 
     // find all cancellation tuples
-    for (const Tuple<>& result : results) {
-        Op op = result.getOp();
+    for (const Doc& result : results) {
+        Op op = result.op;
         if (op == Op::DEL) {
-            deletedIds.emplace(result.getId());
+            deletedIds.emplace(result.id);
         }
     }
 
     // remove all deleted tuples and deletion tuples from `results` in-place
-    std::erase_if(results, [&deletedIds](const Tuple<>& result) {
-        Id id = result.getId();
-        Op op = result.getOp();
+    std::erase_if(results, [&deletedIds](const Doc& result) {
+        Id id = result.id;
+        Op op = result.op;
         return id == DUMMY || op != Op::INS || deletedIds.contains(id);
     });
 }
@@ -75,8 +74,7 @@ void unpadStr(std::basic_string<CharType>& str) {
 
 
 // remaining explicit template specializations beyond the one earlier
-template void cleanUpResults(std::vector<SrcIDb1Tuple>& results);
-//template void cleanUpResults(std::vector<Tuple<IdAlias>>& results);
+template void cleanUpResults(std::vector<SrcIDb1Doc>& results);
 
 
 template void padStr(std::basic_string<char>& str, bigint targetLen);
