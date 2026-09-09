@@ -32,25 +32,25 @@ int main() {
     std::unique_ptr<LogSrcI<NLogN>> logSrcINLogN  = app::createSse<LogSrcI<NLogN>>();
     std::unique_ptr<LogSrcIStar>    logSrcIStar   = app::createSse<LogSrcIStar>();
 
-    std::unique_ptr<Sda<PiBas<>>>        sdaPiBas           = app::createDsse<Sda<PiBas<>>>(
+    std::unique_ptr<Sda<PiBas<>>>        sdaPiBas        = app::createDsse<Sda<PiBas<>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<NLogN<>>>        sdaNLogN           = app::createDsse<Sda<NLogN<>>>(
+    std::unique_ptr<Sda<NLogN<>>>        sdaNLogN        = app::createDsse<Sda<NLogN<>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrc<PiBas>>>  sdaLogSrcPiBas     = app::createDsse<Sda<LogSrc<PiBas>>>(
+    std::unique_ptr<Sda<LogSrc<PiBas>>>  sdaLogSrcPiBas  = app::createDsse<Sda<LogSrc<PiBas>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrc<NLogN>>>  sdaLogSrcNLogN     = app::createDsse<Sda<LogSrc<NLogN>>>(
+    std::unique_ptr<Sda<LogSrc<NLogN>>>  sdaLogSrcNLogN  = app::createDsse<Sda<LogSrc<NLogN>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas    = app::createDsse<Sda<LogSrcI<PiBas>>>(
+    std::unique_ptr<Sda<LogSrcI<PiBas>>> sdaLogSrcIPiBas = app::createDsse<Sda<LogSrcI<PiBas>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrcI<NLogN>>> sdaLogSrcINLogN    = app::createDsse<Sda<LogSrcI<NLogN>>>(
+    std::unique_ptr<Sda<LogSrcI<NLogN>>> sdaLogSrcINLogN = app::createDsse<Sda<LogSrcI<NLogN>>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
-    std::unique_ptr<Sda<LogSrcIStar>>    sdaLogSrcIStar     = app::createDsse<Sda<LogSrcIStar>>(
+    std::unique_ptr<Sda<LogSrcIStar>>    sdaLogSrcIStar  = app::createDsse<Sda<LogSrcIStar>>(
         config::USE_SHORTCUT_DSSE_SETUP, config::SHOULD_BENCHMARK_UPDTS
     );
 

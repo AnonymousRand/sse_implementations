@@ -26,7 +26,7 @@ public:
         // CONFIG; adjust at will!
 
         // prevent this experiment from taking far too long and outputting far too much text
-        this->dbSizeExp = std::min(dbSizeExp, 3);
+        this->dbSizeExp = std::min(dbSizeExp, 12);
 
         // DB and declared as a member variable so that it doesn't change between
         // calls to `run()`, for different SSE schemes
