@@ -1,10 +1,10 @@
 #include "utils/types/db/i_db.h"
 
 #include <bit>
-#include <cmath>
 #include <concepts>
 #include <unordered_set>
 
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
@@ -37,7 +37,7 @@ template <IsDbTuple DbTuple>
 void IDb<DbTuple>::padToPowOf2() {
     bigint dbSize = this->size;
     if (!std::has_single_bit((ubigint)dbSize)) {
-        bigint amountToPad = std::pow(2, std::ceil(std::log2(dbSize))) - dbSize;
+        bigint amountToPad = utils::misc::roundUpToPowOf2(dbSize) - dbSize;
         this->reserve(this->size + amountToPad);
         for (bigint i = 0; i < amountToPad; i++) {
             Range<DbKw> dbKwRange {this->maxDbKw + 1, this->maxDbKw + 1};

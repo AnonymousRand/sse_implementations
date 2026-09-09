@@ -1,5 +1,6 @@
 #include "utils/misc.h"
 
+#include <cmath>
 #include <concepts>
 #include <string>
 #include <unordered_set>
@@ -66,6 +67,11 @@ void unpadStr(std::basic_string<CharType>& str) {
         }
     }
     str.resize(paddingStart + 1); // (`+ 1` to add back the first null terminator)
+}
+
+
+bigint roundUpToPowOf2(bigint n) {
+    return std::pow(2, std::ceil(std::log2(n)));
 }
 
 

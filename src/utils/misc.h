@@ -32,4 +32,7 @@ template <class CharType>
 void unpadStr(std::basic_string<CharType>& str);
 
 
+bigint roundUpToPowOf2(bigint n);
+
+
 } // namespace `utils::misc`
