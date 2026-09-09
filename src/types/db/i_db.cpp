@@ -53,11 +53,11 @@ void IDb<DbTuple>::onNewDbTuple(const DbTuple& dbTuple) {
     this->size++;
 
     Range<DbKw> dbKwRange = dbTuple.dbKwRange;
-    if (dbKwRange.first < this->minDbKw || this->minDbKw == DUMMY) {
-        this->minDbKw = dbKwRange.first;
+    if (dbKwRange.start < this->minDbKw || this->minDbKw == DUMMY) {
+        this->minDbKw = dbKwRange.start;
     }
-    if (dbKwRange.second > this->maxDbKw || this->maxDbKw == DUMMY) {
-        this->maxDbKw = dbKwRange.second;
+    if (dbKwRange.end > this->maxDbKw || this->maxDbKw == DUMMY) {
+        this->maxDbKw = dbKwRange.end;
     }
 }
 

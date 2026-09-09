@@ -23,7 +23,7 @@
 
 template <std::integral T>
 TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
-    range(Range<T> {left->range.first, right->range.second}),
+    range(Range<T> {left->range.start, right->range.end}),
     left(left), right(right), extraParent(nullptr) {}
 
 
@@ -44,7 +44,7 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
 
     std::vector<Range<T>> leafs;
     leafs.reserve(leafRange.size());
-    for (T i = leafRange.first; i <= leafRange.second; i++) {
+    for (T i = leafRange.start; i <= leafRange.end; i++) {
         leafs.push_back(Range<T> {i, i});
     }
 
@@ -60,14 +60,14 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
     // trees are balanced though which is nice
     auto joinNodes = [&](TdagNode<T>* node1, auto it) {
         TdagNode<T>* node2 = *it;
-        if (node2->range.first - 1 == node1->range.second) {
+        if (node2->range.start - 1 == node1->range.end) {
             // if `node1` is the left child of new parent node
             TdagNode<T>* parent = new TdagNode<T>(node1, node2);
             l.erase(it); // have to `erase()` before `push_back()` to avoid messy memory issues
             l.push_back(parent);
             return true;
         }
-        if (node2->range.second + 1 == node1->range.first) {
+        if (node2->range.end + 1 == node1->range.start) {
             // if `node2` is the left child of new parent node
             TdagNode<T>* parent = new TdagNode<T>(node2, node1);
             l.erase(it);
@@ -198,11 +198,11 @@ std::list<const TdagNode<T>*> TdagNode<T>::traverseHelper(
 template <std::integral T>
 Range<T> TdagNode<T>::findSrc(Range<T> targetRange) const {
     // if target range exceeds this entire tree's range on either side, return what we can
-    if (targetRange.first < this->range.first) {
-        targetRange.first = this->range.first;
+    if (targetRange.start < this->range.start) {
+        targetRange.start = this->range.start;
     }
-    if (targetRange.second > this->range.second) {
-        targetRange.second = this->range.second;
+    if (targetRange.end > this->range.end) {
+        targetRange.end = this->range.end;
     }
     return this->findSrcHelper(targetRange);
 }
@@ -225,7 +225,7 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) const {
             return T(-1);
         }
 
-        T diff = (targetRange.first - range.first) + (range.second - targetRange.second);
+        T diff = (targetRange.start - range.start) + (range.end - targetRange.end);
         candidates[diff] = range;
         return diff;
     };

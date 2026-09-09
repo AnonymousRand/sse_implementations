@@ -6,7 +6,6 @@
 #include <iostream>
 #include <regex>
 #include <string>
-#include <utility>
 
 #include "types/basic_types.h"
 #include "types/ustring.h"
@@ -16,11 +15,14 @@
  * preconditions:
  *     - range end is greater than or equal to range start.
  */
-// >TODO make this a struct too? what members do we need from pair?
-// first, second, and that's it!
 template <std::integral T>
-struct Range : public std::pair<T, T> {
+struct Range {
 public:
+    T start;
+    T end;
+
+    // we should be able to use aggregated initialization here
+
     static const Range DUMMY() {
         return Range {::DUMMY, ::DUMMY};
     }
@@ -29,9 +31,6 @@ public:
     }
 
     //--------------------------------------------------------------------------
-
-    Range() = default;
-    Range(T start, T end);
 
     T size() const;
     bool contains(const Range& target) const;
@@ -42,6 +41,7 @@ public:
     ustring toUstr() const;
     static Range fromStr(const std::string& str);
 
+    friend bool operator ==(const Range& range1, const Range& range2) = default;
     template <std::integral T2>
     friend std::ostream& operator <<(std::ostream& os, const Range<T2>& range);
 

@@ -69,11 +69,11 @@ std::vector<Doc> LogSrcIBase<Underly>::search(
             continue;
         }
         Range<IdAlias> idAliasRange = query1Result.idAliasRange;
-        if (idAliasRange.first < minIdAlias || minIdAlias == DUMMY) {
-            minIdAlias = idAliasRange.first;
+        if (idAliasRange.start < minIdAlias || minIdAlias == DUMMY) {
+            minIdAlias = idAliasRange.start;
         }
-        if (idAliasRange.second > maxIdAlias || maxIdAlias == DUMMY) {
-            maxIdAlias = idAliasRange.second;
+        if (idAliasRange.end > maxIdAlias || maxIdAlias == DUMMY) {
+            maxIdAlias = idAliasRange.end;
         }
     }
     // if there are no choices or something went wrong
@@ -138,7 +138,7 @@ void LogSrcIBase<Underly>::getDb(Db<Tuple<>>& ret) const {
         }
 
         Range<IdAlias> idAliasRange = db1Tuple.getIdAliasRange();
-        for (IdAlias idAlias = idAliasRange.first; idAlias <= idAliasRange.second; idAlias++) {
+        for (IdAlias idAlias = idAliasRange.start; idAlias <= idAliasRange.end; idAlias++) {
             Range<IdAlias> idAliasRange {idAlias, idAlias};
             auto iter = ind2.find(idAliasRange);
             DEBUG_ONLY({

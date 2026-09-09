@@ -35,7 +35,7 @@ public:
 
         if (isNaive) {
             // naive, insecure range search: just individually query every point in range
-            for (DbKw dbKw = query.first; dbKw <= query.second; dbKw++) {
+            for (DbKw dbKw = query.start; dbKw <= query.end; dbKw++) {
                 std::vector<DbDoc> results = this->searchRaw(Range {dbKw, dbKw});
                 // (this uses move instead of copy)
                 std::move(results.begin(), results.end(), std::back_inserter(allResults));

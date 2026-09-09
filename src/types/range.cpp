@@ -6,7 +6,6 @@
 #include <iostream>
 #include <regex>
 #include <string>
-#include <utility>
 
 #include "types/basic_types.h"
 #include "types/ustring.h"
@@ -17,43 +16,38 @@
 template <std::integral T>
 const std::string Range<T>::REGEX_STR = "(-?[0-9]+)-(-?[0-9]+)";
 
-
 template <std::integral T>
 const std::regex Range<T>::REGEX(REGEX_STR);
 
 
 template <std::integral T>
-Range<T>::Range(T start, T end) : std::pair<T, T> {start, end} {}
-
-
-template <std::integral T>
 T Range<T>::size() const {
     // (`+ 1` as both ends are inclusive)
-    return this->second - this->first + 1;
+    return this->end - this->start + 1;
 }
 
 
 template <std::integral T>
 bool Range<T>::contains(const Range<T>& target) const {
-    return this->first <= target.first && this->second >= target.second;
+    return this->start <= target.start && this->end >= target.end;
 }
 
 
 template <std::integral T>
 bool Range<T>::contains(T target) const {
-    return this->first <= target && this->second >= target;
+    return this->start <= target && this->end >= target;
 }
 
 
 template <std::integral T>
 bool Range<T>::isDisjointFrom(const Range<T>& target) const {
-    return this->second < target.first || this->first > target.second;
+    return this->end < target.start || this->start > target.end;
 }
 
 
 template <std::integral T>
 std::string Range<T>::toStr() const {
-    return std::format("{}-{}", this->first, this->second);
+    return std::format("{}-{}", this->start, this->end);
 }
 
 
