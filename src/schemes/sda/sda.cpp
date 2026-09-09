@@ -52,7 +52,7 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         // in `db` up the largest subindexes first (this was needed anyway))
         bigint dbPos = 0;
         for (bigint i = lastFilledInd; i >= 0; i--) {
-            bigint indSize = (bigint)std::pow(2, i);
+            bigint indSize = std::pow(2, i);
             Db<Tuple<>> indDb;
             if (dbPos < db.getSize()) {
                 if (dbPos + indSize < db.getSize()) {
