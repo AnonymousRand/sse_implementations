@@ -22,10 +22,7 @@
  *
  * note: we also store their `DbKw` range, which is the same as the size 1 range corresponding
  * to their `Kw` value for tuples inputted to the DB, but allows us to be general enough for
- * Log-SRC replications, for example, where this is not the case. we need to be able to easily
- * fetch this in plaintext for things like SDa (otherwise it might be only accessible via the
- * encrypted "label" in the encrypted index, which can be a hash/PRF and hence not easily
- * reversible, unlike `DbTuple`s which are just encrypted and can be easily decrypted).
+ * Log-SRC replications, for example, where this is not the case.
  */
 template <IsDbDoc DbDoc, class DbKw>
 struct IDbTuple {
