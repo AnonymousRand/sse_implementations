@@ -60,7 +60,7 @@ public:
 
     bigint getSize() const { return this->size; }
     virtual void reserve(bigint size) = 0;
-    Range<bigint> getDbKwBounds() const { return Range<bigint> {this->minDbKw, this->maxDbKw}; }
+    Range<DbKw> getDbKwBounds() const { return Range<DbKw> {this->minDbKw, this->maxDbKw}; }
 
     virtual void shuffle() = 0;
     virtual void sort(
@@ -72,8 +72,8 @@ public:
 
 protected:
     bigint size = 0;
-    bigint minDbKw = DUMMY;
-    bigint maxDbKw = DUMMY;
+    DbKw minDbKw = DUMMY;
+    DbKw maxDbKw = DUMMY;
 
     //--------------------------------------------------------------------------
     // helpers

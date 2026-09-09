@@ -18,10 +18,6 @@
 // just specify all template params for `Underly` fully
 template <IsSdUnderly Underly>
 class Sda : public IDsse<Tuple<>> {
-private:
-    using DbDoc = typename IDsse<Tuple<>>::DbDoc;
-    using DbKw = typename IDsse<Tuple<>>::DbKw;
-
 public:
     using IDsse<Tuple<>>::IDsse;
 

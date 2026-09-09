@@ -19,9 +19,6 @@
 // (and `= default` calls their parent versions in order of inheritance)
 template <IsDbTuple DbTuple>
 class DbDisk : public IDiskStorage, public IDb<DbTuple> {
-private:
-    using IDb<DbTuple>::DbKw;
-
 public:
     //--------------------------------------------------------------------------
     // constructors/destructors

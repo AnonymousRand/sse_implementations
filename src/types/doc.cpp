@@ -53,7 +53,7 @@ std::string Doc::toPrintableStr() const {
 
 Doc Doc::fromRegexMatches(const std::smatch& matches) {
     DEBUG_ONLY({
-        if (!isMatchFound || matches.size() != REGEX_SUBMATCH_COUNT + 1) {
+        if (matches.size() < REGEX_SUBMATCH_COUNT + 1) {
             std::cerr << "Error: Doc::fromRegexMatches(): bad string \"" << str
                       << "\" passed\nRegex to match is \"" << REGEX_STR << "\"; matched groups are:"
                       << std::endl;
@@ -95,7 +95,7 @@ std::string SrcIDb1Doc::toPrintableStr() const {
 
 SrcIDb1Doc SrcIDb1Doc::fromRegexMatches(const std::smatch& matches) {
     DEBUG_ONLY({
-        if (!isMatchFound || matches.size() != REGEX_SUBMATCH_COUNT + 1) {
+        if (matches.size() < REGEX_SUBMATCH_COUNT + 1) {
             std::cerr << "Error: SrcIDb1Doc::fromRegexMatches(): bad string \"" << str
                       << "\" passed\nRegex to match is \"" << REGEX_STR << "\"; matched groups are:"
                       << std::endl;

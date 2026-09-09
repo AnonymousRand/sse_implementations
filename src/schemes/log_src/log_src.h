@@ -16,11 +16,6 @@
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 class LogSrc : public ISdUnderly<Tuple<>> {
-private:
-    // TODO when are these not needed?
-    using DbDoc = typename ISdUnderly<Tuple<>>::DbDoc;
-    using DbKw = typename ISdUnderly<Tuple<>>::DbKw;
-
 public:
     ~LogSrc();
 

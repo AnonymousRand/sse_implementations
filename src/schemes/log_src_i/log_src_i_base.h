@@ -17,10 +17,6 @@
 // common code between `LogSrcI` and `LogSrcIStar`
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
 class LogSrcIBase : public ISdUnderly<Tuple<>> {
-protected:
-    using DbDoc = typename ISdUnderly<Tuple<>>::DbDoc;
-    using DbKw = typename ISdUnderly<Tuple<>>::DbKw;
-
 public:
     virtual ~LogSrcIBase();
 

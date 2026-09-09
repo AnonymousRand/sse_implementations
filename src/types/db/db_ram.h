@@ -13,8 +13,6 @@
 template <IsDbTuple DbTuple>
 class DbRam : public IDb<DbTuple> {
 private:
-    using IDb<DbTuple>::DbKw;
-
     using InnerType = std::vector<DbTuple>;
 
 public:
