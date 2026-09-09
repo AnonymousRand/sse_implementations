@@ -75,7 +75,6 @@ public:
 
 private:
     static const std::string REGEX_STR;
-    static const std::regex REGEX;
     static const int REGEX_SUBMATCH_COUNT;
 };
 
@@ -112,6 +111,5 @@ public:
 
 private:
     static const std::string REGEX_STR;
-    static const std::regex REGEX;
     static const int REGEX_SUBMATCH_COUNT;
 };

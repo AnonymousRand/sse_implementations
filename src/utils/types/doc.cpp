@@ -35,8 +35,6 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc& iDbDoc) {
 
 const std::string Doc::REGEX_STR = "(-?[0-9]+),(-?[0-9]+)([I|D|X])";
 
-const std::regex Doc::REGEX(REGEX_STR);
-
 const int Doc::REGEX_SUBMATCH_COUNT = 3;
 
 
@@ -76,8 +74,6 @@ Doc Doc::fromRegexMatches(const std::smatch& matches) {
 
 
 const std::string SrcIDb1Doc::REGEX_STR = "(-?[0-9]+),(-?[0-9]+--?[0-9]+)";
-
-const std::regex SrcIDb1Doc::REGEX(REGEX_STR);
 
 const int SrcIDb1Doc::REGEX_SUBMATCH_COUNT = 2;
 
