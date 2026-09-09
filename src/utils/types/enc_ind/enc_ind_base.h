@@ -4,12 +4,11 @@
 
 #include "config.h"
 
-#include "types/basic_types.h"
-#include "types/enc_ind/enc_ind_types.h"
-#include "types/i_disk_storage.h"
-#include "types/ustring.h"
-
 #include "utils/crypto.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/i_disk_storage.h"
+#include "utils/types/ustring.h"
 
 
 class EncIndBase : public IDiskStorage {

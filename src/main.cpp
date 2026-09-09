@@ -14,7 +14,7 @@
 #include "schemes/pi_bas/pi_bas.h"
 #include "schemes/sda/sda.h"
 
-#include "types/basic_types.h"
+#include "utils/types/basic_types.h"
 
 
 int main() {

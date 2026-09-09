@@ -29,26 +29,26 @@ add_executable(main
 
     src/schemes/sda/sda.cpp
 
-    src/types/db/db_disk.cpp
-    src/types/db/db_ram.cpp
-    src/types/db/i_db.cpp
-
-    src/types/enc_ind/enc_ind_base.cpp
-    src/types/enc_ind/enc_ind_rand.cpp
-    src/types/enc_ind/enc_ind_loc.cpp
-    src/types/enc_ind/enc_ind_types.cpp
-
-    src/types/doc.cpp
-    src/types/i_disk_storage.cpp
-    src/types/ind.cpp
-    src/types/range.cpp
-    src/types/tdag.cpp
-    src/types/tuple.cpp
-    src/types/ustring.cpp
-
     src/utils/crypto.cpp
     src/utils/debug.cpp
     src/utils/misc.cpp
+
+    src/utils/types/db/db_disk.cpp
+    src/utils/types/db/db_ram.cpp
+    src/utils/types/db/i_db.cpp
+
+    src/utils/types/enc_ind/enc_ind_base.cpp
+    src/utils/types/enc_ind/enc_ind_rand.cpp
+    src/utils/types/enc_ind/enc_ind_loc.cpp
+    src/utils/types/enc_ind/enc_ind_types.cpp
+
+    src/utils/types/doc.cpp
+    src/utils/types/i_disk_storage.cpp
+    src/utils/types/ind.cpp
+    src/utils/types/range.cpp
+    src/utils/types/tdag.cpp
+    src/utils/types/tuple.cpp
+    src/utils/types/ustring.cpp
 )
 
 # base directories for `#include`

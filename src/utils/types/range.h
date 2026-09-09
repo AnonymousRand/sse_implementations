@@ -7,8 +7,8 @@
 #include <regex>
 #include <string>
 
-#include "types/basic_types.h"
-#include "types/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/ustring.h"
 
 
 /**

@@ -5,10 +5,10 @@
 
 #include "config.h"
 
-#include "types/db/db_disk.h"
-#include "types/db/db_ram.h"
-#include "types/range.h"
-#include "types/tuple.h"
+#include "utils/types/db/db_disk.h"
+#include "utils/types/db/db_ram.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
 
 
 // make sure that `Db` is always a type that inherits from `IDb`!

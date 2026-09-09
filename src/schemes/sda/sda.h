@@ -6,11 +6,11 @@
 #include "schemes/interfaces/i_dsse.h"
 #include "schemes/interfaces/i_sd_underly.h"
 
-#include "types/basic_types.h"
-#include "types/db/db.h"
-#include "types/doc.h"
-#include "types/range.h"
-#include "types/tuple.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/doc.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
 
 
 // don't use template template param for `Underly` because they may have other deeper

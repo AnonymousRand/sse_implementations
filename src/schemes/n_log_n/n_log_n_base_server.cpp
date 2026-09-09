@@ -5,13 +5,12 @@
 
 #include "schemes/interfaces/i_sse_server.h"
 
-#include "types/basic_types.h"
-#include "types/enc_ind/enc_ind_loc.h"
-#include "types/enc_ind/enc_ind_types.h"
-#include "types/tuple.h"
-#include "types/ustring.h"
-
 #include "utils/benchmark.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/enc_ind/enc_ind_loc.h"
+#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/tuple.h"
+#include "utils/types/ustring.h"
 
 
 namespace {

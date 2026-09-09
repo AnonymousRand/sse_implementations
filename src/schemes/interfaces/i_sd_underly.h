@@ -4,9 +4,9 @@
 
 #include "schemes/interfaces/i_sse.h"
 
-#include "types/basic_types.h"
-#include "types/db/db.h"
-#include "types/tuple.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/tuple.h"
 
 
 // underlying SSE schemes for SD-type DSSE schemes (from NDSS'20)

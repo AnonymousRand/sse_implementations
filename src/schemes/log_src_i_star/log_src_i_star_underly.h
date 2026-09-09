@@ -6,10 +6,10 @@
 #include "schemes/log_src_i_star/log_src_i_star_underly_server.h"
 #include "schemes/n_log_n/n_log_n_base.h" 
 
-#include "types/basic_types.h"
-#include "types/db/db.h"
-#include "types/range.h"
-#include "types/tuple.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
 
 
 namespace log_src_i_star {

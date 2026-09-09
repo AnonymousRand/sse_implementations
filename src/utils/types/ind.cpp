@@ -1,12 +1,12 @@
-#include "types/ind.h"
+#include "utils/types/ind.h"
 
 #include <concepts>
 #include <unordered_map>
 
-#include "types/basic_types.h"
-#include "types/db/db.h"
-#include "types/range.h"
-#include "types/tuple.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
 
 
 //------------------------------------------------------------------------------

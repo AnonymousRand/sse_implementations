@@ -4,8 +4,8 @@
 
 #include "schemes/interfaces/i_sse.h"
 
-#include "types/basic_types.h"
-#include "types/tuple.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/tuple.h"
 
 
 // (note: no virtual inheritance here as otherwise things extending `IDsse` will skip over `IDsse`'s

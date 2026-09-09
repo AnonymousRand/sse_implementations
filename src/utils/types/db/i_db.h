@@ -4,9 +4,9 @@
 #include <functional>
 #include <unordered_set>
 
-#include "types/basic_types.h"
-#include "types/range.h"
-#include "types/tuple.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
 
 
 //==============================================================================

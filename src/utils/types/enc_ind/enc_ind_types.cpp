@@ -1,6 +1,6 @@
-#include "types/enc_ind/enc_ind_types.h"
+#include "utils/types/enc_ind/enc_ind_types.h"
 
-#include "types/ustring.h"
+#include "utils/types/ustring.h"
 
 
 namespace utils::enc_ind {

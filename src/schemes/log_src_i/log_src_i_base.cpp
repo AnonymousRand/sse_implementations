@@ -13,15 +13,14 @@
 #include "schemes/n_log_n/n_log_n.h"
 #include "schemes/pi_bas/pi_bas.h"
 
-#include "types/basic_types.h"
-#include "types/db/db.h"
-#include "types/doc.h"
-#include "types/ind.h"
-#include "types/range.h"
-#include "types/tdag.h"
-#include "types/tuple.h"
-
 #include "utils/debug.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/doc.h"
+#include "utils/types/ind.h"
+#include "utils/types/range.h"
+#include "utils/types/tdag.h"
+#include "utils/types/tuple.h"
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>

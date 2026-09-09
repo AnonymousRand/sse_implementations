@@ -5,9 +5,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "types/basic_types.h"
-#include "types/doc.h"
-#include "types/ustring.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/doc.h"
+#include "utils/types/ustring.h"
 
 
 namespace utils::misc {

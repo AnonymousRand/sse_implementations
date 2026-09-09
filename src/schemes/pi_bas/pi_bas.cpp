@@ -11,18 +11,17 @@
 #include "schemes/interfaces/i_static_point_sse.h"
 #include "schemes/pi_bas/pi_bas_server.h"
 
-#include "types/basic_types.h"
-#include "types/db/db.h"
-#include "types/enc_ind/enc_ind_rand.h"
-#include "types/enc_ind/enc_ind_types.h"
-#include "types/ind.h"
-#include "types/range.h"
-#include "types/tuple.h"
-#include "types/ustring.h"
-
 #include "utils/crypto.h"
 #include "utils/debug.h"
 #include "utils/misc.h"
+#include "utils/types/basic_types.h"
+#include "utils/types/db/db.h"
+#include "utils/types/enc_ind/enc_ind_rand.h"
+#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/ind.h"
+#include "utils/types/range.h"
+#include "utils/types/tuple.h"
+#include "utils/types/ustring.h"
 
 
 template <IsDbTuple DbTuple>
