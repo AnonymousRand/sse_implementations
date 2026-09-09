@@ -27,7 +27,7 @@
 namespace utils::benchmark {
 
 
-// CONFIG
+// adjust as needed
 inline constexpr bigint PRINT_LABEL_WIDTH = 25;
 inline constexpr bigint PRINT_LABEL_FIRST_HALF_WIDTH = 6;
 inline constexpr bigint PRINT_COL_WIDTH = 18;
