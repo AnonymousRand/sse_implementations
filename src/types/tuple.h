@@ -64,7 +64,6 @@ concept IsDbTuple = requires(T t) {
 template <class DbKw = Kw>
 struct Tuple : public IDbTuple<Doc, DbKw> {
 public:
-    // TODO test if these can be constexpr
     static const Tuple DUMMY(const Range<DbKw>& dbKwRange) {
         return Tuple {Doc::DUMMY(), dbKwRange};
     }

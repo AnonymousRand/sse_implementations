@@ -49,8 +49,7 @@ void replTdagDb(Db<DbTuple>& db, const TdagNode<typename DbTuple::DbKwType>* tda
             if (ancestor == dbKwRange) {
                 continue;
             }
-            // TODO copy constructor (is it possible to be default?)
-            DbTuple newTuple(tuple.dbDoc, ancestor);
+            DbTuple newTuple {tuple.dbDoc, ancestor};
             db.append(newTuple);
         }
     }

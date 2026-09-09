@@ -37,7 +37,7 @@ void initDbsLeaves(
         Tuple<> tuple = sortedDb[idAlias];
         // populate `db2` leaves
         Range<IdAlias> idAliasRange {idAlias, idAlias};
-        Tuple<IdAlias> newTuple(tuple.dbDoc, idAliasRange);
+        Tuple<IdAlias> newTuple {tuple.dbDoc, idAliasRange};
         db2.append(newTuple);
 
         // populate `db1` leaves
