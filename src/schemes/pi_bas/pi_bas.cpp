@@ -154,8 +154,6 @@ void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
         }
 
         DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
-        // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
-        // to easily access these `DbKw` ranges in plaintext
         ret.append(dbTuple);
     }
 }

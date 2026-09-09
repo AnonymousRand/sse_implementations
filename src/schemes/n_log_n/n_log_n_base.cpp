@@ -112,8 +112,6 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
             // too seems to work fine, we don't since we don't have an easy, general way to check
             // for those here, and that should be the upstream scheme's concern anyway.)
             if (!dbTuple.isDummy()) {
-                // this is where we use the fact that `DbTuple`s also store their `DbKw` ranges
-                // to easily access these `DbKw` ranges in plaintext
                 ret.append(dbTuple);
             }
         }
