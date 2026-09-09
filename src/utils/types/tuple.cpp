@@ -44,7 +44,7 @@ const std::regex Tuple<DbKw>::REGEX(REGEX_STR);
 
 template <class DbKw>
 Tuple<DbKw>::Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange) :
-    Tuple<DbKw>(Doc {id, kw, op}, dbKwRange) {}
+    Tuple<DbKw> {Doc {id, kw, op}, dbKwRange} {}
 
 
 template <class DbKw>
@@ -116,7 +116,7 @@ const std::regex SrcIDb1Tuple::REGEX(REGEX_STR);
 
 
 SrcIDb1Tuple::SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange) :
-    SrcIDb1Tuple(SrcIDb1Doc {kw, idAliasRange}, kwRange) {}
+    SrcIDb1Tuple {SrcIDb1Doc {kw, idAliasRange}, kwRange} {}
 
 
 std::string SrcIDb1Tuple::toStr() const {
