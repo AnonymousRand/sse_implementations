@@ -32,6 +32,7 @@ void PiBasServer<DbTuple>::clear() {
     // the next time we assign `encInd`)
     if (this->encInd != nullptr) {
         utils::benchmark::serverStorage -= this->encInd->getBytes();
+
         delete this->encInd;
         this->encInd = nullptr;
     };

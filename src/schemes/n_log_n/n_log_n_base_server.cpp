@@ -48,6 +48,7 @@ void NLogNBaseServer<DbTuple>::clear() {
     for (EncIndLoc* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
             utils::benchmark::serverStorage -= lvl->getBytes();
+
             delete lvl;
             lvl = nullptr;
         }

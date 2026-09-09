@@ -20,6 +20,7 @@ template <IsDbTuple DbTuple>
 void NLogNServer<DbTuple>::clear() {
     if (this->dbKwCountsDict != nullptr) {
         utils::benchmark::serverStorage -= this->dbKwCountsDict->getBytes();
+
         delete this->dbKwCountsDict;
         this->dbKwCountsDict = nullptr;
     }
