@@ -53,15 +53,13 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
         bigint dbPos = 0;
         for (bigint i = lastFilledInd; i >= 0; i--) {
             bigint indSize = std::pow(2, i);
-            Db<Tuple<>> indDb;
+            Db<Tuple<>> indDb {};
             if (dbPos < db.getSize()) {
                 if (dbPos + indSize < db.getSize()) {
                     indDb = Db<Tuple<>>(db, dbPos, dbPos + indSize);
                 } else {
                     indDb = Db<Tuple<>>(db, dbPos, db.getSize());
                 }
-            } else {
-                indDb = Db<Tuple<>> {};
             }
 
             Underly* newUnderly = new Underly();
