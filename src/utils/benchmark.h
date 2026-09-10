@@ -28,9 +28,9 @@ namespace utils::benchmark {
 
 
 // adjust as needed
-inline constexpr bigint PRINT_LABEL_WIDTH = 25;
+inline constexpr bigint PRINT_LABEL_WIDTH = 24;
 inline constexpr bigint PRINT_LABEL_FIRST_HALF_WIDTH = 6;
-inline constexpr bigint PRINT_COL_WIDTH = 18;
+inline constexpr bigint PRINT_COL_WIDTH = 17;
 
 
 //--------------------------------------------------------------------------
@@ -148,11 +148,11 @@ inline void resetEphems() {
 inline void printHeader() {
     std::cout << std::format("| {:<{}} ", "Params", PRINT_LABEL_WIDTH)
               << std::format("| {:<{}} ", "Time (ms)", PRINT_COL_WIDTH)
-              << std::format("| {:<{}} ", "Server Storage (B)", PRINT_COL_WIDTH)
+              << std::format("| {:<{}} ", "Server Store (B)", PRINT_COL_WIDTH)
               << std::format("| {:<{}} ", "Communication (B)", PRINT_COL_WIDTH)
               // (trailing spaces to match bottom border, which should extend until
               // the right border of the first profile output in the table body)
-              << std::format("| {:<{}}  ", "Profiling (ms) ...", PRINT_COL_WIDTH)
+              << std::format("| {:<{}}  ", "Profiling (ms)...", PRINT_COL_WIDTH)
               << std::endl;
     std::cout << std::format("--{:-<{}}-", "", PRINT_LABEL_WIDTH)
               << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
@@ -200,7 +200,7 @@ inline void printUpdtAvgs(const std::string& label) {
     double avgUpdtTime          = totalUpdtTime          / totalUpdtCount;
     double avgUpdtCommunication = totalUpdtCommunication / totalUpdtCount;
 
-    std::cout << std::format("| {:<25} ", label)
+    std::cout << std::format("| {:<{}} ", label, PRINT_LABEL_WIDTH)
               << std::format("| {0:<{1}.{1}} ", std::to_string(avgUpdtTime), PRINT_COL_WIDTH)
               << std::format("| {:<{}} ", "-", PRINT_COL_WIDTH)
               << std::format(

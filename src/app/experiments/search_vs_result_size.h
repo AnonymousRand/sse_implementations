@@ -58,7 +58,7 @@ public:
         for (int i = 0; i <= this->dbSizeExp; i++) {
             Range<Kw> query {0, (Kw)std::pow(2, i) - 1};
             sse->search(query);
-            utils::benchmark::print("Search", std::format("(result size 2^{})", i));
+            utils::benchmark::print("Search", std::format("(res size 2^{})", i));
         }
         std::cout << std::endl;
 
