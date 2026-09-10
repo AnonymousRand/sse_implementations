@@ -48,13 +48,14 @@ public:
     void run(ISse<>* sse) const override {
         utils::benchmark::printHeader();
 
-        // (start `dbSizeExp` big enough for the query with `this->resultSize` results
-        // to make sense)
+        // we start `dbSizeExp` big enough for a query with `this->resultSize` results
+        // to make sense
         for (int dbSizeExp = std::ceil(std::log2(this->resultSize));
              dbSizeExp <= this->maxDbSizeExp; dbSizeExp++)
         {
             bigint dbSize = std::pow(2, dbSizeExp);
             Db<> db;
+            // make sure only `this->resultSize` tuples have the right kws to be returned as results
             createDb(db, this->resultSize, true, false);
             createDb(db, dbSize - this->resultSize, true, false, this->resultSize);
             Range<Kw> query {0, this->resultSize - 1};
