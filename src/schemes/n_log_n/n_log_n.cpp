@@ -12,6 +12,7 @@
 #include "schemes/n_log_n/n_log_n_server.h"
 
 #include "utils/crypto.h"
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/enc_ind/enc_ind_rand.h"
@@ -73,7 +74,7 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     ustring ivDict = encIndValDict.second;
     ustring decDbKwCount = utils::crypto::decryptAndUnpad(this->encKey, encDbKwCount, ivDict);
     bigint dbKwCount = utils::ustr::fromUstr(decDbKwCount);
-    bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // this is bucket size
+    bigint dbKwPaddedCount = utils::misc::roundUpToPowOf2(dbKwCount); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;

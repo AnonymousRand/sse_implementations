@@ -8,6 +8,7 @@
 #include "schemes/log_src_i_star/log_src_i_star_underly_server.h"
 #include "schemes/n_log_n/n_log_n_base.h"
 
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
@@ -68,7 +69,7 @@ std::vector<typename Underly<DbTuple>::DbDoc> Underly<DbTuple>::searchRaw(
     // to search is exactly the size of the queried range/SRC node, so we don't have to
     // additionally store an encrypted map (and result size is leaked to server anyway)
     bigint dbKwCount = query.size();
-    bigint dbKwPaddedCount = std::pow(2, std::ceil(std::log2(dbKwCount))); // (this is bucket size)
+    bigint dbKwPaddedCount = utils::misc::roundUpToPowOf2(dbKwCount); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
     ustring label;
