@@ -27,7 +27,7 @@ namespace app::experiments {
 class UpdateVsDbSize : public IExperiment<IDsse<>> {
 private:
     // CONFIG; adjust at will!
-    static constexpr int DB_SIZE_EXP_LIMIT = config::SHOULD_PRINT_EACH_UPDT ? 14 : 16;
+    static constexpr int DB_SIZE_EXP_LIMIT = 14;
 
 public:
     UpdateVsDbSize(int dbSizeExp) {
