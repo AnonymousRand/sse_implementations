@@ -30,7 +30,7 @@ namespace utils::benchmark {
 // adjust as needed
 inline constexpr bigint PRINT_LABEL_WIDTH = 24;
 inline constexpr bigint PRINT_LABEL_FIRST_HALF_WIDTH = 6;
-inline constexpr bigint PRINT_COL_WIDTH = 17;
+inline constexpr bigint PRINT_COL_WIDTH = 16;
 
 
 //--------------------------------------------------------------------------
@@ -149,10 +149,10 @@ inline void printHeader() {
     std::cout << std::format("| {:<{}} ", "Params", PRINT_LABEL_WIDTH)
               << std::format("| {:<{}} ", "Time (ms)", PRINT_COL_WIDTH)
               << std::format("| {:<{}} ", "Server Store (B)", PRINT_COL_WIDTH)
-              << std::format("| {:<{}} ", "Communication (B)", PRINT_COL_WIDTH)
+              << std::format("| {:<{}} ", "Commn (B)", PRINT_COL_WIDTH)
               // (trailing spaces to match bottom border, which should extend until
               // the right border of the first profile output in the table body)
-              << std::format("| {:<{}}  ", "Profiling (ms)...", PRINT_COL_WIDTH)
+              << std::format("| {:<{}}  ", "Profiling (ms)", PRINT_COL_WIDTH)
               << std::endl;
     std::cout << std::format("--{:-<{}}-", "", PRINT_LABEL_WIDTH)
               << std::format("--{:-<{}}-", "", PRINT_COL_WIDTH)
