@@ -77,13 +77,15 @@ void EncIndBase::clear() {
 }
 
 
-bool EncIndBase::read(ubigint pos, EncIndVal& ret) const {
+bool EncIndBase::read(ubigint pos, EncIndVal& ret, bool shouldFseek) const {
     pos %= this->capacity;
 
     uchar entry[this->ENTRY_LEN()];
-    utils::benchmark::startProfile("fseek");
-    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    utils::benchmark::stopProfile("fseek");
+    if (shouldFseek) {
+        utils::benchmark::startProfile("fseek");
+        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+        utils::benchmark::stopProfile("fseek");
+    }
     this->readEncoded(entry);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`

@@ -99,7 +99,7 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
         } else {
             // after first read, just read from the bucket consecutively as we are
             // now guaranteed that the full bucket is stored here contiguously
-            isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal);
+            isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal, false);
         }
         if (!isFound) {
             break;

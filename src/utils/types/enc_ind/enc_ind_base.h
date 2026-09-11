@@ -59,7 +59,7 @@ public:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool read(ubigint pos, EncIndVal& ret) const;
+    bool read(ubigint pos, EncIndVal& ret, bool shouldFseek = true) const;
 
     /**
      * try to find `key` starting at `pos`, iterating forward from `pos` if the key

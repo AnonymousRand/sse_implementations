@@ -31,7 +31,7 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    // new (non-virtual override!) versions of these methods that don't change `pos` by reference,
+    // new (non-virtual shadow!) versions of these methods that don't change `pos` by reference,
     // as that shouldn't be needed for pseudorandom encrypted indexes and may cause bugs later
     bool find(ubigint pos, const ustring& key, EncIndVal& ret) const {
         return EncIndBase::find(pos, key, ret);

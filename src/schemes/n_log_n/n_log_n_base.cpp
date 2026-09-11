@@ -101,7 +101,7 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
         // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
         for (bigint pos = 0; pos < encIndLvl->getCapacity(); pos++) {
             EncIndVal encIndVal;
-            bool isValidVal = encIndLvl->read(pos, encIndVal);
+            bool isValidVal = encIndLvl->read(pos, encIndVal, pos == 0);
             if (!isValidVal) {
                 continue;
             }
