@@ -172,8 +172,11 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
         } else {
             // after first write, just write consecutively as we are now guaranteed that
             // there is a full bucket of contiguous space here
+            //
+            // we also stop `fseek()`ing at every write since the write itself should advance
+            // the file pointer to the right location
             this->encIndLvlsTmp[lvl]->write(
-                startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}
+                startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}, false
             );
         }
     }

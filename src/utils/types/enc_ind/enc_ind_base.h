@@ -78,7 +78,7 @@ public:
      * write to `pos` (but does not check if there is already something there, e.g. from
      * `pos % this->capacity`, and will overwrite it!).
      */
-    void write(ubigint pos, const EncIndEntry& encIndEntry);
+    void write(ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek = true);
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos` until
@@ -131,5 +131,5 @@ protected:
 
     void readEncoded(uchar* buf) const;
 
-    void writeEncoded(ubigint pos, const uchar* encodedEntry);
+    void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
 };

@@ -109,7 +109,7 @@ bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
 }
 
 
-void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
+void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek) {
     pos %= this->capacity;
 
     // encode `encIndEntry` into one string
@@ -126,7 +126,7 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry) {
     });
 
     // then go to `pos` and write the encoded `encIndEntry`
-    this->writeEncoded(pos, encodedEntry.c_str());
+    this->writeEncoded(pos, encodedEntry.c_str(), shouldFseek);
 }
 
 
@@ -200,10 +200,12 @@ void EncIndBase::readEncoded(uchar* buf) const {
 }
 
 
-void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry) {
-    utils::benchmark::startProfile("fseek");
-    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    utils::benchmark::stopProfile("fseek");
+void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek) {
+    if (shouldFseek) {
+        utils::benchmark::startProfile("fseek");
+        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+        utils::benchmark::stopProfile("fseek");
+    }
     utils::benchmark::startProfile("fwrite");
     int itemsWritten = std::fwrite(encodedEntry, this->ENTRY_LEN(), 1, this->file);
     utils::benchmark::stopProfile("fwrite");
