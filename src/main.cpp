@@ -310,7 +310,7 @@ int main() {
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
         updateVsDbSize.run(sdaLogSrcINLogN.get());
 
-        // (note that this has horrendous storage and performance as randomized keywords lets
+        // (note that this has horrendous performance as randomized keywords lets
         // individual SDa subindexes have HUGE TDAG 1s. for the same reason this is not secure)
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
         updateVsDbSize.run(sdaLogSrcIStar.get());
