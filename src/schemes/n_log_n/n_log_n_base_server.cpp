@@ -101,7 +101,7 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
             // now guaranteed that the full bucket is stored here contiguously
             //
             // we also stop `fseek()`ing at every read since the read itself should advance
-            // the file pointer to the right location
+            // the file pointer to the right location for the next read
             isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal, false);
         }
         if (!isFound) {

@@ -148,6 +148,8 @@ void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
     // `encInd` does (this should all be client-side anyway so not leaking anything)
     for (bigint pos = 0; pos < encInd->getCapacity(); pos++) {
         EncIndVal encIndVal;
+        // only `fseek()` to read on the first read, since after that the reads themselves
+        // should advance the file pointer to the right location for the next read
         bool isValidVal = encInd->read(pos, encIndVal, pos == 0);
         if (!isValidVal) {
             continue;

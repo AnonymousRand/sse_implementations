@@ -101,6 +101,8 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
         // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
         for (bigint pos = 0; pos < encIndLvl->getCapacity(); pos++) {
             EncIndVal encIndVal;
+            // only `fseek()` to read on the first read, since after that the reads themselves
+            // should advance the file pointer to the right location for the next read
             bool isValidVal = encIndLvl->read(pos, encIndVal, pos == 0);
             if (!isValidVal) {
                 continue;
@@ -174,7 +176,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
             // there is a full bucket of contiguous space here
             //
             // we also stop `fseek()`ing at every write since the write itself should advance
-            // the file pointer to the right location
+            // the file pointer to the right location for the next write
             this->encIndLvlsTmp[lvl]->write(
                 startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}, false
             );
