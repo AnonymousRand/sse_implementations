@@ -169,7 +169,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
             // if first write to this bucket, get the first bucket start pos at or after
             // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
             this->encIndLvlsTmp[lvl]->writeToFirstEmpty(
-                startPos, std::pair {label, std::pair {encDbTuple, iv}}
+                startPos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
             );
         } else {
             // after first write, just write consecutively as we are now guaranteed that
@@ -178,7 +178,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
             // we also stop `fseek()`ing at every write since the write itself should advance
             // the file pointer to the right location for the next write
             this->encIndLvlsTmp[lvl]->write(
-                startPos + dbKwCounter, std::pair {label, std::pair {encDbTuple, iv}}, false
+                startPos + dbKwCounter, EncIndEntry {label, EncIndVal {encDbTuple, iv}}, false
             );
         }
     }

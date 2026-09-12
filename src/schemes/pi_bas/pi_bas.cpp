@@ -91,7 +91,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
                 this->encKey, dbTuple.toUstr(), iv, encInd->DATA_LEN() - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            encInd->writeToFirstEmpty(pos, std::pair {label, std::pair {encDbTuple, iv}});
+            encInd->writeToFirstEmpty(pos, EncIndEntry {label, EncIndVal {encDbTuple, iv}});
         }
     }
 

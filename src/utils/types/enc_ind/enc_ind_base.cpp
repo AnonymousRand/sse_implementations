@@ -9,6 +9,7 @@
 #include "utils/benchmark.h"
 #include "utils/debug.h"
 #include "utils/types/basic_types.h"
+#include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/i_disk_storage.h"
 #include "utils/types/ustring.h"
 
@@ -92,8 +93,8 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret, bool shouldFseek) const {
         return false;
     }
 
-    ret.first = ustring(&entry[this->KEY_LEN()], this->DATA_LEN());
-    ret.second = ustring(&entry[this->KEY_LEN() + this->DATA_LEN()], utils::crypto::IV_LEN);
+    ret.data = ustring(&entry[this->KEY_LEN()], this->DATA_LEN());
+    ret.iv = ustring(&entry[this->KEY_LEN() + this->DATA_LEN()], utils::crypto::IV_LEN);
     return true;
 }
 
@@ -113,9 +114,7 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry, bool shouldF
     pos %= this->capacity;
 
     // encode `encIndEntry` into one string
-    ustring key = encIndEntry.first;
-    EncIndVal val = encIndEntry.second;
-    ustring encodedEntry = key + val.first + val.second;
+    ustring encodedEntry = encIndEntry.toUstr();
     DEBUG_ONLY({
         if (encodedEntry.length() != this->ENTRY_LEN()) {
             std::cerr << "Error: EncIndBase::write(): write of length " << encodedEntry.length()
@@ -151,7 +150,7 @@ void EncIndBase::print() const {
     for (bigint pos = 0; pos < this->capacity; pos++) {
         EncIndEntry encIndEntry;
         this->readEntry(pos, encIndEntry);
-        std::cerr << pos << ": " << utils::debug::ustrToHex(utils::enc_ind::toUstr(encIndEntry))
+        std::cerr << pos << ": " << utils::debug::ustrToHex(encIndEntry.toUstr())
                   << std::endl << std::endl;
     }
 }
@@ -174,10 +173,7 @@ bool EncIndBase::readEntry(ubigint pos, EncIndEntry& ret) const {
         return false;
     }
 
-    ustring key(&entry[0], this->KEY_LEN());
-    ustring data(&entry[this->KEY_LEN()], this->DATA_LEN());
-    ustring iv(&entry[this->KEY_LEN() + this->DATA_LEN()], utils::crypto::IV_LEN);
-    ret = EncIndEntry {key, EncIndVal {data, iv}};
+    ret = EncIndEntry::fromUcstr(entry, this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
     return true;
 };
 

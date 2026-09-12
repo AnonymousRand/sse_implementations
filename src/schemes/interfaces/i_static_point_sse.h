@@ -73,9 +73,9 @@ protected:
      * helper function to decrypt `encIndVal`.
      */
     DbTuple decryptEncIndVal(const EncIndVal& encIndVal) const {
-        ustring encDbTuple = encIndVal.first;
-        ustring iv = encIndVal.second;
-        ustring decDbTuple = utils::crypto::decryptAndUnpad(this->encKey, encDbTuple, iv);
+        ustring decDbTuple = utils::crypto::decryptAndUnpad(
+            this->encKey, encIndVal.data, encIndVal.iv
+        );
         return DbTuple::fromUstr(decDbTuple);
     }
 };

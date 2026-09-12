@@ -1,7 +1,5 @@
 #pragma once
 
-#include <utility>
-
 #include "utils/types/ustring.h"
 
 
@@ -9,14 +7,16 @@
  * encrypted indexes are a collection of `std::pair<ustring, std::pair<ustring, ustring>>`
  * (aka `EncIndEntry`) pairs, corresponding to `std::pair<key, std::pair<encrypted data, IV>>`.
  */
-using EncIndVal   = std::pair<ustring, ustring>;
-using EncIndEntry = std::pair<ustring, EncIndVal>;
+struct EncIndVal {
+    ustring data;
+    ustring iv;
+};
 
 
-namespace utils::enc_ind {
+struct EncIndEntry {
+    ustring key;
+    EncIndVal val;
 
-
-ustring toUstr(const EncIndEntry& encIndEntry);
-
-
-} // namespace `utils::enc_ind`
+    ustring toUstr() const;
+    static EncIndEntry fromUcstr(const uchar* ucstr, int keyLen, int dataLen, int ivLen);
+};

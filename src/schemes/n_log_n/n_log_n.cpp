@@ -70,9 +70,9 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     if (!isFoundDict) {
         return results;
     }
-    ustring encDbKwCount = encIndValDict.first;
-    ustring ivDict = encIndValDict.second;
-    ustring decDbKwCount = utils::crypto::decryptAndUnpad(this->encKey, encDbKwCount, ivDict);
+    ustring decDbKwCount = utils::crypto::decryptAndUnpad(
+        this->encKey, encIndValDict.data, encIndValDict.iv
+    );
     bigint dbKwCount = utils::ustr::fromUstr(decDbKwCount);
     bigint dbKwPaddedCount = utils::misc::roundUpToPowOf2(dbKwCount); // this is bucket size
 
@@ -124,7 +124,7 @@ void NLogN<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& db
     );
     ubigint pos = this->mapNoMod(queryToken, label);
     this->dbKwCountsDictTmp->writeToFirstEmpty(
-        pos, std::pair {label, std::pair {encDbKwCount, iv}}
+        pos, EncIndEntry {label, EncIndVal {encDbKwCount, iv}}
     );
 
     // do the rest from `NLogNBase` (we have to `std::move()` *after* we are done using `dbKwList`)
