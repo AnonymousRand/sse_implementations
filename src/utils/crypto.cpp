@@ -77,12 +77,12 @@ ustring hash(const ustring& input, const EVP_MD* hashFunc, int hashOutputLen) {
     unsigned int hashLen;
     ustring hash;
     hash.resize(hashOutputLen);
-    if (EVP_DigestUpdate(ctx, &input[0], input.length()) != 1) {
+    if (EVP_DigestUpdate(ctx, input.data(), input.length()) != 1) {
         handleErrors();
     }
 
     // finalize hash by outputting the digest
-    if (EVP_DigestFinal_ex(ctx, &hash[0], &hashLen) != 1) {
+    if (EVP_DigestFinal_ex(ctx, hash.data(), &hashLen) != 1) {
         handleErrors();
     }
 
@@ -96,7 +96,8 @@ ustring hash(const ustring& input, const EVP_MD* hashFunc, int hashOutputLen) {
 ustring prf(const ustring& key, const ustring& input) {
     unsigned int outputLen;
     uchar* output = HMAC(
-        EVP_sha512(), &key[0], key.length(), &input[0], input.length(), nullptr, &outputLen
+        EVP_sha512(),
+        key.data(), key.length(), input.data(), input.length(), nullptr, &outputLen
     );
     return utils::ustr::toUstr(output, outputLen);
 }
@@ -113,11 +114,11 @@ ustring encrypt(
     // initialize encryption
     const uchar* ucharIv;
     if (iv.length() > 0) {
-        ucharIv = &iv[0];
+        ucharIv = iv.data();
     } else {
         ucharIv = nullptr;
     }
-    if (EVP_EncryptInit_ex(ctx, cipher, nullptr, &key[0], ucharIv) != 1) {
+    if (EVP_EncryptInit_ex(ctx, cipher, nullptr, key.data(), ucharIv) != 1) {
         handleErrors();
     }
 
@@ -125,12 +126,14 @@ ustring encrypt(
     int ctextLen1, ctextLen2;
     ustring ctext;
     ctext.resize(ptext.length() + BLOCK_SIZE); // need to allocate worst-case size first
-    if (EVP_EncryptUpdate(ctx, &ctext[0], &ctextLen1, &ptext[0], ptext.length()) != 1) {
+    if (EVP_EncryptUpdate(ctx, ctext.data(), &ctextLen1, ptext.data(), ptext.length())
+        != 1)
+    {
         handleErrors();
     }
 
     // finalize encryption (deal with last partial block)
-    if (EVP_EncryptFinal_ex(ctx, &ctext[0] + ctextLen1, &ctextLen2) != 1) {
+    if (EVP_EncryptFinal_ex(ctx, ctext.data() + ctextLen1, &ctextLen2) != 1) {
         handleErrors();
     }
 
@@ -166,11 +169,11 @@ ustring decrypt(
     // initialize decryption
     const uchar* ucharIv;
     if (iv.length() > 0) {
-        ucharIv = &iv[0];
+        ucharIv = iv.data();
     } else {
         ucharIv = nullptr;
     }
-    if (EVP_DecryptInit_ex(ctx, cipher, nullptr, &key[0], ucharIv) != 1) {
+    if (EVP_DecryptInit_ex(ctx, cipher, nullptr, key.data(), ucharIv) != 1) {
         handleErrors();
     }
 
@@ -178,12 +181,14 @@ ustring decrypt(
     int ptextLen1, ptextLen2;
     ustring ptext;
     ptext.resize(ctext.length());
-    if (EVP_DecryptUpdate(ctx, &ptext[0], &ptextLen1, &ctext[0], ctext.length()) != 1) {
+    if (EVP_DecryptUpdate(ctx, ptext.data(), &ptextLen1, ctext.data(), ctext.length())
+        != 1)
+    {
         handleErrors();
     }
 
     // finalize decryption (deal with last partial block)
-    if (EVP_DecryptFinal_ex(ctx, &ptext[0] + ptextLen1, &ptextLen2) != 1) {
+    if (EVP_DecryptFinal_ex(ctx, ptext.data() + ptextLen1, &ptextLen2) != 1) {
         handleErrors();
     }
 

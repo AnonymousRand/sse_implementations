@@ -93,7 +93,7 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret, bool shouldFseek) const {
         return false;
     }
 
-    ret = EncIndVal::fromUcstr(&entry[this->KEY_LEN()], this->DATA_LEN(), utils::crypto::IV_LEN);
+    ret = EncIndVal::fromUcstr(entry + this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
     return true;
 }
 

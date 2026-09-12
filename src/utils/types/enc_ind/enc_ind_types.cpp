@@ -14,8 +14,8 @@ ustring EncIndVal::toUstr() const {
 
 
 EncIndVal EncIndVal::fromUcstr(const uchar* ucstr, int dataLen, int ivLen) {
-    ustring data(&ucstr[0], dataLen);
-    ustring iv(&ucstr[dataLen], ivLen);
+    ustring data(ucstr, dataLen);
+    ustring iv(ucstr + dataLen, ivLen);
     return EncIndVal {data, iv};
 }
 
@@ -30,9 +30,8 @@ ustring EncIndEntry::toUstr() const {
 }
 
 
-// >TODO minor: can just do ucstr instead of &ucstr[0] and ucstr + ... instead of &ucstr[...]?
 EncIndEntry EncIndEntry::fromUcstr(const uchar* ucstr, int keyLen, int dataLen, int ivLen) {
-    ustring key(&ucstr[0], keyLen);
+    ustring key(ucstr, keyLen);
     EncIndVal encIndVal = EncIndVal::fromUcstr(ucstr + keyLen, dataLen, ivLen);
     return EncIndEntry {key, encIndVal};
 }
