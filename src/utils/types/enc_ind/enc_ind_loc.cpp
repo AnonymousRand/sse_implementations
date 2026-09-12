@@ -29,7 +29,7 @@ void EncIndLoc::clear() {
 
 
 //------------------------------------------------------------------------------
-// helpers
+// `EncIndBase`
 
 
 bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const {

@@ -47,6 +47,9 @@ private:
 
     bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
 
+    //--------------------------------------------------------------------------
+    // helpers
+
     /**
      * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
      * buffer size does not divide enc ind capacity and there is a bit left over, for example).

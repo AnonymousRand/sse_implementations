@@ -15,8 +15,13 @@
 #include "utils/types/ustring.h"
 
 
+//==============================================================================
+// `EncIndRand`
+//==============================================================================
+
+
 //------------------------------------------------------------------------------
-// helpers
+// `EncIndBase`
 
 
 bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const {
@@ -24,6 +29,8 @@ bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLe
 
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward one position at a time to search for it
+    // additionally, we use a buffer in memory to speed up long chains of iterating forward
+    // one position at a time (at the cost of some worse performance at smaller sizes)
     const ubigint origStartPos = pos;
     const bigint readBufEntryCapacity = std::min(config::ENC_IND_READ_BUF_CAPACITY, this->capacity);
     uchar readBuf[readBufEntryCapacity * this->ENTRY_LEN()];
@@ -63,6 +70,10 @@ bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLe
 
     return true;
 }
+
+
+//------------------------------------------------------------------------------
+// helpers
 
 
 bigint EncIndRand::readIntoReadBuf(
