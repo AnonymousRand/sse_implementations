@@ -29,8 +29,6 @@ bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLe
 
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward one position at a time to search for it
-    // additionally, we use a buffer in memory to speed up long chains of iterating forward
-    // one position at a time (at the cost of some worse performance at smaller sizes)
     uchar firstEntry[this->ENTRY_LEN()];
     std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
     int itemsRead = std::fread(firstEntry, this->ENTRY_LEN(), 1, this->file);
@@ -45,6 +43,8 @@ bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLe
         return true;
     }
 
+    // if we do need to iterate forward, use a buffer in memory to speed up long chains of iterating
+    // forward one position at a time (at the cost of some worse performance at smaller sizes)
     const ubigint origStartPos = pos;
     const bigint readBufEntryCapacity = std::min(config::ENC_IND_READ_BUF_CAPACITY, this->capacity);
     uchar readBuf[readBufEntryCapacity * this->ENTRY_LEN()];
