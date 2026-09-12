@@ -31,6 +31,9 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
+    void init(bigint capacity) override;
+    void clear() override;
+
     // new (non-virtual shadow!) versions of these methods that don't change `pos` by reference,
     // as that shouldn't be needed for pseudorandom encrypted indexes and may cause bugs later
     bool find(ubigint pos, const ustring& key, EncIndVal& ret) const {
@@ -42,20 +45,32 @@ public:
     }
 
 private:
+    struct Buf {
+        static const bigint INVALID_INDEX;
+
+        uchar* data = nullptr;
+        const bigint ENTRY_CAPACITY;
+        ubigint startPos = 0;
+        ubigint endPos = 0;
+        bigint entryCount = 0;
+
+        Buf(bigint ENTRY_CAPACITY, bigint entryLen);
+        ~Buf();
+    };
+
+    mutable Buf* buf = nullptr;
+
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
     bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
 
+    void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek) override;
+
     //--------------------------------------------------------------------------
     // helpers
 
-    /**
-     * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
-     * buffer size does not divide enc ind capacity and there is a bit left over, for example).
-     */
-    bigint readIntoReadBuf(
-        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
-        bool needsFseek
-    ) const;
+    void readIntoBuf(ubigint bufStartPos, ubigint origStartPos, bool needsFseek) const;
+    void flushBufToFile();
+    bigint posToBufIndex(ubigint pos) const;
 };
