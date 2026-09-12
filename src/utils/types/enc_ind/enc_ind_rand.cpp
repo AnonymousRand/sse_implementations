@@ -31,11 +31,25 @@ bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLe
     // iterate forward one position at a time to search for it
     // additionally, we use a buffer in memory to speed up long chains of iterating forward
     // one position at a time (at the cost of some worse performance at smaller sizes)
+    //uchar firstEntry[this->ENTRY_LEN()];
+    //std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+    //int itemsRead = std::fread(firstEntry, this->ENTRY_LEN(), 1, this->file);
+    //DEBUG_ONLY({
+    //    if (itemsRead != 1) {
+    //        std::cerr << "Error: EncIndRand::advanceUntilMatch(): error reading from file "
+    //                  << this->filename << " (nothing read)" << std::endl;
+    //        std::exit(EXIT_FAILURE);
+    //    }
+    //});
+    //if (std::memcmp(firstEntry, match, matchLen) == 0) {
+
+
+
     const ubigint origStartPos = pos;
     const bigint readBufEntryCapacity = std::min(config::ENC_IND_READ_BUF_CAPACITY, this->capacity);
     uchar readBuf[readBufEntryCapacity * this->ENTRY_LEN()];
     bigint readBufEntryCount = this->readIntoReadBuf(
-        readBuf, readBufEntryCapacity, pos, origStartPos, true
+        readBuf, readBufEntryCapacity, pos, origStartPos, false
     );
     bigint readBufIndex = 0;
     bool needsFseek = false;
