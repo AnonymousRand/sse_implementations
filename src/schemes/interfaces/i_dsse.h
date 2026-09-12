@@ -39,7 +39,6 @@ protected:
      * for experimental evaluation of searches.
      */
     bool useShortcutSetup = false;
-
     bigint updateCount = 0;
 };
 

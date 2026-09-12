@@ -128,7 +128,6 @@ protected:
      *     - `false` if the entry at `pos` is the null entry.
      */
     bool readEntry(ubigint pos, EncIndEntry& ret) const;
-
     void readEncoded(uchar* buf) const;
 
     void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
