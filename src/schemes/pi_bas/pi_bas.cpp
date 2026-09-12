@@ -129,7 +129,7 @@ std::vector<typename PiBas<DbTuple>::DbDoc> PiBas<DbTuple>::searchRaw(
     results.reserve(encResultTups.size());
     for (const EncIndVal& encResultTup : encResultTups) {
         DbTuple resultTup = this->decryptEncIndVal(encResultTup);
-        results.push_back(resultTup.dbDoc);
+        results.emplace_back(std::move(resultTup.dbDoc));
     }
 
     return results;

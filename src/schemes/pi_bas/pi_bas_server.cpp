@@ -1,6 +1,7 @@
 #include "schemes/pi_bas/pi_bas_server.h"
 
 #include <concepts>
+#include <utility>
 #include <vector>
 
 #include "schemes/interfaces/i_sse_server.h"
@@ -78,7 +79,7 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
             break;
         }
 
-        encResults.push_back(encIndVal);
+        encResults.emplace_back(std::move(encIndVal));
         utils::benchmark::communication += this->encInd->VAL_LEN();
         dbKwCounter++;
     }

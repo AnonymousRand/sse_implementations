@@ -1,6 +1,7 @@
 #include "schemes/n_log_n/n_log_n_base_server.h"
 
 #include <concepts>
+#include <utility>
 #include <vector>
 
 #include "schemes/interfaces/i_sse_server.h"
@@ -108,7 +109,7 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
             break;
         }
 
-        encResults.push_back(encIndVal);
+        encResults.emplace_back(std::move(encIndVal));
         utils::benchmark::communication += this->encIndLvls[lvl]->VAL_LEN();
     }
 

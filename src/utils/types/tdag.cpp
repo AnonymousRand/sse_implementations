@@ -44,7 +44,7 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
     std::vector<Range<T>> leafs;
     leafs.reserve(leafRange.size());
     for (T i = leafRange.start; i <= leafRange.end; i++) {
-        leafs.push_back(Range<T> {i, i});
+        leafs.emplace_back(Range<T> {i, i});
     }
 
     // array to hold nodes while building; initialize with leaves
