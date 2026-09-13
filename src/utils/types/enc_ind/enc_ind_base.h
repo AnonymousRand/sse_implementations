@@ -147,10 +147,11 @@ protected:
      * the raw read and write methods. these should be the ONLY read/write methods that touch
      * the buffers or the file!
      *
-     * prerequisites:
-     *     - `pos` is within `this->capacity` (e.g. any modulos must have already been done).
+     * returns: a pointer to the start of the *buffer* location where the entry is.
+     * IMPORTANT: this points to the same memory as the buffer data does (i.e. no `memcpy()`s),
+     * so do NOT allocate any new memory to hold it or free the returned value in the caller!!
      */
-    void readEncoded(BufType bufType, ubigint pos, uchar* ret, bool shouldFseek = true) const;
+    uchar* readEncoded(BufType bufType, ubigint pos, bool shouldFseek = true) const;
     void writeEncoded(
         BufType bufType, ubigint pos, const uchar* encodedEntry, bool shouldFseek = true
     );
@@ -207,7 +208,16 @@ protected:
         //----------------------------------------------------------------------
         // interface
 
-        void read(bigint index, uchar* ret) const;
+        /**
+         * returns: a pointer to the start of the *buffer* location where the entry is.
+         * IMPORTANT: this points to the same memory as the buffer data does (i.e. no `memcpy()`s),
+         * so do NOT allocate any new memory to hold it or free the returned value in the caller!!
+         */
+        uchar* read(bigint index) const;
+
+        /**
+         * note: this *does* `memcpy()` the data from `entry` into the buffer.
+         */
         void write(bigint index, const uchar* entry);
 
         void fill(ubigint startPos);

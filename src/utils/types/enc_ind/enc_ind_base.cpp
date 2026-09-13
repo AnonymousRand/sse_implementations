@@ -175,10 +175,7 @@ void EncIndBase::clear() {
 
 
 bool EncIndBase::read(BufType bufType, ubigint pos, EncIndVal& ret, bool shouldFseek) const {
-    pos %= this->capacity;
-
-    uchar entry[this->ENTRY_LEN()];
-    this->readEncoded(bufType, pos, entry, shouldFseek);
+    uchar* entry = this->readEncoded(bufType, pos, shouldFseek);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
@@ -206,8 +203,6 @@ bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
 void EncIndBase::write(
     BufType bufType, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek
 ) {
-    pos %= this->capacity;
-
     // encode `encIndEntry` into one string
     ustring encodedEntry = encIndEntry.toUstr();
     DEBUG_ONLY({
@@ -269,13 +264,13 @@ void EncIndBase::print() const {
 bool EncIndBase::advanceUntilMatch(
     BufType bufType, ubigint& pos, const uchar* match, int matchLen
 ) const {
+    // need this for wrapping logic later to work!
     pos %= this->capacity;
 
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward one position at a time to search for it
     bigint positionsChecked = 0;
-    uchar currEntry[this->ENTRY_LEN()];
-    this->readEncoded(bufType, pos, currEntry, true);
+    uchar* currEntry = this->readEncoded(bufType, pos, true);
     while (std::memcmp(currEntry, match, matchLen) != 0) {
         positionsChecked++;
         if (positionsChecked == this->getBcktCount()) {
@@ -289,9 +284,9 @@ bool EncIndBase::advanceUntilMatch(
             // `pos < this->getBcktSize()`) meaning we must've wrapped around, call `fseek()`
             // to make sure we are on the correct position (otherwise the previous `fread()`
             // automatically handles it, so we can save some time)
-            this->readEncoded(bufType, pos, currEntry, true);
+            currEntry = this->readEncoded(bufType, pos, true);
         } else {
-            this->readEncoded(bufType, pos, currEntry, false);
+            currEntry = this->readEncoded(bufType, pos, false);
         }
     }
 
@@ -299,7 +294,9 @@ bool EncIndBase::advanceUntilMatch(
 }
 
 
-void EncIndBase::readEncoded(BufType bufType, ubigint pos, uchar* ret, bool shouldFseek) const {
+uchar* EncIndBase::readEncoded(BufType bufType, ubigint pos, bool shouldFseek) const {
+    pos %= this->capacity;
+
     Buf* bufToUse = this->getBufToUse(bufType);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
@@ -309,14 +306,17 @@ void EncIndBase::readEncoded(BufType bufType, ubigint pos, uchar* ret, bool shou
     assert(bufIndex < bufToUse->entryCapacity);
 
     utils::benchmark::startProfile("buf read");
-    bufToUse->read(bufIndex, ret);
+    uchar* ret = bufToUse->read(bufIndex);
     utils::benchmark::stopProfile("buf read");
+    return ret;
 }
 
 
 void EncIndBase::writeEncoded(
     BufType bufType, ubigint pos, const uchar* encodedEntry, bool shouldFseek
 ) {
+    pos %= this->capacity;
+
     Buf* bufToUse = this->getBufToUse(bufType);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
@@ -332,10 +332,7 @@ void EncIndBase::writeEncoded(
 
 
 bool EncIndBase::readEntry(BufType bufType, ubigint pos, EncIndEntry& ret, bool shouldFseek) const {
-    pos %= this->capacity;
-
-    uchar entry[this->ENTRY_LEN()];
-    this->readEncoded(bufType, pos, entry, shouldFseek);
+    uchar* entry = this->readEncoded(bufType, pos, shouldFseek);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
@@ -404,11 +401,8 @@ EncIndBase::Buf::Buf(const Buf& other) :
 // interface
 
 
-// TODO: is there a way to make this avoid a memcpy and return a pointer directly to
-// this->data + (index * this->entryLen)? while still acommodating fseek of no-buffer approach?
-// unless this memcpy isn't taking very much time
-void EncIndBase::Buf::read(bigint index, uchar* ret) const {
-    std::memcpy(ret, this->data + (index * this->entryLen), this->entryLen);
+uchar* EncIndBase::Buf::read(bigint index) const {
+    return this->data + (index * this->entryLen);
 }
 
 

@@ -44,8 +44,8 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
  *
  * (currently, an enc ind entry is 128 bytes (48 tuple + 16 iv + 64 label/hash); 2^26 => ~8.5 GB.)
  */
-// tmp: 2^17 means sda[log-src-i[pibas]] should overflow it at >= 2^12
-inline constexpr bigint ENC_IND_SETUP_BUF_CAPACITY = std::pow(2, 17);
+// tmp: 2^14 means sda[log-src-i[pibas]] should overflow it at >= 2^10
+inline constexpr bigint ENC_IND_SETUP_BUF_CAPACITY = std::pow(2, 14);
 inline constexpr bigint ENC_IND_SEARCH_BUF_CAPACITY = std::pow(2, 8);
 static_assert(
     ENC_IND_SETUP_BUF_CAPACITY > 0,
