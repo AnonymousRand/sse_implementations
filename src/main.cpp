@@ -66,7 +66,6 @@ int main() {
     std::cout << "================ NLogN =================" << std::endl << std::endl;
     debugging.run(nLogN.get());
 
-    /*
     std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
     debugging.run(logSrcPiBas.get());
 
@@ -319,5 +318,4 @@ int main() {
         // free memory ASAP
         updateVsDbSize.clearDb();
     }
-    */
 }

@@ -173,7 +173,6 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret, bool shouldFseek) const {
 
 
 bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
-    std::cout << std::endl << "############ find() called for pos " << pos << std::endl;
     bool isFound = this->advanceUntilMatch(pos, key.c_str(), this->KEY_LEN());
     if (!isFound) {
         return false;
@@ -209,7 +208,6 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry, bool shouldF
 
 
 void EncIndBase::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry) {
-    std::cout << std::endl << "############ writeToFirstEmpty() called for " << utils::debug::ustrToHex(encIndEntry.toUstr(), 16) << std::endl;
     bool isEmptyAvailable = this->advanceUntilMatch(pos, this->NULL_ENTRY, this->ENTRY_LEN());
     // if we've scoured the whole index and still haven't found an available space,
     // throw an error: we are trying to write to a full index
@@ -264,9 +262,7 @@ void EncIndBase::readEncoded(ubigint pos, uchar* ret, bool shouldFseek) const {
         return;
     }
 
-    std::cout << "======== reading enc ind " << this << " at pos " << pos << std::endl;
     bigint bufIndex = this->posToBufIndex(pos);
-    std::cout << "computed bufIndex " << bufIndex << std::endl;
     if (bufIndex == Buf::NOT_IN_BUF) {
         this->fillBuf(pos);
         bufIndex = 0;
@@ -275,7 +271,6 @@ void EncIndBase::readEncoded(ubigint pos, uchar* ret, bool shouldFseek) const {
 
     utils::benchmark::startProfile("buf read");
     this->buf->read(bufIndex, ret);
-    //std::cout << "ret: " << utils::debug::ustrToHex(ret, 16) << " addr " << (void*)ret << std::endl;
     utils::benchmark::stopProfile("buf read");
 }
 
@@ -303,9 +298,7 @@ void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry, bool shoul
         return;
     }
 
-    std::cout << "======== writing " << utils::debug::ustrToHex(encodedEntry, 16) << " to enc ind " << this << " at pos " << pos << std::endl;
     bigint bufIndex = this->posToBufIndex(pos);
-    std::cout << "computed bufIndex " << bufIndex << std::endl;
     if (bufIndex == Buf::NOT_IN_BUF) {
         this->fillBuf(pos);
         bufIndex = 0;
@@ -388,15 +381,11 @@ EncIndBase::Buf::Buf(const Buf& other) :
 // this->data + (index * this->ENTRY_LEN)? while still acommodating fseek of no-buffer approach?
 // unless this memcpy isn't taking very much time
 void EncIndBase::Buf::read(bigint index, uchar* ret) const {
-    std::cout << "reading buffer " << this << " at " << index << std::endl;
-    //std::cout << "alternative: " << utils::debug::ustrToHex(&(this->data[index * this->ENTRY_LEN]), 16) << " addr " << (void*)(&(this->data[index * this->ENTRY_LEN])) << std::endl;
-    //return this->data + (index * this->ENTRY_LEN);
     std::memcpy(ret, this->data + (index * this->ENTRY_LEN), this->ENTRY_LEN);
 }
 
 
 void EncIndBase::Buf::write(bigint index, const uchar* entry) {
-    std::cout << "writing to buffer " << this << " at " << index << std::endl;
     std::memcpy(this->data + (index * this->ENTRY_LEN), entry, this->ENTRY_LEN);
 }
 
@@ -432,9 +421,7 @@ void EncIndBase::Buf::operOnFileBase(
     utils::benchmark::startProfile("fseek");
     std::fseek(file, startPos * self->ENTRY_LEN, SEEK_SET);
     utils::benchmark::stopProfile("fseek");
-    std::cout << "OPERATING " << entriesToOper1 << " entries at pos " << startPos << std::endl;
     bigint itemsOpered = fileOper(self->data, entriesToOper1);
-    std::cout << "buffer " << &(self->data) << " start is now " << utils::debug::ustrToHex(self->data, 16) << std::endl;
     DEBUG_ONLY({
         if (itemsRead < entriesToOper1) {
             std::cerr << "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 1) "
@@ -452,11 +439,9 @@ void EncIndBase::Buf::operOnFileBase(
         utils::benchmark::startProfile("fseek");
         std::fseek(file, 0, SEEK_SET);
         utils::benchmark::stopProfile("fseek");
-        std::cout << "OPERATING " << self->ENTRY_CAPACITY - entriesToOper1 << " entries at pos 0" << std::endl;
         itemsOpered += fileOper(
             self->data + (entriesToOper1 * self->ENTRY_LEN), self->ENTRY_CAPACITY - entriesToOper1
         );
-        std::cout << "buffer " << &(self->data) << " start is now " << utils::debug::ustrToHex(self->data, 16) << std::endl;
         DEBUG_ONLY({
             if (itemsOpered < self->ENTRY_CAPACITY) {
                 std::cerr << "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 2) "
@@ -477,12 +462,10 @@ void EncIndBase::Buf::fill(
     this->startPos = startPos;
     this->endPos = (startPos + this->ENTRY_CAPACITY) % encIndCapacity;
     this->isFilled = true;
-    std::cout << "+++++ filled buffer " << this << " at " << startPos << ", size " << this->ENTRY_CAPACITY << ", endPos " << this->endPos << std::endl;
 }
 
 
 void EncIndBase::Buf::flush(FILE* file, const std::string& filename, bigint encIndCapacity) const {
-    std::cout << "----- flushing buffer " << this << " at " << this->startPos << ", size " << this->ENTRY_CAPACITY << std::endl;
     operOnFileBase(this, file, filename, false, this->startPos, encIndCapacity);
 }
 
