@@ -28,9 +28,8 @@ PiBasServer<DbTuple>::~PiBasServer() {
 
 template <IsDbTuple DbTuple>
 void PiBasServer<DbTuple>::clear() {
-    // (this is deleted instead of just cleared since we only set it via direct
-    // pointer assignment, so if we don't delete we would make this memory inaccessible
-    // the next time we assign `encInd`)
+    // this is deleted instead of just cleared since we only set it via direct pointer assignment,
+    // so if we don't delete we would make this memory inaccessible the next time we assign `encInd`
     if (this->encInd != nullptr) {
         utils::benchmark::serverStorage -= this->encInd->getBytes();
 

@@ -66,8 +66,8 @@ struct Profile {
 };
 
 
-// (this is a `map` instead of an `unordered_map` since it's probably slightly faster
-// at small scales like these, and plus the ordering is a nice bonus)
+// this is a `map` instead of an `unordered_map` since it's probably slightly faster
+// at small scales like these, and plus the ordering is good for printing correctly
 inline std::map<std::string, Profile> profiles;
 
 
@@ -150,8 +150,8 @@ inline void printHeader() {
               << std::format("| {:<{}} ", "Time (ms)", PRINT_COL_WIDTH)
               << std::format("| {:<{}} ", "Server Store (B)", PRINT_COL_WIDTH)
               << std::format("| {:<{}} ", "Commn (B)", PRINT_COL_WIDTH)
-              // (trailing spaces to match bottom border, which should extend until
-              // the right border of the first profile output in the table body)
+              // (trailing spaces are for matching the bottom border, which should extend
+              // until the right border of the first profile output in the table body)
               << std::format("| {:<{}}  ", "Profiling (ms)", PRINT_COL_WIDTH)
               << std::endl;
     std::cout << std::format("--{:-<{}}-", "", PRINT_LABEL_WIDTH)
@@ -189,7 +189,7 @@ inline void print(const std::string& label1, const std::string& label2) {
     std::string label = std::format(
         "{:<{}} {:<{}}",
         label1, PRINT_LABEL_FIRST_HALF_WIDTH,
-        // (`- 1` because of the space between the first and second halves)
+        // `- 1` because of the space between the first and second halves
         label2, PRINT_LABEL_WIDTH - PRINT_LABEL_FIRST_HALF_WIDTH - 1
     );
     print(label);

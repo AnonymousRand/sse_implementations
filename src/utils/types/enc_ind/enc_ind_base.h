@@ -13,11 +13,11 @@
 
 class EncIndBase : public IDiskStorage {
 public:
-    // (currently, all schemes are result-hiding, which uses a hash as the final key here)
+    // currently, all schemes are result-hiding, which uses a hash as the final key here
     // IMPORTANT: change if this is no longer the case!
     virtual constexpr int KEY_LEN() const { return utils::crypto::HASH_OUTPUT_LEN; }
-    // (we can use the encoded (plaintext) tuple length here for encrypted tuples too, as encrypting
-    // an exactly `n`-block-length plaintext with AES-CBC produces a ciphertext of the same size)
+    // we can use the encoded (plaintext) tuple length here for encrypted tuples too, as encrypting
+    // an exactly `n`-block-length plaintext with AES-CBC produces a ciphertext of the same size
     // IMPORTANT: change if this is no longer the case!
     virtual constexpr int DATA_LEN() const { return config::TUPLE_ENCOD_LEN; }
     constexpr int VAL_LEN() const { return this->DATA_LEN() + utils::crypto::IV_LEN; }
@@ -96,8 +96,8 @@ public:
      */
     void writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry);
 
-    // (mostly for debugging)
-    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
+    // mostly for debugging
+    void print() const; // warning: this can be, like, a LOT of stuff!! :3
 
     bigint getCapacity() const { return this->capacity; }
     bigint getBytes() const { return this->capacity * this->ENTRY_LEN(); }

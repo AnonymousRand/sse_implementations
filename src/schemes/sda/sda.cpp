@@ -103,8 +103,6 @@ std::vector<Doc> Sda<Underly>::search(
 
 template <IsSdUnderly Underly>
 void Sda<Underly>::clear() {
-    // (apparently vector `clear()` automatically calls the destructor for each element
-    // *unless* it is a pointer)
     for (Underly* underly : this->underlys) {
         if (underly != nullptr) {
             delete underly;

@@ -39,8 +39,8 @@ public:
     void run(ISse<>* sse) const override {
         utils::benchmark::printHeader();
 
-        // (start `dbSizeExp` at 2 as otherwise the query doesn't really make sense, and we also
-        // want `dbSize` >= 4 at all times; see later comment)
+        // start `dbSizeExp` at 2 as otherwise the query doesn't really make sense. we also
+        // want `dbSize` >= 4 at all times; see later comment
         for (int dbSizeExp = 2; dbSizeExp <= this->maxDbSizeExp; dbSizeExp++) {
             bigint dbSize = std::pow(2, dbSizeExp);
 

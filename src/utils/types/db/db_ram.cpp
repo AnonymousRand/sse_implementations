@@ -74,8 +74,8 @@ void DbRam<DbTuple>::reserve(bigint size) {
 
 template <IsDbTuple DbTuple>
 void DbRam<DbTuple>::shuffle() {
-    // (note: not using `this->begin()` and `this->end()` here to avoid needing to make
-    // `IDb::Iter` a fully fledged `LegacyRandomAccessIterator`)
+    // not using `this->begin()` and `this->end()` here to avoid needing to make
+    // `IDb::Iter` a fully fledged `LegacyRandomAccessIterator`
     std::shuffle(this->vec.begin(), this->vec.end(), utils::random::RNG);
 }
 

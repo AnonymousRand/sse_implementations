@@ -94,8 +94,8 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
         if (dbKwCounter == 0) {
             // if first read, get the right bucket start pos (e.g. in case of modulo
             // collision in encrypted index)
-            // (note: dummies must also use the correct (not dummy) `label` so they
-            // are still found by `find()`)
+            // (NOTE: dummies must also use the correct (not dummy) `label` so they are
+            // still found by `find()`!)
             isFound = this->encIndLvls[lvl]->find(startPos, label, encIndVal);
         } else {
             // after first read, just read from the bucket consecutively as we are

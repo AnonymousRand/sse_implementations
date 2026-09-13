@@ -66,7 +66,7 @@ void unpadStr(std::basic_string<CharType>& str) {
             break;
         }
     }
-    str.resize(paddingStart + 1); // (`+ 1` to add back the first null terminator)
+    str.resize(paddingStart + 1); // `+ 1` to add back the first null terminator
 }
 
 
