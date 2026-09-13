@@ -17,6 +17,7 @@ namespace config {
 
 inline constexpr bool SHOULD_BENCHMARK_UPDTS = true;
 
+
 /**
  * whether update benchmarking stats should be printed after every single update,
  * or only print an average at the end (as there can be very many updates!).
@@ -30,14 +31,16 @@ inline constexpr bool SHOULD_PRINT_EACH_UPDT = true;
 
 inline constexpr bool USE_SHORTCUT_DSSE_SETUP = true;
 
+
 /**
  * set this to `true` for truly large (but much slower) DBs. otherwise, DBs are stored in RAM.
  */
 inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 
+
 /**
  * the capacity in # of entries for the (non-locality) encrypted index read buffers
- * (which help speed up massive `setup()` calls).
+ * (which help speed up massive `setup()` etc. calls). Set to `0` to not buffer.
  *
  * (i find that 2^8 is a pretty good balance between "big enough to be useful" and "small enough
  * that reading into the buffer doesn't take more time than just fseeking in the file".)

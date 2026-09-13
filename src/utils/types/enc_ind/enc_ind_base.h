@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <string>
 
 #include "config.h"
@@ -9,6 +10,11 @@
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/i_disk_storage.h"
 #include "utils/types/ustring.h"
+
+
+//==============================================================================
+// `EncIndBase`
+//==============================================================================
 
 
 class EncIndBase : public IDiskStorage {
@@ -31,6 +37,13 @@ public:
     //--------------------------------------------------------------------------
     // rule of five
 
+protected:
+    // (non-virtually) redeclaring these completely to also take into account new member variables
+    // (non-virtual since virtual polymorphism doesn't work anyway in the base class' constructors)
+    void copyFrom(const EncIndBase& other);
+    void moveFrom(EncIndBase&& other) noexcept;
+
+public:
     // bring back default constructor
     EncIndBase() = default;
 
@@ -38,13 +51,13 @@ public:
     EncIndBase(const EncIndBase& other);
 
     // copy assignment operator
-    EncIndBase& operator =(const EncIndBase& other) = default;
+    EncIndBase& operator =(const EncIndBase& other);
 
     // move constructor
-    EncIndBase(EncIndBase&& other) noexcept = default;
+    EncIndBase(EncIndBase&& other) noexcept;
 
     // move assignment operator
-    EncIndBase& operator =(EncIndBase&& other) noexcept = default;
+    EncIndBase& operator =(EncIndBase&& other) noexcept;
 
     //--------------------------------------------------------------------------
     // interface
@@ -121,14 +134,100 @@ protected:
     virtual bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const = 0;
 
     /**
+     * the raw read and write methods. these should be the ONLY read/write methods that touch
+     * the buffer or the file.
+     *
+     * prerequisites:
+     *     - `pos` is within `this->capacity` (e.g. any modulos must have already been done).
+     */
+    void readEncoded(ubigint pos, uchar* ret, bool shouldFseek = true) const;
+    void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
+
+    /**
      * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
      *
      * returns:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool readEntry(ubigint pos, EncIndEntry& ret) const;
-    void readEncoded(uchar* buf) const;
+    bool readEntry(ubigint pos, EncIndEntry& ret, bool shouldFseek = true) const;
 
-    void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
+
+//==============================================================================
+// `EncIndBase::Buf`
+//==============================================================================
+
+
+    struct Buf {
+    public:
+        static const bigint NOT_IN_BUF;
+
+        //----------------------------------------------------------------------
+        // constructors/destructors
+
+        Buf(bigint ENTRY_CAPACITY, bigint ENTRY_LEN);
+        ~Buf();
+
+        //----------------------------------------------------------------------
+        // rule of five
+
+        // all but copy constructor deleted since copy constructor should be the only one we need
+
+        // copy constructor
+        Buf(const Buf& other);
+
+        // copy assignment operator
+        Buf& operator =(const Buf& other) = delete;
+
+        // move constructor
+        Buf(Buf&& other) noexcept = delete;
+
+        // move assignment operator
+        Buf& operator =(Buf&& other) noexcept = delete;
+
+        //----------------------------------------------------------------------
+        // interface
+
+        const uchar* read(bigint index) const;
+        void write(bigint index, const uchar* entry);
+
+        void fill(
+            FILE* file, const std::string& filename, ubigint startPos, bigint encIndCapacity
+        );
+        void flush(FILE* file, const std::string& filename, bigint encIndCapacity) const;
+
+        bigint posToBufIndex(ubigint pos, bigint encIndCapacity) const;
+
+    private:
+        uchar* data = nullptr;
+        const bigint ENTRY_CAPACITY;
+        const bigint ENTRY_LEN;
+        ubigint startPos = 0;
+        ubigint endPos = 0;
+
+        /**
+         * helper for sharing code between `fill()` and `flush()`. (the template and the `static`
+         * are needed for this to be usable in both the non-const `fill()` and the const `flush()`.)
+         *
+         * params:
+         *     - `isRead`: set to `true` for reads and `false` for writes.
+         */
+        template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, Buf>
+        static void operOnFileBase(
+            SelfType* self,
+            FILE* file, const std::string& filename, bool isRead,
+            bigint entriesToOper, bigint encIndCapacity
+        );
+    };
+
+    mutable Buf* buf = nullptr;
+    mutable bool isBufFlushed = true;
+
+    //--------------------------------------------------------------------------
+    // helpers
+
+    void fillBuf(ubigint bufStartPos) const;
+    void flushBufIfNotFlushed() const;
+
+    bigint posToBufIndex(ubigint pos) const;
 };

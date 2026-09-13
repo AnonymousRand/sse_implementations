@@ -9,7 +9,7 @@
 
 
 //------------------------------------------------------------------------------
-// interface
+// `EncIndBase`
 
 
 void EncIndLoc::init(bigint bcktSize, bigint bcktCount) {
@@ -28,24 +28,17 @@ void EncIndLoc::clear() {
 }
 
 
-//------------------------------------------------------------------------------
-// `EncIndBase`
-
-
 bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const {
     pos %= this->capacity;
 
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward by `this->bcktSize` positions at a time to search for it
     // 
-    // importantly, we get the massive optimization of only having to check the first entry of every
+    // importantly, we get the optimization of only having to check the first entry of every
     // bucket/every `this->bcktSize` entries, as locality guarantees contiguousness of buckets
-    uchar currEntry[this->ENTRY_LEN()];
-    utils::benchmark::startProfile("fseek");
-    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    utils::benchmark::stopProfile("fseek");
-    this->readEncoded(currEntry);
     bigint positionsChecked = 0;
+    uchar currEntry[this->ENTRY_LEN()];
+    this->readEncoded(currEntry);
     while (std::memcmp(currEntry, match, matchLen) != 0) {
         positionsChecked++;
         if (positionsChecked == this->bcktCount) {
@@ -59,12 +52,10 @@ bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen
         // to make sure we are on the correct position (otherwise the previous `fread()`
         // automatically handles it, so we can save some time)
         if (this->bcktSize > 1 || pos < this->bcktSize) {
-            utils::benchmark::startProfile("fseek");
-            std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-            utils::benchmark::stopProfile("fseek");
+            this->readEncoded(pos, currEntry, true);
+        } else {
+            this->readEncoded(pos, currEntry, false);
         }
-
-        this->readEncoded(currEntry);
     }
     
     return true;
