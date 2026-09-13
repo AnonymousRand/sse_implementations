@@ -140,7 +140,7 @@ protected:
      * prerequisites:
      *     - `pos` is within `this->capacity` (e.g. any modulos must have already been done).
      */
-    void readEncoded(ubigint pos, uchar* ret, bool shouldFseek = true) const;
+    void readEncoded(ubigint pos, uchar*& ret, bool shouldFseek = true) const;
     void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
 
     /**
@@ -200,11 +200,12 @@ protected:
 
         bigint posToBufIndex(ubigint pos, bigint encIndCapacity) const;
 
+        uchar* data = nullptr; // TODO move to private
     private:
-        uchar* data = nullptr;
         const bigint ENTRY_LEN;
         ubigint startPos = 0;
         ubigint endPos = 0;
+        bool isFilled = false;
 
         /**
          * helper for sharing code between `fill()` and `flush()`. (the template and the `static`
@@ -217,7 +218,7 @@ protected:
         static void operOnFileBase(
             SelfType* self,
             FILE* file, const std::string& filename, bool isRead,
-            bigint entriesToOper, bigint encIndCapacity
+            ubigint startPos, bigint encIndCapacity
         );
     };
 
