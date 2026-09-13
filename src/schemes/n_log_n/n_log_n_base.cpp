@@ -131,7 +131,7 @@ void NLogNBase<DbTuple>::initSetupState() {
         EncIndLoc* encIndLvl = new EncIndLoc();
         bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
         bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
-        encIndLvl->init(bcktSizeOnLvl, bcktCountOnLvl);
+        encIndLvl->init(bcktCountOnLvl, bcktSizeOnLvl);
         this->encIndLvlsTmp.push_back(encIndLvl);
     }
 }

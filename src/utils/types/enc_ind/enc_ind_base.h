@@ -99,6 +99,9 @@ protected:
     uchar* NULL_ENTRY = nullptr;
     bigint capacity = 0;
 
+    virtual bigint getBcktCount() const = 0;
+    virtual bigint getBcktSize() const = 0;
+
     //--------------------------------------------------------------------------
     // `IDiskStorage`
 
@@ -107,6 +110,18 @@ protected:
 
     //--------------------------------------------------------------------------
     // helpers
+
+    void readEncoded(uchar* buf) const;
+    void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
+
+    /**
+     * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
+     *
+     * returns:
+     *     - `true` if the entry at `pos` is valid.
+     *     - `false` if the entry at `pos` is the null entry.
+     */
+    bool readEntry(ubigint pos, EncIndEntry& ret) const;
 
     /**
      * advance forward from `pos` until the first `matchLen` bytes of the current entry
@@ -118,17 +133,14 @@ protected:
      *     - `true` if an entry matching `match` was found.
      *     - `false` if an entry matching `match` was found was not found in the entire index.
      */
-    virtual bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const = 0;
+    bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen, bool shouldBuffer) const;
 
     /**
-     * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
-     *
-     * returns:
-     *     - `true` if the entry at `pos` is valid.
-     *     - `false` if the entry at `pos` is the null entry.
+     * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
+     * buffer size does not divide enc ind capacity and there is a bit left over, for example).
      */
-    bool readEntry(ubigint pos, EncIndEntry& ret) const;
-    void readEncoded(uchar* buf) const;
-
-    void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
+    bigint readIntoReadBuf(
+        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
+        bool needsFseek
+    ) const;
 };

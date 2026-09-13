@@ -2,6 +2,7 @@
 
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind/enc_ind_base.h"
+#include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/ustring.h"
 
 
@@ -45,17 +46,7 @@ private:
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
-    bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
-
-    //--------------------------------------------------------------------------
-    // helpers
-
-    /**
-     * returns: final entry count of `readBuf` (which may not be `readbufEntryCount` if the
-     * buffer size does not divide enc ind capacity and there is a bit left over, for example).
-     */
-    bigint readIntoReadBuf(
-        uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
-        bool needsFseek
-    ) const;
+    // this essentially means we have no buckets; each individual entry is a "bucket"
+    bigint getBcktCount() const override { return this->capacity; }
+    bigint getBcktSize() const override { return 1; }
 };

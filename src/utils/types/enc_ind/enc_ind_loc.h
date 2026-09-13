@@ -30,15 +30,16 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    void init(bigint bcktSize, bigint bcktCount);
+    void init(bigint bcktCount, bigint bcktSize);
     void clear() override;
 
 private:
-    bigint bcktSize = 0;
     bigint bcktCount = 0;
+    bigint bcktSize = 0;
 
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
-    bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
+    bigint getBcktCount() const override { return this->bcktCount; }
+    bigint getBcktSize() const override { return this->bcktSize; }
 };
