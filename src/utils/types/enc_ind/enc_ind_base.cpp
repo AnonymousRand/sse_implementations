@@ -278,7 +278,7 @@ bool EncIndBase::advanceUntilMatch(
         return true;
     }
 
-    if (shouldBuffer && this->getBcktSize() <= 2) {
+    if (shouldBuffer && this->getBcktSize() <= 1) {
         // if we do need to iterate forward, we can use a buffer in memory to speed up long chains
         // of iterating forward a small number of (i.e. `this->getBcktSize()`) positions at a time
         assert(this->capacity != 0);
@@ -288,7 +288,7 @@ bool EncIndBase::advanceUntilMatch(
         // rearranging equations, testing, and sleep deprivation
         bigint readBufEntryCapacity = std::ceil(
             //std::pow(this->capacity, 4 * fillPercentage - 3) * std::pow(2, -11 * fillPercentage + 5)
-            std::pow(this->capacity, 4 * fillPercentage - 3) * std::pow(2, -11 * fillPercentage + 1)
+            std::pow(this->capacity, 4 * fillPercentage - 3) * std::pow(2, -11 * fillPercentage + 3)
         );
         readBufEntryCapacity = utils::misc::roundUpToPowOf2(readBufEntryCapacity);
         readBufEntryCapacity = std::max(readBufEntryCapacity, (bigint)1);
