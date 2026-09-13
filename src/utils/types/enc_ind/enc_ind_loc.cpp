@@ -5,7 +5,7 @@
 
 
 //------------------------------------------------------------------------------
-// interface
+// `EncIndBase`
 
 
 void EncIndLoc::init(bigint bcktCount, bigint bcktSize) {

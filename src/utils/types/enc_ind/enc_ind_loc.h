@@ -28,7 +28,7 @@ public:
     EncIndLoc& operator =(EncIndLoc&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
-    // interface
+    // `EncIndBase`
 
     void init(bigint bcktCount, bigint bcktSize);
     void clear() override;

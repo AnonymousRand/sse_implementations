@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "utils/benchmark.h"
 #include "utils/debug.h"
 #include "utils/random.h"
 #include "utils/types/basic_types.h"
@@ -182,7 +183,9 @@ std::string IDiskStorage::genFilename() const {
 
 void IDiskStorage::flushIfNotFlushed() const {
     if (!this->isFlushed) {
+        utils::benchmark::startProfile("fflush");
         std::fflush(this->file);
+        utils::benchmark::stopProfile("fflush");
         this->isFlushed = true;
     }
 }

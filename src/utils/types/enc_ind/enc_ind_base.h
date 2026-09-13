@@ -118,7 +118,7 @@ protected:
     //--------------------------------------------------------------------------
     // helpers
 
-    void readEncoded(uchar* buf) const;
+    void readEncoded(ubigint pos, uchar* buf, bool shouldFseek = true) const;
     void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
 
     /**
@@ -128,7 +128,7 @@ protected:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool readEntry(ubigint pos, EncIndEntry& ret) const;
+    bool readEntry(ubigint pos, EncIndEntry& ret, bool shouldFseek = true) const;
 
     /**
      * advance forward from `pos` until the first `matchLen` bytes of the current entry

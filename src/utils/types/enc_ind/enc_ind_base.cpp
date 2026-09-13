@@ -96,7 +96,7 @@ EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
 
 
 void EncIndBase::init(bigint capacity) {
-    // inits DB file and file pointer
+    // inits enc ind file and file pointer
     IDiskStorage::init();
 
     // this initializes `this->NULL_ENTRY` to a contiguous block of zero bits, which we do here
@@ -137,20 +137,15 @@ void EncIndBase::clear() {
 
 
 bool EncIndBase::read(ubigint pos, EncIndVal& ret, bool shouldFseek) const {
-    pos %= this->capacity;
-
+    // read encoded entry from `pos`
     uchar entry[this->ENTRY_LEN()];
-    if (shouldFseek) {
-        utils::benchmark::startProfile("fseek");
-        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-        utils::benchmark::stopProfile("fseek");
-    }
-    this->readEncoded(entry);
+    this->readEncoded(pos, entry, shouldFseek);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
     }
 
+    // decode entry
     ret = EncIndVal::fromUcstr(entry + this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
     return true;
 }
@@ -170,9 +165,7 @@ bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
 
 
 void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek) {
-    pos %= this->capacity;
-
-    // encode `encIndEntry` into one string
+    // encode `encIndEntry`
     ustring encodedEntry = encIndEntry.toUstr();
     DEBUG_ONLY({
         if (encodedEntry.length() != this->ENTRY_LEN()) {
@@ -183,7 +176,7 @@ void EncIndBase::write(ubigint pos, const EncIndEntry& encIndEntry, bool shouldF
         }
     });
 
-    // then go to `pos` and write the encoded `encIndEntry`
+    // write encoded `encIndEntry` to `pos`
     this->writeEncoded(pos, encodedEntry.c_str(), shouldFseek);
 }
 
@@ -210,7 +203,7 @@ void EncIndBase::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry)
 void EncIndBase::print() const {
     for (bigint pos = 0; pos < this->capacity; pos++) {
         EncIndEntry encIndEntry;
-        this->readEntry(pos, encIndEntry);
+        this->readEntry(pos, encIndEntry, pos == 0);
         std::cerr << pos << ": " << utils::debug::ustrToHex(encIndEntry.toUstr())
                   << std::endl << std::endl;
     }
@@ -221,10 +214,15 @@ void EncIndBase::print() const {
 // helpers
 
 
-void EncIndBase::readEncoded(uchar* buf) const {
-    utils::benchmark::startProfile("fflush");
+void EncIndBase::readEncoded(ubigint pos, uchar* buf, bool shouldFseek) const {
+    pos %= this->capacity;
     this->flushIfNotFlushed();
-    utils::benchmark::stopProfile("fflush");
+
+    if (shouldFseek) {
+        utils::benchmark::startProfile("fseek");
+        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+        utils::benchmark::stopProfile("fseek");
+    }
 
     utils::benchmark::startProfile("fread");
     bigint itemsRead = std::fread(buf, this->ENTRY_LEN(), 1, this->file);
@@ -240,11 +238,14 @@ void EncIndBase::readEncoded(uchar* buf) const {
 
 
 void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek) {
+    pos %= this->capacity;
+
     if (shouldFseek) {
         utils::benchmark::startProfile("fseek");
         std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
         utils::benchmark::stopProfile("fseek");
     }
+
     utils::benchmark::startProfile("fwrite");
     int itemsWritten = std::fwrite(encodedEntry, this->ENTRY_LEN(), 1, this->file);
     utils::benchmark::stopProfile("fwrite");
@@ -262,21 +263,14 @@ void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry, bool shoul
 bool EncIndBase::advanceUntilMatch(
     ubigint& pos, const uchar* match, int matchLen, bool shouldBuffer
 ) const {
+    // need this for wrapping logic later to work!
     pos %= this->capacity;
 
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward `this->getBcktSize()` positions at a time to search for it
-    uchar firstEntry[this->ENTRY_LEN()];
-    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    int itemsRead = std::fread(firstEntry, this->ENTRY_LEN(), 1, this->file);
-    DEBUG_ONLY({
-        if (itemsRead != 1) {
-            std::cerr << "Error: EncIndRand::advanceUntilMatch(): error reading from file "
-                      << this->filename << " (nothing read)" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    });
-    if (std::memcmp(firstEntry, match, matchLen) == 0) {
+    uchar currEntry[this->ENTRY_LEN()];
+    this->readEncoded(pos, currEntry, true);
+    if (std::memcmp(currEntry, match, matchLen) == 0) {
         return true;
     }
 
@@ -323,11 +317,6 @@ bool EncIndBase::advanceUntilMatch(
             }
         }
     } else {
-        uchar currEntry[this->ENTRY_LEN()];
-        utils::benchmark::startProfile("fseek");
-        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-        utils::benchmark::stopProfile("fseek");
-        this->readEncoded(currEntry);
         bigint positionsChecked = 0;
         while (std::memcmp(currEntry, match, matchLen) != 0) {
             positionsChecked++;
@@ -337,12 +326,10 @@ bool EncIndBase::advanceUntilMatch(
 
             pos = (pos + this->getBcktSize()) % this->capacity;
             if (this->getBcktSize() > 1 || pos < this->getBcktSize()) {
-                utils::benchmark::startProfile("fseek");
-                std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-                utils::benchmark::stopProfile("fseek");
+                this->readEncoded(pos, currEntry, true);
+            } else {
+                this->readEncoded(pos, currEntry, false);
             }
-
-            this->readEncoded(currEntry);
         }
     }
 
@@ -350,14 +337,9 @@ bool EncIndBase::advanceUntilMatch(
 }
 
 
-bool EncIndBase::readEntry(ubigint pos, EncIndEntry& ret) const {
-    pos %= this->capacity;
-
+bool EncIndBase::readEntry(ubigint pos, EncIndEntry& ret, bool shouldFseek) const {
     uchar entry[this->ENTRY_LEN()];
-    utils::benchmark::startProfile("fseek");
-    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    utils::benchmark::stopProfile("fseek");
-    this->readEncoded(entry);
+    this->readEncoded(pos, entry, shouldFseek);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
@@ -365,7 +347,7 @@ bool EncIndBase::readEntry(ubigint pos, EncIndEntry& ret) const {
 
     ret = EncIndEntry::fromUcstr(entry, this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
     return true;
-};
+}
 
 
 bigint EncIndBase::readIntoReadBuf(
@@ -374,47 +356,48 @@ bigint EncIndBase::readIntoReadBuf(
 ) const {
     bigint entriesUntilEof = this->capacity - readBufStartPos;
     bigint entriesUntilFullLoop;
-    if (readBufStartPos < origStartPos)      entriesUntilFullLoop = origStartPos - readBufStartPos;
+    if      (readBufStartPos < origStartPos) entriesUntilFullLoop = origStartPos - readBufStartPos;
     else if (readBufStartPos > origStartPos) entriesUntilFullLoop = entriesUntilEof + origStartPos;
     else                                     entriesUntilFullLoop = this->capacity;
     // we want to make sure we don't exceed where we had started doing this whole thing back in
     // the caller (e.g. if we had already wrapped around and are getting close to a full loop)
     bigint entriesToRead = std::min(targetEntryCount, entriesUntilFullLoop);
 
-    bigint entriesToReadUntilEof = std::min(entriesToRead, entriesUntilEof);
-    utils::benchmark::startProfile("fseek");
+    // first read as much of the target entry count as we can without exceeding EOF
+    bigint entriesToRead1 = std::min(entriesToRead, entriesUntilEof);
     if (needsFseek) {
+        utils::benchmark::startProfile("fseek");
         std::fseek(this->file, readBufStartPos * this->ENTRY_LEN(), SEEK_SET);
+        utils::benchmark::stopProfile("fseek");
     }
-    utils::benchmark::stopProfile("fseek");
     utils::benchmark::startProfile("fread");
-    bigint itemsRead = std::fread(readBuf, this->ENTRY_LEN(), entriesToReadUntilEof, this->file);
+    bigint itemsRead = std::fread(readBuf, this->ENTRY_LEN(), entriesToRead1, this->file);
     utils::benchmark::stopProfile("fread");
     DEBUG_ONLY({
-        if (itemsRead < entriesToReadUntilEof) {
+        if (itemsRead < entriesToRead1) {
             std::cerr << "Error: EncIndBase::readIntoReadBuf(): error reading (part 1) "
                       << "from file " << this->filename
-                      << " (only read " << itemsRead << " out of " << entriesToReadUntilEof << ")"
+                      << " (only read " << itemsRead << " out of " << entriesToRead1 << ")"
                       << std::endl;
             std::exit(EXIT_FAILURE);
         }
     });
 
-    // wrap around to beginning of file if we read less than the target number of entries
-    if (entriesToReadUntilEof < entriesToRead) {
+    // then wrap around to beginning of file if we read less than the target number of entries
+    if (entriesToRead1 < entriesToRead) {
         utils::benchmark::startProfile("fseek");
         std::fseek(this->file, 0, SEEK_SET);
         utils::benchmark::stopProfile("fseek");
         utils::benchmark::startProfile("fread");
         itemsRead += std::fread(
-            readBuf + (entriesToReadUntilEof * this->ENTRY_LEN()),
-            this->ENTRY_LEN(), entriesToRead - entriesToReadUntilEof,
+            readBuf + (entriesToRead1 * this->ENTRY_LEN()),
+            this->ENTRY_LEN(), entriesToRead - entriesToRead1,
             this->file
         );
         utils::benchmark::stopProfile("fread");
         DEBUG_ONLY({
             if (itemsRead < entriesToRead) {
-                std::cerr << "Error: EncIndBase::writeToFirstEmpty(): error reading (part 2) "
+                std::cerr << "Error: EncIndBase::readIntoReadBuf(): error reading (part 2) "
                           << "from file " << this->filename
                           << " (only read " << itemsRead << " out of " << entriesToRead << ")"
                           << std::endl;
