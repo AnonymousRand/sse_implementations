@@ -31,6 +31,13 @@ public:
     //--------------------------------------------------------------------------
     // rule of five
 
+protected:
+    // (non-virtually) redeclaring these completely to also take into account new pointer members
+    // (non-virtual since virtual polymorphism doesn't work anyway in the base class' constructors)
+    void copyFrom(const EncIndBase& other);
+    void moveFrom(EncIndBase&& other) noexcept;
+
+public:
     // bring back default constructor
     EncIndBase() = default;
 
@@ -38,13 +45,13 @@ public:
     EncIndBase(const EncIndBase& other);
 
     // copy assignment operator
-    EncIndBase& operator =(const EncIndBase& other) = default;
+    EncIndBase& operator =(const EncIndBase& other);
 
     // move constructor
-    EncIndBase(EncIndBase&& other) noexcept = default;
+    EncIndBase(EncIndBase&& other) noexcept;
 
     // move assignment operator
-    EncIndBase& operator =(EncIndBase&& other) noexcept = default;
+    EncIndBase& operator =(EncIndBase&& other) noexcept;
 
     //--------------------------------------------------------------------------
     // interface

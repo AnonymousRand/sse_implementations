@@ -1,11 +1,13 @@
 #include "utils/types/enc_ind/enc_ind_base.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include "config.h"
 
@@ -30,9 +32,62 @@ EncIndBase::~EncIndBase() {
 // rule of five
 
 
+void EncIndBase::copyFrom(const EncIndBase& other) {
+    IDiskStorage::copyFrom(other);
+
+    if (other.NULL_ENTRY != nullptr) {
+        assert(this->ENTRY_LEN() == other.ENTRY_LEN());
+        this->NULL_ENTRY = new uchar[this->ENTRY_LEN()];
+        std::memcpy(this->NULL_ENTRY, other.NULL_ENTRY, this->ENTRY_LEN());
+    } else {
+        this->NULL_ENTRY = nullptr;
+    }
+    this->capacity = other.capacity;
+}
+
+
+void EncIndBase::moveFrom(EncIndBase&& other) noexcept {
+    IDiskStorage::moveFrom(std::move(other));
+
+    // this is now regular pointer assignment instead of actually copying the heap data
+    this->NULL_ENTRY = other.NULL_ENTRY;
+    other.NULL_ENTRY = nullptr;
+
+    this->capacity = other.capacity;
+}
+
+
 // copy constructor
 EncIndBase::EncIndBase(const EncIndBase& other) {
-    IDiskStorage::copyFrom(other);
+    this->copyFrom(other);
+}
+
+
+// copy assignment operator
+EncIndBase& EncIndBase::operator =(const EncIndBase& other) {
+    // important self-assignment safety check!
+    if (this != &other) {
+        this->clear();
+        this->copyFrom(other);
+    }
+    return *this;
+}
+
+
+// move constructor
+EncIndBase::EncIndBase(EncIndBase&& other) noexcept {
+    this->moveFrom(std::move(other));
+}
+
+
+// move assignment operator
+EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
+    // important self-assignment safety check!
+    if (this != &other) {
+        this->clear();
+        this->moveFrom(std::move(other));
+    }
+    return *this;
 }
 
 
