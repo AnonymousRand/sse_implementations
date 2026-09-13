@@ -2,8 +2,10 @@
 
 #include <concepts>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "config.h"
 
@@ -232,6 +234,8 @@ protected:
         ubigint endPos = 0;
         bool isFilled = false;
         mutable bool isFlushed = true;
+        // C++ should optimize this special type of vector to take one bit instead of byte per bool
+        std::vector<bool> dirtyEntriesBitmap;
 
         // members shared with its parent enc ind (do not free these in `Buf`!!)
         FILE* file;
@@ -246,12 +250,11 @@ protected:
          * params:
          *     - `isRead`: set to `true` for reads and `false` for writes.
          */
-        enum class OperType {
-            FILL,
-            FLUSH
-        };
         template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, Buf>
-        static void operOnFileBase(SelfType* self, OperType operType, ubigint startPos);
+        static void operOnFileBase(
+            SelfType* self,
+            const std::function<bigint(uchar*, ubigint, bigint)>& oper, ubigint startPos
+        );
     };
 
 public:

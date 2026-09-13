@@ -6,9 +6,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <iostream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "utils/benchmark.h"
 #include "utils/debug.h"
@@ -363,7 +365,8 @@ EncIndBase::Buf::Buf(
     file(file),
     filename(filename),
     encIndCapacity(encIndCapacity),
-    entryLen(entryLen)
+    entryLen(entryLen),
+    dirtyEntriesBitmap(entryCapacity, false)
 {
     this->data = new uchar[this->entryCapacity * this->entryLen];
 }
@@ -394,6 +397,7 @@ EncIndBase::Buf::Buf(const Buf& other) :
     this->endPos = other.endPos;
     this->isFilled = other.isFilled;
     this->isFlushed = other.isFlushed;
+    this->dirtyEntriesBitmap = other.dirtyEntriesBitmap;
 }
 
 
@@ -409,37 +413,18 @@ uchar* EncIndBase::Buf::read(bigint index) const {
 void EncIndBase::Buf::write(bigint index, const uchar* entry) {
     std::memcpy(this->data + (index * this->entryLen), entry, this->entryLen);
     this->isFlushed = false;
+    this->dirtyEntriesBitmap[index] = true;
 }
 
 
 template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, EncIndBase::Buf>
-void EncIndBase::Buf::operOnFileBase(SelfType* self, OperType operType, ubigint startPos) {
+void EncIndBase::Buf::operOnFileBase(
+    SelfType* self, const std::function<bigint(uchar*, ubigint, bigint)>& oper, ubigint startPos
+) {
     // this is the only place we check this
     if (self->entryCapacity <= 0) {
         return;
     }
-
-    auto fileOper = [self, operType](uchar* data, bigint entryCount) {
-        switch (operType) {
-        // curly braces used to prevent "crosses initialization of" error with `itemsRead`
-        case OperType::FILL: {
-            utils::benchmark::startProfile("fread");
-            bigint itemsRead = std::fread(data, self->entryLen, entryCount, self->file);
-            utils::benchmark::stopProfile("fread");
-            return itemsRead;
-        }
-        case OperType::FLUSH: {
-            utils::benchmark::startProfile("fwrite");
-            bigint itemsWritten = std::fwrite(data, self->entryLen, entryCount, self->file);
-            utils::benchmark::stopProfile("fwrite");
-            return itemsWritten;
-        }
-        default:
-            std::cerr << "Error: EncIndBase::Buf::operOnFileBase(): wee zoo mama" << std::endl;
-            std::exit(EXIT_FAILURE);
-            break;
-        }
-    };
 
     // first operate on as many of the target entries as we can without exceeding EOF
     bigint entriesUntilEof = self->encIndCapacity - startPos;
@@ -447,7 +432,7 @@ void EncIndBase::Buf::operOnFileBase(SelfType* self, OperType operType, ubigint 
     utils::benchmark::startProfile("fseek");
     std::fseek(self->file, startPos * self->entryLen, SEEK_SET);
     utils::benchmark::stopProfile("fseek");
-    bigint itemsOpered = fileOper(self->data, entriesToOper1);
+    bigint itemsOpered = oper(self->data, 0, entriesToOper1);
     DEBUG_ONLY({
         if (itemsOpered < entriesToOper1) {
             std::cerr << "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 1) "
@@ -465,8 +450,9 @@ void EncIndBase::Buf::operOnFileBase(SelfType* self, OperType operType, ubigint 
         utils::benchmark::startProfile("fseek");
         std::fseek(self->file, 0, SEEK_SET);
         utils::benchmark::stopProfile("fseek");
-        itemsOpered += fileOper(
-            self->data + (entriesToOper1 * self->entryLen), self->entryCapacity - entriesToOper1
+        itemsOpered += oper(
+            self->data + (entriesToOper1 * self->entryLen),
+            entriesToOper1, self->entryCapacity - entriesToOper1
         );
         DEBUG_ONLY({
             if (itemsOpered < self->entryCapacity) {
@@ -482,7 +468,14 @@ void EncIndBase::Buf::operOnFileBase(SelfType* self, OperType operType, ubigint 
 
 
 void EncIndBase::Buf::fill(ubigint startPos) {
-    operOnFileBase(this, OperType::FILL, startPos);
+    auto fillOper = [this](uchar* data, ubigint startBufIndex, bigint targetEntryCount) {
+        utils::benchmark::startProfile("fread");
+        bigint itemsRead = std::fread(data, this->entryLen, targetEntryCount, this->file);
+        utils::benchmark::stopProfile("fread");
+        return itemsRead;
+    };
+    operOnFileBase(this, fillOper, startPos);
+
     this->startPos = startPos;
     this->endPos = (startPos + this->entryCapacity) % this->encIndCapacity;
     this->isFilled = true;
@@ -492,8 +485,67 @@ void EncIndBase::Buf::fill(ubigint startPos) {
 
 void EncIndBase::Buf::flushIfNotFlushed() const {
     if (!this->isFlushed && this->isFilled) {
-        operOnFileBase(this, OperType::FLUSH, this->startPos);
+        // this flushes only dirty entries, and flushes them consecutively if possible
+        auto flushOper = [this](uchar* data, ubigint startBufIndex, bigint targetEntryCount) {
+            bigint consecDirtiesStartIndex = -1;
+            bool prevDirtyBit = false;
+            bigint i;
+
+            auto flushConsecEntriesIfNeeded = [
+                this, data, &prevDirtyBit, &consecDirtiesStartIndex, &i
+            ]() {
+                if (prevDirtyBit && consecDirtiesStartIndex != -1) {
+                    // `- 1` to exclude current entry, which is no longer dirty
+                    bigint entriesToWrite = i - consecDirtiesStartIndex - 1;
+                    utils::benchmark::startProfile("fseek");
+                    std::fseek(this->file, consecDirtiesStartIndex * this->entryLen, SEEK_SET);
+                    utils::benchmark::stopProfile("fseek");
+                    utils::benchmark::startProfile("fwrite");
+                    bigint itemsWritten = std::fwrite(
+                        data, this->entryLen, entriesToWrite, this->file
+                    );
+                    utils::benchmark::stopProfile("fwrite");
+                    // check this per-item instead of one total at the end since we don't know
+                    // the total number of dirty bits
+                    DEBUG_ONLY({
+                        if (itemsWritten != entriesToWrite) {
+                            std::cerr << "Error: EncIndBase::Buf::flushIfNotFlushed(): "
+                                      << " error flushing to file " << this->filename
+                                      << " (only flushed " << itemsWritten << " out of "
+                                      << entriesToWrite << ")" << std::endl;
+                            std::exit(EXIT_FAILURE);
+                        }
+                    });
+
+                    consecDirtiesStartIndex = -1;
+                    prevDirtyBit = false;
+                }
+            };
+            for (i = startBufIndex; i < startBufIndex + targetEntryCount; i++) {
+                assert(i != -1);
+                if (this->dirtyEntriesBitmap[i]) {
+                    if (consecDirtiesStartIndex == -1) {
+                        consecDirtiesStartIndex = i;
+                    }
+                    prevDirtyBit = true;
+                } else {
+                    flushConsecEntriesIfNeeded();
+                }
+            }
+            // one additional call needed to flush last entry
+            flushConsecEntriesIfNeeded();
+            // we fudge the number here since we checked earlier if any single entry couldn't
+            // be written, and we need to return exactly `entryCount` to be successful
+            return targetEntryCount;
+        };
+        operOnFileBase(this, flushOper, this->startPos);
+
         this->isFlushed = true;
+        // (it seems that both `std::vector::assign` and `std::fill` don't work for
+        // `std::vector<bool>` since it is a special type, at least with GCC/g++ 15)
+        for (auto&& dirtyBit : this->dirtyEntriesBitmap) {
+            dirtyBit = false;
+        }
     }
 }
 
@@ -560,5 +612,9 @@ bigint EncIndBase::posToBufIndex(Buf* buf, ubigint pos) const {
 // explicit template instantiations
 
 
-template void EncIndBase::Buf::operOnFileBase(Buf* self, OperType operType, ubigint startPos);
-template void EncIndBase::Buf::operOnFileBase(const Buf* self, OperType operType, ubigint startPos);
+template void EncIndBase::Buf::operOnFileBase(
+    Buf* self, const std::function<bigint(uchar*, ubigint, bigint)>& oper, ubigint startPos
+);
+template void EncIndBase::Buf::operOnFileBase(
+    const Buf* self, const std::function<bigint(uchar*, ubigint, bigint)>& oper, ubigint startPos
+);

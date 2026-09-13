@@ -6,14 +6,14 @@
 
 
 /**
- * makes all code blocks defined in `DEBUG()` no-op when compiled in non-debug mode,
+ * makes all code blocks defined in `DEBUG_ONLY()` no-op when compiled in non-debug mode,
  * thus speeding up release builds.
  *
  * use this for things that function as runtime assertions (i.e. *should* always pass)!
  * (note: try-catch statements do not require this, as they should not incur extra operations
  * when no exception is thrown.)
  */
-#ifndef NDEBUG
+#ifdef NDEBUG
     // (the do-while is standard practice to make this not break control logic like `if` statements)
     #define DEBUG_ONLY(code) do {} while (false)
 #else
