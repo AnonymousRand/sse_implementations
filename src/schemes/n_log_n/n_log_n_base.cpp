@@ -14,6 +14,7 @@
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
+#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_loc.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/ind.h"
@@ -103,7 +104,7 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
             EncIndVal encIndVal;
             // only `fseek()` to read on the first read, since after that the reads themselves
             // should advance the file pointer to the right location for the next read
-            bool isValidVal = encIndLvl->read(pos, encIndVal, pos == 0);
+            bool isValidVal = encIndLvl->read(EncIndBase::BufType::SETUP, pos, encIndVal, pos == 0);
             if (!isValidVal) {
                 continue;
             }
@@ -178,6 +179,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
             // we also stop `fseek()`ing at every write since the write itself should advance
             // the file pointer to the right location for the next write
             this->encIndLvlsTmp[lvl]->write(
+                EncIndBase::BufType::SETUP,
                 startPos + dbKwCounter, EncIndEntry {label, EncIndVal {encDbTuple, iv}}, false
             );
         }

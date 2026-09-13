@@ -1,6 +1,8 @@
 #pragma once
 
 #include <concepts>
+#include <cstdlib>
+#include <iostream>
 #include <string>
 
 #include "config.h"
@@ -62,6 +64,9 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
+    // forward declaration
+    enum class BufType;
+
     virtual void init(bigint capacity);
     void clear() override;
 
@@ -72,7 +77,7 @@ public:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool read(ubigint pos, EncIndVal& ret, bool shouldFseek = true) const;
+    bool read(BufType bufType, ubigint pos, EncIndVal& ret, bool shouldFseek = true) const;
 
     /**
      * try to find `key` starting at `pos`, iterating forward from `pos` if the key
@@ -91,7 +96,9 @@ public:
      * write to `pos` (but does not check if there is already something there, e.g. from
      * `pos % this->capacity`, and will overwrite it!).
      */
-    void write(ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek = true);
+    void write(
+        BufType bufType, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek = true
+    );
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos` until
@@ -134,17 +141,19 @@ protected:
      *     - `true` if an entry matching `match` was found.
      *     - `false` if an entry matching `match` was found was not found in the entire index.
      */
-    bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const;
+    bool advanceUntilMatch(BufType bufType, ubigint& pos, const uchar* match, int matchLen) const;
 
     /**
      * the raw read and write methods. these should be the ONLY read/write methods that touch
-     * the buffer or the file.
+     * the buffers or the file!
      *
      * prerequisites:
      *     - `pos` is within `this->capacity` (e.g. any modulos must have already been done).
      */
-    void readEncoded(ubigint pos, uchar* ret, bool shouldFseek = true) const;
-    void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
+    void readEncoded(BufType bufType, ubigint pos, uchar* ret, bool shouldFseek = true) const;
+    void writeEncoded(
+        BufType bufType, ubigint pos, const uchar* encodedEntry, bool shouldFseek = true
+    );
 
     /**
      * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
@@ -153,7 +162,7 @@ protected:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool readEntry(ubigint pos, EncIndEntry& ret, bool shouldFseek = true) const;
+    bool readEntry(BufType bufType, ubigint pos, EncIndEntry& ret, bool shouldFseek = true) const;
 
 
 //==============================================================================
@@ -163,14 +172,19 @@ protected:
 
     struct Buf {
     public:
-        static const bigint NOT_IN_BUF;
+        // mainly for debugging/assertions
+        friend class EncIndBase;
 
-        const bigint ENTRY_CAPACITY;
+        static const bigint NOT_IN_BUF;
 
         //----------------------------------------------------------------------
         // constructors/destructors
 
-        Buf(bigint ENTRY_CAPACITY, bigint ENTRY_LEN);
+        Buf(
+            bigint entryCapacity,
+            FILE* file, const std::string& filename, bigint encIndCapacity, bigint entryLen
+        );
+
         ~Buf();
 
         //----------------------------------------------------------------------
@@ -196,19 +210,24 @@ protected:
         void read(bigint index, uchar* ret) const;
         void write(bigint index, const uchar* entry);
 
-        void fill(
-            FILE* file, const std::string& filename, ubigint startPos, bigint encIndCapacity
-        );
-        void flush(FILE* file, const std::string& filename, bigint encIndCapacity) const;
+        void fill(ubigint startPos);
+        void flushIfNotFlushed() const;
 
-        bigint posToBufIndex(ubigint pos, bigint encIndCapacity) const;
+        bigint posToBufIndex(ubigint pos) const;
 
     private:
         uchar* data = nullptr;
-        const bigint ENTRY_LEN;
+        const bigint entryCapacity;
         ubigint startPos = 0;
         ubigint endPos = 0;
         bool isFilled = false;
+        mutable bool isFlushed = true;
+
+        // members shared with its parent enc ind (do not free these in `Buf`!!)
+        FILE* file;
+        const std::string& filename;
+        const bigint encIndCapacity;
+        const bigint entryLen;
 
         /**
          * helper for sharing code between `fill()` and `flush()`. (the template and the `static`
@@ -217,22 +236,46 @@ protected:
          * params:
          *     - `isRead`: set to `true` for reads and `false` for writes.
          */
+        enum class OperType {
+            FILL,
+            FLUSH
+        };
         template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, Buf>
-        static void operOnFileBase(
-            SelfType* self,
-            FILE* file, const std::string& filename, bool isRead,
-            ubigint startPos, bigint encIndCapacity
-        );
+        static void operOnFileBase(SelfType* self, OperType operType, ubigint startPos);
     };
 
-    mutable Buf* buf = nullptr;
-    mutable bool isBufFlushed = true;
+public:
+    // public-facing interface methods should use `BufType` as parameters to hide the
+    // `Buf*` members, while internal ones can use `Buf*` (hence why `BufType` is `public`)
+    enum class BufType {
+        SETUP,
+        SEARCH
+    };
+
+protected:
+    mutable Buf* setupBuf = nullptr;
+    mutable Buf* searchBuf = nullptr;
+
+    /**
+     * translate public-facing `BufType` to a `Buf*` member.
+     */
+    Buf* getBufToUse(BufType bufType) const {
+        switch (bufType) {
+        case BufType::SETUP:
+            return this->setupBuf;
+        case BufType::SEARCH:
+            return this->searchBuf;
+        default:
+            std::cerr << "Error: EncIndBase::getBufToUse(): zoo wee mama" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    }
 
     //--------------------------------------------------------------------------
     // `EncIndBase` helpers
 
-    void fillBuf(ubigint bufStartPos) const;
-    void flushBufIfNotFlushed() const;
+    void fillBuf(Buf* buf, ubigint bufStartPos) const;
+    void flushBufIfNotFlushed(Buf* buf) const;
 
-    bigint posToBufIndex(ubigint pos) const;
+    bigint posToBufIndex(Buf* buf, ubigint pos) const;
 };

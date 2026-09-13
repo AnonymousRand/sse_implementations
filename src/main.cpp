@@ -57,6 +57,7 @@ int main() {
     //--------------------------------------------------------------------------
     // debugging experiment
 
+    /*
     app::experiments::Debugging debugging(maxDbSizeExp);
     debugging.printHeader();
 
@@ -107,10 +108,12 @@ int main() {
 
     //--------------------------------------------------------------------------
     // all vs. DB size experiment
+    */
 
     app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp);
     allVsDbSize.printHeader();
 
+    /*
     std::cout << "================ PiBas =================" << std::endl << std::endl;
     allVsDbSize.run(piBas.get());
 
@@ -143,6 +146,7 @@ int main() {
 
     std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
     allVsDbSize.run(sdaLogSrcNLogN.get());
+    */
 
     std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
     allVsDbSize.run(sdaLogSrcIPiBas.get());
@@ -150,6 +154,7 @@ int main() {
     std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
     allVsDbSize.run(sdaLogSrcINLogN.get());
 
+    /*
     std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
     allVsDbSize.run(sdaLogSrcIStar.get());
 
@@ -318,4 +323,5 @@ int main() {
         // free memory ASAP
         updateVsDbSize.clearDb();
     }
+    */
 }

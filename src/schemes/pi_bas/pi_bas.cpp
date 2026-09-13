@@ -16,6 +16,7 @@
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
+#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_rand.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/ind.h"
@@ -150,7 +151,7 @@ void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
         EncIndVal encIndVal;
         // only `fseek()` to read on the first read, since after that the reads themselves
         // should advance the file pointer to the right location for the next read
-        bool isValidVal = encInd->read(pos, encIndVal, pos == 0);
+        bool isValidVal = encInd->read(EncIndBase::BufType::SETUP, pos, encIndVal, pos == 0);
         if (!isValidVal) {
             continue;
         }

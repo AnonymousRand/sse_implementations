@@ -8,6 +8,7 @@
 
 #include "utils/benchmark.h"
 #include "utils/types/basic_types.h"
+#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_loc.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/tuple.h"
@@ -103,7 +104,9 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
             //
             // we also stop `fseek()`ing at every read since the read itself should advance
             // the file pointer to the right location for the next read
-            isFound = this->encIndLvls[lvl]->read(startPos + dbKwCounter, encIndVal, false);
+            isFound = this->encIndLvls[lvl]->read(
+                EncIndBase::BufType::SEARCH, startPos + dbKwCounter, encIndVal, false
+            );
         }
         if (!isFound) {
             break;
