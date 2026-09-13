@@ -287,7 +287,8 @@ bool EncIndBase::advanceUntilMatch(
         // by fill percentage, finding an exponential line of best fit, playing around in desmos,
         // rearranging equations, testing, and sleep deprivation
         bigint readBufEntryCapacity = std::ceil(
-            std::pow(this->capacity, 4 * fillPercentage - 3) * std::pow(2, -11 * fillPercentage + 5)
+            //std::pow(this->capacity, 4 * fillPercentage - 3) * std::pow(2, -11 * fillPercentage + 5)
+            std::pow(this->capacity, 4 * fillPercentage - 3) * std::pow(2, -11 * fillPercentage + 1)
         );
         readBufEntryCapacity = utils::misc::roundUpToPowOf2(readBufEntryCapacity);
         readBufEntryCapacity = std::max(readBufEntryCapacity, (bigint)1);
