@@ -162,6 +162,8 @@ protected:
     public:
         static const bigint NOT_IN_BUF;
 
+        const bigint ENTRY_CAPACITY;
+
         //----------------------------------------------------------------------
         // constructors/destructors
 
@@ -188,7 +190,7 @@ protected:
         //----------------------------------------------------------------------
         // interface
 
-        const uchar* read(bigint index) const;
+        uchar* read(bigint index) const;
         void write(bigint index, const uchar* entry);
 
         void fill(
@@ -200,7 +202,6 @@ protected:
 
     private:
         uchar* data = nullptr;
-        const bigint ENTRY_CAPACITY;
         const bigint ENTRY_LEN;
         ubigint startPos = 0;
         ubigint endPos = 0;
@@ -224,7 +225,7 @@ protected:
     mutable bool isBufFlushed = true;
 
     //--------------------------------------------------------------------------
-    // helpers
+    // `EncIndBase` helpers
 
     void fillBuf(ubigint bufStartPos) const;
     void flushBufIfNotFlushed() const;

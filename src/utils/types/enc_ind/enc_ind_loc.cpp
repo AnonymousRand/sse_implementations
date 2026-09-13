@@ -38,7 +38,7 @@ bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen
     // bucket/every `this->bcktSize` entries, as locality guarantees contiguousness of buckets
     bigint positionsChecked = 0;
     uchar currEntry[this->ENTRY_LEN()];
-    this->readEncoded(currEntry);
+    this->readEncoded(pos, currEntry, true);
     while (std::memcmp(currEntry, match, matchLen) != 0) {
         positionsChecked++;
         if (positionsChecked == this->bcktCount) {

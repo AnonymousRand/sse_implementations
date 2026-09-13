@@ -54,7 +54,7 @@ void EncIndBase::copyFrom(const EncIndBase& other) {
 
 
 void EncIndBase::moveFrom(EncIndBase&& other) noexcept {
-    IDiskStorage::moveFrom(other);
+    IDiskStorage::moveFrom(std::move(other));
 
     // this is now regular pointer assignment instead of actually copying the heap data
     this->NULL_ENTRY = other.NULL_ENTRY;
@@ -87,13 +87,13 @@ EncIndBase& EncIndBase::operator =(const EncIndBase& other) {
 
 
 // move constructor
-EncIndBase::EncIndBase(EncIndBase&& other) {
+EncIndBase::EncIndBase(EncIndBase&& other) noexcept {
     this->moveFrom(std::move(other));
 }
 
 
 // move assignment operator
-EncIndBase& EncIndBase::operator =(EncIndBase&& other) {
+EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
     // important self-assignment safety check!
     if (this != &other) {
         this->clear();
@@ -333,6 +333,10 @@ bool EncIndBase::readEntry(ubigint pos, EncIndEntry& ret, bool shouldFseek) cons
 const bigint EncIndBase::Buf::NOT_IN_BUF = -1;
 
 
+//------------------------------------------------------------------------------
+// constructors/destructors
+
+
 EncIndBase::Buf::Buf(bigint ENTRY_CAPACITY, bigint ENTRY_LEN) :
     ENTRY_CAPACITY(ENTRY_CAPACITY),
     ENTRY_LEN(ENTRY_LEN)
@@ -349,7 +353,29 @@ EncIndBase::Buf::~Buf() {
 }
 
 
-const uchar* EncIndBase::Buf::read(bigint index) const {
+//------------------------------------------------------------------------------
+// rule of five
+
+
+EncIndBase::Buf::Buf(const Buf& other) :
+    Buf(other.ENTRY_CAPACITY, other.ENTRY_LEN)
+{
+    if (other.data != nullptr) {
+        this->data = new uchar[](*other.data);
+    } else {
+        this->data = nullptr;
+    }
+
+    this->startPos = other.startPos;
+    this->endPos = other.endPos;
+}
+
+
+//------------------------------------------------------------------------------
+// interface
+
+
+uchar* EncIndBase::Buf::read(bigint index) const {
     return this->data + (index * this->ENTRY_LEN);
 }
 
@@ -359,8 +385,8 @@ void EncIndBase::Buf::write(bigint index, const uchar* entry) {
 }
 
 
-template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, Buf>
-bigint EncIndBase::operOnFileBase(
+template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, EncIndBase::Buf>
+void EncIndBase::Buf::operOnFileBase(
     SelfType* self,
     FILE* file, const std::string& filename, bool isRead,
     bigint entriesToOper, bigint encIndCapacity
@@ -423,18 +449,6 @@ bigint EncIndBase::operOnFileBase(
 }
 
 
-template void EncIndBase::Buf::operOnFileBase(
-    Buf* self,
-    FILE* file, const std::string& filename, bool isRead,
-    bigint entriesToOper, bigint encIndCapacity
-);
-template void EncIndBase::Buf::operOnFileBase(
-    const Buf* self,
-    FILE* file, const std::string& filename, bool isRead,
-    bigint entriesToOper, bigint encIndCapacity
-);
-
-
 void EncIndBase::Buf::fill(
     FILE* file, const std::string& filename, ubigint startPos, bigint encIndCapacity
 ) {
@@ -476,7 +490,7 @@ bigint EncIndBase::Buf::posToBufIndex(ubigint pos, bigint encIndCapacity) const 
 
             // we add up the segment from `pos` to the start of the enc ind,
             // and the segment from the end of the enc ind to `this->startPos`
-            bigint ret = pos + (capacity - this->startPos);
+            bigint ret = pos + (encIndCapacity - this->startPos);
             assert(ret >= 0);
             return ret;
         }
@@ -486,7 +500,7 @@ bigint EncIndBase::Buf::posToBufIndex(ubigint pos, bigint encIndCapacity) const 
 
 
 //------------------------------------------------------------------------------
-// helpers
+// `EncIndBase` helpers
 
 
 void EncIndBase::fillBuf(ubigint bufStartPos) const {
@@ -498,7 +512,7 @@ void EncIndBase::fillBuf(ubigint bufStartPos) const {
 
 void EncIndBase::flushBufIfNotFlushed() const {
     if (!this->isBufFlushed) {
-        this->buf->flush(this->file, this->filename);
+        this->buf->flush(this->file, this->filename, this->capacity);
         this->isBufFlushed = true;
         this->isFlushed = false;
     }
@@ -508,3 +522,19 @@ void EncIndBase::flushBufIfNotFlushed() const {
 bigint EncIndBase::posToBufIndex(ubigint pos) const {
     return this->buf->posToBufIndex(pos, this->capacity);
 }
+
+
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
+template void EncIndBase::Buf::operOnFileBase(
+    Buf* self,
+    FILE* file, const std::string& filename, bool isRead,
+    bigint entriesToOper, bigint encIndCapacity
+);
+template void EncIndBase::Buf::operOnFileBase(
+    const Buf* self,
+    FILE* file, const std::string& filename, bool isRead,
+    bigint entriesToOper, bigint encIndCapacity
+);
