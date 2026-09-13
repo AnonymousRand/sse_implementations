@@ -26,37 +26,3 @@ void EncIndLoc::clear() {
     this->bcktSize = 0;
     this->bcktCount = 0;
 }
-
-
-bool EncIndLoc::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const {
-    pos %= this->capacity;
-
-    // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
-    // iterate forward by `this->bcktSize` positions at a time to search for it
-    // 
-    // importantly, we get the optimization of only having to check the first entry of every
-    // bucket/every `this->bcktSize` entries, as locality guarantees contiguousness of buckets
-    bigint positionsChecked = 0;
-    uchar currEntry[this->ENTRY_LEN()];
-    this->readEncoded(pos, currEntry, true);
-    while (std::memcmp(currEntry, match, matchLen) != 0) {
-        positionsChecked++;
-        if (positionsChecked == this->bcktCount) {
-            return false;
-        }
-
-        pos = (pos + this->bcktSize) % this->capacity;
-        // if either we need to `fseek()` to further than we had `fread()` (i.e.
-        // `this->bcktSize` > 1), or `pos` had been decreased this iteration (i.e.
-        // `pos < this->bcktSize`) meaning we must've wrapped around, call `fseek()`
-        // to make sure we are on the correct position (otherwise the previous `fread()`
-        // automatically handles it, so we can save some time)
-        if (this->bcktSize > 1 || pos < this->bcktSize) {
-            this->readEncoded(pos, currEntry, true);
-        } else {
-            this->readEncoded(pos, currEntry, false);
-        }
-    }
-    
-    return true;
-}

@@ -238,6 +238,37 @@ void EncIndBase::print() const {
 // helpers
 
 
+bool EncIndBase::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const {
+    pos %= this->capacity;
+
+    // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
+    // iterate forward one position at a time to search for it
+    bigint positionsChecked = 0;
+    uchar currEntry[this->ENTRY_LEN()];
+    this->readEncoded(pos, currEntry, true);
+    while (std::memcmp(currEntry, match, matchLen) != 0) {
+        positionsChecked++;
+        if (positionsChecked == this->getBcktCount()) {
+            return false;
+        }
+
+        pos = (pos + this->getBcktSize()) % this->capacity;
+        if (this->getBcktSize() > 1 || pos < this->getBcktSize()) {
+            // if either we need to `fseek()` to further than we had `fread()` (i.e.
+            // `this->getBcktSize()` > 1), or `pos` had been decreased this iteration (i.e.
+            // `pos < this->getBcktSize()`) meaning we must've wrapped around, call `fseek()`
+            // to make sure we are on the correct position (otherwise the previous `fread()`
+            // automatically handles it, so we can save some time)
+            this->readEncoded(pos, currEntry, true);
+        } else {
+            this->readEncoded(pos, currEntry, false);
+        }
+    }
+
+    return true;
+}
+
+
 void EncIndBase::readEncoded(ubigint pos, uchar* ret, bool shouldFseek) const {
     // if no buffer requested
     if (this->buf->ENTRY_CAPACITY == 0) {

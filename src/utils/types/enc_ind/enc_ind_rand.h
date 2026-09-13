@@ -2,6 +2,7 @@
 
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind/enc_ind_base.h"
+#include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/ustring.h"
 
 
@@ -45,5 +46,7 @@ private:
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
-    bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
+    // this essentially means we have no buckets; each individual entry is a "bucket"
+    bigint getBcktSize() const override { return 1; }
+    bigint getBcktCount() const override { return this->capacity; }
 };

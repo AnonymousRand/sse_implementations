@@ -112,6 +112,9 @@ protected:
     uchar* NULL_ENTRY = nullptr;
     bigint capacity = 0;
 
+    virtual bigint getBcktSize() const = 0;
+    virtual bigint getBcktCount() const = 0;
+
     //--------------------------------------------------------------------------
     // `IDiskStorage`
 
@@ -131,7 +134,7 @@ protected:
      *     - `true` if an entry matching `match` was found.
      *     - `false` if an entry matching `match` was found was not found in the entire index.
      */
-    virtual bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const = 0;
+    bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const;
 
     /**
      * the raw read and write methods. these should be the ONLY read/write methods that touch
@@ -200,8 +203,8 @@ protected:
 
         bigint posToBufIndex(ubigint pos, bigint encIndCapacity) const;
 
-        uchar* data = nullptr; // TODO move to private
     private:
+        uchar* data = nullptr;
         const bigint ENTRY_LEN;
         ubigint startPos = 0;
         ubigint endPos = 0;

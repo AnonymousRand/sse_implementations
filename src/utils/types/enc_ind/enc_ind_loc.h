@@ -40,5 +40,6 @@ private:
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
-    bool advanceUntilMatch(ubigint& pos, const uchar* match, int matchLen) const override;
+    bigint getBcktSize() const override { return this->bcktSize; }
+    bigint getBcktCount() const override { return this->bcktCount; }
 };
