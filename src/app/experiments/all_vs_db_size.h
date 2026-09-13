@@ -51,7 +51,7 @@ public:
         // we start `dbSizeExp` big enough for a query with `this->resultSize` results
         // to make sense
         for (int dbSizeExp = std::ceil(std::log2(this->resultSize));
-             dbSizeExp <= this->maxDbSizeExp; dbSizeExp++)
+            dbSizeExp <= this->maxDbSizeExp; dbSizeExp++)
         {
             bigint dbSize = std::pow(2, dbSizeExp);
             Db<> db;
