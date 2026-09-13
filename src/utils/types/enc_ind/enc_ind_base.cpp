@@ -279,10 +279,15 @@ bool EncIndBase::advanceUntilMatch(
     }
 
     if (shouldBuffer && this->getBcktSize() <= 2) {
+        // if we do need to iterate forward, we can use a buffer in memory to speed up long chains
+        // of iterating forward a small number of (i.e. `this->getBcktSize()`) positions at a time
         assert(this->capacity != 0);
         double fillPercentage = this->filledCount / (double)this->capacity;
+        // this is a heuristic formula derived from printing out the actual positions checked
+        // by fill percentage, finding an exponential line of best fit, playing around in desmos,
+        // rearranging equations, testing, and sleep deprivation
         bigint readBufEntryCapacity = std::ceil(
-            std::pow(this->capacity, 4 * fillPercentage - 3) * std::pow(2, -11 * fillPercentage + 8)
+            std::pow(this->capacity, 4 * fillPercentage - 3) * std::pow(2, -11 * fillPercentage + 5)
         );
         readBufEntryCapacity = utils::misc::roundUpToPowOf2(readBufEntryCapacity);
         readBufEntryCapacity = std::max(readBufEntryCapacity, (bigint)1);
@@ -290,12 +295,10 @@ bool EncIndBase::advanceUntilMatch(
             readBufEntryCapacity, config::ENC_IND_MAX_READ_BUF_CAPACITY
         );
         readBufEntryCapacity = std::min(readBufEntryCapacity, this->capacity);
-        std::cout << "percent full: " << fillPercentage << ", capacity: " << this->capacity << "; readbuf size " << readBufEntryCapacity << std::endl;
 
-        // if we do need to iterate forward, we can use a buffer in memory to speed up long chains
-        // of iterating forward a small number of (i.e. `this->getBcktSize()`) positions at a time
         const ubigint origStartPos = pos;
-        uchar readBuf[readBufEntryCapacity * this->ENTRY_LEN()];
+        // this has to be on the heap since it may overflow the stack
+        uchar* readBuf = new uchar[readBufEntryCapacity * this->ENTRY_LEN()];
         bigint readBufEntryCount = this->readIntoReadBuf(
             // technically we are repeating the first read again, but doing `+ 1` breaks so whatever
             readBuf, readBufEntryCapacity, pos, origStartPos, true
@@ -306,6 +309,7 @@ bool EncIndBase::advanceUntilMatch(
         while (std::memcmp(readBuf + (readBufIndex * this->ENTRY_LEN()), match, matchLen) != 0) {
             positionsChecked++;
             if (positionsChecked == this->getBcktCount()) {
+                delete[] readBuf;
                 return false;
             }
 
@@ -330,7 +334,10 @@ bool EncIndBase::advanceUntilMatch(
                 needsFseek = false;
             }
         }
+
+        delete[] readBuf;
     } else {
+        // buffer-less iterating
         bigint positionsChecked = 0;
         while (std::memcmp(currEntry, match, matchLen) != 0) {
             positionsChecked++;
@@ -368,7 +375,6 @@ bigint EncIndBase::readIntoReadBuf(
     uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
     bool needsFseek
 ) const {
-    std::cout << "read into read buf";
     bigint entriesUntilEof = this->capacity - readBufStartPos;
     bigint entriesUntilFullLoop;
     if      (readBufStartPos < origStartPos) entriesUntilFullLoop = origStartPos - readBufStartPos;
@@ -421,6 +427,5 @@ bigint EncIndBase::readIntoReadBuf(
         });
     }
     
-    std::cout << ", done" << std::endl;
     return itemsRead;
 }
