@@ -454,7 +454,7 @@ void EncIndBase::Buf::operOnFileBase(
     utils::benchmark::stopProfile("fseek");
     bigint itemsOpered = fileOper(self->data, entriesToOper1);
     DEBUG_ONLY({
-        if (itemsRead < entriesToOper1) {
+        if (itemsOpered < entriesToOper1) {
             std::cerr << "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 1) "
                       << "on file " << filename
                       << " (only did " << itemsOpered << " out of " << entriesToOper1 << ")"
@@ -476,7 +476,7 @@ void EncIndBase::Buf::operOnFileBase(
         DEBUG_ONLY({
             if (itemsOpered < self->ENTRY_CAPACITY) {
                 std::cerr << "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 2) "
-                          << "on file " << self->filename
+                          << "on file " << filename
                           << " (only did " << itemsOpered << " out of " << self->ENTRY_CAPACITY
                           << ")" << std::endl;
                 std::exit(EXIT_FAILURE);
