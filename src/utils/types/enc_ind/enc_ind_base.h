@@ -140,7 +140,7 @@ protected:
      * prerequisites:
      *     - `pos` is within `this->capacity` (e.g. any modulos must have already been done).
      */
-    void readEncoded(ubigint pos, uchar*& ret, bool shouldFseek = true) const;
+    void readEncoded(ubigint pos, uchar* ret, bool shouldFseek = true) const;
     void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
 
     /**
@@ -190,7 +190,7 @@ protected:
         //----------------------------------------------------------------------
         // interface
 
-        uchar* read(bigint index) const;
+        void read(bigint index, uchar* ret) const;
         void write(bigint index, const uchar* entry);
 
         void fill(

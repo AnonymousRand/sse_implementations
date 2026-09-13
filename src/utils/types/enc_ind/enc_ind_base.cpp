@@ -161,9 +161,7 @@ bool EncIndBase::read(ubigint pos, EncIndVal& ret, bool shouldFseek) const {
     pos %= this->capacity;
 
     uchar entry[this->ENTRY_LEN()];
-    // need this as otherwise array-to-pointer decay doesn't work with a `uchar*&` param
-    uchar* entryPtr = entry;
-    this->readEncoded(pos, entryPtr, shouldFseek);
+    this->readEncoded(pos, entry, shouldFseek);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
@@ -242,7 +240,7 @@ void EncIndBase::print() const {
 // helpers
 
 
-void EncIndBase::readEncoded(ubigint pos, uchar*& ret, bool shouldFseek) const {
+void EncIndBase::readEncoded(ubigint pos, uchar* ret, bool shouldFseek) const {
     // if no buffer requested
     if (this->buf->ENTRY_CAPACITY == 0) {
         this->flushIfNotFlushed();
@@ -276,9 +274,8 @@ void EncIndBase::readEncoded(ubigint pos, uchar*& ret, bool shouldFseek) const {
     assert(bufIndex < this->buf->ENTRY_CAPACITY);
 
     utils::benchmark::startProfile("buf read");
-    // (this assignment is why we needed to pass the pointer `ret` by reference)
-    ret = this->buf->read(bufIndex);
-    std::cout << "ret: " << utils::debug::ustrToHex(ret, 16) << " addr " << (void*)ret << std::endl;
+    this->buf->read(bufIndex, ret);
+    //std::cout << "ret: " << utils::debug::ustrToHex(ret, 16) << " addr " << (void*)ret << std::endl;
     utils::benchmark::stopProfile("buf read");
 }
 
@@ -326,9 +323,7 @@ bool EncIndBase::readEntry(ubigint pos, EncIndEntry& ret, bool shouldFseek) cons
     pos %= this->capacity;
 
     uchar entry[this->ENTRY_LEN()];
-    // need this as otherwise array-to-pointer decay doesn't work with a `uchar*&` param
-    uchar* entryPtr = entry;
-    this->readEncoded(pos, entryPtr, shouldFseek);
+    this->readEncoded(pos, entry, shouldFseek);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
@@ -389,11 +384,14 @@ EncIndBase::Buf::Buf(const Buf& other) :
 // interface
 
 
-uchar* EncIndBase::Buf::read(bigint index) const {
+// TODO: is there a way to make this avoid a memcpy and return a pointer directly to
+// this->data + (index * this->ENTRY_LEN)? while still acommodating fseek of no-buffer approach?
+// unless this memcpy isn't taking very much time
+void EncIndBase::Buf::read(bigint index, uchar* ret) const {
     std::cout << "reading buffer " << this << " at " << index << std::endl;
-    std::cout << "alternative: " << utils::debug::ustrToHex(&(this->data[index * this->ENTRY_LEN]), 16) << " addr " << (void*)(&(this->data[index * this->ENTRY_LEN])) << std::endl;
+    //std::cout << "alternative: " << utils::debug::ustrToHex(&(this->data[index * this->ENTRY_LEN]), 16) << " addr " << (void*)(&(this->data[index * this->ENTRY_LEN])) << std::endl;
     //return this->data + (index * this->ENTRY_LEN);
-    return &(this->data[index * this->ENTRY_LEN]);
+    std::memcpy(ret, this->data + (index * this->ENTRY_LEN), this->ENTRY_LEN);
 }
 
 

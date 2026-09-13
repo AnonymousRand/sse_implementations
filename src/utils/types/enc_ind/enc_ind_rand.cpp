@@ -28,11 +28,10 @@ bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLe
     //std::cout << "----- getting read buf index for pos " << pos << " with curr read buf " << this->currBufStartPos << ", " << this->currBufEndPos << "; cap " << this->capacity << std::endl;
     bigint positionsChecked = 0;
     uchar currEntry[this->ENTRY_LEN()];
-    uchar* currEntryPtr = currEntry;
-    this->readEncoded(pos, currEntryPtr, true);
-    while (std::memcmp(currEntryPtr, match, matchLen) != 0) {
+    this->readEncoded(pos, currEntry, true);
+    while (std::memcmp(currEntry, match, matchLen) != 0) {
         //std::cout << "checked: read buf index is " << bufIndex << " and pos is " << pos << std::endl;
-        std::cout << "current spot " << &(this->buf->data) << " had " << utils::debug::ustrToHex(currEntryPtr, 16) << " addr " << (void*)currEntryPtr << std::endl;
+        std::cout << "current spot " << &(this->buf->data) << " had " << utils::debug::ustrToHex(currEntry, 16) << " addr " << (void*)currEntry << std::endl;
         positionsChecked++;
         if (positionsChecked == this->capacity) {
             std::cout << "failed!" << std::endl;
@@ -46,9 +45,9 @@ bool EncIndRand::advanceUntilMatch(ubigint& pos, const uchar* match, int matchLe
             // (assuming no other `fread()`s, `fwrite()`s, or `fseek()`s have occurred since then)
             // (also, this can't be just an `fseek(0)` call here since we may only need to `fread()`
             // to fill `buf` again later on, when we need to read pointer to not still be at 0)
-            this->readEncoded(pos, currEntryPtr, true);
+            this->readEncoded(pos, currEntry, true);
         } else {
-            this->readEncoded(pos, currEntryPtr, false);
+            this->readEncoded(pos, currEntry, false);
         }
     }
 
