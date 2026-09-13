@@ -418,6 +418,7 @@ void EncIndBase::Buf::read(bigint index, uchar* ret) const {
 
 void EncIndBase::Buf::write(bigint index, const uchar* entry) {
     std::memcpy(this->data + (index * this->ENTRY_LEN), entry, this->ENTRY_LEN);
+    this->hitsTmp++;
 }
 
 
@@ -493,6 +494,7 @@ void EncIndBase::Buf::fill(
     this->startPos = startPos;
     this->endPos = (startPos + this->ENTRY_CAPACITY) % encIndCapacity;
     this->isFilled = true;
+    this->hitsTmp = 0;
 }
 
 
