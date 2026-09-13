@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -13,6 +14,7 @@
 
 #include "utils/benchmark.h"
 #include "utils/debug.h"
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/i_disk_storage.h"
@@ -43,6 +45,7 @@ void EncIndBase::copyFrom(const EncIndBase& other) {
         this->NULL_ENTRY = nullptr;
     }
     this->capacity = other.capacity;
+    this->filledCount = other.filledCount;
 }
 
 
@@ -54,6 +57,7 @@ void EncIndBase::moveFrom(EncIndBase&& other) noexcept {
     other.NULL_ENTRY = nullptr;
 
     this->capacity = other.capacity;
+    this->filledCount = other.filledCount;
 }
 
 
@@ -223,7 +227,6 @@ void EncIndBase::readEncoded(ubigint pos, uchar* buf, bool shouldFseek) const {
         std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
         utils::benchmark::stopProfile("fseek");
     }
-
     utils::benchmark::startProfile("fread");
     bigint itemsRead = std::fread(buf, this->ENTRY_LEN(), 1, this->file);
     utils::benchmark::stopProfile("fread");
@@ -245,7 +248,6 @@ void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry, bool shoul
         std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
         utils::benchmark::stopProfile("fseek");
     }
-
     utils::benchmark::startProfile("fwrite");
     int itemsWritten = std::fwrite(encodedEntry, this->ENTRY_LEN(), 1, this->file);
     utils::benchmark::stopProfile("fwrite");
@@ -256,7 +258,9 @@ void EncIndBase::writeEncoded(ubigint pos, const uchar* encodedEntry, bool shoul
             std::exit(EXIT_FAILURE);
         }
     });
+
     this->isFlushed = false;
+    this->filledCount++;
 }
 
 
@@ -270,17 +274,27 @@ bool EncIndBase::advanceUntilMatch(
     // iterate forward `this->getBcktSize()` positions at a time to search for it
     uchar currEntry[this->ENTRY_LEN()];
     this->readEncoded(pos, currEntry, true);
-    if (std::memcmp(currEntry, match, matchLen) == 0) {
+    if (std::memcmp(currEntry, match, matchLen) == 0 || this->capacity == 0) {
         return true;
     }
 
     if (shouldBuffer && this->getBcktSize() <= 2) {
+        assert(this->capacity != 0);
+        double fillPercentage = this->filledCount / (double)this->capacity;
+        bigint readBufEntryCapacity = std::ceil(
+            std::pow(this->capacity, 4 * fillPercentage - 3) * std::pow(2, -11 * fillPercentage + 8)
+        );
+        readBufEntryCapacity = utils::misc::roundUpToPowOf2(readBufEntryCapacity);
+        readBufEntryCapacity = std::max(readBufEntryCapacity, (bigint)1);
+        readBufEntryCapacity = std::min(
+            readBufEntryCapacity, config::ENC_IND_MAX_READ_BUF_CAPACITY
+        );
+        readBufEntryCapacity = std::min(readBufEntryCapacity, this->capacity);
+        std::cout << "percent full: " << fillPercentage << ", capacity: " << this->capacity << "; readbuf size " << readBufEntryCapacity << std::endl;
+
         // if we do need to iterate forward, we can use a buffer in memory to speed up long chains
         // of iterating forward a small number of (i.e. `this->getBcktSize()`) positions at a time
         const ubigint origStartPos = pos;
-        const bigint readBufEntryCapacity = std::min(
-            config::ENC_IND_READ_BUF_CAPACITY, this->capacity
-        );
         uchar readBuf[readBufEntryCapacity * this->ENTRY_LEN()];
         bigint readBufEntryCount = this->readIntoReadBuf(
             // technically we are repeating the first read again, but doing `+ 1` breaks so whatever
@@ -354,6 +368,7 @@ bigint EncIndBase::readIntoReadBuf(
     uchar* readBuf, bigint targetEntryCount, ubigint readBufStartPos, ubigint origStartPos,
     bool needsFseek
 ) const {
+    std::cout << "read into read buf";
     bigint entriesUntilEof = this->capacity - readBufStartPos;
     bigint entriesUntilFullLoop;
     if      (readBufStartPos < origStartPos) entriesUntilFullLoop = origStartPos - readBufStartPos;
@@ -406,5 +421,6 @@ bigint EncIndBase::readIntoReadBuf(
         });
     }
     
+    std::cout << ", done" << std::endl;
     return itemsRead;
 }

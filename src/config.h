@@ -67,13 +67,12 @@ inline constexpr bool SHOULD_BUFFER_SEARCH = true;
  * the capacity in # of entries for the (mostly non-locality) encrypted index read buffers
  * (which help speed up massive `setup()` calls).
  *
- * (i find that 2^8 is a pretty good balance between "big enough to be useful" and "small enough
- * that reading into the buffer doesn't take more time than just fseeking in the file".)
+ * (currently, an enc ind entry is 128 bytes (48 tuple + 16 iv + 64 label/hash); 2^26 => ~8.5 GB.)
  */
-inline constexpr bigint ENC_IND_READ_BUF_CAPACITY = std::pow(2, 8);
+inline constexpr bigint ENC_IND_MAX_READ_BUF_CAPACITY = std::pow(2, 26);
 static_assert(
-    ENC_IND_READ_BUF_CAPACITY > 0,
-    "Error: `config::ENC_IND_READ_BUF_CAPACITY` must be strictly positive!"
+    ENC_IND_MAX_READ_BUF_CAPACITY > 0,
+    "Error: `config::ENC_IND_MAX_READ_BUF_CAPACITY` must be strictly positive!"
 );
 
 

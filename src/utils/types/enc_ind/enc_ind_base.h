@@ -105,6 +105,7 @@ public:
 protected:
     uchar* NULL_ENTRY = nullptr;
     bigint capacity = 0;
+    bigint filledCount = 0;
 
     virtual bigint getBcktCount() const = 0;
     virtual bigint getBcktSize() const = 0;
@@ -118,6 +119,10 @@ protected:
     //--------------------------------------------------------------------------
     // helpers
 
+    /**
+     * the raw read and write methods. EVERY read/write should go ultimately through here,
+     * and these should be the ONLY read/write methods that touch the file.
+     */
     void readEncoded(ubigint pos, uchar* buf, bool shouldFseek = true) const;
     void writeEncoded(ubigint pos, const uchar* encodedEntry, bool shouldFseek = true);
 
