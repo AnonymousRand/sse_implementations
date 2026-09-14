@@ -61,7 +61,6 @@ int main() {
     //--------------------------------------------------------------------------
     // debugging experiment
 
-    /*
     {
         // DB and query declared here so they don't change between calls to `run()` for different
         // SSE schemes (also why DB is always small since we need the same DB for each scheme)
@@ -116,7 +115,6 @@ int main() {
         // free memory ASAP
         db.clear();
     }
-    */
 
     //--------------------------------------------------------------------------
     // all vs. DB size experiment
@@ -127,7 +125,6 @@ int main() {
         app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExpSmall, targetResultSize);
         allVsDbSize.printHeader();
 
-        /*
         std::cout << "================ PiBas =================" << std::endl << std::endl;
         allVsDbSize.run(piBas.get());
 
@@ -160,7 +157,6 @@ int main() {
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
         allVsDbSizeSmall.run(sdaLogSrcNLogN.get());
-        */
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         allVsDbSize.run(sdaLogSrcIPiBas.get());
@@ -172,7 +168,6 @@ int main() {
         allVsDbSize.run(sdaLogSrcIStar.get());
     }
 
-    /*
     //--------------------------------------------------------------------------
     // search vs. result size experiment
 
@@ -351,5 +346,4 @@ int main() {
         // free memory ASAP
         db.clear();
     }
-    */
 }

@@ -67,10 +67,11 @@ public:
     // `Buf*` members, while internal ones can use `Buf*` (hence why `Oper` is `public`)
     enum class Oper {
         SETUP,
-        SEARCH
+        SEARCH,
+        UPDATE
     };
 
-    virtual void init(bigint capacity);
+    virtual void init(Oper setupOper, bigint capacity);
     void clear() override;
 
     /**
@@ -121,7 +122,7 @@ public:
      * upon starting the new oper, which would then impact benchmarking (e.g. flushing
      * a huge setup buffer at the start of a search.)
      */
-    void endSetup();
+    void endSetup(Oper oper);
 
     bigint getCapacity() const { return this->capacity; }
     bigint getBytes() const { return this->capacity * this->ENTRY_LEN(); }
@@ -208,6 +209,7 @@ protected:
 
     mutable Buf* setupBuf = nullptr;
     mutable Buf* searchBuf = nullptr;
+    mutable Buf* updateBuf = nullptr;
 
     /**
      * translate public-facing `Oper` to a `Buf*` member.
@@ -218,6 +220,8 @@ protected:
             return this->setupBuf;
         case Oper::SEARCH:
             return this->searchBuf;
+        case Oper::UPDATE:
+            return this->updateBuf;
         default:
             std::cerr << "Error: EncIndBase::getBufFromOper(): zoo wee mama" << std::endl;
             std::exit(EXIT_FAILURE);

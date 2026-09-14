@@ -16,7 +16,6 @@
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_rand.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/ind.h"
@@ -54,7 +53,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->encKey = utils::crypto::genKey(secParam);
 
     EncIndRand* encInd = new EncIndRand();
-    encInd->init(this->size);
+    encInd->init(this->setupOper, this->size);
 
     //--------------------------------------------------------------------------
     // build index
@@ -93,12 +92,12 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->writeToFirstEmpty(
-                EncIndBase::Oper::SETUP, pos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
+                this->setupOper, pos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
             );
         }
     }
 
-    encInd->endSetup();
+    encInd->endSetup(this->setupOper);
     this->server->setEncInd(encInd);
 }
 
@@ -152,7 +151,7 @@ void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
     // `encInd` does (this should all be client-side anyway so not leaking anything)
     for (bigint pos = 0; pos < encInd->getCapacity(); pos++) {
         EncIndVal encIndVal;
-        bool isValidVal = encInd->read(EncIndBase::Oper::SETUP, pos, encIndVal);
+        bool isValidVal = encInd->read(this->setupOper, pos, encIndVal);
         if (!isValidVal) {
             continue;
         }

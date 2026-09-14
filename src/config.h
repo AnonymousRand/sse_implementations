@@ -41,6 +41,9 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 /**
  * the capacity in # of entries for the (non-locality) encrypted index read buffers
  * (which help speed up massive `setup()` etc. calls).
+ *
+ * search and update buffers are recommended to be smaller than the setup buffer, both since there
+ * is usually less need for buffering and also so on-disk performance is more accurately measured.
  */
 // currently: an enc ind entry is 128 bytes (48 tuple + 16 iv + 64 label/hash), so
 // 2^25 => ~4.3 GB, which should accommodate Log-SRC-i[PiBas/NLogN] up to 2^19 (noting that
@@ -48,6 +51,7 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 // since all the instances are active simultaneously, you may still run out of RAM)
 inline constexpr bigint ENC_IND_SETUP_BUF_CAPACITY = std::pow(2, 25);
 inline constexpr bigint ENC_IND_SEARCH_BUF_CAPACITY = std::pow(2, 8);
+inline constexpr bigint ENC_IND_UPDATE_BUF_CAPACITY = std::pow(2, 8);
 static_assert(
     ENC_IND_SETUP_BUF_CAPACITY > 0,
     "Error: `ENC_IND_SETUP_BUF_CAPACITY` must be strictly positive!"
@@ -55,6 +59,10 @@ static_assert(
 static_assert(
     ENC_IND_SEARCH_BUF_CAPACITY > 0,
     "Error: `ENC_IND_SEARCH_BUF_CAPACITY` must be strictly positive!"
+);
+static_assert(
+    ENC_IND_UPDATE_BUF_CAPACITY > 0,
+    "Error: `ENC_IND_UPDATE_BUF_CAPACITY` must be strictly positive!"
 );
 
 

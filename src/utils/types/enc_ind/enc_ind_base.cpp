@@ -55,6 +55,12 @@ void EncIndBase::copyFrom(const EncIndBase& other) {
     } else {
         this->searchBuf = nullptr;
     }
+
+    if (other.updateBuf != nullptr) {
+        this->updateBuf = new Buf(*other.updateBuf);
+    } else {
+        this->updateBuf = nullptr;
+    }
 }
 
 
@@ -72,6 +78,9 @@ void EncIndBase::moveFrom(EncIndBase&& other) noexcept {
 
     this->searchBuf = other.searchBuf;
     other.searchBuf = nullptr;
+
+    this->updateBuf = other.updateBuf;
+    other.updateBuf = nullptr;
 }
 
 
@@ -113,7 +122,7 @@ EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
 // interface
 
 
-void EncIndBase::init(bigint capacity) {
+void EncIndBase::init(Oper setupOper, bigint capacity) {
     // inits enc ind file and file pointer
     IDiskStorage::init();
 
@@ -136,13 +145,17 @@ void EncIndBase::init(bigint capacity) {
         searchBufEntryCapacity, this->file, this->filename, this->capacity, this->ENTRY_LEN()
     );
 
+    bigint updateBufEntryCapacity = std::min(config::ENC_IND_UPDATE_BUF_CAPACITY, this->capacity);
+    this->updateBuf = new Buf(
+        updateBufEntryCapacity, this->file, this->filename, this->capacity, this->ENTRY_LEN()
+    );
+
     // fill file with zero bits, so we can tell if a spot is empty by if it contains all zero bits
     // and use setup buffer to speed this up (although this seems to only be efficient at big sizes)
     for (bigint i = 0; i < this->capacity; i++) {
         // we allow incomplete buffer fills from the file here since, well, the file is incomplete
-        this->writeEncoded(Oper::SETUP, i, this->NULL_ENTRY, true);
+        this->writeEncoded(setupOper, i, this->NULL_ENTRY, true);
     }
-    this->flushBufIfNotFlushed(this->getBufFromOper(Oper::SETUP));
 }
 
 
@@ -160,6 +173,10 @@ void EncIndBase::clear() {
     if (this->searchBuf != nullptr) {
         delete this->searchBuf;
         this->searchBuf = nullptr;
+    }
+    if (this->updateBuf != nullptr) {
+        delete this->updateBuf;
+        this->updateBuf = nullptr;
     }
 
     // clears DB file and file pointer
@@ -238,9 +255,10 @@ void EncIndBase::writeToFirstEmpty(Oper oper, ubigint& pos, const EncIndEntry& e
 }
 
 
-void EncIndBase::endSetup() {
-    Buf* setupBuf = this->getBufFromOper(Oper::SETUP);
-    this->flushBufIfNotFlushed(setupBuf);
+void EncIndBase::endSetup(Oper oper) {
+    assert(oper == Oper::SETUP || oper == Oper::UPDATE);
+    Buf* buf = this->getBufFromOper(oper);
+    this->flushBufIfNotFlushed(buf);
 }
 
 

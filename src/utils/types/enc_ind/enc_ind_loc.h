@@ -33,7 +33,7 @@ public:
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
-    void init(bigint bcktSize, bigint bcktCount);
+    void init(Oper setupOper, bigint bcktSize, bigint bcktCount);
     void clear() override;
 
 private:
@@ -43,12 +43,18 @@ private:
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
+    // we skip buffering for searches for locality-aware enc inds except when bucket size is 1,
+    // as otherwise we only check every bucket start pos, i.e. every `this->bcktSize` entries,
+    // so buffering contiguous blocks usually becomes a waste (and more often than not, we
+    // do not need to try as many positions as during setups to find the right entry)
     const bool SHOULD_BUFFER_READ(Oper oper) const override {
         switch (oper) {
         case Oper::SETUP:
             return true;
         case Oper::SEARCH:
             return this->bcktSize == 1;
+        case Oper::UPDATE:
+            return true;
         default:
             std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_READ(): mama wee zoo" << std::endl;
             std::exit(EXIT_FAILURE);
