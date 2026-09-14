@@ -176,7 +176,7 @@ bigint EncIndBase::Buf::posToBufIndex(ubigint pos) const {
             // and `pos` is in the middle of it (note that this also means the following
             // returned value should always be positive)
             bigint ret = pos - this->startPos;
-            assert(ret >= 0);
+            assert(ret >= 0 && ret < this->ENTRY_CAPACITY);
             return ret;
         }
     } else {
@@ -184,7 +184,7 @@ bigint EncIndBase::Buf::posToBufIndex(ubigint pos) const {
         if (pos >= this->startPos) {
             // if `pos` is at/after the buffer's start pos (so `pos` hasn't wrapped around yet)
             bigint ret = pos - this->startPos;
-            assert(ret >= 0);
+            assert(ret >= 0 && ret < this->ENTRY_CAPACITY);
             return ret;
         } else if (pos < this->endPos) {
             // if `pos` is before the buffer's end pos (so `pos` did wrap around)
@@ -192,7 +192,7 @@ bigint EncIndBase::Buf::posToBufIndex(ubigint pos) const {
             // we add up the segment from `pos` to the start of the enc ind,
             // and the segment from the end of the enc ind to `this->startPos`
             bigint ret = pos + (this->encIndCapacity - this->startPos);
-            assert(ret >= 0);
+            assert(ret >= 0 && ret < this->ENTRY_CAPACITY);
             return ret;
         }
     }

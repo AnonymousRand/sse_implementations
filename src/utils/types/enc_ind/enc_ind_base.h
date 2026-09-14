@@ -110,11 +110,24 @@ public:
      */
     void writeToFirstEmpty(Oper oper, ubigint& pos, const EncIndEntry& encIndEntry);
 
-    // (mostly for debugging)
-    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
+    /**
+     * this method MUST be called when all setup operations done! e.g. they flush the buffers,
+     * since different operations currently use different buffers.
+     *
+     * IMPORTANT: this also means that enc inds must have all setup operations performed before
+     * all search operations, as otherwise syncing the 2 buffers becomes quite a nightmare.
+     *
+     * (i could let enc inds track and handle this automatically, but that can only be done
+     * upon starting the new oper, which would then impact benchmarking (e.g. flushing
+     * a huge setup buffer at the start of a search.)
+     */
+    void endSetup();
 
     bigint getCapacity() const { return this->capacity; }
     bigint getBytes() const { return this->capacity * this->ENTRY_LEN(); }
+
+    // (mostly for debugging)
+    void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
 
 protected:
     uchar* NULL_ENTRY = nullptr;

@@ -137,6 +137,7 @@ template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::moveSetupStateToServer() {
     NLogNBase<DbTuple>::moveSetupStateToServer();
 
+    this->dbKwCountsDictTmp->endSetup();
     this->getServer()->setDbKwCountsDict(this->dbKwCountsDictTmp);
     // don't `delete` this since server has the same copy, but still set it to `nullptr` to be safe
     this->dbKwCountsDictTmp = nullptr;

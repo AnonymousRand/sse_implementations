@@ -98,6 +98,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
         }
     }
 
+    encInd->endSetup();
     this->server->setEncInd(encInd);
 }
 
