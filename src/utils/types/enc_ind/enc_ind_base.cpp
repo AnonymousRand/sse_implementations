@@ -11,6 +11,7 @@
 
 #include "utils/benchmark.h"
 #include "utils/debug.h"
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind/enc_ind_base_buf.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
@@ -124,6 +125,7 @@ EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
 
 void EncIndBase::init(SseOper setupOper, bigint capacity) {
     assert(setupOper == SseOper::SETUP || setupOper == SseOper::UPDATE);
+
     // inits enc ind file and file pointer
     IDiskStorage::init();
 
@@ -136,23 +138,25 @@ void EncIndBase::init(SseOper setupOper, bigint capacity) {
     this->capacity = capacity;
 
     // init buffers
-    bigint setupBufEntryCapacity = std::min(config::ENC_IND_SETUP_BUF_CAPACITY, this->capacity);
+    bigint setupBufEntryCapacity = std::min(config::ENC_IND_SETUP_BUF_CAPAC, this->capacity);
     // if our enc ind does not fit entirely in memory, use a smaller buffer to avoid rapid
     // moving (i.e. flushing and refilling) of huge setup buffers
     if (setupBufEntryCapacity < this->capacity) {
-        setupBufEntryCapacity =
-            std::min(config::ENC_IND_SETUP_OVERFLOW_BUF_CAPACITY, this->capacity);
+        setupBufEntryCapacity = std::min(config::ENC_IND_SETUP_OVERFLOW_BUF_CAPAC, this->capacity);
     }
     this->setupBuf = new Buf(
         setupBufEntryCapacity, this->file, this->filename, this->capacity, this->ENTRY_LEN()
     );
 
-    bigint searchBufEntryCapacity = std::min(config::ENC_IND_SEARCH_BUF_CAPACITY, this->capacity);
+    // heuristically determine this size
+    bigint searchBufEntryCapacity = utils::misc::roundUpToPowOf2(this->capacity / 512);
+    searchBufEntryCapacity = std::min(searchBufEntryCapacity, config::ENC_IND_SEARCH_BUF_MAX_CAPAC);
+    searchBufEntryCapacity = std::min(searchBufEntryCapacity, this->capacity);
     this->searchBuf = new Buf(
         searchBufEntryCapacity, this->file, this->filename, this->capacity, this->ENTRY_LEN()
     );
 
-    bigint updateBufEntryCapacity = std::min(config::ENC_IND_UPDATE_BUF_CAPACITY, this->capacity);
+    bigint updateBufEntryCapacity = std::min(config::ENC_IND_UPDATE_BUF_CAPAC, this->capacity);
     this->updateBuf = new Buf(
         updateBufEntryCapacity, this->file, this->filename, this->capacity, this->ENTRY_LEN()
     );

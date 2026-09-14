@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <format>
 #include <iostream>
@@ -21,13 +22,15 @@ namespace app::experiments {
 
 class SearchVsRangeSize : public IExperiment<ISse<>> {
 public:
-    SearchVsRangeSize(int dbSizeExp) : dbSizeExp(dbSizeExp) {}
+    SearchVsRangeSize(int dbSizeExp, int maxRangeSizeExp) : dbSizeExp(dbSizeExp) {
+        this->maxRangeSizeExp = std::min(maxRangeSizeExp, this->dbSizeExp);
+    }
 
     void printHeader() const override {
         std::cout << std::endl;
         std::cout << "============================ Search vs. Range Size ============================="
                   << std::endl;
-        std::cout << "Search vs. query range size up to 2^" << this->dbSizeExp << std::endl;
+        std::cout << "Search vs. query range size up to 2^" << this->maxRangeSizeExp << std::endl;
         std::cout << "Fixed DB size 2^" << this->dbSizeExp << std::endl;
         std::cout << "================================================================================"
                   << std::endl;
@@ -45,7 +48,7 @@ public:
         sse->setup(utils::crypto::KEY_LEN, db);
 
         // searches
-        for (int rangeSizeExp = 0; rangeSizeExp <= this->dbSizeExp; rangeSizeExp++) {
+        for (int rangeSizeExp = 0; rangeSizeExp <= this->maxRangeSizeExp; rangeSizeExp++) {
             Range<Kw> query {0, (Kw)std::pow(2, rangeSizeExp) - 1};
             sse->search(query);
             utils::benchmark::print("Search", std::format("(range size 2^{})", rangeSizeExp));
@@ -57,6 +60,7 @@ public:
 
 private:
     int dbSizeExp;
+    int maxRangeSizeExp;
 };
 
 

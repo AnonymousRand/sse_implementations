@@ -49,23 +49,28 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 // 2^25 => ~4.3 GB, which should accommodate Log-SRC-i[PiBas/NLogN] up to 2^19 (noting that
 // NLogN maintains a separate enc ind instance and hence buffer for each level; HOWEVER
 // since all the instances are active simultaneously, you may still run out of RAM)
-inline constexpr bigint ENC_IND_SETUP_BUF_CAPACITY = std::pow(2, 25);
+inline constexpr bigint ENC_IND_SETUP_BUF_CAPAC = std::pow(2, 25);
 // this is for when the enc ind does not fit entirely in memory; i recommend this being
 // quite a bit smaller than the main setup buf as there will be lots of filling and flushing
-inline constexpr bigint ENC_IND_SETUP_OVERFLOW_BUF_CAPACITY = std::pow(2, 8);
-inline constexpr bigint ENC_IND_SEARCH_BUF_CAPACITY = std::pow(2, 8);
-inline constexpr bigint ENC_IND_UPDATE_BUF_CAPACITY = std::pow(2, 8);
+inline constexpr bigint ENC_IND_SETUP_OVERFLOW_BUF_CAPAC = std::pow(2, 8);
+// search buf size is determined heuristically from enc ind size; this is its maximum allowed size
+inline constexpr bigint ENC_IND_SEARCH_BUF_MAX_CAPAC = std::pow(2, 18);
+inline constexpr bigint ENC_IND_UPDATE_BUF_CAPAC = std::pow(2, 8);
 static_assert(
-    ENC_IND_SETUP_BUF_CAPACITY > 0,
-    "Error: `ENC_IND_SETUP_BUF_CAPACITY` must be strictly positive!"
+    ENC_IND_SETUP_BUF_CAPAC > 0,
+    "Error: `ENC_IND_SETUP_BUF_CAPAC` must be strictly positive!"
 );
 static_assert(
-    ENC_IND_SEARCH_BUF_CAPACITY > 0,
-    "Error: `ENC_IND_SEARCH_BUF_CAPACITY` must be strictly positive!"
+    ENC_IND_SETUP_OVERFLOW_BUF_CAPAC > 0,
+    "Error: `ENC_IND_SETUP_OVERFLOW_BUF_CAPAC` must be strictly positive!"
 );
 static_assert(
-    ENC_IND_UPDATE_BUF_CAPACITY > 0,
-    "Error: `ENC_IND_UPDATE_BUF_CAPACITY` must be strictly positive!"
+    ENC_IND_SEARCH_BUF_MAX_CAPAC > 0,
+    "Error: `ENC_IND_SEARCH_BUF_MAX_CAPAC` must be strictly positive!"
+);
+static_assert(
+    ENC_IND_UPDATE_BUF_CAPAC > 0,
+    "Error: `ENC_IND_UPDATE_BUF_CAPAC` must be strictly positive!"
 );
 
 
