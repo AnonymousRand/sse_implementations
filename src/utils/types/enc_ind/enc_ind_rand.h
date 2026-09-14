@@ -46,8 +46,8 @@ private:
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
-    const bool SHOULD_BUFFER_READ(SseOper oper) const override { return true; }
-    const bool SHOULD_BUFFER_WRITE(SseOper oper) const override { return true; }
+    bool SHOULD_BUFFER_READ(SseOper oper) const override { return true; }
+    bool SHOULD_BUFFER_WRITE(SseOper oper) const override { return true; }
 
     // this essentially means we have no buckets; each individual entry is a "bucket"
     bigint getBcktSize() const override { return 1; }

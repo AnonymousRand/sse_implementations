@@ -23,10 +23,10 @@ public:
 
     // we should be able to use aggregated initialization here
 
-    static const Range DUMMY() {
+    static Range DUMMY() {
         return Range {::DUMMY, ::DUMMY};
     }
-    const bool isDummy() const {
+    bool isDummy() const {
         return *this == DUMMY();
     }
 

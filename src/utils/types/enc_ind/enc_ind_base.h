@@ -130,8 +130,8 @@ protected:
     uchar* NULL_ENTRY = nullptr;
     bigint capacity = 0;
 
-    virtual const bool SHOULD_BUFFER_READ(SseOper oper) const = 0;
-    virtual const bool SHOULD_BUFFER_WRITE(SseOper oper) const = 0;
+    virtual bool SHOULD_BUFFER_READ(SseOper oper) const = 0;
+    virtual bool SHOULD_BUFFER_WRITE(SseOper oper) const = 0;
 
     virtual bigint getBcktSize() const = 0;
     virtual bigint getBcktCount() const = 0;

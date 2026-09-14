@@ -56,10 +56,10 @@ public:
 
     // note: these cannot be member *variables* if we wish to initialize them here in the class
     // body, as that requires the class itself (i.e. variable type) to be fully initialized first
-    static const Doc DUMMY() {
+    static Doc DUMMY() {
         return Doc {::DUMMY, ::DUMMY, Op::DUMMY};
     }
-    const bool isDummy() const {
+    bool isDummy() const {
         return *this == DUMMY();
     }
 
@@ -93,10 +93,10 @@ public:
 
     SrcIDb1Doc(Kw kw, Range<IdAlias> idAliasRange) : kw(kw), idAliasRange(idAliasRange) {}
 
-    static const SrcIDb1Doc DUMMY() {
+    static SrcIDb1Doc DUMMY() {
         return SrcIDb1Doc {::DUMMY, Range<IdAlias>::DUMMY()};
     }
-    const bool isDummy() const {
+    bool isDummy() const {
         return *this == DUMMY();
     }
 

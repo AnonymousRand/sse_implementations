@@ -47,7 +47,7 @@ private:
     // as otherwise we only check every bucket start pos, i.e. every `this->bcktSize` entries,
     // so buffering contiguous blocks usually becomes a waste (and more often than not, we
     // do not need to try as many positions as during setups to find the right entry)
-    const bool SHOULD_BUFFER_READ(SseOper oper) const override {
+    bool SHOULD_BUFFER_READ(SseOper oper) const override {
         switch (oper) {
         case SseOper::SETUP:
             return true;
@@ -61,7 +61,7 @@ private:
         }
     }
 
-    const bool SHOULD_BUFFER_WRITE(SseOper oper) const override { return true; }
+    bool SHOULD_BUFFER_WRITE(SseOper oper) const override { return true; }
 
     bigint getBcktSize() const override { return this->bcktSize; }
     bigint getBcktCount() const override { return this->bcktCount; }

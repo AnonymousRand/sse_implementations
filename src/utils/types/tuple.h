@@ -62,10 +62,10 @@ concept IsDbTuple = requires(T t) {
 template <class DbKw = Kw>
 struct Tuple : public IDbTuple<Doc, DbKw> {
 public:
-    static const Tuple DUMMY(const Range<DbKw>& dbKwRange) {
+    static Tuple DUMMY(const Range<DbKw>& dbKwRange) {
         return Tuple {Doc::DUMMY(), dbKwRange};
     }
-    const bool isDummy() const {
+    bool isDummy() const {
         return *this == DUMMY(this->dbKwRange);
     }
 
@@ -106,10 +106,10 @@ struct std::hash<Tuple<DbKw>> {
 
 struct SrcIDb1Tuple : public IDbTuple<SrcIDb1Doc, Kw> {
 public:
-    static const SrcIDb1Tuple DUMMY(const Range<Kw>& kwRange) {
+    static SrcIDb1Tuple DUMMY(const Range<Kw>& kwRange) {
         return SrcIDb1Tuple {SrcIDb1Doc::DUMMY(), kwRange};
     }
-    const bool isDummy() const {
+    bool isDummy() const {
         return *this == DUMMY(this->dbKwRange);
     }
 
@@ -125,7 +125,7 @@ public:
     static SrcIDb1Tuple fromUstr(const ustring& ustr);
 
     Kw getKw() const { return this->dbDoc.kw; }
-    Range<IdAlias> getIdAliasRange() const { return this->dbDoc.idAliasRange; }
+    const Range<IdAlias>& getIdAliasRange() const { return this->dbDoc.idAliasRange; }
 
 private:
     static const std::string REGEX_STR;
