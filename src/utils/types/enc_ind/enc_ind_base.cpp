@@ -123,6 +123,7 @@ EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
 
 
 void EncIndBase::init(SseOper setupOper, bigint capacity) {
+    assert(setupOper == SseOper::SETUP || oper == SseOper::UPDATE);
     // inits enc ind file and file pointer
     IDiskStorage::init();
 
@@ -263,9 +264,9 @@ void EncIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncIndEntry
 }
 
 
-void EncIndBase::endSetup(SseOper oper) {
-    assert(oper == SseOper::SETUP || oper == SseOper::UPDATE);
-    Buf* buf = this->getBufFromSseOper(oper);
+void EncIndBase::endSetup(SseOper setupOper) {
+    assert(setupOper == SseOper::SETUP || setupOper == SseOper::UPDATE);
+    Buf* buf = this->getBufFromSseOper(setupOper);
     this->flushBufIfNotFlushed(buf);
 }
 
@@ -338,6 +339,7 @@ uchar* EncIndBase::readEncoded(SseOper oper, ubigint pos) const {
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufFromSseOper(oper);
+    assert(bufToUse != nullptr);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         this->fillBuf(bufToUse, pos);
@@ -352,6 +354,7 @@ void EncIndBase::writeEncoded(SseOper oper, ubigint pos, const uchar* encodedEnt
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufFromSseOper(oper);
+    assert(bufToUse != nullptr);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         this->fillBuf(bufToUse, pos, isInit);
@@ -366,10 +369,12 @@ uchar* EncIndBase::readEncodedNoBuf(SseOper oper, ubigint pos, uchar* ret, bool 
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufFromSseOper(oper);
+    assert(bufToUse != nullptr);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         // if `pos` is not covered by buffer, read directly from file; we can completely ignore
         // the buffer here as the file must have the most updated copy of the entry at `pos`
+        assert(this->file != nullptr);
         if (shouldFseek) {
             std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
         }
@@ -381,6 +386,7 @@ uchar* EncIndBase::readEncodedNoBuf(SseOper oper, ubigint pos, uchar* ret, bool 
                 std::exit(EXIT_FAILURE);
             }
         });
+
         return ret;
     } else {
         // if `pos` is covered by the buffer, read it from the buffer instead since the buffer may
@@ -396,10 +402,12 @@ void EncIndBase::writeEncodedNoBuf(
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufFromSseOper(oper);
+    assert(bufToUse != nullptr);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         // if `pos` is not covered by buffer, write directly to file; we can completely ignore
         // the buffer here as the buffer does not have an entry to update with this write
+        assert(this->file != nullptr);
         if (shouldFseek) {
             std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
         }
@@ -447,12 +455,14 @@ bool EncIndBase::readEntry(SseOper oper, ubigint pos, EncIndEntry& ret, bool sho
 
 
 void EncIndBase::fillBuf(Buf* buf, ubigint bufStartPos, bool isEncIndInit) const {
+    assert(buf != nullptr);
     this->flushBufIfNotFlushed(buf);
     buf->fill(bufStartPos, isEncIndInit);
 }
 
 
 void EncIndBase::flushBufIfNotFlushed(Buf* buf) const {
+    assert(buf != nullptr);
     buf->flushIfNotFlushed();
     this->isFlushed = false;
     // remember to then flush the fwrite buffer to the file too
@@ -461,5 +471,6 @@ void EncIndBase::flushBufIfNotFlushed(Buf* buf) const {
 
 
 bigint EncIndBase::posToBufIndex(Buf* buf, ubigint pos) const {
+    assert(buf != nullptr);
     return buf->posToBufIndex(pos);
 }

@@ -1,5 +1,6 @@
 #include "schemes/n_log_n/n_log_n_base.h"
 
+#include <cassert>
 #include <cmath>
 #include <concepts>
 #include <utility>
@@ -93,6 +94,7 @@ void NLogNBase<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
+    assert(this->getServer() != nullptr);
     std::vector<EncIndLoc*> encIndLvls = this->getServer()->getEncIndLvls();
 
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
@@ -188,6 +190,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
 
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::moveSetupStateToServer() {
+    assert(this->getServer() != nullptr);
     for (EncIndLoc* encIndLvl : this->encIndLvlsTmp) {
         encIndLvl->endSetup(this->setupOper);
     }

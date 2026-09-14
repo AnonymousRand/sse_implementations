@@ -1,5 +1,6 @@
 #include "schemes/pi_bas/pi_bas.h"
 
+#include <cassert>
 #include <concepts>
 #include <cstdlib>
 #include <iostream>
@@ -41,6 +42,7 @@ PiBas<DbTuple>::~PiBas() {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
+    assert(this->server != nullptr);
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -104,6 +106,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::clear() {
+    assert(this->server != nullptr);
     this->server->clear();
 
     // clears `this->size`
@@ -122,6 +125,7 @@ template <IsDbTuple DbTuple>
 std::vector<typename PiBas<DbTuple>::DbDoc> PiBas<DbTuple>::searchRaw(
     const Range<DbKw>& query
 ) const {
+    assert(this->server != nullptr);
     std::vector<DbDoc> results;
 
     // PRF(K_1, w)
@@ -145,6 +149,7 @@ std::vector<typename PiBas<DbTuple>::DbDoc> PiBas<DbTuple>::searchRaw(
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
+    assert(this->server != nullptr);
     EncIndRand* encInd = this->server->getEncInd();
 
     // don't use `this->size` as the bound here as that doesn't include padding while

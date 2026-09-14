@@ -1,6 +1,7 @@
 #include "utils/types/db/db.h"
 
 #include <algorithm>
+#include <cassert>
 #include <concepts>
 #include <cstdio>
 #include <cstdlib>
@@ -87,6 +88,7 @@ void DbDisk<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
+    assert(this->file != nulllptr);
     std::string dbTupleStr = dbTuple.toStr();
 
     // make sure every encoded tuple is stored into the same fixed-length size for easy lookups,
@@ -120,13 +122,8 @@ void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
 
 template <IsDbTuple DbTuple>
 DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
-    DEBUG_ONLY({
-        if (index >= this->size) {
-            std::cerr << "Error: DbDisk::operator []: index out of bounds "
-                      << "(index is " << index << ", size is " << this->size << ")" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    });
+    assert(this->file != nullptr);
+    assert(index < this->size);
 
     // make sure to flush if more writes have been done since the last manual flush
     this->flushIfNotFlushed();
@@ -185,6 +182,7 @@ template <IsDbTuple DbTuple>
 DbDisk<DbTuple> DbDisk<DbTuple>::applyAlgoViaIndices(
     const std::function<void(std::vector<bigint>& dbIndices)>& algoOnIndices
 ) const {
+    assert(this->file != nullptr);
     std::vector<bigint> dbIndices;
     dbIndices.reserve(this->size);
     for (bigint index = 0; index < this->size; index++) {

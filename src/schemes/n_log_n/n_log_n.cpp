@@ -1,5 +1,6 @@
 #include "schemes/n_log_n/n_log_n.h"
 
+#include <cassert>
 #include <cmath>
 #include <concepts>
 #include <cstdlib>
@@ -42,6 +43,7 @@ template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::clear() {
     // (this cannot be done in `NLogNBase::clear()` via `this->getServer()->clear()` as
     // `getServer()` is a pure virtual method and `NLogNBase::clear()` is called in destructor)
+    assert(this->server != nullptr);
     this->server->clear();
 
     NLogNBase<DbTuple>::clear();
@@ -56,6 +58,7 @@ template <IsDbTuple DbTuple>
 std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     const Range<DbKw>& query
 ) const {
+    assert(this->server != nullptr);
     std::vector<DbDoc> results {};
 
     // PRF(K_1, w)
@@ -66,7 +69,7 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     ustring labelDict;
     ubigint posDict = this->mapNoMod(queryToken, labelDict);
     EncIndVal encIndValDict;
-    bool isFoundDict = this->getServer()->getDbKwCount(posDict, labelDict, encIndValDict);
+    bool isFoundDict = this->server->getDbKwCount(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
         return results;
     }
@@ -84,7 +87,7 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResultTups = this->getServer()->searchEncIndForBckt(
+    std::vector<EncIndVal> encResultTups = this->server->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 
@@ -134,10 +137,11 @@ void NLogN<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& db
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::moveSetupStateToServer() {
+    assert(this->server != nullptr);
     NLogNBase<DbTuple>::moveSetupStateToServer();
 
     this->dbKwCountsDictTmp->endSetup(this->setupOper);
-    this->getServer()->setDbKwCountsDict(this->dbKwCountsDictTmp);
+    this->server->setDbKwCountsDict(this->dbKwCountsDictTmp);
     // don't `delete` this since server has the same copy, but still set it to `nullptr` to be safe
     this->dbKwCountsDictTmp = nullptr;
 }

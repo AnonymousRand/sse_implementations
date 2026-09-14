@@ -1,6 +1,7 @@
 #include "utils/types/db/db_ram.h"
 
 #include <algorithm>
+#include <cassert>
 #include <concepts>
 #include <functional>
 #include <initializer_list>
@@ -62,6 +63,7 @@ void DbRam<DbTuple>::append(const DbTuple& dbTuple) {
 
 template <IsDbTuple DbTuple>
 DbTuple DbRam<DbTuple>::operator [](bigint index) const {
+    assert(index < this->size);
     return this->vec[index];
 }
 

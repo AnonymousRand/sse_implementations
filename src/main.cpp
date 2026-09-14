@@ -314,7 +314,7 @@ int main() {
 
     if (config::SHOULD_BENCHMARK_UPDTS) {
         // set a bound to prevent this experiment from taking too long and outputting too much text
-        int dbSizeExp = std::min(maxDbSizeExpSmall, 14);
+        int dbSizeExp = std::min(maxDbSizeExpSmall, 13);
         Db<> db;
         app::createDb(db, std::pow(2, dbSizeExp), true, true);
         app::experiments::UpdateVsDbSize updateVsDbSize(db);

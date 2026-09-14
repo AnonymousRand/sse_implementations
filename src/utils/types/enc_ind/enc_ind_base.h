@@ -114,7 +114,7 @@ public:
      * upon starting the new oper, which would then impact benchmarking (e.g. flushing
      * a huge setup buffer at the start of a search.)
      */
-    void endSetup(SseOper oper);
+    void endSetup(SseOper setupOper);
 
     bigint getCapacity() const { return this->capacity; }
     bigint getBytes() const { return this->capacity * this->ENTRY_LEN(); }

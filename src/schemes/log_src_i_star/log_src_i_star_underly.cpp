@@ -1,5 +1,6 @@
 #include "schemes/log_src_i_star/log_src_i_star_underly.h"
 
+#include <cassert>
 #include <cmath>
 #include <concepts>
 #include <utility>
@@ -60,6 +61,7 @@ template <IsDbTuple DbTuple>
 std::vector<typename Underly<DbTuple>::DbDoc> Underly<DbTuple>::searchRaw(
     const Range<DbKw>& query
 ) const {
+    assert(this->server != nullptr);
     std::vector<DbDoc> results;
 
     // PRF(K_1, w)
@@ -79,7 +81,7 @@ std::vector<typename Underly<DbTuple>::DbDoc> Underly<DbTuple>::searchRaw(
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResultTups = this->getServer()->searchEncIndForBckt(
+    std::vector<EncIndVal> encResultTups = this->server->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 

@@ -72,11 +72,13 @@ EncIndBase::Buf::Buf(const Buf& other) :
 
 
 uchar* EncIndBase::Buf::read(bigint index) const {
+    assert(index < this->ENTRY_CAPACITY);
     return this->data + (index * this->entryLen);
 }
 
 
 void EncIndBase::Buf::write(bigint index, const uchar* entry) {
+    assert(index < this->ENTRY_CAPACITY);
     std::memcpy(this->data + (index * this->entryLen), entry, this->entryLen);
     this->isFlushed = false;
 }
@@ -86,6 +88,7 @@ template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, En
 void EncIndBase::Buf::operOnFileBase(
     SelfType* self, const std::function<bigint(uchar*, bigint)>& oper, ubigint startPos
 ) {
+    assert(startPos < self->encIndCapacity);
     // we need to allow this, e.g. for when SSE schemes are set up with an empty DB
     if (self->ENTRY_CAPACITY <= 0) {
         return;

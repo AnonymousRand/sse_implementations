@@ -1,5 +1,6 @@
 #include "utils/types/i_disk_storage.h"
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
@@ -181,6 +182,7 @@ std::string IDiskStorage::genFilename() const {
 
 
 void IDiskStorage::flushIfNotFlushed() const {
+    assert(this->file != nullptr);
     if (!this->isFlushed) {
         std::fflush(this->file);
         this->isFlushed = true;
