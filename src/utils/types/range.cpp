@@ -21,7 +21,7 @@ const std::regex Range<T>::REGEX(REGEX_STR);
 
 template <std::integral T>
 T Range<T>::size() const {
-    // (`+ 1` as both ends are inclusive)
+    // `+ 1` as both ends are inclusive
     return this->end - this->start + 1;
 }
 

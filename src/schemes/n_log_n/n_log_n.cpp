@@ -41,8 +41,8 @@ NLogN<DbTuple>::~NLogN() {
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::clear() {
-    // (note: this cannot be done in `NLogNBase::clear()` via `this->getServer()->clear()`
-    // as `getServer()` is a pure virtual method and `NLogNBase::clear()` is called in destructor)
+    // (this cannot be done in `NLogNBase::clear()` via `this->getServer()->clear()` as
+    // `getServer()` is a pure virtual method and `NLogNBase::clear()` is called in destructor)
     this->server->clear();
 
     NLogNBase<DbTuple>::clear();

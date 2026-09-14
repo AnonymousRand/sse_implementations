@@ -126,9 +126,7 @@ ustring encrypt(
     int ctextLen1, ctextLen2;
     ustring ctext;
     ctext.resize(ptext.length() + BLOCK_SIZE); // need to allocate worst-case size first
-    if (EVP_EncryptUpdate(ctx, ctext.data(), &ctextLen1, ptext.data(), ptext.length())
-        != 1)
-    {
+    if (EVP_EncryptUpdate(ctx, ctext.data(), &ctextLen1, ptext.data(), ptext.length()) != 1) {
         handleErrors();
     }
 
@@ -181,9 +179,7 @@ ustring decrypt(
     int ptextLen1, ptextLen2;
     ustring ptext;
     ptext.resize(ctext.length());
-    if (EVP_DecryptUpdate(ctx, ptext.data(), &ptextLen1, ctext.data(), ctext.length())
-        != 1)
-    {
+    if (EVP_DecryptUpdate(ctx, ptext.data(), &ptextLen1, ctext.data(), ctext.length()) != 1) {
         handleErrors();
     }
 

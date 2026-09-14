@@ -19,19 +19,47 @@
 template <std::integral T>
 class TdagNode {
 public:
-    /**
-     * construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up up to and
-     * including the given max leaf value, with consecutive size 1 ranges as leaves.
-     */
-    TdagNode(const Range<T>& leafRange);
-    TdagNode(T leafRangeStart, T leafRangeEnd);
+    //--------------------------------------------------------------------------
+    // constructors/destructors
+
+    // default constructor needed for `init()`
+    TdagNode() = default;
 
     ~TdagNode();
 
+    //--------------------------------------------------------------------------
+    // rule of five
+
+    // delete all these to prevent copying and moving! as they would then require annoying
+    // management of all the recursive pointer members
+    // this means TDAGs can only be instantiated as pointers!
+    
+    // copy constructor
+    TdagNode(const TdagNode& other) = delete;
+
+    // copy assignment operator
+    TdagNode& operator =(const TdagNode& other) = delete;
+
+    // move constructor
+    TdagNode(TdagNode&& other) noexcept = delete;
+
+    // move assignment operator
+    TdagNode& operator =(TdagNode&& other) noexcept = delete;
+
+    //--------------------------------------------------------------------------
+    // interface
+
+    /**
+     * construct a `TdagNode` (full binary tree + intermediate nodes) bottom-up with the
+     * given range as the range of leaf nodes.
+     */
+    static TdagNode* create(const Range<T>& leafRange);
+
     /**
      * find the single range cover of the leaves containing `range`.
-     * if `range` not found in `this`, return `nullptr`.
+     * if `range` is not found in `this`, return `nullptr`.
      */
+    // (`targetRange` is supposed to be pass by value since it may be locally modified)
     Range<T> findSrc(Range<T> targetRange) const;
 
     /**

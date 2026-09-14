@@ -12,7 +12,7 @@ using uchar   = unsigned char;
 using ustring = std::basic_string<uchar>;
 
 
-// (this is not named `utils::ustring` to avoid naming conflicts with the `ustring` alias above)
+// this is not named `utils::ustring` to avoid naming conflicts with the `ustring` alias above
 namespace utils::ustr {
 
 

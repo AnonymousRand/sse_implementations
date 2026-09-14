@@ -28,7 +28,7 @@ void buildTdagDbFromLeaves(
     }
 
     // construct TDAG
-    tdag = new TdagNode<DbKw>(dbKwBounds);
+    tdag = TdagNode<DbKw>::create(dbKwBounds);
     
     // replicate every (leaf) DB tuple to all TDAG nodes that cover it
     replTdagDb<DbTuple>(db, tdag);

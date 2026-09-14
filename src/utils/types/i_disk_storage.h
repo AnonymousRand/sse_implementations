@@ -10,10 +10,10 @@ public:
     // constructors/destructors
 
     // default constructor forced so that children can use a default constructor too
-    // (IMPORTANT: children should call `IDiskStorage::init()` to properly initialize members,
+    // IMPORTANT: children should call `IDiskStorage::init()` to properly initialize members,
     // whether it's in its own constructor or `init()` function. the `IDiskStorage` constructors
     // cannot perform the logic in `init()` automatically as it calls pure virtual functions,
-    // which cannot be done in the base class constructors.)
+    // which cannot be done in the base class constructors
     IDiskStorage() = default;
 
     ~IDiskStorage();
@@ -28,8 +28,8 @@ protected:
 
 public:
     // copy constructor
-    // (deleted as children MUST call `IDiskStorage::copy()` in their copy constructors instead,
-    // for the same reason as `init()`)
+    // deleted as children MUST call `IDiskStorage::copy()` in their copy constructors instead,
+    // for the same reason as `init()` above
     IDiskStorage(const IDiskStorage& other) = delete;
 
     // copy assignment operator
@@ -56,7 +56,7 @@ public:
 protected:
     FILE* file = nullptr;
     std::string filename = "";
-    // (`mutable` allows this to be modified in `const` contexts still, which we do need for reads)
+    // `mutable` allows this to be modified in `const` contexts, which we need to keep reads `const`
     mutable bool isFlushed = true;
 
     virtual constexpr std::string FILE_DIR() const = 0;

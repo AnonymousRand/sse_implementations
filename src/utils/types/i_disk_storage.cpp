@@ -59,7 +59,7 @@ void IDiskStorage::copyFrom(const IDiskStorage& other) {
     }
 
     // open the file we just copied
-    // (we use `a` instead of `w` mode here to not overwrite the file we just copied)
+    // we use `a` instead of `w` mode here to not overwrite the file we just copied
     this->file = std::fopen(this->filename.c_str(), "ab+");
     DEBUG_ONLY({
         if (this->file == nullptr) {

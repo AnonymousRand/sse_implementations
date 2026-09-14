@@ -222,7 +222,7 @@ std::pair<ubigint, ubigint> NLogNBase<DbTuple>::map(
 ) const {
     // l <- Hash(PRF(K_1, w))
     ubigint pos = this->mapNoMod(queryToken, retLabel);
-    // (note bottommost level is level 0)
+    // (bottommost level is level 0)
     ubigint lvl = std::log2(dbKwPaddedCount);
     pos %= (ubigint)this->calcBcktCountOnLvl(lvl);
     return std::pair {lvl, pos};

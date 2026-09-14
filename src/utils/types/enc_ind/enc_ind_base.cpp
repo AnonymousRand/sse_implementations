@@ -118,7 +118,7 @@ void EncIndBase::init(bigint capacity) {
     IDiskStorage::init();
 
     // also initialize `this->NULL_ENTRY` to a contiguous block of zero bits, which we do here
-    // instead of in the constructor since `this->ENTRY_LEN()()` relies on virtual methods
+    // instead of in the constructor since `this->ENTRY_LEN()` relies on virtual methods
     // (technically it is possible that an encrypted tuple happens to be all '0' bytes and thus gets
     // mistaken for a null kv pair, but currently `this->ENTRY_LEN()` is >1000 bits so there's
     // a 2^{>1000} chance of this happening...and USENIX'24's implementation just does this too)

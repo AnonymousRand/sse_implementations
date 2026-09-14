@@ -20,6 +20,10 @@
 //==============================================================================
 
 
+//------------------------------------------------------------------------------
+// constructors/destructors
+
+
 template <std::integral T>
 TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
     range(Range<T> {left->range.start, right->range.end}),
@@ -27,18 +31,53 @@ TdagNode<T>::TdagNode(TdagNode<T>* left, TdagNode<T>* right) :
 
 
 template <std::integral T>
-TdagNode<T>::TdagNode(const Range<T>& leafRange) {
-    if (leafRange.size() < 1) {
+TdagNode<T>::~TdagNode() {
+    // prevent infinite `delete` recursion where extra parents go back to their children
+    // which go back to their extra parents and so on
+    if (this->isExtraParent) {
         return;
+    }
+    if (this->left != nullptr) {
+        delete this->left;
+        this->left = nullptr;
+    }
+    if (this->right != nullptr) {
+        delete this->right;
+        this->right = nullptr;
+    }
+    if (this->extraParent != nullptr) {
+        // prevent double frees (since two nodes have the same `extraParent`) by
+        // setting the other such node's `extraParent` to nullptr, indicating it
+        // has been (or is about to be, I guess) freed
+        if (this == this->extraParent->left) {
+            this->extraParent->right->extraParent = nullptr;
+        } else if (this == this->extraParent->right) {
+            this->extraParent->left->extraParent = nullptr;
+        }
+        delete this->extraParent;
+        this->extraParent = nullptr;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// interface/helpers
+
+
+template <std::integral T>
+TdagNode<T>* TdagNode<T>::create(const Range<T>& leafRange) {
+    if (leafRange.size() < 1) {
+        return new TdagNode<T>();
     }
 
     // if leaf node
     if (leafRange.size() == 1) {
-        this->range = leafRange;
-        this->left = nullptr;
-        this->right = nullptr;
-        this->extraParent = nullptr;
-        return;
+        TdagNode<T>* tdag = new TdagNode<T>();
+        tdag->range = leafRange;
+        tdag->left = nullptr;
+        tdag->right = nullptr;
+        tdag->extraParent = nullptr;
+        return tdag;
     }
 
     std::vector<Range<T>> leafs;
@@ -48,11 +87,11 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
     }
 
     // array to hold nodes while building; initialize with leaves
-    // (`deque` seems to perform marginally better than `list` or `vector`, and it
-    // seems to be the most natural choice here)
+    // (`deque` seems to perform marginally better than `list` or `vector`, and it seems
+    // to be the most natural choice here)
     std::deque<TdagNode<T>*> l;
     for (const Range<T>& leaf : leafs) {
-        l.push_back(new TdagNode<T>(leaf));
+        l.push_back(TdagNode<T>::create(leaf));
     }
 
     // build full binary tree from leaves (this is my own algorithm i have no idea how good it is)
@@ -119,42 +158,7 @@ TdagNode<T>::TdagNode(const Range<T>& leafRange) {
         nodes.push_back(extraParent);
     }
 
-    *this = *tdag;
-}
-
-
-template <std::integral T>
-TdagNode<T>::TdagNode(T leafRangeStart, T leafRangeEnd) :
-    TdagNode<T>(Range {leafRangeStart, leafRangeEnd}) {}
-
-
-template <std::integral T>
-TdagNode<T>::~TdagNode() {
-    // prevent infinite `delete` recursion where extra parents go back to their children
-    // which go back to their extra parents and so on
-    if (this->isExtraParent) {
-        return;
-    }
-    if (this->left != nullptr) {
-        delete this->left;
-        this->left = nullptr;
-    }
-    if (this->right != nullptr) {
-        delete this->right;
-        this->right = nullptr;
-    }
-    if (this->extraParent != nullptr) {
-        // prevent double frees (since two nodes have the same `extraParent`) by
-        // setting the other such node's `extraParent` to nullptr, indicating it
-        // has been (or is about to be, I guess) freed
-        if (this == this->extraParent->left) {
-            this->extraParent->right->extraParent = nullptr;
-        } else if (this == this->extraParent->right) {
-            this->extraParent->left->extraParent = nullptr;
-        }
-        delete this->extraParent;
-        this->extraParent = nullptr;
-    }
+    return tdag;
 }
 
 
