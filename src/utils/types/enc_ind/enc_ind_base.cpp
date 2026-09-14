@@ -191,10 +191,8 @@ bool EncIndBase::read(Oper oper, ubigint pos, EncIndVal& ret, bool shouldFseek) 
 
 
 bool EncIndBase::find(Oper oper, ubigint& pos, const ustring& key, EncIndVal& ret) const {
-    std::cout << "+++++ finding " << utils::debug::ustrToHex(key, 12) << " at pos " << pos % this->capacity << std::endl;
     bool isFound = this->advanceUntilMatch(oper, pos, key.c_str(), this->KEY_LEN());
     if (!isFound) {
-        std::cout << "not found!!" << std::endl;
         return false;
     }
 
@@ -225,7 +223,6 @@ void EncIndBase::write(Oper oper, ubigint pos, const EncIndEntry& encIndEntry, b
 
 
 void EncIndBase::writeToFirstEmpty(Oper oper, ubigint& pos, const EncIndEntry& encIndEntry) {
-    std::cout << "----- writing " << utils::debug::ustrToHex(encIndEntry.toUstr(), 12) << " to pos " << pos << std::endl;
     bool isEmptyAvailable = this->advanceUntilMatch(oper, pos, this->NULL_ENTRY, this->ENTRY_LEN());
     // if we've scoured the whole index and still haven't found an available space,
     // throw an error: we are trying to write to a full index
@@ -279,10 +276,8 @@ bool EncIndBase::advanceUntilMatch(
     uchar currEntry[this->ENTRY_LEN()];
     this->readEncodedNoBuf(oper, pos, currEntry, true);
     if (std::memcmp(currEntry, match, matchLen) == 0) {
-        std::cout << "success, pos is " << pos << " and currEntry is " << utils::debug::ustrToHex(currEntry, 16) << std::endl;
         return true;
     }
-    //std::cout << "not first success" << std::endl;
 
     // if we do need to iterate forward, then fill the buffer if needed and read from it
     // importantly, if we are skipping entries (i.e. `this->getBcktSize() > 1`), then we don't
@@ -292,10 +287,8 @@ bool EncIndBase::advanceUntilMatch(
     uchar* currEntryPtr;
     bigint positionsChecked = 0;
     do {
-        std::cout << "checking: addr " << (void*)currEntryPtr << " and value " << utils::debug::ustrToHex(currEntryPtr, 12) << std::endl;
         positionsChecked++;
         if (positionsChecked == this->getBcktCount()) {
-            std::cout << "failed" << std::endl;
             return false;
         }
 
@@ -313,7 +306,6 @@ bool EncIndBase::advanceUntilMatch(
         }
     } while (std::memcmp(currEntryPtr, match, matchLen) != 0);
 
-    std::cout << "success 2 at " << (void*)currEntryPtr << ", pos is " << pos << std::endl;
     return true;
 }
 
