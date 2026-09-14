@@ -102,7 +102,9 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
         // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
         for (bigint pos = 0; pos < encIndLvl->getCapacity(); pos++) {
             EncIndVal encIndVal;
-            bool isValidVal = encIndLvl->read(EncIndBase::Oper::SETUP, pos, encIndVal);
+            // only `fseek()` to read on the first read, since after that the reads themselves
+            // should advance the file pointer to the right location for the next one
+            bool isValidVal = encIndLvl->read(EncIndBase::Oper::SETUP, pos, encIndVal, pos == 0);
             if (!isValidVal) {
                 continue;
             }
@@ -168,14 +170,17 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
             // if first write to this bucket, get the first bucket start pos at or after
             // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
             this->encIndLvlsTmp[lvl]->writeToFirstEmpty(
-                startPos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
+                EncIndBase::Oper::SETUP, startPos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
             );
         } else {
             // after first write, just write consecutively as we are now guaranteed that
             // there is a full bucket of contiguous space here
+            //
+            // we also stop `fseek()`ing at every write since the write itself should
+            // advance the file pointer to the right location for the next one
             this->encIndLvlsTmp[lvl]->write(
                 EncIndBase::Oper::SETUP,
-                startPos + dbKwCounter, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
+                startPos + dbKwCounter, EncIndEntry {label, EncIndVal {encDbTuple, iv}}, false
             );
         }
     }

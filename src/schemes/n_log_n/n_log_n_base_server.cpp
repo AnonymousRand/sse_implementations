@@ -95,14 +95,19 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
         if (dbKwCounter == 0) {
             // if first read, get the right bucket start pos (e.g. in case of modulo
             // collision in encrypted index)
-            // (note: dummies must also use the correct (not dummy) `label` so they
+            // (NOTE: dummies must also use the correct (not dummy) `label` so they
             // are still found by `find()`)
-            isFound = this->encIndLvls[lvl]->find(startPos, label, encIndVal);
+            isFound = this->encIndLvls[lvl]->find(
+                EncIndBase::Oper::SEARCH, startPos, label, encIndVal
+            );
         } else {
             // after first read, just read from the bucket consecutively as we are
             // now guaranteed that the full bucket is stored here contiguously
+            // 
+            // we also stop `fseek()`ing at every read since the read itself should advance
+            // the file pointer to the right location for the next one
             isFound = this->encIndLvls[lvl]->read(
-                EncIndBase::Oper::SEARCH, startPos + dbKwCounter, encIndVal
+                EncIndBase::Oper::SEARCH, startPos + dbKwCounter, encIndVal, false
             );
         }
         if (!isFound) {

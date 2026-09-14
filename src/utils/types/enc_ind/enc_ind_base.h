@@ -1,8 +1,6 @@
 #pragma once
 
-#include <concepts>
 #include <cstdlib>
-#include <functional>
 #include <iostream>
 #include <string>
 
@@ -65,8 +63,12 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    // forward declaration
-    enum class Oper;
+    // public-facing interface methods should use `Oper` as parameters to hide the
+    // `Buf*` members, while internal ones can use `Buf*` (hence why `Oper` is `public`)
+    enum class Oper {
+        SETUP,
+        SEARCH
+    };
 
     virtual void init(bigint capacity);
     void clear() override;
@@ -78,7 +80,7 @@ public:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool read(Oper oper, ubigint pos, EncIndVal& ret) const;
+    bool read(Oper oper, ubigint pos, EncIndVal& ret, bool shouldFseek = true) const;
 
     /**
      * try to find `key` starting at `pos`, iterating forward from `pos` if the key
@@ -97,7 +99,7 @@ public:
      * write to `pos` (but does not check if there is already something there, e.g. from
      * `pos % this->capacity`, and will overwrite it!).
      */
-    void write(Oper oper, ubigint pos, const EncIndEntry& encIndEntry);
+    void write(Oper oper, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek = true);
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos` until
@@ -117,6 +119,9 @@ public:
 protected:
     uchar* NULL_ENTRY = nullptr;
     bigint capacity = 0;
+
+    virtual const bool SHOULD_BUFFER_READ(Oper oper) const = 0;
+    virtual const bool SHOULD_BUFFER_WRITE(Oper oper) const = 0;
 
     virtual bigint getBcktSize() const = 0;
     virtual bigint getBcktCount() const = 0;
@@ -159,12 +164,13 @@ protected:
      *
      * IMPORTANT: these should still guarantee that if the requested entry is in the buffer, the
      * read/write still happens in the buffer instead of in the file, as the buffer must hold the
-     * more up-to-date version of the entries it contains.
+     * more up-to-date version of the entries it contains. this should ensure that it is ALWAYS
+     * correct to read from the buffer.
      */
-    void readEncodedOptionalBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek = true) const;
-    void writeEncodedOptionalBuf(
+    void readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek = true) const;
+    void writeEncodedNoBuf(
         Oper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek = true
-    ) const;
+    );
 
     /**
      * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
@@ -173,104 +179,14 @@ protected:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool readEntry(Oper oper, ubigint pos, EncIndEntry& ret) const;
+    bool readEntry(Oper oper, ubigint pos, EncIndEntry& ret, bool shouldFseek = true) const;
 
+    //--------------------------------------------------------------------------
+    // buffer
 
-//==============================================================================
-// `EncIndBase::Buf`
-//==============================================================================
+    // forward declare; `Buf` is a nested class declared in another file
+    struct Buf;
 
-
-    struct Buf {
-    public:
-        // mainly for debugging/assertions
-        friend class EncIndBase;
-
-        static const bigint NOT_IN_BUF;
-
-        //----------------------------------------------------------------------
-        // constructors/destructors
-
-        Buf(
-            bigint ENTRY_CAPACITY,
-            FILE* file, const std::string& filename, bigint encIndCapacity, bigint entryLen
-        );
-
-        ~Buf();
-
-        //----------------------------------------------------------------------
-        // rule of five
-
-        // all but copy constructor deleted since copy constructor should be the only one we need
-
-        // copy constructor
-        Buf(const Buf& other);
-
-        // copy assignment operator
-        Buf& operator =(const Buf& other) = delete;
-
-        // move constructor
-        Buf(Buf&& other) noexcept = delete;
-
-        // move assignment operator
-        Buf& operator =(Buf&& other) noexcept = delete;
-
-        //----------------------------------------------------------------------
-        // interface
-
-        /**
-         * returns: a pointer to the start of the *buffer* location where the entry is.
-         * IMPORTANT: this points to the same memory as the buffer data does (i.e. no `memcpy()`s),
-         * so do NOT allocate any new memory to hold it or free the returned value in the caller!!
-         */
-        uchar* read(bigint index) const;
-
-        /**
-         * note: this *does* `memcpy()` the data from `entry` into the buffer.
-         */
-        void write(bigint index, const uchar* entry);
-
-        void fill(ubigint startPos, bool allowIncompleteFill = false);
-        void flushIfNotFlushed() const;
-
-        bigint posToBufIndex(ubigint pos) const;
-
-    private:
-        const bigint ENTRY_CAPACITY;
-        uchar* data = nullptr;
-        ubigint startPos = 0;
-        ubigint endPos = 0;
-        bool isFilled = false;
-        mutable bool isFlushed = true;
-
-        // members shared with its parent enc ind (do not free these in `Buf`!!)
-        FILE* file;
-        const std::string& filename;
-        const bigint encIndCapacity;
-        const bigint entryLen;
-
-        /**
-         * helper for sharing code between `fill()` and `flush()`. (the template and the `static`
-         * are needed for this to be usable in both the non-const `fill()` and the const `flush()`.)
-         *
-         * params:
-         *     - `isRead`: set to `true` for reads and `false` for writes.
-         */
-        template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, Buf>
-        static void operOnFileBase(
-            SelfType* self, const std::function<bigint(uchar*, bigint)>& oper, ubigint startPos
-        );
-    };
-
-public:
-    // public-facing interface methods should use `Oper` as parameters to hide the
-    // `Buf*` members, while internal ones can use `Buf*` (hence why `Oper` is `public`)
-    enum class Oper {
-        SETUP,
-        SEARCH
-    };
-
-protected:
     mutable Buf* setupBuf = nullptr;
     mutable Buf* searchBuf = nullptr;
 
@@ -288,9 +204,6 @@ protected:
             std::exit(EXIT_FAILURE);
         }
     }
-
-    //--------------------------------------------------------------------------
-    // `EncIndBase` helpers
 
     void fillBuf(Buf* buf, ubigint bufStartPos, bool isEncIndInit = false) const;
     void flushBufIfNotFlushed(Buf* buf) const;

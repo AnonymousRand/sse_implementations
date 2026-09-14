@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdlib>
+#include <iostream>
+
 #include "utils/types/basic_types.h"
 #include "utils/types/enc_ind/enc_ind_base.h"
 
@@ -39,6 +42,20 @@ private:
 
     //--------------------------------------------------------------------------
     // `EncIndBase`
+
+    const bool SHOULD_BUFFER_READ(Oper oper) const override {
+        switch (oper) {
+        case Oper::SETUP:
+            return true;
+        case Oper::SEARCH:
+            return this->bcktSize == 1;
+        default:
+            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_READ(): mama wee zoo" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    }
+
+    const bool SHOULD_BUFFER_WRITE(Oper oper) const override { return true; }
 
     bigint getBcktSize() const override { return this->bcktSize; }
     bigint getBcktCount() const override { return this->bcktCount; }

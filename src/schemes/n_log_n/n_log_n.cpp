@@ -15,6 +15,7 @@
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
+#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_rand.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/ind.h"
@@ -124,7 +125,7 @@ void NLogN<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& db
     );
     ubigint pos = this->mapNoMod(queryToken, label);
     this->dbKwCountsDictTmp->writeToFirstEmpty(
-        pos, EncIndEntry {label, EncIndVal {encDbKwCount, iv}}
+        EncIndBase::Oper::SETUP, pos, EncIndEntry {label, EncIndVal {encDbKwCount, iv}}
     );
 
     // do the rest from `NLogNBase` (we have to `std::move()` *after* we are done using `dbKwList`)

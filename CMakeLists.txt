@@ -38,6 +38,7 @@ add_executable(main
     src/utils/types/db/i_db.cpp
 
     src/utils/types/enc_ind/enc_ind_base.cpp
+    src/utils/types/enc_ind/enc_ind_base_buf.cpp
     src/utils/types/enc_ind/enc_ind_loc.cpp
     src/utils/types/enc_ind/enc_ind_types.cpp
 
