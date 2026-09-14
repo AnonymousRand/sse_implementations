@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 
-#include "app/db_factory.h"
 #include "app/experiments/i_experiment.h"
 
 #include "schemes/interfaces/i_sse.h"
@@ -22,20 +21,15 @@ namespace app::experiments {
 
 class Debugging : public IExperiment<ISse<>> {
 public:
-    Debugging(int dbSizeExp) : dbSizeExp(dbSizeExp) {
-        // CONFIG; adjust at will!
-
-        // DB and query declared as member variables so that they don't change between
-        // calls to `run()`, for different SSE schemes
-        createDb(this->db, std::pow(2, this->dbSizeExp), true, true);
-        this->query = Range<Kw> {3, 5};
-    }
+    // pass `db` by reference so that it does not create an expensive copy in memory,
+    // while keeping the caller's ownership of it
+    Debugging(Db<>& db, Range<Kw> query) : db(db), query(query) {}
 
     void printHeader() const override {
         std::cout << std::endl;
         std::cout << "================================== Debugging ==================================="
                   << std::endl;
-        std::cout << "Fixed DB size 2^" << this->dbSizeExp << std::endl;
+        std::cout << "Fixed DB of size 2^" << std::ceil(std::log2(this->db.getSize())) << std::endl;
         std::cout << "Query " << this->query << std::endl;
         std::cout << "================================================================================"
                   << std::endl;
@@ -76,8 +70,7 @@ public:
     }
 
 private:
-    int dbSizeExp;
-    Db<> db;
+    Db<>& db;
     Range<Kw> query;
 };
 

@@ -42,10 +42,10 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
  * the capacity in # of entries for the (non-locality) encrypted index read buffers
  * (which help speed up massive `setup()` etc. calls). Set to `0` to not buffer.
  *
- * (currently, an enc ind entry is 128 bytes (48 tuple + 16 iv + 64 label/hash); 2^26 => ~8.5 GB.)
+ * (currently, an enc ind entry is 128 bytes: 48 tuple + 16 iv + 64 label/hash.)
  */
-// tmp: 2^14 means sda[log-src-i[pibas]] should overflow it at >= 2^10
-inline constexpr bigint ENC_IND_SETUP_BUF_CAPACITY = std::pow(2, 14);
+// 2^26 => ~8.5 GB, and it accommodates Log-SRC-i[PiBas] up to 2^19 and Log-SRC-i[NLogN] up to 2^15
+inline constexpr bigint ENC_IND_SETUP_BUF_CAPACITY = std::pow(2, 26);
 inline constexpr bigint ENC_IND_SEARCH_BUF_CAPACITY = std::pow(2, 8);
 static_assert(
     ENC_IND_SETUP_BUF_CAPACITY > 0,
