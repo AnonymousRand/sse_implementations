@@ -1,5 +1,6 @@
 #include "utils/misc.h"
 
+#include <cassert>
 #include <cmath>
 #include <concepts>
 #include <string>
@@ -71,7 +72,12 @@ void unpadStr(std::basic_string<CharType>& str) {
 
 
 bigint roundUpToPowOf2(bigint n) {
-    return std::pow(2, std::ceil(std::log2(n)));
+    assert(n >= 0);
+    if (n != 0) {
+        return std::pow(2, std::ceil(std::log2(n)));
+    } else {
+        return 0;
+    }
 }
 
 

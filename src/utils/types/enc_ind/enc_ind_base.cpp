@@ -152,6 +152,10 @@ void EncIndBase::init(SseOper setupOper, bigint capacity) {
     bigint searchBufEntryCapacity = utils::misc::roundUpToPowOf2(this->capacity / 512);
     searchBufEntryCapacity = std::min(searchBufEntryCapacity, config::ENC_IND_SEARCH_BUF_MAX_CAPAC);
     searchBufEntryCapacity = std::min(searchBufEntryCapacity, this->capacity);
+    if (this->capacity > 0) {
+        // (buffer must have nonzero size (which is possible due to the `/ 512`) to avoid errors)
+        searchBufEntryCapacity = std::max(searchBufEntryCapacity, (bigint)1);
+    }
     this->searchBuf = new Buf(
         searchBufEntryCapacity, this->file, this->filename, this->capacity, this->ENTRY_LEN()
     );

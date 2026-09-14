@@ -72,13 +72,13 @@ EncIndBase::Buf::Buf(const Buf& other) :
 
 
 uchar* EncIndBase::Buf::read(bigint index) const {
-    assert(index < this->ENTRY_CAPACITY);
+    assert(index < this->ENTRY_CAPACITY || this->ENTRY_CAPACITY == 0);
     return this->data + (index * this->entryLen);
 }
 
 
 void EncIndBase::Buf::write(bigint index, const uchar* entry) {
-    assert(index < this->ENTRY_CAPACITY);
+    assert(index < this->ENTRY_CAPACITY || this->ENTRY_CAPACITY == 0);
     std::memcpy(this->data + (index * this->entryLen), entry, this->entryLen);
     this->isFlushed = false;
 }
