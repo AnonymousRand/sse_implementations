@@ -61,12 +61,11 @@ int main() {
     //--------------------------------------------------------------------------
     // debugging experiment
 
-    /*
     {
         // DB and query declared here so they don't change between calls to `run()` for different
         // SSE schemes (also why DB is always small since we need the same DB for each scheme)
         Db<> db;
-        app::createDb(db, std::pow(2, dbSizeExpSmall), true, true);
+        app::createDb(db, std::pow(2, maxDbSizeExpSmall), true, true);
         Range<Kw> query {3, 5};
         app::experiments::Debugging debugging(db, query);
         debugging.printHeader();
@@ -119,7 +118,6 @@ int main() {
 
     //--------------------------------------------------------------------------
     // all vs. DB size experiment
-    */
 
     {
         bigint targetResultSize = 100;
@@ -127,7 +125,6 @@ int main() {
         app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExpSmall, targetResultSize);
         allVsDbSize.printHeader();
 
-        /*
         std::cout << "================ PiBas =================" << std::endl << std::endl;
         allVsDbSize.run(piBas.get());
 
@@ -160,16 +157,13 @@ int main() {
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
         allVsDbSizeSmall.run(sdaLogSrcNLogN.get());
-        */
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         allVsDbSize.run(sdaLogSrcIPiBas.get());
-
         
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
         allVsDbSizeSmall.run(sdaLogSrcINLogN.get());
 
-        /*
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
         allVsDbSize.run(sdaLogSrcIStar.get());
     }
@@ -336,13 +330,13 @@ int main() {
         updateVsDbSize.run(sdaLogSrcPiBas.get());
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        updateVsDbSizeSmall.run(sdaLogSrcNLogN.get());
+        updateVsDbSize.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         updateVsDbSize.run(sdaLogSrcIPiBas.get());
 
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        updateVsDbSizeSmall.run(sdaLogSrcINLogN.get());
+        updateVsDbSize.run(sdaLogSrcINLogN.get());
 
         // (note that this has horrendous performance as randomized keywords lets
         // individual SDa subindexes have HUGE TDAG 1s. for the same reason this is not secure)
@@ -351,6 +345,5 @@ int main() {
 
         // free memory ASAP
         db.clear();
-    */
     }
 }

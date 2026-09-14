@@ -186,7 +186,7 @@ bool EncIndBase::read(BufType bufType, ubigint pos, EncIndVal& ret) const {
 
 bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
     // this method *should* only be called during searches
-    BufType bufType = BufType::SEARCH;
+    const BufType bufType = BufType::SEARCH;
 
     bool isFound = this->advanceUntilMatch(bufType, pos, key.c_str(), this->KEY_LEN());
     if (!isFound) {
@@ -217,7 +217,7 @@ void EncIndBase::write(BufType bufType, ubigint pos, const EncIndEntry& encIndEn
 
 void EncIndBase::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry) {
     // this method *should* only be called during setups
-    BufType bufType = BufType::SETUP;
+    const BufType bufType = BufType::SETUP;
 
     bool isEmptyAvailable = this->advanceUntilMatch(
         bufType, pos, this->NULL_ENTRY, this->ENTRY_LEN()
@@ -259,21 +259,28 @@ bool EncIndBase::advanceUntilMatch(
     pos %= this->capacity;
 
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
-    // iterate forward one position at a time to search for it
+    // iterate forward one bucket (i.e. `this->getBcktSize()`) at a time to search for it
 
     // for the first read, we read directly from the file, so that if it turns out we don't need to
     // iterate forward, we skip filling the buffer. this is especially good when buffer is big but
     // enc ind is even bigger, as this avoids large amounts of filling and flushing the buffer at
     // different positions and never using it in between when the enc ind is still mostly empty
-    uchar firstEntry[this->ENTRY_LEN()];
-    this->readEncodedNoBuf(pos, firstEntry);
-    if (std::memcmp(firstEntry, match, matchLen) == 0) {
+    uchar currEntry[this->ENTRY_LEN()];
+    this->readEncodedNoBuf(pos, currEntry, true);
+    if (std::memcmp(currEntry, match, matchLen) == 0) {
         return true;
     }
 
     // if we do need to iterate forward, then fill the buffer if needed and read from it
-    uchar* currEntry;
+    // importantly, if we are skipping entries (i.e. `this->getBcktSize() > 1`), then we don't
+    // buffer searches as we aren't gonna read most of the buffer anyway, so we get to save filling
+    // and flushing it constantly (and searches usually don't need us to iterate forward huge
+    // amounts unlike the end of setup phases, so filling such large buffers is especially wasteful)
+    uchar* currEntryPtr;
     bigint positionsChecked = 0;
+    if (this->getBcktSize() != 1) {
+        std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA " << this->getBcktSize() << std::endl << std::endl << std::endl;
+    }
     do {
         positionsChecked++;
         if (positionsChecked == this->getBcktCount()) {
@@ -281,19 +288,31 @@ bool EncIndBase::advanceUntilMatch(
         }
 
         pos = (pos + this->getBcktSize()) % this->capacity;
-        currEntry = this->readEncoded(bufType, pos);
-    } while (std::memcmp(currEntry, match, matchLen) != 0);
+        if (bufType == BufType::SETUP || this->getBcktSize() == 1) {
+            currEntryPtr = this->readEncoded(bufType, pos);
+        } else {
+            // also, we don't `fseek()` for this read unless we have wrapped around to the beginning
+            // of the file via `pos = ... % this->capacity` or if we are skipping entries (i.e.
+            // `this->getBcktSize() > 1`; yes i know this is technically always true here), as
+            // otherwise the previous `fread()` should've moved the file pointer to the right pos
+            bool shouldFseek = this->getBcktSize() > 1 || pos < this->getBcktSize();
+            this->readEncodedNoBuf(pos, currEntry, shouldFseek);
+            currEntryPtr = currEntry;
+        }
+    } while (std::memcmp(currEntryPtr, match, matchLen) != 0);
 
     return true;
 }
 
 
-void EncIndBase::readEncodedNoBuf(ubigint pos, uchar* ret) const {
+void EncIndBase::readEncodedNoBuf(ubigint pos, uchar* ret, bool shouldFseek) const {
     pos %= this->capacity;
 
-    utils::benchmark::startProfile("fseek 2");
-    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    utils::benchmark::stopProfile("fseek 2");
+    if (shouldFseek) {
+        utils::benchmark::startProfile("fseek");
+        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+        utils::benchmark::stopProfile("fseek");
+    }
     utils::benchmark::startProfile("fread");
     int itemsRead = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
     utils::benchmark::stopProfile("fread");
@@ -437,9 +456,7 @@ void EncIndBase::Buf::operOnFileBase(
     bigint entriesToOper1 = std::min(self->ENTRY_CAPACITY, entriesUntilEof);
     // we always `fseek()` here since we were likely reading from the buffer previously,
     // and that doesn't advance the file pointers
-    utils::benchmark::startProfile("fseek");
     std::fseek(self->file, startPos * self->entryLen, SEEK_SET);
-    utils::benchmark::stopProfile("fseek");
     bigint itemsOpered = oper(self->data, entriesToOper1);
     DEBUG_ONLY({
         if (itemsOpered < entriesToOper1) {
@@ -455,9 +472,7 @@ void EncIndBase::Buf::operOnFileBase(
     // (NOTE: the buf must not be larger than `this->encIndCapacity`, so that we only need to
     // wrap around at most once!)
     if (entriesToOper1 < self->ENTRY_CAPACITY) {
-        utils::benchmark::startProfile("fseek");
         std::fseek(self->file, 0, SEEK_SET);
-        utils::benchmark::stopProfile("fseek");
         itemsOpered += oper(
             self->data + (entriesToOper1 * self->entryLen),
             self->ENTRY_CAPACITY - entriesToOper1

@@ -151,7 +151,7 @@ protected:
      * so do NOT allocate any new memory to hold it or free the returned value in the caller!!
      */
     uchar* readEncoded(BufType bufType, ubigint pos) const;
-    void readEncodedNoBuf(ubigint pos, uchar* ret) const;
+    void readEncodedNoBuf(ubigint pos, uchar* ret, bool shouldFseek = true) const;
     void writeEncoded(BufType bufType, ubigint pos, const uchar* encodedEntry);
 
     /**
