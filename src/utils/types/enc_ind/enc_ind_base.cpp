@@ -119,8 +119,6 @@ void EncIndBase::init(bigint capacity) {
     // inits enc ind file and file pointer
     IDiskStorage::init();
 
-    // fill file with zero bits (so we can tell if a spot is empty by if it contains all zero bits)
-
     // also initialize `this->NULL_ENTRY` to a contiguous block of zero bits, which we do here
     // instead of in the constructor since `this->ENTRY_LEN()()` relies on virtual methods
     // (technically it is possible that an encrypted tuple happens to be all '0' bytes and thus gets
@@ -128,19 +126,6 @@ void EncIndBase::init(bigint capacity) {
     // a 2^{>1000} chance of this happening...and USENIX'24's implementation just does this too)
     this->NULL_ENTRY = new uchar[this->ENTRY_LEN()] {};
     this->capacity = capacity;
-    utils::benchmark::startProfile("init");
-    for (bigint i = 0; i < this->capacity; i++) {
-        int itemsWritten = std::fwrite(this->NULL_ENTRY, this->ENTRY_LEN(), 1, this->file);
-        DEBUG_ONLY({
-            if (itemsWritten != 1) {
-                std::cerr << "Error: EncIndBase::init(): error initializing file " << this->filename
-                          << " with zero bits (nothing written)" << std::endl;
-                std::exit(EXIT_FAILURE);
-            }
-        });
-    }
-    std::fflush(this->file);
-    utils::benchmark::stopProfile("init");
 
     // init buffers
     bigint setupBufEntryCapacity = std::min(config::ENC_IND_SETUP_BUF_CAPACITY, this->capacity);
@@ -152,6 +137,15 @@ void EncIndBase::init(bigint capacity) {
     this->searchBuf = new Buf(
         searchBufEntryCapacity, this->file, this->filename, this->capacity, this->ENTRY_LEN()
     );
+
+    // fill file with zero bits, so we can tell if a spot is empty by if it contains all zero bits
+    // and use setup buffer to speed this up (although this seems to only be efficient at big sizes)
+    utils::benchmark::startProfile("init");
+    for (bigint i = 0; i < this->capacity; i++) {
+        this->writeEncoded(BufType::SETUP, i, this->NULL_ENTRY);
+    }
+    this->flushBufIfNotFlushed(this->setupBuf);
+    utils::benchmark::stopProfile("init");
 }
 
 
@@ -297,9 +291,9 @@ bool EncIndBase::advanceUntilMatch(
 void EncIndBase::readEncodedNoBuf(ubigint pos, uchar* ret) const {
     pos %= this->capacity;
 
-    utils::benchmark::startProfile("fseek");
+    utils::benchmark::startProfile("fseek 2");
     std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-    utils::benchmark::stopProfile("fseek");
+    utils::benchmark::stopProfile("fseek 2");
     utils::benchmark::startProfile("fread");
     int itemsRead = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
     utils::benchmark::stopProfile("fread");

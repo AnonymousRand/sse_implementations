@@ -170,7 +170,7 @@ inline void print(const std::string& label) {
         Profile profile = profilePair.second;
         // (you are advised to keep profile names short because of this :3)
         profileOutputs += std::format(
-            "| {0:<{1}.{1}} ", std::format("{}: {}", profileName, profile.time), PRINT_COL_WIDTH
+            "| {0:<{1}.{1}} ", std::format("{} {}", profileName, profile.time), PRINT_COL_WIDTH
         );
     }
 

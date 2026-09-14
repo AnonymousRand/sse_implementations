@@ -24,7 +24,7 @@ namespace app::experiments {
 
 class UpdateVsDbSize : public IExperiment<IDsse<>> {
 public:
-    UpdateVsDbSize(Db<>& db) : db(db) {}
+    UpdateVsDbSize(const Db<>& db) : db(db) {}
 
     void printHeader() const override {
         std::cout << std::endl;
@@ -57,13 +57,8 @@ public:
         dsse->clear();
     }
 
-    // to free memory
-    void clearDb() {
-        this->db.clear();
-    }
-
 private:
-    Db<>& db;
+    const Db<>& db;
 };
 
 

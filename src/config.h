@@ -44,8 +44,9 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
  *
  * (currently, an enc ind entry is 128 bytes: 48 tuple + 16 iv + 64 label/hash.)
  */
-// 2^26 => ~8.5 GB, and it accommodates Log-SRC-i[PiBas] up to 2^19 and Log-SRC-i[NLogN] up to 2^15
-inline constexpr bigint ENC_IND_SETUP_BUF_CAPACITY = std::pow(2, 26);
+// 2^25 => ~4.3 GB, which should accommodate Log-SRC-i[PiBas/NLogN] up to 2^19
+// (noting that NLogN maintains a separate enc ind instance and hence buffer for each level)
+inline constexpr bigint ENC_IND_SETUP_BUF_CAPACITY = std::pow(2, 25);
 inline constexpr bigint ENC_IND_SEARCH_BUF_CAPACITY = std::pow(2, 8);
 static_assert(
     ENC_IND_SETUP_BUF_CAPACITY > 0,

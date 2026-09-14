@@ -22,8 +22,8 @@ namespace app::experiments {
 class Debugging : public IExperiment<ISse<>> {
 public:
     // pass `db` by reference so that it does not create an expensive copy in memory,
-    // while keeping the caller's ownership of it
-    Debugging(Db<>& db, Range<Kw> query) : db(db), query(query) {}
+    // while keeping the caller's ownership of it; `const` to ensure it is not changed
+    Debugging(const Db<>& db, Range<Kw> query) : db(db), query(query) {}
 
     void printHeader() const override {
         std::cout << std::endl;
@@ -64,14 +64,9 @@ public:
         sse->clear();
     }
 
-    // to free memory
-    void clearDb() {
-        this->db.clear();
-    }
-
 private:
-    Db<>& db;
-    Range<Kw> query;
+    const Db<>& db;
+    const Range<Kw> query;
 };
 
 
