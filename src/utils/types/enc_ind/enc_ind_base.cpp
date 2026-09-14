@@ -142,7 +142,7 @@ void EncIndBase::init(bigint capacity) {
     // and use setup buffer to speed this up (although this seems to only be efficient at big sizes)
     utils::benchmark::startProfile("init");
     for (bigint i = 0; i < this->capacity; i++) {
-        this->writeEncoded(BufType::SETUP, i, this->NULL_ENTRY, true);
+        this->writeEncoded(Oper::SETUP, i, this->NULL_ENTRY, true);
     }
     this->flushBufIfNotFlushed(this->setupBuf);
     utils::benchmark::stopProfile("init");
@@ -170,9 +170,9 @@ void EncIndBase::clear() {
 }
 
 
-bool EncIndBase::read(BufType bufType, ubigint pos, EncIndVal& ret) const {
+bool EncIndBase::read(Oper oper, ubigint pos, EncIndVal& ret) const {
     // read encoded entry at `pos`
-    uchar* entry = this->readEncoded(bufType, pos);
+    uchar* entry = this->readEncoded(oper, pos);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
@@ -184,22 +184,19 @@ bool EncIndBase::read(BufType bufType, ubigint pos, EncIndVal& ret) const {
 }
 
 
-bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
+bool EncIndBase::find(Oper oper, ubigint& pos, const ustring& key, EncIndVal& ret) const {
     std::cout << "+++++ finding " << std::endl;
-    // this method *should* only be called during searches
-    const BufType bufType = BufType::SEARCH;
-
-    bool isFound = this->advanceUntilMatch(bufType, pos, key.c_str(), this->KEY_LEN());
+    bool isFound = this->advanceUntilMatch(oper, pos, key.c_str(), this->KEY_LEN());
     if (!isFound) {
         return false;
     }
 
     // read and decode the kv pair at the matched location we found
-    return this->read(bufType, pos, ret);
+    return this->read(oper, pos, ret);
 }
 
 
-void EncIndBase::write(BufType bufType, ubigint pos, const EncIndEntry& encIndEntry) {
+void EncIndBase::write(Oper oper, ubigint pos, const EncIndEntry& encIndEntry) {
     // encode `encIndEntry`
     ustring encodedEntry = encIndEntry.toUstr();
     DEBUG_ONLY({
@@ -212,18 +209,13 @@ void EncIndBase::write(BufType bufType, ubigint pos, const EncIndEntry& encIndEn
     });
 
     // write encoded entry to `pos`
-    this->writeEncoded(bufType, pos, encodedEntry.c_str());
+    this->writeEncoded(oper, pos, encodedEntry.c_str());
 }
 
 
-void EncIndBase::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry) {
+void EncIndBase::writeToFirstEmpty(Oper oper, ubigint& pos, const EncIndEntry& encIndEntry) {
     std::cout << "----- writing " << std::endl;
-    // this method *should* only be called during setups
-    const BufType bufType = BufType::SETUP;
-
-    bool isEmptyAvailable = this->advanceUntilMatch(
-        bufType, pos, this->NULL_ENTRY, this->ENTRY_LEN()
-    );
+    bool isEmptyAvailable = this->advanceUntilMatch(oper, pos, this->NULL_ENTRY, this->ENTRY_LEN());
     // if we've scoured the whole index and still haven't found an available space,
     // throw an error: we are trying to write to a full index
     DEBUG_ONLY({
@@ -235,15 +227,15 @@ void EncIndBase::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry)
     });
 
     // write into the empty location we found
-    this->write(bufType, pos, encIndEntry);
+    this->write(oper, pos, encIndEntry);
 }
 
 
 void EncIndBase::print() const {
     for (bigint pos = 0; pos < this->capacity; pos++) {
         EncIndEntry encIndEntry;
-        // (`BufType::SETUP` here to just get a larger buffer; it shouldn't really matter here)
-        this->readEntry(BufType::SETUP, pos, encIndEntry);
+        // (`Oper::SETUP` here to just get a larger buffer; it shouldn't really matter here)
+        this->readEntry(Oper::SETUP, pos, encIndEntry);
         std::cerr << pos << ": " << utils::debug::ustrToHex(encIndEntry.toUstr())
                   << std::endl << std::endl;
     }
@@ -255,7 +247,7 @@ void EncIndBase::print() const {
 
 
 bool EncIndBase::advanceUntilMatch(
-    BufType bufType, ubigint& pos, const uchar* match, int matchLen
+    Oper oper, ubigint& pos, const uchar* match, int matchLen
 ) const {
     // need this for wrapping logic later to work!
     pos %= this->capacity;
@@ -296,8 +288,8 @@ bool EncIndBase::advanceUntilMatch(
         }
 
         pos = (pos + this->getBcktSize()) % this->capacity;
-        if (bufType == BufType::SETUP || this->getBcktSize() == 1) {
-            currEntryPtr = this->readEncoded(bufType, pos);
+        if (oper == Oper::SETUP || this->getBcktSize() == 1) {
+            currEntryPtr = this->readEncoded(oper, pos);
         } else {
             // also, we don't `fseek()` for this read unless we have wrapped around to the beginning
             // of the file via `pos = ... % this->capacity` or if we are skipping entries (i.e.
@@ -314,10 +306,10 @@ bool EncIndBase::advanceUntilMatch(
 }
 
 
-uchar* EncIndBase::readEncoded(BufType bufType, ubigint pos) const {
+uchar* EncIndBase::readEncoded(Oper oper, ubigint pos) const {
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufToUse(bufType);
+    Buf* bufToUse = this->getBufFromOper(oper);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         this->fillBuf(bufToUse, pos);
@@ -333,11 +325,11 @@ uchar* EncIndBase::readEncoded(BufType bufType, ubigint pos) const {
 
 
 void EncIndBase::writeEncoded(
-    BufType bufType, ubigint pos, const uchar* encodedEntry, bool isInit
+    Oper oper, ubigint pos, const uchar* encodedEntry, bool isInit
 ) {
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufToUse(bufType);
+    Buf* bufToUse = this->getBufFromOper(oper);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         this->fillBuf(bufToUse, pos, isInit);
@@ -352,13 +344,13 @@ void EncIndBase::writeEncoded(
 
 
 void EncIndBase::readEncodedOptionalBuf(
-    BufType bufType, ubigint pos, uchar* ret, bool shouldFseek
+    Oper oper, ubigint pos, uchar* ret, bool shouldFseek
 ) const {
     pos %= this->capacity;
 
     // so maybe if its found in buffer, memcpy it; otherwise fread it?
     // but don't we then need writeEncodedOptionalBuf too or else the buffer will be filled anyway on write
-    Buf* bufToUse = this->getBufToUse(bufType);
+    Buf* bufToUse = this->getBufFromOper(oper);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         // if `pos` is not covered by buffer, fetch directly from file; we can completely ignore
@@ -389,8 +381,8 @@ void EncIndBase::readEncodedOptionalBuf(
 }
 
 
-bool EncIndBase::readEntry(BufType bufType, ubigint pos, EncIndEntry& ret) const {
-    uchar* entry = this->readEncoded(bufType, pos);
+bool EncIndBase::readEntry(Oper oper, ubigint pos, EncIndEntry& ret) const {
+    uchar* entry = this->readEncoded(oper, pos);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;

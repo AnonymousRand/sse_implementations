@@ -149,7 +149,7 @@ void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
     // `encInd` does (this should all be client-side anyway so not leaking anything)
     for (bigint pos = 0; pos < encInd->getCapacity(); pos++) {
         EncIndVal encIndVal;
-        bool isValidVal = encInd->read(EncIndBase::BufType::SETUP, pos, encIndVal);
+        bool isValidVal = encInd->read(EncIndBase::Oper::SETUP, pos, encIndVal);
         if (!isValidVal) {
             continue;
         }

@@ -102,7 +102,7 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
         // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
         for (bigint pos = 0; pos < encIndLvl->getCapacity(); pos++) {
             EncIndVal encIndVal;
-            bool isValidVal = encIndLvl->read(EncIndBase::BufType::SETUP, pos, encIndVal);
+            bool isValidVal = encIndLvl->read(EncIndBase::Oper::SETUP, pos, encIndVal);
             if (!isValidVal) {
                 continue;
             }
@@ -174,7 +174,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
             // after first write, just write consecutively as we are now guaranteed that
             // there is a full bucket of contiguous space here
             this->encIndLvlsTmp[lvl]->write(
-                EncIndBase::BufType::SETUP,
+                EncIndBase::Oper::SETUP,
                 startPos + dbKwCounter, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
             );
         }

@@ -66,7 +66,7 @@ public:
     // interface
 
     // forward declaration
-    enum class BufType;
+    enum class Oper;
 
     virtual void init(bigint capacity);
     void clear() override;
@@ -78,7 +78,7 @@ public:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool read(BufType bufType, ubigint pos, EncIndVal& ret, bool forceBuf = true) const;
+    bool read(Oper oper, ubigint pos, EncIndVal& ret) const;
 
     /**
      * try to find `key` starting at `pos`, iterating forward from `pos` if the key
@@ -91,13 +91,13 @@ public:
      *     - `true` if the entry corresponding to `key` was found.
      *     - `false` if the entry corresponding to `key` was not found in the entire index.
      */
-    bool find(ubigint& pos, const ustring& key, EncIndVal& ret) const;
+    bool find(Oper oper, ubigint& pos, const ustring& key, EncIndVal& ret) const;
 
     /**
      * write to `pos` (but does not check if there is already something there, e.g. from
      * `pos % this->capacity`, and will overwrite it!).
      */
-    void write(BufType bufType, ubigint pos, const EncIndEntry& encIndEntry, bool forceBuf = true);
+    void write(Oper oper, ubigint pos, const EncIndEntry& encIndEntry);
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos` until
@@ -106,7 +106,7 @@ public:
      * returns in `pos`: this final empty location (in case you may need it for e.g.
      * contiguous writing of a locality-aware bucket after determining its start position).
      */
-    void writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry);
+    void writeToFirstEmpty(Oper oper, ubigint& pos, const EncIndEntry& encIndEntry);
 
     // (mostly for debugging)
     void print() const; // (warning: this can be, like, a LOT of stuff!! :3)
@@ -140,7 +140,7 @@ protected:
      *     - `true` if an entry matching `match` was found.
      *     - `false` if an entry matching `match` was found was not found in the entire index.
      */
-    bool advanceUntilMatch(BufType bufType, ubigint& pos, const uchar* match, int matchLen) const;
+    bool advanceUntilMatch(Oper oper, ubigint& pos, const uchar* match, int matchLen) const;
 
     /**
      * the raw read and write methods. these should be the ONLY read/write methods that touch
@@ -150,11 +150,8 @@ protected:
      * IMPORTANT: this points to the same memory as the buffer data does (i.e. no `memcpy()`s),
      * so do NOT allocate any new memory to hold it or free the returned value in the caller!!
      */
-    uchar* readEncoded(BufType bufType, ubigint pos, bool forceBuf) const;
-    void writeEncoded(
-        BufType bufType, ubigint pos, const uchar* encodedEntry,
-        bool forceBuf = true, bool isInit = false
-    );
+    uchar* readEncoded(Oper oper, ubigint pos) const;
+    void writeEncoded(Oper oper, ubigint pos, const uchar* encodedEntry, bool isInit = false);
 
     /**
      * the same as `readEncoded`, but not filling up the buffer and reading directly from the file
@@ -164,12 +161,7 @@ protected:
      * the returned value still matches the buffer's value and not the file's (in case the buffer
      * is unflushed).
      */
-    void readEncodedOptionalBuf(
-        BufType bufType, ubigint pos, uchar* ret, bool shouldFseek = true
-    ) const;
-    void writeEncodedOptionalBuf(
-        BufType bufType, ubigint pos, const uchar* encodedEntry
-    );
+    void readEncodedOptionalBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek = true) const;
 
     /**
      * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
@@ -178,7 +170,7 @@ protected:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool readEntry(BufType bufType, ubigint pos, EncIndEntry& ret) const;
+    bool readEntry(Oper oper, ubigint pos, EncIndEntry& ret) const;
 
 
 //==============================================================================
@@ -268,9 +260,9 @@ protected:
     };
 
 public:
-    // public-facing interface methods should use `BufType` as parameters to hide the
-    // `Buf*` members, while internal ones can use `Buf*` (hence why `BufType` is `public`)
-    enum class BufType {
+    // public-facing interface methods should use `Oper` as parameters to hide the
+    // `Buf*` members, while internal ones can use `Buf*` (hence why `Oper` is `public`)
+    enum class Oper {
         SETUP,
         SEARCH
     };
@@ -280,16 +272,16 @@ protected:
     mutable Buf* searchBuf = nullptr;
 
     /**
-     * translate public-facing `BufType` to a `Buf*` member.
+     * translate public-facing `Oper` to a `Buf*` member.
      */
-    Buf* getBufToUse(BufType bufType) const {
-        switch (bufType) {
-        case BufType::SETUP:
+    Buf* getBufFromOper(Oper oper) const {
+        switch (oper) {
+        case Oper::SETUP:
             return this->setupBuf;
-        case BufType::SEARCH:
+        case Oper::SEARCH:
             return this->searchBuf;
         default:
-            std::cerr << "Error: EncIndBase::getBufToUse(): zoo wee mama" << std::endl;
+            std::cerr << "Error: EncIndBase::getBufFromOper(): zoo wee mama" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
