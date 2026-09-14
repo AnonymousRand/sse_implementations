@@ -175,12 +175,18 @@ protected:
      * the same as `readEncoded()`/`writeEncoded()`, but not filling up the buffer and reading/
      * writing directly from/to the file instead if the requested `pos` is not within the buffer.
      *
+     * returns: a pointer to the start of the read data, either in a buffer or the `ret` param
+     * itself (so be mindful of `ret`'s lifetime!). on the other hand, the `ret` param *may or
+     * may not* be filled out depending on if `fread()` was needed, so always use the return value!
+     * (the `ret` parameter is just to accommodate an `fread()` if it is required, without needing
+     * to allocate heap memory within this function/giving full control of memory alloc to caller.)
+     *
      * IMPORTANT: these should still guarantee that if the requested entry is in the buffer, the
      * read/write still happens in the buffer instead of in the file, as the buffer must hold the
      * more up-to-date version of the entries it contains. this should ensure that it is ALWAYS
      * correct to read from the buffer.
      */
-    void readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek = true) const;
+    uchar* readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek = true) const;
     void writeEncodedNoBuf(
         Oper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek = true
     );

@@ -172,12 +172,13 @@ void EncIndBase::clear() {
 bool EncIndBase::read(Oper oper, ubigint pos, EncIndVal& ret, bool shouldFseek) const {
     // read encoded entry at `pos`
     uchar* entryPtr;
+    // note that `entry` must be declared out here for `entryPtr`, which may point to it,
+    // to point to a valid address for its whole lifetime
     uchar entry[this->ENTRY_LEN()];
     if (this->SHOULD_BUFFER_READ(oper)) {
         entryPtr = this->readEncoded(oper, pos);
     } else {
-        this->readEncodedNoBuf(oper, pos, entry, shouldFseek);
-        entryPtr = entry;
+        entryPtr = this->readEncodedNoBuf(oper, pos, entry, shouldFseek);
     }
     if (std::memcmp(entryPtr, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
@@ -263,6 +264,7 @@ void EncIndBase::print() const {
 bool EncIndBase::advanceUntilMatch(
     Oper oper, ubigint& pos, const uchar* match, int matchLen
 ) const {
+    utils::benchmark::startProfile("advance");
     // need this for wrapping logic later to work!
     pos %= this->capacity;
 
@@ -273,9 +275,18 @@ bool EncIndBase::advanceUntilMatch(
     // iterate forward, we skip filling the buffer. this is especially good when buffer is big but
     // enc ind is even bigger, as this avoids large amounts of filling and flushing the buffer at
     // different positions and never using it in between when the enc ind is still mostly empty
+    utils::benchmark::startProfile("advance1");
+    uchar* currEntryPtr;
     uchar currEntry[this->ENTRY_LEN()];
-    this->readEncodedNoBuf(oper, pos, currEntry, true);
-    if (std::memcmp(currEntry, match, matchLen) == 0) {
+    currEntryPtr = this->readEncodedNoBuf(oper, pos, currEntry, true);
+    //if (this->SHOULD_BUFFER_READ(oper)) {
+    //    currEntryPtr = this->readEncoded(oper, pos);
+    //} else {
+    //    currEntryPtr = this->readEncodedNoBuf(oper, pos, currEntry, true);
+    //}
+    utils::benchmark::stopProfile("advance1");
+    if (std::memcmp(currEntryPtr, match, matchLen) == 0) {
+        utils::benchmark::stopProfile("advance");
         return true;
     }
 
@@ -284,33 +295,41 @@ bool EncIndBase::advanceUntilMatch(
     // buffer searches as we aren't gonna read most of the buffer anyway, so we get to save filling
     // and flushing it constantly (and searches usually don't need us to iterate forward huge
     // amounts unlike the end of setup phases, so filling such large buffers is especially wasteful)
-    uchar* currEntryPtr;
     bigint positionsChecked = 0;
     do {
         positionsChecked++;
         if (positionsChecked == this->getBcktCount()) {
+            utils::benchmark::stopProfile("advance");
             return false;
         }
 
         pos = (pos + this->getBcktSize()) % this->capacity;
+        utils::benchmark::startProfile("advance2");
         if (this->SHOULD_BUFFER_READ(oper)) {
+            utils::benchmark::startProfile("advance3");
             currEntryPtr = this->readEncoded(oper, pos);
+            utils::benchmark::stopProfile("advance3");
         } else {
+            std::cout << "not buf!" << std::endl;
             // also, we don't `fseek()` for this read unless we have wrapped around to the
             // beginning of the file via `pos = ... % this->capacity` or if we are skipping
             // entries (i.e. `this->getBcktSize() > 1`), as otherwise the previous `fread()`
             // should've moved the file pointer to the right pos
+            utils::benchmark::startProfile("advance4");
             bool shouldFseek = this->getBcktSize() > 1 || pos < this->getBcktSize();
-            this->readEncodedNoBuf(oper, pos, currEntry, shouldFseek);
-            currEntryPtr = currEntry;
+            currEntryPtr = this->readEncodedNoBuf(oper, pos, currEntry, shouldFseek);
+            utils::benchmark::stopProfile("advance4");
         }
+        utils::benchmark::stopProfile("advance2");
     } while (std::memcmp(currEntryPtr, match, matchLen) != 0);
 
+    utils::benchmark::stopProfile("advance");
     return true;
 }
 
 
 uchar* EncIndBase::readEncoded(Oper oper, ubigint pos) const {
+    utils::benchmark::startProfile("read");
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufFromOper(oper);
@@ -323,6 +342,7 @@ uchar* EncIndBase::readEncoded(Oper oper, ubigint pos) const {
     utils::benchmark::startProfile("buf read");
     uchar* ret = bufToUse->read(bufIndex);
     utils::benchmark::stopProfile("buf read");
+    utils::benchmark::stopProfile("read");
     return ret;
 }
 
@@ -343,7 +363,7 @@ void EncIndBase::writeEncoded(Oper oper, ubigint pos, const uchar* encodedEntry,
 }
 
 
-void EncIndBase::readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek) const {
+uchar* EncIndBase::readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek) const {
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufFromOper(oper);
@@ -366,13 +386,14 @@ void EncIndBase::readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool shoul
                 std::exit(EXIT_FAILURE);
             }
         });
+        return ret;
     } else {
         // if `pos` is covered by the buffer, read it from the buffer instead since the buffer may
         // have a more updated version of that entry than the file
-        // the way we pass `ret` to accommodate the `fread()` approach above forces `memcpy()` here
         utils::benchmark::startProfile("buf read");
-        std::memcpy(ret, bufToUse->read(bufIndex), this->ENTRY_LEN());
+        uchar* actualRet = bufToUse->read(bufIndex);
         utils::benchmark::stopProfile("buf read");
+        return actualRet;
     }
 }
 
@@ -422,8 +443,7 @@ bool EncIndBase::readEntry(Oper oper, ubigint pos, EncIndEntry& ret, bool should
     if (this->SHOULD_BUFFER_READ(oper)) {
         entryPtr = this->readEncoded(oper, pos);
     } else {
-        this->readEncodedNoBuf(oper, pos, entry, shouldFseek);
-        entryPtr = entry;
+        entryPtr = this->readEncodedNoBuf(oper, pos, entry, shouldFseek);
     }
     if (std::memcmp(entryPtr, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
