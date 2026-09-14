@@ -177,12 +177,14 @@ void EncIndBase::clear() {
 
 
 bool EncIndBase::read(BufType bufType, ubigint pos, EncIndVal& ret, bool shouldFseek) const {
+    // read encoded entry at `pos`
     uchar* entry = this->readEncoded(bufType, pos, shouldFseek);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
     }
 
+    // decode entry
     ret = EncIndVal::fromUcstr(entry + this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
     return true;
 }
@@ -205,7 +207,7 @@ bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
 void EncIndBase::write(
     BufType bufType, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek
 ) {
-    // encode `encIndEntry` into one string
+    // encode `encIndEntry`
     ustring encodedEntry = encIndEntry.toUstr();
     DEBUG_ONLY({
         if (encodedEntry.length() != this->ENTRY_LEN()) {
@@ -216,7 +218,7 @@ void EncIndBase::write(
         }
     });
 
-    // then go to `pos` and write the encoded `encIndEntry`
+    // write encoded entry to `pos`
     if (shouldFseek) {
         utils::benchmark::startProfile("fseek");
         std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
@@ -271,6 +273,22 @@ bool EncIndBase::advanceUntilMatch(
 
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward one position at a time to search for it
+
+    // for the first read, we read directly from the file, so that if it turns out we don't need to
+    // iterate forward, we skip filling the buffer. this is especially good when buffer is big but
+    // enc ind is even bigger, as this avoids large amounts of filling and flushing the buffer at
+    // different positions and never using it in between when the enc ind is still mostly empty
+    uchar firstEntry[this->ENTRY_LEN()];
+    this->readEncodedNoBuf(pos, firstEntry, true);
+    if (std::memcmp(firstEntry, match, matchLen) == 0) {
+        return true;
+    }
+
+    // if we do need to iterate forward, then fill the buffer if needed and read from it
+
+    // yes, this does repeat the first read, but the buffer needs to be filled anyway
+    // and a constant one extra comparison is insignificant
+    // also `needsFseek` is still `true` here since we need to go back to before the first read
     bigint positionsChecked = 0;
     uchar* currEntry = this->readEncoded(bufType, pos, true);
     while (std::memcmp(currEntry, match, matchLen) != 0) {
@@ -296,6 +314,27 @@ bool EncIndBase::advanceUntilMatch(
 }
 
 
+void EncIndBase::readEncodedNoBuf(ubigint pos, uchar* ret, bool shouldFseek) const {
+    pos %= this->capacity;
+
+    if (shouldFseek) {
+        utils::benchmark::startProfile("fseek");
+        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+        utils::benchmark::stopProfile("fseek");
+    }
+    utils::benchmark::startProfile("fread");
+    int itemsRead = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
+    utils::benchmark::stopProfile("fread");
+    DEBUG_ONLY({
+        if (itemsRead != 1) {
+            std::cerr << "Error: EncIndBase::readEncodedNoBuf(): error reading from file "
+                      << this->filename << " (nothing read)" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
+}
+
+
 uchar* EncIndBase::readEncoded(BufType bufType, ubigint pos, bool shouldFseek) const {
     pos %= this->capacity;
 
@@ -305,7 +344,7 @@ uchar* EncIndBase::readEncoded(BufType bufType, ubigint pos, bool shouldFseek) c
         this->fillBuf(bufToUse, pos);
         bufIndex = 0;
     }
-    assert(bufIndex < bufToUse->entryCapacity);
+    assert(bufIndex < bufToUse->ENTRY_CAPACITY);
 
     utils::benchmark::startProfile("buf read");
     uchar* ret = bufToUse->read(bufIndex);
@@ -325,7 +364,7 @@ void EncIndBase::writeEncoded(
         this->fillBuf(bufToUse, pos);
         bufIndex = 0;
     }
-    assert(bufIndex < bufToUse->entryCapacity);
+    assert(bufIndex < bufToUse->ENTRY_CAPACITY);
 
     utils::benchmark::startProfile("buf write");
     bufToUse->write(bufIndex, encodedEntry);
@@ -358,16 +397,16 @@ const bigint EncIndBase::Buf::NOT_IN_BUF = -1;
 
 
 EncIndBase::Buf::Buf(
-    bigint entryCapacity,
+    bigint ENTRY_CAPACITY,
     FILE* file, const std::string& filename, bigint encIndCapacity, bigint entryLen
 ) :
-    entryCapacity(entryCapacity),
+    ENTRY_CAPACITY(ENTRY_CAPACITY),
     file(file),
     filename(filename),
     encIndCapacity(encIndCapacity),
     entryLen(entryLen)
 {
-    this->data = new uchar[this->entryCapacity * this->entryLen];
+    this->data = new uchar[this->ENTRY_CAPACITY * this->entryLen];
 }
 
 
@@ -384,7 +423,7 @@ EncIndBase::Buf::~Buf() {
 
 
 EncIndBase::Buf::Buf(const Buf& other) :
-    Buf(other.entryCapacity, other.file, other.filename, other.encIndCapacity, other.entryLen)
+    Buf(other.ENTRY_CAPACITY, other.file, other.filename, other.encIndCapacity, other.entryLen)
 {
     if (other.data != nullptr) {
         this->data = new uchar[](*other.data);
@@ -419,13 +458,13 @@ void EncIndBase::Buf::operOnFileBase(
     SelfType* self, const std::function<bigint(uchar*, bigint)>& oper, ubigint startPos
 ) {
     // this is the only place we check this
-    if (self->entryCapacity <= 0) {
+    if (self->ENTRY_CAPACITY <= 0) {
         return;
     }
 
     // first operate on as many of the target entries as we can without exceeding EOF
     bigint entriesUntilEof = self->encIndCapacity - startPos;
-    bigint entriesToOper1 = std::min(self->entryCapacity, entriesUntilEof);
+    bigint entriesToOper1 = std::min(self->ENTRY_CAPACITY, entriesUntilEof);
     utils::benchmark::startProfile("fseek");
     std::fseek(self->file, startPos * self->entryLen, SEEK_SET);
     utils::benchmark::stopProfile("fseek");
@@ -443,19 +482,19 @@ void EncIndBase::Buf::operOnFileBase(
     // wrap around to beginning of file if we read less than the target number of entries
     // (NOTE: the buf must not be larger than `this->encIndCapacity`, so that we only need to
     // wrap around at most once!)
-    if (entriesToOper1 < self->entryCapacity) {
+    if (entriesToOper1 < self->ENTRY_CAPACITY) {
         utils::benchmark::startProfile("fseek");
         std::fseek(self->file, 0, SEEK_SET);
         utils::benchmark::stopProfile("fseek");
         itemsOpered += oper(
             self->data + (entriesToOper1 * self->entryLen),
-            self->entryCapacity - entriesToOper1
+            self->ENTRY_CAPACITY - entriesToOper1
         );
         DEBUG_ONLY({
-            if (itemsOpered < self->entryCapacity) {
+            if (itemsOpered < self->ENTRY_CAPACITY) {
                 std::cerr << "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 2) "
                           << "on file " << self->filename
-                          << " (only did " << itemsOpered << " out of " << self->entryCapacity
+                          << " (only did " << itemsOpered << " out of " << self->ENTRY_CAPACITY
                           << ")" << std::endl;
                 std::exit(EXIT_FAILURE);
             }
@@ -466,15 +505,15 @@ void EncIndBase::Buf::operOnFileBase(
 
 void EncIndBase::Buf::fill(ubigint startPos) {
     auto fillOper = [this](uchar* data, bigint targetEntryCount) {
-        utils::benchmark::startProfile("fread");
+        utils::benchmark::startProfile("buf fill");
         bigint itemsRead = std::fread(data, this->entryLen, targetEntryCount, this->file);
-        utils::benchmark::stopProfile("fread");
+        utils::benchmark::stopProfile("buf fill");
         return itemsRead;
     };
     operOnFileBase(this, fillOper, startPos);
 
     this->startPos = startPos;
-    this->endPos = (startPos + this->entryCapacity) % this->encIndCapacity;
+    this->endPos = (startPos + this->ENTRY_CAPACITY) % this->encIndCapacity;
     this->isFilled = true;
     this->isFlushed = true;
 }
@@ -483,9 +522,9 @@ void EncIndBase::Buf::fill(ubigint startPos) {
 void EncIndBase::Buf::flushIfNotFlushed() const {
     if (!this->isFlushed && this->isFilled) {
         auto flushOper = [this](uchar* data, bigint targetEntryCount) {
-            utils::benchmark::startProfile("fwrite");
+            utils::benchmark::startProfile("buf flush");
             bigint itemsWritten = std::fwrite(data, this->entryLen, targetEntryCount, this->file);
-            utils::benchmark::stopProfile("fwrite");
+            utils::benchmark::stopProfile("buf flush");
             return itemsWritten;
         };
         operOnFileBase(this, flushOper, this->startPos);
@@ -496,7 +535,7 @@ void EncIndBase::Buf::flushIfNotFlushed() const {
 
 
 bigint EncIndBase::Buf::posToBufIndex(ubigint pos) const {
-    if (!this->isFilled || this->entryCapacity == 0) {
+    if (!this->isFilled || this->ENTRY_CAPACITY == 0) {
         return NOT_IN_BUF;
     }
 

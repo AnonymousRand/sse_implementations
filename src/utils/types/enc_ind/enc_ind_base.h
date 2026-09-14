@@ -153,6 +153,7 @@ protected:
      * so do NOT allocate any new memory to hold it or free the returned value in the caller!!
      */
     uchar* readEncoded(BufType bufType, ubigint pos, bool shouldFseek = true) const;
+    void readEncodedNoBuf(ubigint pos, uchar* ret, bool shouldFseek = true) const;
     void writeEncoded(
         BufType bufType, ubigint pos, const uchar* encodedEntry, bool shouldFseek = true
     );
@@ -183,7 +184,7 @@ protected:
         // constructors/destructors
 
         Buf(
-            bigint entryCapacity,
+            bigint ENTRY_CAPACITY,
             FILE* file, const std::string& filename, bigint encIndCapacity, bigint entryLen
         );
 
@@ -227,8 +228,8 @@ protected:
         bigint posToBufIndex(ubigint pos) const;
 
     private:
+        const bigint ENTRY_CAPACITY;
         uchar* data = nullptr;
-        const bigint entryCapacity;
         ubigint startPos = 0;
         ubigint endPos = 0;
         bool isFilled = false;
