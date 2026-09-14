@@ -78,7 +78,7 @@ public:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool read(BufType bufType, ubigint pos, EncIndVal& ret) const;
+    bool read(BufType bufType, ubigint pos, EncIndVal& ret, bool forceBuf = true) const;
 
     /**
      * try to find `key` starting at `pos`, iterating forward from `pos` if the key
@@ -97,7 +97,7 @@ public:
      * write to `pos` (but does not check if there is already something there, e.g. from
      * `pos % this->capacity`, and will overwrite it!).
      */
-    void write(BufType bufType, ubigint pos, const EncIndEntry& encIndEntry);
+    void write(BufType bufType, ubigint pos, const EncIndEntry& encIndEntry, bool forceBuf = true);
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos` until
@@ -150,9 +150,26 @@ protected:
      * IMPORTANT: this points to the same memory as the buffer data does (i.e. no `memcpy()`s),
      * so do NOT allocate any new memory to hold it or free the returned value in the caller!!
      */
-    uchar* readEncoded(BufType bufType, ubigint pos) const;
-    void readEncodedNoBuf(ubigint pos, uchar* ret, bool shouldFseek = true) const;
-    void writeEncoded(BufType bufType, ubigint pos, const uchar* encodedEntry, bool isInit = false);
+    uchar* readEncoded(BufType bufType, ubigint pos, bool forceBuf) const;
+    void writeEncoded(
+        BufType bufType, ubigint pos, const uchar* encodedEntry,
+        bool forceBuf = true, bool isInit = false
+    );
+
+    /**
+     * the same as `readEncoded`, but not filling up the buffer and reading directly from the file
+     * instead if the requested `pos` is not within the buffer.
+     *
+     * IMPORTANT: this should still guarantee that should the requested entry be within the buffer,
+     * the returned value still matches the buffer's value and not the file's (in case the buffer
+     * is unflushed).
+     */
+    void readEncodedOptionalBuf(
+        BufType bufType, ubigint pos, uchar* ret, bool shouldFseek = true
+    ) const;
+    void writeEncodedOptionalBuf(
+        BufType bufType, ubigint pos, const uchar* encodedEntry
+    );
 
     /**
      * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.

@@ -185,6 +185,7 @@ bool EncIndBase::read(BufType bufType, ubigint pos, EncIndVal& ret) const {
 
 
 bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
+    std::cout << "+++++ finding " << std::endl;
     // this method *should* only be called during searches
     const BufType bufType = BufType::SEARCH;
 
@@ -216,6 +217,7 @@ void EncIndBase::write(BufType bufType, ubigint pos, const EncIndEntry& encIndEn
 
 
 void EncIndBase::writeToFirstEmpty(ubigint& pos, const EncIndEntry& encIndEntry) {
+    std::cout << "----- writing " << std::endl;
     // this method *should* only be called during setups
     const BufType bufType = BufType::SETUP;
 
@@ -261,16 +263,20 @@ bool EncIndBase::advanceUntilMatch(
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward one bucket (i.e. `this->getBcktSize()`) at a time to search for it
 
-    // >>TODO 2: no results!
     // for the first read, we read directly from the file, so that if it turns out we don't need to
     // iterate forward, we skip filling the buffer. this is especially good when buffer is big but
     // enc ind is even bigger, as this avoids large amounts of filling and flushing the buffer at
     // different positions and never using it in between when the enc ind is still mostly empty
     uchar currEntry[this->ENTRY_LEN()];
-    this->readEncodedNoBuf(pos, currEntry, true);
+    // >>TODO OHHHHH readEncodedOptionalBuf is not good because it misses previous non-flushed writes!!
+    // so maybe do a read method that doesn't fill up the buffer if pos is NOT_IN_BUF, rather reads
+    // from the file instead
+    this->readEncodedOptionalBuf(pos, currEntry, true);
     if (std::memcmp(currEntry, match, matchLen) == 0) {
+        std::cout << "success, pos is " << pos << " and currEntry is " << utils::debug::ustrToHex(currEntry, 16) << std::endl;
         return true;
     }
+    std::cout << "not first success" << std::endl;
 
     // if we do need to iterate forward, then fill the buffer if needed and read from it
     // importantly, if we are skipping entries (i.e. `this->getBcktSize() > 1`), then we don't
@@ -283,6 +289,7 @@ bool EncIndBase::advanceUntilMatch(
         std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA " << this->getBcktSize() << std::endl << std::endl << std::endl;
     }
     do {
+        std::cout << "checking: addr " << (void*)currEntryPtr << " and value " << utils::debug::ustrToHex(currEntryPtr, 16) << " and match is " << utils::debug::ustrToHex(match, 16) << std::endl;
         positionsChecked++;
         if (positionsChecked == this->getBcktCount()) {
             return false;
@@ -297,48 +304,13 @@ bool EncIndBase::advanceUntilMatch(
             // `this->getBcktSize() > 1`; yes i know this is technically always true here), as
             // otherwise the previous `fread()` should've moved the file pointer to the right pos
             bool shouldFseek = this->getBcktSize() > 1 || pos < this->getBcktSize();
-            this->readEncodedNoBuf(pos, currEntry, shouldFseek);
+            this->readEncodedOptionalBuf(pos, currEntry, shouldFseek);
             currEntryPtr = currEntry;
         }
     } while (std::memcmp(currEntryPtr, match, matchLen) != 0);
 
-    /*
-    bigint positionsChecked = 0;
-    uchar* currEntry = this->readEncoded(bufType, pos);
-    while (std::memcmp(currEntry, match, matchLen) != 0) {
-        positionsChecked++;
-        if (positionsChecked == this->getBcktCount()) {
-            return false;
-        }
-
-        pos = (pos + this->getBcktSize()) % this->capacity;
-        currEntry = this->readEncoded(bufType, pos);
-    }
-    */
-
-    std::cout << "success " << std::endl;
+    std::cout << "eventual success " << std::endl;
     return true;
-}
-
-
-void EncIndBase::readEncodedNoBuf(ubigint pos, uchar* ret, bool shouldFseek) const {
-    pos %= this->capacity;
-
-    if (shouldFseek) {
-        utils::benchmark::startProfile("fseek");
-        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-        utils::benchmark::stopProfile("fseek");
-    }
-    utils::benchmark::startProfile("fread");
-    int itemsRead = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
-    utils::benchmark::stopProfile("fread");
-    DEBUG_ONLY({
-        if (itemsRead != 1) {
-            std::cerr << "Error: EncIndBase::readEncodedNoBuf(): error reading from file "
-                      << this->filename << " (nothing read)" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    });
 }
 
 
@@ -376,6 +348,44 @@ void EncIndBase::writeEncoded(
     utils::benchmark::startProfile("buf write");
     bufToUse->write(bufIndex, encodedEntry);
     utils::benchmark::stopProfile("buf write");
+}
+
+
+void EncIndBase::readEncodedOptionalBuf(
+    BufType bufType, ubigint pos, uchar* ret, bool shouldFseek
+) const {
+    pos %= this->capacity;
+
+    // so maybe if its found in buffer, memcpy it; otherwise fread it?
+    // but don't we then need writeEncodedOptionalBuf too or else the buffer will be filled anyway on write
+    Buf* bufToUse = this->getBufToUse(bufType);
+    bigint bufIndex = this->posToBufIndex(bufToUse, pos);
+    if (bufIndex == Buf::NOT_IN_BUF) {
+        // if `pos` is not covered by buffer, fetch directly from file; we can completely ignore
+        // the buffer here as the file must have the most updated copy of the entry at `pos`
+        if (shouldFseek) {
+            utils::benchmark::startProfile("fseek");
+            std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+            utils::benchmark::stopProfile("fseek");
+        }
+        utils::benchmark::startProfile("fread");
+        int itemsRead = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
+        utils::benchmark::stopProfile("fread");
+        DEBUG_ONLY({
+            if (itemsRead != 1) {
+                std::cerr << "Error: EncIndBase::readEncodedOptionalBuf(): error reading from file "
+                          << this->filename << " (nothing read)" << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        });
+    } else {
+        // if `pos` is covered by the buffer, read it from the buffer instead since the buffer may
+        // have a more updated version of that entry than the file
+        // the way we pass `ret` to accommodate the `fread()` approach above forces a `memcpy()`
+        utils::benchmark::startProfile("buf read");
+        std::memcpy(ret, bufToUse->read(bufIndex), this->ENTRY_LEN());
+        utils::benchmark::stopProfile("buf read");
+    }
 }
 
 
