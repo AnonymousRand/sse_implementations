@@ -16,7 +16,7 @@ public:
     // and all that yummy stuff with raw pointer members
     // IMPORTANT: this means SSE server classes can only be instantiated as pointers!
 
-    // bring back default constructor
+    // keep default constructor
     ISseServer() = default;
 
     // copy constructor

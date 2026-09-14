@@ -73,7 +73,7 @@ void NLogNBaseServer<DbTuple>::setEncIndLvls(const std::vector<EncIndLoc*>& encI
 
 
 template <IsDbTuple DbTuple>
-std::vector<EncIndLoc*> NLogNBaseServer<DbTuple>::getEncIndLvls() const {
+const std::vector<EncIndLoc*>& NLogNBaseServer<DbTuple>::getEncIndLvls() const {
     utils::benchmark::communication += ::calcAllEncIndLvlsBytes(this->encIndLvls);
 
     return this->encIndLvls;

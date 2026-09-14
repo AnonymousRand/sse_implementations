@@ -95,7 +95,7 @@ void NLogNBase<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
     assert(this->getServer() != nullptr);
-    std::vector<EncIndLoc*> encIndLvls = this->getServer()->getEncIndLvls();
+    const std::vector<EncIndLoc*>& encIndLvls = this->getServer()->getEncIndLvls();
 
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
         EncIndLoc* encIndLvl = encIndLvls[lvl];

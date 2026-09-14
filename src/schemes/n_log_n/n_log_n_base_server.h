@@ -26,7 +26,7 @@ public:
     // interface
 
     void setEncIndLvls(const std::vector<EncIndLoc*>& encIndLvls);
-    std::vector<EncIndLoc*> getEncIndLvls() const;
+    const std::vector<EncIndLoc*>& getEncIndLvls() const;
     std::vector<EncIndVal> searchEncIndForBckt(
         bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
     ) const;
