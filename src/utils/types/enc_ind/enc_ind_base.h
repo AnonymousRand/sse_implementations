@@ -119,8 +119,12 @@ public:
     bigint getCapacity() const { return this->capacity; }
     bigint getBytes() const { return this->capacity * this->ENTRY_LEN(); }
 
-    // mostly for debugging
-    void print() const; // warning: this can be, like, a LOT of stuff!! :3
+    //--------------------------------------------------------------------------
+    // debugging
+
+    // warning: this can be, like, a LOT of stuff!! :3
+    void printBuf(SseOper oper) const;
+    void printFile() const;
 
 protected:
     uchar* NULL_ENTRY = nullptr;
@@ -183,15 +187,6 @@ protected:
     void writeEncodedNoBuf(
         SseOper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek = true
     );
-
-    /**
-     * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
-     *
-     * returns:
-     *     - `true` if the entry at `pos` is valid.
-     *     - `false` if the entry at `pos` is the null entry.
-     */
-    bool readEntry(SseOper oper, ubigint pos, EncIndEntry& ret, bool shouldFseek = true) const;
 
     //--------------------------------------------------------------------------
     // buffer

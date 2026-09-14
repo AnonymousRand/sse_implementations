@@ -271,17 +271,6 @@ void EncIndBase::endSetup(SseOper setupOper) {
 }
 
 
-void EncIndBase::print() const {
-    for (bigint pos = 0; pos < this->capacity; pos++) {
-        EncIndEntry encIndEntry;
-        // (`SseOper::SETUP` here to just get a larger buffer; it shouldn't really matter here)
-        this->readEntry(SseOper::SETUP, pos, encIndEntry, pos == 0);
-        std::cerr << pos << ": " << utils::debug::ustrToHex(encIndEntry.toUstr())
-                  << std::endl << std::endl;
-    }
-}
-
-
 //------------------------------------------------------------------------------
 // helpers
 
@@ -430,26 +419,6 @@ void EncIndBase::writeEncodedNoBuf(
 }
 
 
-bool EncIndBase::readEntry(SseOper oper, ubigint pos, EncIndEntry& ret, bool shouldFseek) const {
-    // read encoded entry at `pos`
-    uchar* entryPtr;
-    uchar entry[this->ENTRY_LEN()];
-    if (this->SHOULD_BUFFER_READ(oper)) {
-        entryPtr = this->readEncoded(oper, pos);
-    } else {
-        entryPtr = this->readEncodedNoBuf(oper, pos, entry, shouldFseek);
-    }
-    if (std::memcmp(entryPtr, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
-        // if `pos` contains `this->NULL_ENTRY`
-        return false;
-    }
-
-    // decode the entry
-    ret = EncIndEntry::fromUcstr(entry, this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
-    return true;
-}
-
-
 //------------------------------------------------------------------------------
 // buffer
 
@@ -473,4 +442,44 @@ void EncIndBase::flushBufIfNotFlushed(Buf* buf) const {
 bigint EncIndBase::posToBufIndex(Buf* buf, ubigint pos) const {
     assert(buf != nullptr);
     return buf->posToBufIndex(pos);
+}
+
+
+//------------------------------------------------------------------------------
+// debugging
+
+
+void EncIndBase::printBuf(SseOper oper) const {
+    Buf* buf = this->getBufFromSseOper(oper);
+    assert(buf != nullptr);
+    if (!buf->isFilled) {
+        std::cerr << "Buf claims to be unfilled; garbage data may be produced!" << std::endl;
+    }
+    for (bigint pos = 0; pos < buf->ENTRY_CAPACITY; pos++) {
+        uchar* currEntry = buf->read(pos);
+        std::cerr << pos << ": " << utils::debug::ustrToHex(currEntry, this->ENTRY_LEN())
+                  << std::endl;
+    }
+}
+
+
+void EncIndBase::printFile() const {
+    assert(this->file != nullptr);
+    bigint origFilePtrPos = std::ftell(this->file);
+    uchar currEntry[this->ENTRY_LEN()];
+    for (bigint pos = 0; pos < this->capacity; pos++) {
+        if (pos == 0) {
+            std::fseek(this->file, 0, SEEK_SET);
+        }
+
+        int itemsRead = std::fread(currEntry, this->ENTRY_LEN(), 1, this->file);
+        if (itemsRead != 1) {
+            std::cerr << "Error: EncIndBase::printFile(): error reading from file "
+                      << this->filename << " (nothing read at pos " << pos << ")" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        std::cerr << pos << ": " << utils::debug::ustrToHex(currEntry, this->ENTRY_LEN())
+                  << std::endl;
+    }
+    std::fseek(this->file, origFilePtrPos, SEEK_SET);
 }
