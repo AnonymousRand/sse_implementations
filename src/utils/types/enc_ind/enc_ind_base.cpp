@@ -379,6 +379,19 @@ void EncIndBase::readEncodedOptionalBuf(
 }
 
 
+void EncIndBase::writeEncodedOptionalBuf(
+    Oper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek
+) {
+    pos %= this->capacity;
+
+    Buf* bufToUse = this->getBufFromOper(oper);
+    bigint bufIndex = this->posToBufIndex(bufToUse, pos);
+    if (bufIndex == Buf::NOT_IN_BUF) {
+        // TODO
+    }
+}
+
+
 bool EncIndBase::readEntry(Oper oper, ubigint pos, EncIndEntry& ret) const {
     uchar* entry = this->readEncoded(oper, pos);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
