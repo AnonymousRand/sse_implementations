@@ -88,7 +88,7 @@ void DbDisk<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
-    assert(this->file != nulllptr);
+    assert(this->file != nullptr);
     std::string dbTupleStr = dbTuple.toStr();
 
     // make sure every encoded tuple is stored into the same fixed-length size for easy lookups,

@@ -123,7 +123,7 @@ EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
 
 
 void EncIndBase::init(SseOper setupOper, bigint capacity) {
-    assert(setupOper == SseOper::SETUP || oper == SseOper::UPDATE);
+    assert(setupOper == SseOper::SETUP || setupOper == SseOper::UPDATE);
     // inits enc ind file and file pointer
     IDiskStorage::init();
 
