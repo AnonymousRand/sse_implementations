@@ -66,9 +66,9 @@ static_assert(
  * the max number of decimal digits you want ids and keywords to be able to support
  * (this determines the size of each entry in encrypted indexes; see `TUPLE_ENCOD_LEN` below).
  */
-// currently: 8 is the largest possible value such that each encrypted tuple fits in
-// 2 AES blocks (= 32 bytes), and should be sufficient for DB sizes up to 2^26
-inline constexpr int MAX_VALUE_DIGITS = 8;
+// currently: 11 is the largest possible value such that each encrypted tuple fits in
+// 3 AES blocks (= 48 bytes)
+inline constexpr int MAX_VALUE_DIGITS = 11;
 static_assert(
     MAX_VALUE_DIGITS > 0, "Error: `MAX_VALUE_DIGITS` must be strictly positive!"
 );

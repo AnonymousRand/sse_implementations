@@ -138,13 +138,11 @@ void EncIndBase::init(bigint capacity) {
 
     // fill file with zero bits, so we can tell if a spot is empty by if it contains all zero bits
     // and use setup buffer to speed this up (although this seems to only be efficient at big sizes)
-    utils::benchmark::startProfile("init");
     for (bigint i = 0; i < this->capacity; i++) {
         // we allow incomplete buffer fills from the file here since, well, the file is incomplete
         this->writeEncoded(Oper::SETUP, i, this->NULL_ENTRY, true);
     }
     this->flushBufIfNotFlushed(this->getBufFromOper(Oper::SETUP));
-    utils::benchmark::stopProfile("init");
 }
 
 
@@ -264,7 +262,6 @@ void EncIndBase::print() const {
 bool EncIndBase::advanceUntilMatch(
     Oper oper, ubigint& pos, const uchar* match, int matchLen
 ) const {
-    utils::benchmark::startProfile("advance");
     // need this for wrapping logic later to work!
     pos %= this->capacity;
 
@@ -275,18 +272,10 @@ bool EncIndBase::advanceUntilMatch(
     // iterate forward, we skip filling the buffer. this is especially good when buffer is big but
     // enc ind is even bigger, as this avoids large amounts of filling and flushing the buffer at
     // different positions and never using it in between when the enc ind is still mostly empty
-    utils::benchmark::startProfile("advance1");
     uchar* currEntryPtr;
     uchar currEntry[this->ENTRY_LEN()];
     currEntryPtr = this->readEncodedNoBuf(oper, pos, currEntry, true);
-    //if (this->SHOULD_BUFFER_READ(oper)) {
-    //    currEntryPtr = this->readEncoded(oper, pos);
-    //} else {
-    //    currEntryPtr = this->readEncodedNoBuf(oper, pos, currEntry, true);
-    //}
-    utils::benchmark::stopProfile("advance1");
     if (std::memcmp(currEntryPtr, match, matchLen) == 0) {
-        utils::benchmark::stopProfile("advance");
         return true;
     }
 
@@ -299,37 +288,27 @@ bool EncIndBase::advanceUntilMatch(
     do {
         positionsChecked++;
         if (positionsChecked == this->getBcktCount()) {
-            utils::benchmark::stopProfile("advance");
             return false;
         }
 
         pos = (pos + this->getBcktSize()) % this->capacity;
-        utils::benchmark::startProfile("advance2");
         if (this->SHOULD_BUFFER_READ(oper)) {
-            utils::benchmark::startProfile("advance3");
             currEntryPtr = this->readEncoded(oper, pos);
-            utils::benchmark::stopProfile("advance3");
         } else {
-            std::cout << "not buf!" << std::endl;
             // also, we don't `fseek()` for this read unless we have wrapped around to the
             // beginning of the file via `pos = ... % this->capacity` or if we are skipping
             // entries (i.e. `this->getBcktSize() > 1`), as otherwise the previous `fread()`
             // should've moved the file pointer to the right pos
-            utils::benchmark::startProfile("advance4");
             bool shouldFseek = this->getBcktSize() > 1 || pos < this->getBcktSize();
             currEntryPtr = this->readEncodedNoBuf(oper, pos, currEntry, shouldFseek);
-            utils::benchmark::stopProfile("advance4");
         }
-        utils::benchmark::stopProfile("advance2");
     } while (std::memcmp(currEntryPtr, match, matchLen) != 0);
 
-    utils::benchmark::stopProfile("advance");
     return true;
 }
 
 
 uchar* EncIndBase::readEncoded(Oper oper, ubigint pos) const {
-    utils::benchmark::startProfile("read");
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufFromOper(oper);
@@ -339,10 +318,7 @@ uchar* EncIndBase::readEncoded(Oper oper, ubigint pos) const {
         bufIndex = 0;
     }
 
-    utils::benchmark::startProfile("buf read");
     uchar* ret = bufToUse->read(bufIndex);
-    utils::benchmark::stopProfile("buf read");
-    utils::benchmark::stopProfile("read");
     return ret;
 }
 
@@ -357,9 +333,7 @@ void EncIndBase::writeEncoded(Oper oper, ubigint pos, const uchar* encodedEntry,
         bufIndex = 0;
     }
 
-    utils::benchmark::startProfile("buf write");
     bufToUse->write(bufIndex, encodedEntry);
-    utils::benchmark::stopProfile("buf write");
 }
 
 
@@ -372,13 +346,9 @@ uchar* EncIndBase::readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool sho
         // if `pos` is not covered by buffer, read directly from file; we can completely ignore
         // the buffer here as the file must have the most updated copy of the entry at `pos`
         if (shouldFseek) {
-            utils::benchmark::startProfile("fseek");
             std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-            utils::benchmark::stopProfile("fseek");
         }
-        utils::benchmark::startProfile("fread");
         int itemsRead = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
-        utils::benchmark::stopProfile("fread");
         DEBUG_ONLY({
             if (itemsRead != 1) {
                 std::cerr << "Error: EncIndBase::readEncodedNoBuf(): error reading from file "
@@ -390,9 +360,7 @@ uchar* EncIndBase::readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool sho
     } else {
         // if `pos` is covered by the buffer, read it from the buffer instead since the buffer may
         // have a more updated version of that entry than the file
-        utils::benchmark::startProfile("buf read");
         uchar* actualRet = bufToUse->read(bufIndex);
-        utils::benchmark::stopProfile("buf read");
         return actualRet;
     }
 }
@@ -409,13 +377,9 @@ void EncIndBase::writeEncodedNoBuf(
         // if `pos` is not covered by buffer, write directly to file; we can completely ignore
         // the buffer here as the buffer does not have an entry to update with this write
         if (shouldFseek) {
-            utils::benchmark::startProfile("fseek");
             std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-            utils::benchmark::stopProfile("fseek");
         }
-        utils::benchmark::startProfile("fwrite");
         int itemsWritten = std::fwrite(encodedEntry, this->ENTRY_LEN(), 1, this->file);
-        utils::benchmark::stopProfile("fwrite");
         DEBUG_ONLY({
             if (itemsWritten != 1) {
                 std::cerr << "Error: EncIndBase::writeEncodedNoBuf(): error writing to file "
@@ -429,9 +393,7 @@ void EncIndBase::writeEncodedNoBuf(
         // using `readEncodedNoBuf()` should still be correct as either the buffer hasn't
         // changed and `readEncodedNoBuf()` will read from the buffer, or the buffer has
         // changed and has hence been flushed before `readEncodedNoBuf()` reads from the file
-        utils::benchmark::startProfile("buf write");
         bufToUse->write(bufIndex, encodedEntry);
-        utils::benchmark::stopProfile("buf write");
     }
 }
 

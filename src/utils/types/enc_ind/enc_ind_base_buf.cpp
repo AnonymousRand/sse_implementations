@@ -132,9 +132,7 @@ void EncIndBase::Buf::operOnFileBase(
 
 void EncIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
     auto fillOper = [this, allowIncompleteFill](uchar* data, bigint targetEntryCount) {
-        utils::benchmark::startProfile("buf fill");
         bigint itemsRead = std::fread(data, this->entryLen, targetEntryCount, this->file);
-        utils::benchmark::stopProfile("buf fill");
         if (allowIncompleteFill) {
             return targetEntryCount;
         } else {
@@ -153,9 +151,7 @@ void EncIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
 void EncIndBase::Buf::flushIfNotFlushed() const {
     if (!this->isFlushed && this->isFilled) {
         auto flushOper = [this](uchar* data, bigint targetEntryCount) {
-            utils::benchmark::startProfile("buf flush");
             bigint itemsWritten = std::fwrite(data, this->entryLen, targetEntryCount, this->file);
-            utils::benchmark::stopProfile("buf flush");
             return itemsWritten;
         };
         operOnFileBase(this, flushOper, this->startPos);
