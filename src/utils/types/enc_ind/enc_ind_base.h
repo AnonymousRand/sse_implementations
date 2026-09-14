@@ -152,7 +152,7 @@ protected:
      */
     uchar* readEncoded(BufType bufType, ubigint pos) const;
     void readEncodedNoBuf(ubigint pos, uchar* ret, bool shouldFseek = true) const;
-    void writeEncoded(BufType bufType, ubigint pos, const uchar* encodedEntry);
+    void writeEncoded(BufType bufType, ubigint pos, const uchar* encodedEntry, bool isInit = false);
 
     /**
      * read and decode the *entry* (not just the value, i.e. including the key) at `pos`.
@@ -218,7 +218,7 @@ protected:
          */
         void write(bigint index, const uchar* entry);
 
-        void fill(ubigint startPos);
+        void fill(ubigint startPos, bool allowIncompleteFill = false);
         void flushIfNotFlushed() const;
 
         bigint posToBufIndex(ubigint pos) const;
@@ -280,7 +280,7 @@ protected:
     //--------------------------------------------------------------------------
     // `EncIndBase` helpers
 
-    void fillBuf(Buf* buf, ubigint bufStartPos) const;
+    void fillBuf(Buf* buf, ubigint bufStartPos, bool isEncIndInit = false) const;
     void flushBufIfNotFlushed(Buf* buf) const;
 
     bigint posToBufIndex(Buf* buf, ubigint pos) const;

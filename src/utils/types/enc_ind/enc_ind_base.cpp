@@ -142,7 +142,7 @@ void EncIndBase::init(bigint capacity) {
     // and use setup buffer to speed this up (although this seems to only be efficient at big sizes)
     utils::benchmark::startProfile("init");
     for (bigint i = 0; i < this->capacity; i++) {
-        this->writeEncoded(BufType::SETUP, i, this->NULL_ENTRY);
+        this->writeEncoded(BufType::SETUP, i, this->NULL_ENTRY, true);
     }
     this->flushBufIfNotFlushed(this->setupBuf);
     utils::benchmark::stopProfile("init");
@@ -261,6 +261,7 @@ bool EncIndBase::advanceUntilMatch(
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward one bucket (i.e. `this->getBcktSize()`) at a time to search for it
 
+    // >>TODO 2: no results!
     // for the first read, we read directly from the file, so that if it turns out we don't need to
     // iterate forward, we skip filling the buffer. this is especially good when buffer is big but
     // enc ind is even bigger, as this avoids large amounts of filling and flushing the buffer at
@@ -301,6 +302,21 @@ bool EncIndBase::advanceUntilMatch(
         }
     } while (std::memcmp(currEntryPtr, match, matchLen) != 0);
 
+    /*
+    bigint positionsChecked = 0;
+    uchar* currEntry = this->readEncoded(bufType, pos);
+    while (std::memcmp(currEntry, match, matchLen) != 0) {
+        positionsChecked++;
+        if (positionsChecked == this->getBcktCount()) {
+            return false;
+        }
+
+        pos = (pos + this->getBcktSize()) % this->capacity;
+        currEntry = this->readEncoded(bufType, pos);
+    }
+    */
+
+    std::cout << "success " << std::endl;
     return true;
 }
 
@@ -344,13 +360,15 @@ uchar* EncIndBase::readEncoded(BufType bufType, ubigint pos) const {
 }
 
 
-void EncIndBase::writeEncoded(BufType bufType, ubigint pos, const uchar* encodedEntry) {
+void EncIndBase::writeEncoded(
+    BufType bufType, ubigint pos, const uchar* encodedEntry, bool isInit
+) {
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufToUse(bufType);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
-        this->fillBuf(bufToUse, pos);
+        this->fillBuf(bufToUse, pos, isInit);
         bufIndex = 0;
     }
     assert(bufIndex < bufToUse->ENTRY_CAPACITY);
@@ -447,9 +465,7 @@ void EncIndBase::Buf::operOnFileBase(
     SelfType* self, const std::function<bigint(uchar*, bigint)>& oper, ubigint startPos
 ) {
     // this is the only place we check this
-    if (self->ENTRY_CAPACITY <= 0) {
-        return;
-    }
+    assert(self->ENTRY_CAPACITY > 0);
 
     // first operate on as many of the target entries as we can without exceeding EOF
     bigint entriesUntilEof = self->encIndCapacity - startPos;
@@ -490,12 +506,16 @@ void EncIndBase::Buf::operOnFileBase(
 }
 
 
-void EncIndBase::Buf::fill(ubigint startPos) {
-    auto fillOper = [this](uchar* data, bigint targetEntryCount) {
+void EncIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
+    auto fillOper = [this, allowIncompleteFill](uchar* data, bigint targetEntryCount) {
         utils::benchmark::startProfile("buf fill");
         bigint itemsRead = std::fread(data, this->entryLen, targetEntryCount, this->file);
         utils::benchmark::stopProfile("buf fill");
-        return itemsRead;
+        if (allowIncompleteFill) {
+            return targetEntryCount;
+        } else {
+            return itemsRead;
+        }
     };
     operOnFileBase(this, fillOper, startPos);
 
@@ -561,16 +581,17 @@ bigint EncIndBase::Buf::posToBufIndex(ubigint pos) const {
 // `EncIndBase` helpers
 
 
-void EncIndBase::fillBuf(Buf* buf, ubigint bufStartPos) const {
+void EncIndBase::fillBuf(Buf* buf, ubigint bufStartPos, bool isEncIndInit) const {
     this->flushBufIfNotFlushed(buf);
-    this->flushIfNotFlushed();
-    buf->fill(bufStartPos);
+    buf->fill(bufStartPos, isEncIndInit);
 }
 
 
 void EncIndBase::flushBufIfNotFlushed(Buf* buf) const {
     buf->flushIfNotFlushed();
     this->isFlushed = false;
+    // remember to then flush the fwrite buffer to the file too
+    this->flushIfNotFlushed();
 }
 
 
