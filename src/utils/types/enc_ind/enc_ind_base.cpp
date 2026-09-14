@@ -263,7 +263,7 @@ bool EncIndBase::advanceUntilMatch(
     // >>TODO OHHHHH readEncodedOptionalBuf is not good because it misses previous non-flushed writes!!
     // so maybe do a read method that doesn't fill up the buffer if pos is NOT_IN_BUF, rather reads
     // from the file instead
-    this->readEncodedOptionalBuf(pos, currEntry, true);
+    this->readEncodedOptionalBuf(oper, pos, currEntry, true);
     if (std::memcmp(currEntry, match, matchLen) == 0) {
         std::cout << "success, pos is " << pos << " and currEntry is " << utils::debug::ustrToHex(currEntry, 16) << std::endl;
         return true;
@@ -296,7 +296,7 @@ bool EncIndBase::advanceUntilMatch(
             // `this->getBcktSize() > 1`; yes i know this is technically always true here), as
             // otherwise the previous `fread()` should've moved the file pointer to the right pos
             bool shouldFseek = this->getBcktSize() > 1 || pos < this->getBcktSize();
-            this->readEncodedOptionalBuf(pos, currEntry, shouldFseek);
+            this->readEncodedOptionalBuf(oper, pos, currEntry, shouldFseek);
             currEntryPtr = currEntry;
         }
     } while (std::memcmp(currEntryPtr, match, matchLen) != 0);
@@ -348,8 +348,6 @@ void EncIndBase::readEncodedOptionalBuf(
 ) const {
     pos %= this->capacity;
 
-    // so maybe if its found in buffer, memcpy it; otherwise fread it?
-    // but don't we then need writeEncodedOptionalBuf too or else the buffer will be filled anyway on write
     Buf* bufToUse = this->getBufFromOper(oper);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
@@ -373,7 +371,7 @@ void EncIndBase::readEncodedOptionalBuf(
     } else {
         // if `pos` is covered by the buffer, read it from the buffer instead since the buffer may
         // have a more updated version of that entry than the file
-        // the way we pass `ret` to accommodate the `fread()` approach above forces a `memcpy()`
+        // the way we pass `ret` to accommodate the `fread()` approach above forces `memcpy()` here
         utils::benchmark::startProfile("buf read");
         std::memcpy(ret, bufToUse->read(bufIndex), this->ENTRY_LEN());
         utils::benchmark::stopProfile("buf read");

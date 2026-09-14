@@ -81,6 +81,15 @@ public:
     bool read(Oper oper, ubigint pos, EncIndVal& ret) const;
 
     /**
+     * the same as `read()`, but not filling up the buffer and reading directly from the file
+     * instead if the requested `pos` is not within the buffer.
+     *
+     * IMPORTANT: this should still guarantee that if the requested entry is in the buffer, the
+     * returned value still matches the buffer's, not the file's (in case the buffer is unflushed).
+     */
+    bool readOptionalBuf(Oper oper, ubigint pos, EncIndVal& ret) const;
+
+    /**
      * try to find `key` starting at `pos`, iterating forward from `pos` if the key
      * at `pos` does not match `key` (e.g. if another entry overflowed there first).
      *
@@ -154,12 +163,11 @@ protected:
     void writeEncoded(Oper oper, ubigint pos, const uchar* encodedEntry, bool isInit = false);
 
     /**
-     * the same as `readEncoded`, but not filling up the buffer and reading directly from the file
+     * the same as `readEncoded()`, but not filling up the buffer and reading directly from the file
      * instead if the requested `pos` is not within the buffer.
      *
-     * IMPORTANT: this should still guarantee that should the requested entry be within the buffer,
-     * the returned value still matches the buffer's value and not the file's (in case the buffer
-     * is unflushed).
+     * IMPORTANT: this should still guarantee that if the requested entry is in the buffer, the
+     * returned value still matches the buffer's, not the file's (in case the buffer is unflushed).
      */
     void readEncodedOptionalBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek = true) const;
 
