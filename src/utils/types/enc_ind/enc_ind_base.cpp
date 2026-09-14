@@ -176,9 +176,9 @@ void EncIndBase::clear() {
 }
 
 
-bool EncIndBase::read(BufType bufType, ubigint pos, EncIndVal& ret, bool shouldFseek) const {
+bool EncIndBase::read(BufType bufType, ubigint pos, EncIndVal& ret) const {
     // read encoded entry at `pos`
-    uchar* entry = this->readEncoded(bufType, pos, shouldFseek);
+    uchar* entry = this->readEncoded(bufType, pos);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
@@ -204,9 +204,7 @@ bool EncIndBase::find(ubigint& pos, const ustring& key, EncIndVal& ret) const {
 }
 
 
-void EncIndBase::write(
-    BufType bufType, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek
-) {
+void EncIndBase::write(BufType bufType, ubigint pos, const EncIndEntry& encIndEntry) {
     // encode `encIndEntry`
     ustring encodedEntry = encIndEntry.toUstr();
     DEBUG_ONLY({
@@ -219,11 +217,6 @@ void EncIndBase::write(
     });
 
     // write encoded entry to `pos`
-    if (shouldFseek) {
-        utils::benchmark::startProfile("fseek");
-        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-        utils::benchmark::stopProfile("fseek");
-    }
     this->writeEncoded(bufType, pos, encodedEntry.c_str());
 }
 
@@ -254,7 +247,7 @@ void EncIndBase::print() const {
     for (bigint pos = 0; pos < this->capacity; pos++) {
         EncIndEntry encIndEntry;
         // (`BufType::SETUP` here to just get a larger buffer; it shouldn't really matter here)
-        this->readEntry(BufType::SETUP, pos, encIndEntry, pos == 0);
+        this->readEntry(BufType::SETUP, pos, encIndEntry);
         std::cerr << pos << ": " << utils::debug::ustrToHex(encIndEntry.toUstr())
                   << std::endl << std::endl;
     }
@@ -279,49 +272,34 @@ bool EncIndBase::advanceUntilMatch(
     // enc ind is even bigger, as this avoids large amounts of filling and flushing the buffer at
     // different positions and never using it in between when the enc ind is still mostly empty
     uchar firstEntry[this->ENTRY_LEN()];
-    this->readEncodedNoBuf(pos, firstEntry, true);
+    this->readEncodedNoBuf(pos, firstEntry);
     if (std::memcmp(firstEntry, match, matchLen) == 0) {
         return true;
     }
 
     // if we do need to iterate forward, then fill the buffer if needed and read from it
-
-    // yes, this does repeat the first read, but the buffer needs to be filled anyway
-    // and a constant one extra comparison is insignificant
-    // also `needsFseek` is still `true` here since we need to go back to before the first read
+    uchar* currEntry;
     bigint positionsChecked = 0;
-    uchar* currEntry = this->readEncoded(bufType, pos, true);
-    while (std::memcmp(currEntry, match, matchLen) != 0) {
+    do {
         positionsChecked++;
         if (positionsChecked == this->getBcktCount()) {
             return false;
         }
 
         pos = (pos + this->getBcktSize()) % this->capacity;
-        if (this->getBcktSize() > 1 || pos < this->getBcktSize()) {
-            // if either we need to `fseek()` to further than we had `fread()` (i.e.
-            // `this->getBcktSize()` > 1), or `pos` had been decreased this iteration (i.e.
-            // `pos < this->getBcktSize()`) meaning we must've wrapped around, call `fseek()`
-            // to make sure we are on the correct position (otherwise the previous `fread()`
-            // automatically handles it, so we can save some time)
-            currEntry = this->readEncoded(bufType, pos, true);
-        } else {
-            currEntry = this->readEncoded(bufType, pos, false);
-        }
-    }
+        currEntry = this->readEncoded(bufType, pos);
+    } while (std::memcmp(currEntry, match, matchLen) != 0);
 
     return true;
 }
 
 
-void EncIndBase::readEncodedNoBuf(ubigint pos, uchar* ret, bool shouldFseek) const {
+void EncIndBase::readEncodedNoBuf(ubigint pos, uchar* ret) const {
     pos %= this->capacity;
 
-    if (shouldFseek) {
-        utils::benchmark::startProfile("fseek");
-        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-        utils::benchmark::stopProfile("fseek");
-    }
+    utils::benchmark::startProfile("fseek");
+    std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+    utils::benchmark::stopProfile("fseek");
     utils::benchmark::startProfile("fread");
     int itemsRead = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
     utils::benchmark::stopProfile("fread");
@@ -335,7 +313,7 @@ void EncIndBase::readEncodedNoBuf(ubigint pos, uchar* ret, bool shouldFseek) con
 }
 
 
-uchar* EncIndBase::readEncoded(BufType bufType, ubigint pos, bool shouldFseek) const {
+uchar* EncIndBase::readEncoded(BufType bufType, ubigint pos) const {
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufToUse(bufType);
@@ -353,9 +331,7 @@ uchar* EncIndBase::readEncoded(BufType bufType, ubigint pos, bool shouldFseek) c
 }
 
 
-void EncIndBase::writeEncoded(
-    BufType bufType, ubigint pos, const uchar* encodedEntry, bool shouldFseek
-) {
+void EncIndBase::writeEncoded(BufType bufType, ubigint pos, const uchar* encodedEntry) {
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufToUse(bufType);
@@ -372,8 +348,8 @@ void EncIndBase::writeEncoded(
 }
 
 
-bool EncIndBase::readEntry(BufType bufType, ubigint pos, EncIndEntry& ret, bool shouldFseek) const {
-    uchar* entry = this->readEncoded(bufType, pos, shouldFseek);
+bool EncIndBase::readEntry(BufType bufType, ubigint pos, EncIndEntry& ret) const {
+    uchar* entry = this->readEncoded(bufType, pos);
     if (std::memcmp(entry, this->NULL_ENTRY, this->ENTRY_LEN()) == 0) {
         // if `pos` contains `this->NULL_ENTRY`
         return false;
@@ -465,6 +441,8 @@ void EncIndBase::Buf::operOnFileBase(
     // first operate on as many of the target entries as we can without exceeding EOF
     bigint entriesUntilEof = self->encIndCapacity - startPos;
     bigint entriesToOper1 = std::min(self->ENTRY_CAPACITY, entriesUntilEof);
+    // we always `fseek()` here since we were likely reading from the buffer previously,
+    // and that doesn't advance the file pointers
     utils::benchmark::startProfile("fseek");
     std::fseek(self->file, startPos * self->entryLen, SEEK_SET);
     utils::benchmark::stopProfile("fseek");
