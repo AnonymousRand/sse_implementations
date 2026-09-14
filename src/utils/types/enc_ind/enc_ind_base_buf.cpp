@@ -151,8 +151,7 @@ void EncIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
 void EncIndBase::Buf::flushIfNotFlushed() const {
     if (!this->isFlushed && this->isFilled) {
         auto flushOper = [this](uchar* data, bigint targetEntryCount) {
-            bigint itemsWritten = std::fwrite(data, this->entryLen, targetEntryCount, this->file);
-            return itemsWritten;
+            return std::fwrite(data, this->entryLen, targetEntryCount, this->file);
         };
         operOnFileBase(this, flushOper, this->startPos);
 

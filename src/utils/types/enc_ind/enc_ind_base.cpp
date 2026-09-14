@@ -318,8 +318,7 @@ uchar* EncIndBase::readEncoded(Oper oper, ubigint pos) const {
         bufIndex = 0;
     }
 
-    uchar* ret = bufToUse->read(bufIndex);
-    return ret;
+    return bufToUse->read(bufIndex);
 }
 
 
@@ -360,8 +359,7 @@ uchar* EncIndBase::readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool sho
     } else {
         // if `pos` is covered by the buffer, read it from the buffer instead since the buffer may
         // have a more updated version of that entry than the file
-        uchar* actualRet = bufToUse->read(bufIndex);
-        return actualRet;
+        return bufToUse->read(bufIndex);
     }
 }
 
