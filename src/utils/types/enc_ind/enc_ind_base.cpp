@@ -136,6 +136,12 @@ void EncIndBase::init(SseOper setupOper, bigint capacity) {
 
     // init buffers
     bigint setupBufEntryCapacity = std::min(config::ENC_IND_SETUP_BUF_CAPACITY, this->capacity);
+    // if our enc ind does not fit entirely in memory, use a smaller buffer to avoid rapid
+    // moving (i.e. flushing and refilling) of huge setup buffers
+    if (setupBufEntryCapacity < this->capacity) {
+        setupBufEntryCapacity =
+            std::min(config::ENC_IND_SETUP_OVERFLOW_BUF_CAPACITY, this->capacity);
+    }
     this->setupBuf = new Buf(
         setupBufEntryCapacity, this->file, this->filename, this->capacity, this->ENTRY_LEN()
     );
