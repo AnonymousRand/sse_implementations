@@ -25,6 +25,8 @@ int main() {
     std::cout << "Enter database size (power of 2): ";
     std::cin >> maxDbSizeExp;
     std::cout << std::endl << std::endl;
+    // smaller sizes, e.g. for Log-SRC[NLogN]-based things where storage is log^2
+    int maxDbSizeExpSmall = maxDbSizeExp > 15 ? std::max(maxDbSizeExp - 5, 15) : maxDbSizeExp;
 
     std::unique_ptr<PiBas<>>        piBas         = app::createSse<PiBas<>>();
     std::unique_ptr<NLogN<>>        nLogN         = app::createSse<NLogN<>>();
@@ -61,9 +63,10 @@ int main() {
 
     /*
     {
-        // DB, query declared here so they don't change when `run()` called with different schemes
+        // DB and query declared here so they don't change between calls to `run()` for different
+        // SSE schemes (also why DB is always small since we need the same DB for each scheme)
         Db<> db;
-        app::createDb(db, std::pow(2, dbSizeExp), true, true);
+        app::createDb(db, std::pow(2, dbSizeExpSmall), true, true);
         Range<Kw> query {3, 5};
         app::experiments::Debugging debugging(db, query);
         debugging.printHeader();
@@ -121,6 +124,7 @@ int main() {
     {
         bigint targetResultSize = 100;
         app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp, targetResultSize);
+        app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExpSmall, targetResultSize);
         allVsDbSize.printHeader();
 
         /*
@@ -134,13 +138,13 @@ int main() {
         allVsDbSize.run(logSrcPiBas.get());
 
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-        allVsDbSize.run(logSrcNLogN.get());
+        allVsDbSizeSmall.run(logSrcNLogN.get());
 
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
         allVsDbSize.run(logSrcIPiBas.get());
 
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-        allVsDbSize.run(logSrcINLogN.get());
+        allVsDbSizeSmall.run(logSrcINLogN.get());
 
         std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
         allVsDbSize.run(logSrcIStar.get());
@@ -155,7 +159,7 @@ int main() {
         allVsDbSize.run(sdaLogSrcPiBas.get());
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        allVsDbSize.run(sdaLogSrcNLogN.get());
+        allVsDbSizeSmall.run(sdaLogSrcNLogN.get());
         */
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
@@ -163,7 +167,7 @@ int main() {
 
         
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        allVsDbSize.run(sdaLogSrcINLogN.get());
+        allVsDbSizeSmall.run(sdaLogSrcINLogN.get());
 
         /*
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
@@ -175,6 +179,7 @@ int main() {
 
     {
         app::experiments::SearchVsResultSize searchVsResultSize(maxDbSizeExp);
+        app::experiments::SearchVsResultSize searchVsResultSizeSmall(maxDbSizeExpSmall);
         searchVsResultSize.printHeader();
 
         std::cout << "================ PiBas =================" << std::endl << std::endl;
@@ -187,13 +192,13 @@ int main() {
         searchVsResultSize.run(logSrcPiBas.get());
 
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-        searchVsResultSize.run(logSrcNLogN.get());
+        searchVsResultSizeSmall.run(logSrcNLogN.get());
 
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
         searchVsResultSize.run(logSrcIPiBas.get());
 
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-        searchVsResultSize.run(logSrcINLogN.get());
+        searchVsResultSizeSmall.run(logSrcINLogN.get());
 
         std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
         searchVsResultSize.run(logSrcIStar.get());
@@ -208,13 +213,13 @@ int main() {
         searchVsResultSize.run(sdaLogSrcPiBas.get());
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        searchVsResultSize.run(sdaLogSrcNLogN.get());
+        searchVsResultSizeSmall.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         searchVsResultSize.run(sdaLogSrcIPiBas.get());
 
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        searchVsResultSize.run(sdaLogSrcINLogN.get());
+        searchVsResultSizeSmall.run(sdaLogSrcINLogN.get());
 
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
         searchVsResultSize.run(sdaLogSrcIStar.get());
@@ -225,6 +230,7 @@ int main() {
 
     {
         app::experiments::SearchVsRangeSize searchVsRangeSize(maxDbSizeExp);
+        app::experiments::SearchVsRangeSize searchVsRangeSizeSmall(maxDbSizeExpSmall);
         searchVsRangeSize.printHeader();
 
         std::cout << "================ PiBas =================" << std::endl << std::endl;
@@ -237,13 +243,13 @@ int main() {
         searchVsRangeSize.run(logSrcPiBas.get());
 
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-        searchVsRangeSize.run(logSrcNLogN.get());
+        searchVsRangeSizeSmall.run(logSrcNLogN.get());
 
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
         searchVsRangeSize.run(logSrcIPiBas.get());
 
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-        searchVsRangeSize.run(logSrcINLogN.get());
+        searchVsRangeSizeSmall.run(logSrcINLogN.get());
 
         std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
         searchVsRangeSize.run(logSrcIStar.get());
@@ -258,13 +264,13 @@ int main() {
         searchVsRangeSize.run(sdaLogSrcPiBas.get());
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        searchVsRangeSize.run(sdaLogSrcNLogN.get());
+        searchVsRangeSizeSmall.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         searchVsRangeSize.run(sdaLogSrcIPiBas.get());
 
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        searchVsRangeSize.run(sdaLogSrcINLogN.get());
+        searchVsRangeSizeSmall.run(sdaLogSrcINLogN.get());
 
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
         searchVsRangeSize.run(sdaLogSrcIStar.get());
@@ -275,6 +281,7 @@ int main() {
 
     {
         app::experiments::SearchVsFalsePos searchVsFalsePos(maxDbSizeExp);
+        app::experiments::SearchVsFalsePos searchVsFalsePosSmall(maxDbSizeExpSmall);
         searchVsFalsePos.printHeader();
 
         std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
@@ -284,10 +291,10 @@ int main() {
         searchVsFalsePos.run(logSrcIPiBas.get());
 
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-        searchVsFalsePos.run(logSrcNLogN.get());
+        searchVsFalsePosSmall.run(logSrcNLogN.get());
 
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-        searchVsFalsePos.run(logSrcINLogN.get());
+        searchVsFalsePosSmall.run(logSrcINLogN.get());
 
         std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
         searchVsFalsePos.run(logSrcIStar.get());
@@ -299,10 +306,10 @@ int main() {
         searchVsFalsePos.run(sdaLogSrcIPiBas.get());
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        searchVsFalsePos.run(sdaLogSrcNLogN.get());
+        searchVsFalsePosSmall.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        searchVsFalsePos.run(sdaLogSrcINLogN.get());
+        searchVsFalsePosSmall.run(sdaLogSrcINLogN.get());
 
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
         searchVsFalsePos.run(sdaLogSrcIStar.get());
@@ -313,7 +320,7 @@ int main() {
 
     if (config::SHOULD_BENCHMARK_UPDTS) {
         // set a bound to prevent this experiment from taking too long and outputting too much text
-        int dbSizeExp = std::min(maxDbSizeExp, 14);
+        int dbSizeExp = std::min(maxDbSizeExpSmall, 14);
         Db<> db;
         app::createDb(db, std::pow(2, dbSizeExp), true, true);
         app::experiments::UpdateVsDbSize updateVsDbSize(db);
@@ -329,13 +336,13 @@ int main() {
         updateVsDbSize.run(sdaLogSrcPiBas.get());
 
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcNLogN.get());
+        updateVsDbSizeSmall.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         updateVsDbSize.run(sdaLogSrcIPiBas.get());
 
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcINLogN.get());
+        updateVsDbSizeSmall.run(sdaLogSrcINLogN.get());
 
         // (note that this has horrendous performance as randomized keywords lets
         // individual SDa subindexes have HUGE TDAG 1s. for the same reason this is not secure)

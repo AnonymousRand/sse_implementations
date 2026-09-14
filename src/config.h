@@ -40,12 +40,12 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 
 /**
  * the capacity in # of entries for the (non-locality) encrypted index read buffers
- * (which help speed up massive `setup()` etc. calls). Set to `0` to not buffer.
- *
- * (currently, an enc ind entry is 128 bytes: 48 tuple + 16 iv + 64 label/hash.)
+ * (which help speed up massive `setup()` etc. calls).
  */
-// 2^25 => ~4.3 GB, which should accommodate Log-SRC-i[PiBas/NLogN] up to 2^19
-// (noting that NLogN maintains a separate enc ind instance and hence buffer for each level)
+// currently: an enc ind entry is 128 bytes (48 tuple + 16 iv + 64 label/hash), so
+// 2^25 => ~4.3 GB, which should accommodate Log-SRC-i[PiBas/NLogN] up to 2^19 (noting that
+// NLogN maintains a separate enc ind instance and hence buffer for each level; HOWEVER
+// since all the instances are active simultaneously, you may still run out of RAM)
 inline constexpr bigint ENC_IND_SETUP_BUF_CAPACITY = std::pow(2, 25);
 inline constexpr bigint ENC_IND_SEARCH_BUF_CAPACITY = std::pow(2, 8);
 static_assert(
@@ -65,11 +65,10 @@ static_assert(
 /**
  * the max number of decimal digits you want ids and keywords to be able to support
  * (this determines the size of each entry in encrypted indexes; see `TUPLE_ENCOD_LEN` below).
- *
- * currently: 11 is the largest possible value such that each encrypted tuple fits in
- * 3 AES blocks (= 48 bytes).
  */
-inline constexpr int MAX_VALUE_DIGITS = 11;
+// currently: 8 is the largest possible value such that each encrypted tuple fits in
+// 2 AES blocks (= 32 bytes), and should be sufficient for DB sizes up to 2^26
+inline constexpr int MAX_VALUE_DIGITS = 8;
 static_assert(
     MAX_VALUE_DIGITS > 0, "Error: `MAX_VALUE_DIGITS` must be strictly positive!"
 );
