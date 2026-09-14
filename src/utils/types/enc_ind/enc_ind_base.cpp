@@ -122,7 +122,7 @@ EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
 // interface
 
 
-void EncIndBase::init(Oper setupOper, bigint capacity) {
+void EncIndBase::init(SseOper setupOper, bigint capacity) {
     // inits enc ind file and file pointer
     IDiskStorage::init();
 
@@ -184,7 +184,7 @@ void EncIndBase::clear() {
 }
 
 
-bool EncIndBase::read(Oper oper, ubigint pos, EncIndVal& ret, bool shouldFseek) const {
+bool EncIndBase::read(SseOper oper, ubigint pos, EncIndVal& ret, bool shouldFseek) const {
     // read encoded entry at `pos`
     uchar* entryPtr;
     // note that `entry` must be declared out here for `entryPtr`, which may point to it,
@@ -206,7 +206,7 @@ bool EncIndBase::read(Oper oper, ubigint pos, EncIndVal& ret, bool shouldFseek) 
 }
 
 
-bool EncIndBase::find(Oper oper, ubigint& pos, const ustring& key, EncIndVal& ret) const {
+bool EncIndBase::find(SseOper oper, ubigint& pos, const ustring& key, EncIndVal& ret) const {
     bool isFound = this->advanceUntilMatch(oper, pos, key.c_str(), this->KEY_LEN());
     if (!isFound) {
         return false;
@@ -217,7 +217,9 @@ bool EncIndBase::find(Oper oper, ubigint& pos, const ustring& key, EncIndVal& re
 }
 
 
-void EncIndBase::write(Oper oper, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek) {
+void EncIndBase::write(
+    SseOper oper, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek
+) {
     // encode `encIndEntry`
     ustring encodedEntry = encIndEntry.toUstr();
     DEBUG_ONLY({
@@ -238,7 +240,7 @@ void EncIndBase::write(Oper oper, ubigint pos, const EncIndEntry& encIndEntry, b
 }
 
 
-void EncIndBase::writeToFirstEmpty(Oper oper, ubigint& pos, const EncIndEntry& encIndEntry) {
+void EncIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncIndEntry& encIndEntry) {
     bool isEmptyAvailable = this->advanceUntilMatch(oper, pos, this->NULL_ENTRY, this->ENTRY_LEN());
     // if we've scoured the whole index and still haven't found an available space,
     // throw an error: we are trying to write to a full index
@@ -255,9 +257,9 @@ void EncIndBase::writeToFirstEmpty(Oper oper, ubigint& pos, const EncIndEntry& e
 }
 
 
-void EncIndBase::endSetup(Oper oper) {
-    assert(oper == Oper::SETUP || oper == Oper::UPDATE);
-    Buf* buf = this->getBufFromOper(oper);
+void EncIndBase::endSetup(SseOper oper) {
+    assert(oper == SseOper::SETUP || oper == SseOper::UPDATE);
+    Buf* buf = this->getBufFromSseOper(oper);
     this->flushBufIfNotFlushed(buf);
 }
 
@@ -265,8 +267,8 @@ void EncIndBase::endSetup(Oper oper) {
 void EncIndBase::print() const {
     for (bigint pos = 0; pos < this->capacity; pos++) {
         EncIndEntry encIndEntry;
-        // (`Oper::SETUP` here to just get a larger buffer; it shouldn't really matter here)
-        this->readEntry(Oper::SETUP, pos, encIndEntry, pos == 0);
+        // (`SseOper::SETUP` here to just get a larger buffer; it shouldn't really matter here)
+        this->readEntry(SseOper::SETUP, pos, encIndEntry, pos == 0);
         std::cerr << pos << ": " << utils::debug::ustrToHex(encIndEntry.toUstr())
                   << std::endl << std::endl;
     }
@@ -278,7 +280,7 @@ void EncIndBase::print() const {
 
 
 bool EncIndBase::advanceUntilMatch(
-    Oper oper, ubigint& pos, const uchar* match, int matchLen
+    SseOper oper, ubigint& pos, const uchar* match, int matchLen
 ) const {
     // need this for wrapping logic later to work!
     pos %= this->capacity;
@@ -326,10 +328,10 @@ bool EncIndBase::advanceUntilMatch(
 }
 
 
-uchar* EncIndBase::readEncoded(Oper oper, ubigint pos) const {
+uchar* EncIndBase::readEncoded(SseOper oper, ubigint pos) const {
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufFromOper(oper);
+    Buf* bufToUse = this->getBufFromSseOper(oper);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         this->fillBuf(bufToUse, pos);
@@ -340,10 +342,10 @@ uchar* EncIndBase::readEncoded(Oper oper, ubigint pos) const {
 }
 
 
-void EncIndBase::writeEncoded(Oper oper, ubigint pos, const uchar* encodedEntry, bool isInit) {
+void EncIndBase::writeEncoded(SseOper oper, ubigint pos, const uchar* encodedEntry, bool isInit) {
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufFromOper(oper);
+    Buf* bufToUse = this->getBufFromSseOper(oper);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         this->fillBuf(bufToUse, pos, isInit);
@@ -354,10 +356,10 @@ void EncIndBase::writeEncoded(Oper oper, ubigint pos, const uchar* encodedEntry,
 }
 
 
-uchar* EncIndBase::readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek) const {
+uchar* EncIndBase::readEncodedNoBuf(SseOper oper, ubigint pos, uchar* ret, bool shouldFseek) const {
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufFromOper(oper);
+    Buf* bufToUse = this->getBufFromSseOper(oper);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         // if `pos` is not covered by buffer, read directly from file; we can completely ignore
@@ -383,11 +385,11 @@ uchar* EncIndBase::readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool sho
 
 
 void EncIndBase::writeEncodedNoBuf(
-    Oper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek
+    SseOper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek
 ) {
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufFromOper(oper);
+    Buf* bufToUse = this->getBufFromSseOper(oper);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
         // if `pos` is not covered by buffer, write directly to file; we can completely ignore
@@ -414,7 +416,7 @@ void EncIndBase::writeEncodedNoBuf(
 }
 
 
-bool EncIndBase::readEntry(Oper oper, ubigint pos, EncIndEntry& ret, bool shouldFseek) const {
+bool EncIndBase::readEntry(SseOper oper, ubigint pos, EncIndEntry& ret, bool shouldFseek) const {
     // read encoded entry at `pos`
     uchar* entryPtr;
     uchar entry[this->ENTRY_LEN()];

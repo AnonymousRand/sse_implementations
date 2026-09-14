@@ -34,11 +34,11 @@ public:
 
     // new (non-virtual shadow!) versions of these methods that don't change `pos` by reference,
     // as that shouldn't be needed for pseudorandom encrypted indexes and may cause bugs later
-    bool find(Oper oper, ubigint pos, const ustring& key, EncIndVal& ret) const {
+    bool find(SseOper oper, ubigint pos, const ustring& key, EncIndVal& ret) const {
         return EncIndBase::find(oper, pos, key, ret);
     }
 
-    void writeToFirstEmpty(Oper oper, ubigint pos, const EncIndEntry& encIndEntry) {
+    void writeToFirstEmpty(SseOper oper, ubigint pos, const EncIndEntry& encIndEntry) {
         EncIndBase::writeToFirstEmpty(oper, pos, encIndEntry);
     }
 
@@ -46,8 +46,8 @@ private:
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
-    const bool SHOULD_BUFFER_READ(Oper oper) const override { return true; }
-    const bool SHOULD_BUFFER_WRITE(Oper oper) const override { return true; }
+    const bool SHOULD_BUFFER_READ(SseOper oper) const override { return true; }
+    const bool SHOULD_BUFFER_WRITE(SseOper oper) const override { return true; }
 
     // this essentially means we have no buckets; each individual entry is a "bucket"
     bigint getBcktSize() const override { return 1; }

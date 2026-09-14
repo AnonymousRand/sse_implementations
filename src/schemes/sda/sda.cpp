@@ -17,7 +17,6 @@
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/doc.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
@@ -59,7 +58,7 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
             }
 
             Underly* newUnderly = new Underly();
-            newUnderly->setSetupOper(EncIndBase::Oper::UPDATE);
+            newUnderly->setSetupOper(SseOper::UPDATE);
             newUnderly->setup(this->secParam, indDb);
             this->underlys.push_back(newUnderly);
             dbPos += indSize;
@@ -129,7 +128,7 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
     // if empty, initialize first index
     if (this->updateCount == 0) {
         Underly* newUnderly = new Underly();
-        newUnderly->setSetupOper(EncIndBase::Oper::UPDATE);
+        newUnderly->setSetupOper(SseOper::UPDATE);
         newUnderly->setup(this->secParam, Db<Tuple<>> {newTuple});
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
@@ -147,12 +146,12 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
     if (this->firstEmptyInd >= this->underlys.size() - 1) {
         // if we need to create a new, larger index
         Underly* newUnderly = new Underly();
-        newUnderly->setSetupOper(EncIndBase::Oper::UPDATE);
+        newUnderly->setSetupOper(SseOper::UPDATE);
         newUnderly->setup(this->secParam, mergedDb);
         this->underlys.push_back(newUnderly);
     } else {
         Underly* underlyToSetup = this->underlys[this->firstEmptyInd];
-        underlyToSetup->setSetupOper(EncIndBase::Oper::UPDATE);
+        underlyToSetup->setSetupOper(SseOper::UPDATE);
         underlyToSetup->setup(this->secParam, mergedDb);
     }
 

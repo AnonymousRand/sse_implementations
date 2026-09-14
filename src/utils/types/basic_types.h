@@ -30,3 +30,10 @@ static_assert(std::integral<Kw>,      "Error: `Kw` must be an integral type!");
 static_assert(std::integral<Id>,      "Error: `Id` must be an integral type!");
 static_assert(std::integral<IdAlias>, "Error: `IdAlias` must be an integral type!");
 inline constexpr bigint DUMMY = -1;
+
+
+enum class SseOper {
+    SETUP,
+    SEARCH,
+    UPDATE
+};

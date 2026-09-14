@@ -10,7 +10,6 @@
 #include "utils/crypto.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_rand.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/tuple.h"
@@ -74,7 +73,7 @@ std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryTo
         ubigint pos = utils::misc::hashToPos(label);
         // res <- encInd.get(l)
         EncIndVal encIndVal;
-        bool isFound = this->encInd->find(EncIndBase::Oper::SEARCH, pos, label, encIndVal);
+        bool isFound = this->encInd->find(SseOper::SEARCH, pos, label, encIndVal);
         if (!isFound) {
             break;
         }

@@ -63,15 +63,7 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    // public-facing interface methods should use `Oper` as parameters to hide the
-    // `Buf*` members, while internal ones can use `Buf*` (hence why `Oper` is `public`)
-    enum class Oper {
-        SETUP,
-        SEARCH,
-        UPDATE
-    };
-
-    virtual void init(Oper setupOper, bigint capacity);
+    virtual void init(SseOper setupOper, bigint capacity);
     void clear() override;
 
     /**
@@ -81,7 +73,7 @@ public:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool read(Oper oper, ubigint pos, EncIndVal& ret, bool shouldFseek = true) const;
+    bool read(SseOper oper, ubigint pos, EncIndVal& ret, bool shouldFseek = true) const;
 
     /**
      * try to find `key` starting at `pos`, iterating forward from `pos` if the key
@@ -94,13 +86,13 @@ public:
      *     - `true` if the entry corresponding to `key` was found.
      *     - `false` if the entry corresponding to `key` was not found in the entire index.
      */
-    bool find(Oper oper, ubigint& pos, const ustring& key, EncIndVal& ret) const;
+    bool find(SseOper oper, ubigint& pos, const ustring& key, EncIndVal& ret) const;
 
     /**
      * write to `pos` (but does not check if there is already something there, e.g. from
      * `pos % this->capacity`, and will overwrite it!).
      */
-    void write(Oper oper, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek = true);
+    void write(SseOper oper, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek = true);
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos` until
@@ -109,7 +101,7 @@ public:
      * returns in `pos`: this final empty location (in case you may need it for e.g.
      * contiguous writing of a locality-aware bucket after determining its start position).
      */
-    void writeToFirstEmpty(Oper oper, ubigint& pos, const EncIndEntry& encIndEntry);
+    void writeToFirstEmpty(SseOper oper, ubigint& pos, const EncIndEntry& encIndEntry);
 
     /**
      * this method MUST be called when all setup operations done! e.g. they flush the buffers,
@@ -122,7 +114,7 @@ public:
      * upon starting the new oper, which would then impact benchmarking (e.g. flushing
      * a huge setup buffer at the start of a search.)
      */
-    void endSetup(Oper oper);
+    void endSetup(SseOper oper);
 
     bigint getCapacity() const { return this->capacity; }
     bigint getBytes() const { return this->capacity * this->ENTRY_LEN(); }
@@ -134,8 +126,8 @@ protected:
     uchar* NULL_ENTRY = nullptr;
     bigint capacity = 0;
 
-    virtual const bool SHOULD_BUFFER_READ(Oper oper) const = 0;
-    virtual const bool SHOULD_BUFFER_WRITE(Oper oper) const = 0;
+    virtual const bool SHOULD_BUFFER_READ(SseOper oper) const = 0;
+    virtual const bool SHOULD_BUFFER_WRITE(SseOper oper) const = 0;
 
     virtual bigint getBcktSize() const = 0;
     virtual bigint getBcktCount() const = 0;
@@ -159,7 +151,7 @@ protected:
      *     - `true` if an entry matching `match` was found.
      *     - `false` if an entry matching `match` was found was not found in the entire index.
      */
-    bool advanceUntilMatch(Oper oper, ubigint& pos, const uchar* match, int matchLen) const;
+    bool advanceUntilMatch(SseOper oper, ubigint& pos, const uchar* match, int matchLen) const;
 
     /**
      * the raw read and write methods. these should be the ONLY read/write methods that touch
@@ -169,8 +161,8 @@ protected:
      * IMPORTANT: this points to the same memory as the buffer data does (i.e. no `memcpy()`s),
      * so do NOT allocate any new memory to hold it or free the returned value in the caller!!
      */
-    uchar* readEncoded(Oper oper, ubigint pos) const;
-    void writeEncoded(Oper oper, ubigint pos, const uchar* encodedEntry, bool isInit = false);
+    uchar* readEncoded(SseOper oper, ubigint pos) const;
+    void writeEncoded(SseOper oper, ubigint pos, const uchar* encodedEntry, bool isInit = false);
 
     /**
      * the same as `readEncoded()`/`writeEncoded()`, but not filling up the buffer and reading/
@@ -187,9 +179,9 @@ protected:
      * more up-to-date version of the entries it contains. this should ensure that it is ALWAYS
      * correct to read from the buffer.
      */
-    uchar* readEncodedNoBuf(Oper oper, ubigint pos, uchar* ret, bool shouldFseek = true) const;
+    uchar* readEncodedNoBuf(SseOper oper, ubigint pos, uchar* ret, bool shouldFseek = true) const;
     void writeEncodedNoBuf(
-        Oper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek = true
+        SseOper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek = true
     );
 
     /**
@@ -199,7 +191,7 @@ protected:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool readEntry(Oper oper, ubigint pos, EncIndEntry& ret, bool shouldFseek = true) const;
+    bool readEntry(SseOper oper, ubigint pos, EncIndEntry& ret, bool shouldFseek = true) const;
 
     //--------------------------------------------------------------------------
     // buffer
@@ -212,18 +204,18 @@ protected:
     mutable Buf* updateBuf = nullptr;
 
     /**
-     * translate public-facing `Oper` to a `Buf*` member.
+     * translate public-facing `SseOper` to a `Buf*` member.
      */
-    Buf* getBufFromOper(Oper oper) const {
+    Buf* getBufFromSseOper(SseOper oper) const {
         switch (oper) {
-        case Oper::SETUP:
+        case SseOper::SETUP:
             return this->setupBuf;
-        case Oper::SEARCH:
+        case SseOper::SEARCH:
             return this->searchBuf;
-        case Oper::UPDATE:
+        case SseOper::UPDATE:
             return this->updateBuf;
         default:
-            std::cerr << "Error: EncIndBase::getBufFromOper(): zoo wee mama" << std::endl;
+            std::cerr << "Error: EncIndBase::getBufFromSseOper(): zoo wee mama" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }

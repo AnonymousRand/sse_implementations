@@ -8,7 +8,6 @@
 
 #include "utils/benchmark.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/enc_ind/enc_ind_loc.h"
 #include "utils/types/enc_ind/enc_ind_types.h"
 #include "utils/types/tuple.h"
@@ -98,7 +97,7 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
             // (NOTE: dummies must also use the correct (not dummy) `label` so they
             // are still found by `find()`!)
             isFound = this->encIndLvls[lvl]->find(
-                EncIndBase::Oper::SEARCH, startPos, label, encIndVal
+                SseOper::SEARCH, startPos, label, encIndVal
             );
         } else {
             // after first read, just read from the bucket consecutively as we are
@@ -107,7 +106,7 @@ std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
             // we also stop `fseek()`ing at every read since the read itself should advance
             // the file pointer to the right location for the next one
             isFound = this->encIndLvls[lvl]->read(
-                EncIndBase::Oper::SEARCH, startPos + dbKwCounter, encIndVal, false
+                SseOper::SEARCH, startPos + dbKwCounter, encIndVal, false
             );
         }
         if (!isFound) {

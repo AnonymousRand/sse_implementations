@@ -6,7 +6,6 @@
 
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
 #include "utils/types/tuple.h"
 
 
@@ -36,7 +35,7 @@ public:
     virtual void getDb(Db<DbTuple>& ret) const = 0;
 
     bigint getSize() const { return this->size; }
-    void setSetupOper(EncIndBase::Oper setupOper) { this->setupOper = setupOper; }
+    void setSetupOper(SseOper setupOper) { this->setupOper = setupOper; }
 
 protected:
     /**
@@ -44,7 +43,7 @@ protected:
      * padding/processing!).
      */
     bigint size;
-    EncIndBase::Oper setupOper = EncIndBase::Oper::SETUP;
+    SseOper setupOper = SseOper::SETUP;
 };
 
 
