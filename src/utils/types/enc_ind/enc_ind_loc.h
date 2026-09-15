@@ -43,25 +43,46 @@ private:
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
-    // we skip buffering for searches for locality-aware enc inds except when bucket size is 1,
-    // as otherwise we only check every bucket start pos, i.e. every `this->bcktSize` entries,
-    // so buffering contiguous blocks usually becomes a waste (and more often than not, we
-    // do not need to try as many positions as during setups to find the right entry)
+    // compared to pseudorandom enc inds, we skip buffering for advances except when bucket size
+    // is 1, as otherwise we only check every bucket start pos, i.e. every `this->bcktSize` entries,
+    // so buffering contiguous blocks usually becomes a waste (and more often than not,
+    // we do not need to try as many positions as during setups to find the right entry)
+    //
+    // otherwise, we similarly only compensate for my slow implementation of advances during
+    // benchmarked operations
+
     bool SHOULD_BUFFER_READ(SseOper oper) const override {
         switch (oper) {
-        case SseOper::SETUP:
-            return true;
-        case SseOper::SEARCH:
-            return this->bcktSize == 1;
-        case SseOper::UPDATE:
-            return true;
+        case SseOper::SETUP:  return true;
+        case SseOper::SEARCH: return false;
+        case SseOper::UPDATE: return false;
         default:
-            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_READ(): mama wee zoo" << std::endl;
+            std::cerr << "Error: EncIndRand::SHOULD_BUFFER_READ(): mama wee zoo" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
 
-    bool SHOULD_BUFFER_WRITE(SseOper oper) const override { return true; }
+    bool SHOULD_BUFFER_WRITE(SseOper oper) const override {
+        switch (oper) {
+        case SseOper::SETUP:  return true;
+        case SseOper::SEARCH: return false;
+        case SseOper::UPDATE: return false;
+        default:
+            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_WRITE(): mama wee zoo" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    }
+
+    bool SHOULD_BUFFER_ADVANCE(SseOper oper) const override {
+        switch (oper) {
+        case SseOper::SETUP:  return true;
+        case SseOper::SEARCH: return this->bcktSize == 1;
+        case SseOper::UPDATE: return this->bcktSize == 1;
+        default:
+            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_ADVANCE(): mama wee zoo" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    }
 
     bigint getBcktSize() const override { return this->bcktSize; }
     bigint getBcktCount() const override { return this->bcktCount; }

@@ -40,7 +40,8 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
 
 /**
  * the capacity in # of entries for the (non-locality) encrypted index read buffers (which help
- * speed up massive operations).
+ * speed up massive operations, mainly setups, by somewhat compensating for my slow implementation
+ * of what happens if two entries are written to the same position after a modulo).
  *
  * search and update buffers are recommended to be smaller than the setup buffer, both since there
  * is usually less need for buffering and also so on-disk performance is more accurately measured.

@@ -132,6 +132,7 @@ protected:
 
     virtual bool SHOULD_BUFFER_READ(SseOper oper) const = 0;
     virtual bool SHOULD_BUFFER_WRITE(SseOper oper) const = 0;
+    virtual bool SHOULD_BUFFER_ADVANCE(SseOper oper) const = 0;
 
     virtual bigint getBcktSize() const = 0;
     virtual bigint getBcktCount() const = 0;
@@ -169,8 +170,12 @@ protected:
     void writeEncoded(SseOper oper, ubigint pos, const uchar* encodedEntry, bool isInit = false);
 
     /**
-     * the same as `readEncoded()`/`writeEncoded()`, but not filling up the buffer and reading/
-     * writing directly from/to the file instead if the requested `pos` is not within the buffer.
+     * the same as `readEncoded()`/`writeEncoded()`, but:
+     * - `OptionalBuf`: does not fill up the buffer and reads/writes directly from/to the file
+     *   instead if the requested `pos` is not within the buffer.
+     * - `NoBuf`: always reads/writes directly from/to the file even if the requested `pos` is
+     *   within the buffer. THIS IS MAINLY FOR ACCURATELY REFLECTING EXPERIMENTAL PERFORMANCE OF
+     *   BENCHMARKED OPERATIONS, preventing the buffers from dishonestly improving performance.
      *
      * returns: a pointer to the start of the read data, either in a buffer or the `ret` param
      * itself (so be mindful of `ret`'s lifetime!). on the other hand, the `ret` param *may or
@@ -178,11 +183,15 @@ protected:
      * (the `ret` parameter is just to accommodate an `fread()` if it is required, without needing
      * to allocate heap memory within this function/giving full control of memory alloc to caller.)
      *
-     * IMPORTANT: these should still guarantee that if the requested entry is in the buffer, the
-     * read/write still happens in the buffer instead of in the file, as the buffer must hold the
-     * more up-to-date version of the entries it contains. this should ensure that it is ALWAYS
-     * correct to read from the buffer.
+     * IMPORTANT: these should guarantee that if the requested entry is in the buffer, the buffer
+     * still holds the most up-to-date version of its entries afterwards (e.g. for `OptionalBuf`,
+     * this may mean reading from the buffer instead of the file if `pos` is within the buffer;
+     * and for `NoBuf`, this may mean always syncing the relevant entry between buffer and file).
+     * this should ensure that it is ALWAYS correct to read from the buffer.
      */
+    uchar* readEncodedOptionalBuf(
+        SseOper oper, ubigint pos, uchar* ret, bool shouldFseek = true
+    ) const;
     uchar* readEncodedNoBuf(SseOper oper, ubigint pos, uchar* ret, bool shouldFseek = true) const;
     void writeEncodedNoBuf(
         SseOper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek = true
@@ -190,6 +199,12 @@ protected:
 
     //--------------------------------------------------------------------------
     // buffer
+
+    /**
+     * IMPORTANT: buffering should speed up setups but should NOT impact the performance of
+     * benchmarked operations (search, update) beyond reasonably compensating for my slow
+     * implementation of `advanceUntilNextPos()`!!
+     */
 
     // forward declare; `Buf` is a nested class declared in another file
     struct Buf;
@@ -201,16 +216,13 @@ protected:
     /**
      * translate public-facing `SseOper` to a `Buf*` member.
      */
-    Buf* getBufFromSseOper(SseOper oper) const {
+    Buf* getBufForSseOper(SseOper oper) const {
         switch (oper) {
-        case SseOper::SETUP:
-            return this->setupBuf;
-        case SseOper::SEARCH:
-            return this->searchBuf;
-        case SseOper::UPDATE:
-            return this->updateBuf;
+        case SseOper::SETUP:  return this->setupBuf;
+        case SseOper::SEARCH: return this->searchBuf;
+        case SseOper::UPDATE: return this->updateBuf;
         default:
-            std::cerr << "Error: EncIndBase::getBufFromSseOper(): zoo wee mama" << std::endl;
+            std::cerr << "Error: EncIndBase::getBufForSseOper(): zoo wee mama" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }

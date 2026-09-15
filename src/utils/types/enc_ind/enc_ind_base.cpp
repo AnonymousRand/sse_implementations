@@ -228,7 +228,7 @@ bool EncIndBase::find(SseOper oper, ubigint& pos, const ustring& key, EncIndVal&
     }
 
     // read and decode the kv pair at the matched location we found
-    return this->read(oper, pos, ret);
+    return this->read(oper, pos, ret, true);
 }
 
 
@@ -268,13 +268,13 @@ void EncIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncIndEntry
     });
 
     // write into the empty location we found
-    this->write(oper, pos, encIndEntry);
+    this->write(oper, pos, encIndEntry, true);
 }
 
 
 void EncIndBase::endSetup(SseOper setupOper) {
     assert(setupOper == SseOper::SETUP || setupOper == SseOper::UPDATE);
-    Buf* buf = this->getBufFromSseOper(setupOper);
+    Buf* buf = this->getBufForSseOper(setupOper);
     this->flushBufIfNotFlushed(buf);
 }
 
@@ -292,13 +292,13 @@ bool EncIndBase::advanceUntilMatch(
     // get entry at `pos`, and if it doesn't match `match` (e.g. due to `pos %= this->capacity`),
     // iterate forward one bucket (i.e. `this->getBcktSize()`) at a time to search for it
 
-    // for the first read, we read directly from the file, so that if it turns out we don't need to
-    // iterate forward, we skip filling the buffer. this is especially good when buffer is big but
-    // enc ind is even bigger, as this avoids large amounts of filling and flushing the buffer at
-    // different positions and never using it in between when the enc ind is still mostly empty
+    // for the first read, we skip filling the buffer if it turns out we don't need to iterate
+    // forward. this is especially good when the buffer is big but the enc ind is even bigger,
+    // as this avoids large amounts of filling and flushing the buffer at different positions
+    // and never using it in between (especially when the enc ind is still mostly empty)
     uchar* currEntryPtr;
     uchar currEntry[this->ENTRY_LEN()];
-    currEntryPtr = this->readEncodedNoBuf(oper, pos, currEntry, true);
+    currEntryPtr = this->readEncodedOptionalBuf(oper, pos, currEntry, true);
     if (std::memcmp(currEntryPtr, match, matchLen) == 0) {
         return true;
     }
@@ -316,7 +316,7 @@ bool EncIndBase::advanceUntilMatch(
         }
 
         pos = (pos + this->getBcktSize()) % this->capacity;
-        if (this->SHOULD_BUFFER_READ(oper)) {
+        if (this->SHOULD_BUFFER_ADVANCE(oper)) {
             currEntryPtr = this->readEncoded(oper, pos);
         } else {
             // also, we don't `fseek()` for this read unless we have wrapped around to the
@@ -335,7 +335,7 @@ bool EncIndBase::advanceUntilMatch(
 uchar* EncIndBase::readEncoded(SseOper oper, ubigint pos) const {
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufFromSseOper(oper);
+    Buf* bufToUse = this->getBufForSseOper(oper);
     assert(bufToUse != nullptr);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
@@ -350,7 +350,7 @@ uchar* EncIndBase::readEncoded(SseOper oper, ubigint pos) const {
 void EncIndBase::writeEncoded(SseOper oper, ubigint pos, const uchar* encodedEntry, bool isInit) {
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufFromSseOper(oper);
+    Buf* bufToUse = this->getBufForSseOper(oper);
     assert(bufToUse != nullptr);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
@@ -362,10 +362,12 @@ void EncIndBase::writeEncoded(SseOper oper, ubigint pos, const uchar* encodedEnt
 }
 
 
-uchar* EncIndBase::readEncodedNoBuf(SseOper oper, ubigint pos, uchar* ret, bool shouldFseek) const {
+uchar* EncIndBase::readEncodedOptionalBuf(
+    SseOper oper, ubigint pos, uchar* ret, bool shouldFseek
+) const {
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufFromSseOper(oper);
+    Buf* bufToUse = this->getBufForSseOper(oper);
     assert(bufToUse != nullptr);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
     if (bufIndex == Buf::NOT_IN_BUF) {
@@ -378,7 +380,7 @@ uchar* EncIndBase::readEncodedNoBuf(SseOper oper, ubigint pos, uchar* ret, bool 
         int itemsRead = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
         DEBUG_ONLY({
             if (itemsRead != 1) {
-                std::cerr << "Error: EncIndBase::readEncodedNoBuf(): error reading from file "
+                std::cerr << "Error: EncIndBase::readEncodedOptionalBuf(): error reading from file "
                           << this->filename << " (nothing read)" << std::endl;
                 std::exit(EXIT_FAILURE);
             }
@@ -393,35 +395,66 @@ uchar* EncIndBase::readEncodedNoBuf(SseOper oper, ubigint pos, uchar* ret, bool 
 }
 
 
-void EncIndBase::writeEncodedNoBuf(
-    SseOper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek
-) {
+uchar* EncIndBase::readEncodedNoBuf(
+    SseOper oper, ubigint pos, uchar* ret, bool shouldFseek
+) const {
+    assert(this->file != nullptr);
     pos %= this->capacity;
 
-    Buf* bufToUse = this->getBufFromSseOper(oper);
+    // read encoded entry from file into `ret` parameter
+    if (shouldFseek) {
+        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+    }
+    int itemsReadFromFile = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
+
+    // also read encoded entry from buffer if `pos` is covered by the buffer, as it must have
+    // the most updated version of that entry, and return it instead of the `ret` parameter
+    Buf* bufToUse = this->getBufForSseOper(oper);
     assert(bufToUse != nullptr);
     bigint bufIndex = this->posToBufIndex(bufToUse, pos);
-    if (bufIndex == Buf::NOT_IN_BUF) {
-        // if `pos` is not covered by buffer, write directly to file; we can completely ignore
-        // the buffer here as the buffer does not have an entry to update with this write
-        assert(this->file != nullptr);
-        if (shouldFseek) {
-            std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
-        }
-        int itemsWritten = std::fwrite(encodedEntry, this->ENTRY_LEN(), 1, this->file);
+    if (bufIndex != Buf::NOT_IN_BUF) {
+        return bufToUse->read(bufIndex);
+    } else {
+        // if we are returning what we read from the file
         DEBUG_ONLY({
-            if (itemsWritten != 1) {
-                std::cerr << "Error: EncIndBase::writeEncodedNoBuf(): error writing to file "
-                          << this->filename << " (nothing written)" << std::endl;
+            // we only check here since it can be the case that the buffer contains the entry but
+            // it has never been written onto the file (e.g. buffer after init and before any flush)
+            if (itemsReadFromFile != 1) {
+                std::cerr << "Error: EncIndBase::readEncodedNoBuf(): error reading from file "
+                          << this->filename << " (nothing read)" << std::endl;
                 std::exit(EXIT_FAILURE);
             }
         });
-    } else {
-        // if `pos` is covered by the buffer, write it to the buffer instead since the buffer must
-        // have the most updated version of that entry. note that reading directly from the file
-        // using `readEncodedNoBuf()` should still be correct as either the buffer hasn't
-        // changed and `readEncodedNoBuf()` will read from the buffer, or the buffer has
-        // changed and has hence been flushed before `readEncodedNoBuf()` reads from the file
+        return ret;
+    }
+}
+
+
+void EncIndBase::writeEncodedNoBuf(
+    SseOper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek
+) {
+    assert(this->file != nullptr);
+    pos %= this->capacity;
+
+    // write encoded entry to file
+    if (shouldFseek) {
+        std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
+    }
+    int itemsWritten = std::fwrite(encodedEntry, this->ENTRY_LEN(), 1, this->file);
+    DEBUG_ONLY({
+        if (itemsWritten != 1) {
+            std::cerr << "Error: EncIndBase::writeEncodedNoBuf(): error writing to file "
+                      << this->filename << " (nothing written)" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
+
+    // also write encoded entry to buffer if `pos` is covered by the buffer, to ensure that
+    // the buffer has the most updated version of that entry
+    Buf* bufToUse = this->getBufForSseOper(oper);
+    assert(bufToUse != nullptr);
+    bigint bufIndex = this->posToBufIndex(bufToUse, pos);
+    if (bufIndex != Buf::NOT_IN_BUF) {
         bufToUse->write(bufIndex, encodedEntry);
     }
 }
@@ -458,7 +491,7 @@ bigint EncIndBase::posToBufIndex(Buf* buf, ubigint pos) const {
 
 
 void EncIndBase::printBuf(SseOper oper) const {
-    Buf* buf = this->getBufFromSseOper(oper);
+    Buf* buf = this->getBufForSseOper(oper);
     assert(buf != nullptr);
     if (!buf->isFilled) {
         std::cerr << "Buf claims to be unfilled; garbage data may be produced!" << std::endl;
