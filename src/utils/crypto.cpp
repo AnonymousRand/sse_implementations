@@ -146,8 +146,9 @@ ustring padAndEncrypt(
 ) {
     DEBUG_ONLY({
         if (ptext.length() > targetLen) {
-            std::cerr << "Error: padAndEncrypt(): plaintext of length " << ptext.length()
-                      << " bytes is too long! " << "(want " << targetLen << " bytes)" << std::endl;
+            std::cerr << "Error: padAndEncrypt(): plaintext \"" << ptext
+                      << "\" of length " << ptext.length() << " bytes is too long! "
+                      << "(want " << targetLen << " bytes)" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     });
