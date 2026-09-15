@@ -166,7 +166,7 @@ void EncIndBase::init(SseOper setupOper, bigint capacity) {
     );
 
     // fill file with zero bits, so we can tell if a spot is empty by if it contains all zero bits
-    // and use setup buffer to speed this up (although this seems to only be efficient at big sizes)
+    // and can use buffer to speed this up (although this seems to only be efficient at big sizes)
     for (bigint i = 0; i < this->capacity; i++) {
         // we allow incomplete buffer fills from the file here since, well, the file is incomplete
         this->writeEncoded(setupOper, i, this->NULL_ENTRY, true);
