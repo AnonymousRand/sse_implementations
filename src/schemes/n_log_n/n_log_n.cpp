@@ -28,9 +28,9 @@ template <IsDbTuple DbTuple>
 NLogN<DbTuple>::~NLogN() {
     this->clear();
 
-    if (this->server != nullptr) {
-        delete this->server;
-        this->server = nullptr;
+    if (this->nLogNServer != nullptr) {
+        delete this->nLogNServer;
+        this->nLogNServer = nullptr;
     }
 }
 
@@ -43,8 +43,8 @@ template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::clear() {
     // (this cannot be done in `NLogNBase::clear()` via `this->getServer()->clear()` as
     // `getServer()` is a pure virtual method and `NLogNBase::clear()` is called in destructor)
-    assert(this->server != nullptr);
-    this->server->clear();
+    assert(this->nLogNServer != nullptr);
+    this->nLogNServer->clear();
 
     NLogNBase<DbTuple>::clear();
 }
@@ -58,7 +58,7 @@ template <IsDbTuple DbTuple>
 std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     const Range<DbKw>& query
 ) const {
-    assert(this->server != nullptr);
+    assert(this->nLogNServer != nullptr);
     std::vector<DbDoc> results {};
 
     // PRF(K_1, w)
@@ -69,7 +69,7 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     ustring labelDict;
     ubigint posDict = this->mapNoMod(queryToken, labelDict);
     EncIndVal encIndValDict;
-    bool isFoundDict = this->server->getDbKwCount(posDict, labelDict, encIndValDict);
+    bool isFoundDict = this->nLogNServer->getDbKwCount(posDict, labelDict, encIndValDict);
     if (!isFoundDict) {
         return results;
     }
@@ -87,7 +87,7 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResultTups = this->server->searchEncIndForBckt(
+    std::vector<EncIndVal> encResultTups = this->nLogNServer->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 
@@ -139,11 +139,11 @@ void NLogN<DbTuple>::setupDbKwList(
 
 template <IsDbTuple DbTuple>
 void NLogN<DbTuple>::moveSetupStateToServer(SseOper setupOper) {
-    assert(this->server != nullptr);
+    assert(this->nLogNServer != nullptr);
     NLogNBase<DbTuple>::moveSetupStateToServer(setupOper);
 
     this->dbKwCountsDictTmp->endSetup(setupOper);
-    this->server->setDbKwCountsDict(this->dbKwCountsDictTmp);
+    this->nLogNServer->setDbKwCountsDict(this->dbKwCountsDictTmp);
     // don't `delete` this since server has the same copy, but still set it to `nullptr` to be safe
     this->dbKwCountsDictTmp = nullptr;
 }

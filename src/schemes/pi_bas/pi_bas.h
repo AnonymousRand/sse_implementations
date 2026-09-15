@@ -37,7 +37,9 @@ public:
     void getDb(Db<DbTuple>& ret) const override;
 
 private:
-    PiBasServer<DbTuple>* server = new PiBasServer<DbTuple>();
+    // make the name of the server object specific to this class in case there is an
+    // inheritance chain where multiple classes define their own additional servers
+    PiBasServer<DbTuple>* piBasServer = new PiBasServer<DbTuple>();
 
     //--------------------------------------------------------------------------
     // `IStaticPointSse`

@@ -47,8 +47,8 @@ private:
     //--------------------------------------------------------------------------
     // `NLogNBase`
 
-    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>();
-    UnderlyServer<DbTuple>* getServer() const override { return this->server; }
+    UnderlyServer<DbTuple>* underlyServer = new UnderlyServer<DbTuple>();
+    UnderlyServer<DbTuple>* getServer() const override { return this->underlyServer; }
 
     bigint calcLvlCount() const override;
     bigint calcBcktCountOnLvl(bigint lvl) const override;

@@ -38,8 +38,8 @@ private:
     //--------------------------------------------------------------------------
     // `NLogNBase`
 
-    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>();
-    NLogNServer<DbTuple>* getServer() const override { return this->server; }
+    NLogNServer<DbTuple>* nLogNServer = new NLogNServer<DbTuple>();
+    NLogNServer<DbTuple>* getServer() const override { return this->nLogNServer; }
 
     void initSetupState(SseOper setupOper) override;
     void setupDbKwList(

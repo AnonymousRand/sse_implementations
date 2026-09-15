@@ -25,9 +25,9 @@ template <IsDbTuple DbTuple>
 Underly<DbTuple>::~Underly() {
     this->clear();
 
-    if (this->server != nullptr) {
-        delete this->server;
-        this->server = nullptr;
+    if (this->underlyServer != nullptr) {
+        delete this->underlyServer;
+        this->underlyServer = nullptr;
     }
 }
 
@@ -47,7 +47,7 @@ void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupO
 
 template <IsDbTuple DbTuple>
 void Underly<DbTuple>::clear() {
-    this->server->clear();
+    this->underlyServer->clear();
 
     NLogNBase<DbTuple>::clear();
 }
@@ -61,7 +61,7 @@ template <IsDbTuple DbTuple>
 std::vector<typename Underly<DbTuple>::DbDoc> Underly<DbTuple>::searchRaw(
     const Range<DbKw>& query
 ) const {
-    assert(this->server != nullptr);
+    assert(this->underlyServer != nullptr);
     std::vector<DbDoc> results;
 
     // PRF(K_1, w)
@@ -81,7 +81,7 @@ std::vector<typename Underly<DbTuple>::DbDoc> Underly<DbTuple>::searchRaw(
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResultTups = this->server->searchEncIndForBckt(
+    std::vector<EncIndVal> encResultTups = this->underlyServer->searchEncIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 
