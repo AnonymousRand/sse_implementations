@@ -57,7 +57,7 @@ private:
         case SseOper::SEARCH: return false;
         case SseOper::UPDATE: return false;
         default:
-            std::cerr << "Error: EncIndRand::SHOULD_BUFFER_READ(): mama wee zoo" << std::endl;
+            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_READ(): mama wee zoo" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
