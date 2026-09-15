@@ -78,6 +78,6 @@ private:
     bool SHOULD_BUFFER_ADVANCE(SseOper oper) const override { return true; }
 
     // this essentially means we have no buckets; each individual entry is a "bucket"
-    bigint getBcktSize() const override { return 1; }
     bigint getBcktCount() const override { return this->capacity; }
+    bigint getBcktSize() const override { return 1; }
 };

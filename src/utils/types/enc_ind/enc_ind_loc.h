@@ -33,12 +33,12 @@ public:
     //--------------------------------------------------------------------------
     // `EncIndBase`
 
-    void init(SseOper setupOper, bigint bcktSize, bigint bcktCount);
+    void init(SseOper setupOper, bigint bcktCount, bigint bcktSize);
     void clear() override;
 
 private:
-    bigint bcktSize = 0;
     bigint bcktCount = 0;
+    bigint bcktSize = 0;
 
     //--------------------------------------------------------------------------
     // `EncIndBase`
@@ -84,6 +84,6 @@ private:
         }
     }
 
-    bigint getBcktSize() const override { return this->bcktSize; }
     bigint getBcktCount() const override { return this->bcktCount; }
+    bigint getBcktSize() const override { return this->bcktSize; }
 };

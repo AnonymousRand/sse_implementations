@@ -134,8 +134,8 @@ protected:
     virtual bool SHOULD_BUFFER_WRITE(SseOper oper) const = 0;
     virtual bool SHOULD_BUFFER_ADVANCE(SseOper oper) const = 0;
 
-    virtual bigint getBcktSize() const = 0;
     virtual bigint getBcktCount() const = 0;
+    virtual bigint getBcktSize() const = 0;
 
     //--------------------------------------------------------------------------
     // `IDiskStorage`

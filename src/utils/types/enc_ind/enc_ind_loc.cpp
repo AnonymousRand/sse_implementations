@@ -12,17 +12,17 @@
 // `EncIndBase`
 
 
-void EncIndLoc::init(SseOper setupOper, bigint bcktSize, bigint bcktCount) {
-    EncIndBase::init(setupOper, bcktSize * bcktCount);
+void EncIndLoc::init(SseOper setupOper, bigint bcktCount, bigint bcktSize) {
+    EncIndBase::init(setupOper, bcktCount * bcktSize);
 
-    this->bcktSize = bcktSize;
     this->bcktCount = bcktCount;
+    this->bcktSize = bcktSize;
 }
 
 
 void EncIndLoc::clear() {
     EncIndBase::clear();
 
-    this->bcktSize = 0;
     this->bcktCount = 0;
+    this->bcktSize = 0;
 }
