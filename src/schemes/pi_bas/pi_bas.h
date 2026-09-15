@@ -28,7 +28,7 @@ public:
     //--------------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<DbTuple>& db) override;
+    void setup(int secParam, const Db<DbTuple>& db, SseOper setupOper = SseOper::SETUP) override;
     void clear() override;
 
     //--------------------------------------------------------------------------

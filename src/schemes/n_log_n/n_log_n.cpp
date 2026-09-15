@@ -103,20 +103,22 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
 
 
 //------------------------------------------------------------------------------
-// helpers
+// `NLogNBase`
 
 
 template <IsDbTuple DbTuple>
-void NLogN<DbTuple>::initSetupState() {
-    NLogNBase<DbTuple>::initSetupState();
+void NLogN<DbTuple>::initSetupState(SseOper setupOper) {
+    NLogNBase<DbTuple>::initSetupState(setupOper);
 
     this->dbKwCountsDictTmp = new EncIndRand();
-    this->dbKwCountsDictTmp->init(this->setupOper, this->size);
+    this->dbKwCountsDictTmp->init(setupOper, this->size);
 }
 
 
 template <IsDbTuple DbTuple>
-void NLogN<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange) {
+void NLogN<DbTuple>::setupDbKwList(
+    Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange, SseOper setupOper
+) {
     // add `(w, dbKwCount)` (non-padded size) to `dbKwCountsDict` to compute what level to search
     bigint dbKwCount = dbKwList.getSize();
     ustring queryToken = this->genQueryToken(dbKwRange);
@@ -127,20 +129,20 @@ void NLogN<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& db
     );
     ubigint pos = this->mapNoMod(queryToken, label);
     this->dbKwCountsDictTmp->writeToFirstEmpty(
-        this->setupOper, pos, EncIndEntry {label, EncIndVal {encDbKwCount, iv}}
+        setupOper, pos, EncIndEntry {label, EncIndVal {encDbKwCount, iv}}
     );
 
     // do the rest from `NLogNBase` (we have to `std::move()` *after* we are done using `dbKwList`)
-    NLogNBase<DbTuple>::setupDbKwList(std::move(dbKwList), dbKwRange);
+    NLogNBase<DbTuple>::setupDbKwList(std::move(dbKwList), dbKwRange, setupOper);
 }
 
 
 template <IsDbTuple DbTuple>
-void NLogN<DbTuple>::moveSetupStateToServer() {
+void NLogN<DbTuple>::moveSetupStateToServer(SseOper setupOper) {
     assert(this->server != nullptr);
-    NLogNBase<DbTuple>::moveSetupStateToServer();
+    NLogNBase<DbTuple>::moveSetupStateToServer(setupOper);
 
-    this->dbKwCountsDictTmp->endSetup(this->setupOper);
+    this->dbKwCountsDictTmp->endSetup(setupOper);
     this->server->setDbKwCountsDict(this->dbKwCountsDictTmp);
     // don't `delete` this since server has the same copy, but still set it to `nullptr` to be safe
     this->dbKwCountsDictTmp = nullptr;

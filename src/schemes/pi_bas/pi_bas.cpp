@@ -41,7 +41,7 @@ PiBas<DbTuple>::~PiBas() {
 
 
 template <IsDbTuple DbTuple>
-void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
+void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOper) {
     assert(this->server != nullptr);
     this->clear();
     
@@ -55,7 +55,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->encKey = utils::crypto::genKey(secParam);
 
     EncIndRand* encInd = new EncIndRand();
-    encInd->init(this->setupOper, this->size);
+    encInd->init(setupOper, this->size);
 
     //--------------------------------------------------------------------------
     // build index
@@ -94,12 +94,12 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->writeToFirstEmpty(
-                this->setupOper, pos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
+                setupOper, pos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
             );
         }
     }
 
-    encInd->endSetup(this->setupOper);
+    encInd->endSetup(setupOper);
     this->server->setEncInd(encInd);
 }
 
@@ -114,6 +114,30 @@ void PiBas<DbTuple>::clear() {
 
     // clears keys
     IStaticPointSse<DbTuple>::clear();
+}
+
+
+//------------------------------------------------------------------------------
+// `ISdUnderly`
+
+
+template <IsDbTuple DbTuple>
+void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
+    assert(this->server != nullptr);
+    EncIndRand* encInd = this->server->getEncInd();
+
+    // don't use `this->size` as the bound here as that doesn't include padding while
+    // `encInd` does (this should all be client-side anyway so it's not leaking anything)
+    for (bigint pos = 0; pos < encInd->getCapacity(); pos++) {
+        EncIndVal encIndVal;
+        bool isValidVal = encInd->read(SseOper::UPDATE, pos, encIndVal);
+        if (!isValidVal) {
+            continue;
+        }
+
+        DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
+        ret.append(dbTuple);
+    }
 }
 
 
@@ -140,30 +164,6 @@ std::vector<typename PiBas<DbTuple>::DbDoc> PiBas<DbTuple>::searchRaw(
     }
 
     return results;
-}
-
-
-//------------------------------------------------------------------------------
-// `ISdUnderly`
-
-
-template <IsDbTuple DbTuple>
-void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
-    assert(this->server != nullptr);
-    EncIndRand* encInd = this->server->getEncInd();
-
-    // don't use `this->size` as the bound here as that doesn't include padding while
-    // `encInd` does (this should all be client-side anyway so not leaking anything)
-    for (bigint pos = 0; pos < encInd->getCapacity(); pos++) {
-        EncIndVal encIndVal;
-        bool isValidVal = encInd->read(this->setupOper, pos, encIndVal);
-        if (!isValidVal) {
-            continue;
-        }
-
-        DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
-        ret.append(dbTuple);
-    }
 }
 
 

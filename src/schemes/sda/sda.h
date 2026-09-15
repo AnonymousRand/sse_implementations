@@ -26,7 +26,8 @@ public:
     //--------------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<Tuple<>>& db) override;
+    // (`setupOper` is not used for SDa, but i keep it here to avoid messy interfaces)
+    void setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper = SseOper::SETUP) override;
     std::vector<Doc> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override;

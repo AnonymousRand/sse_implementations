@@ -33,7 +33,7 @@
 
 
 template <IsDbTuple DbTuple>
-void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
+void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOper) {
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -46,7 +46,7 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
     this->prfKey = utils::crypto::genKey(secParam);
     this->encKey = utils::crypto::genKey(secParam);
 
-    this->initSetupState();
+    this->initSetupState(setupOper);
     
     //--------------------------------------------------------------------------
     // build index
@@ -66,10 +66,10 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
             }
         });
 
-        this->setupDbKwList(std::move(iter->second), dbKwRange);
+        this->setupDbKwList(std::move(iter->second), dbKwRange, setupOper);
     }
 
-    this->moveSetupStateToServer();
+    this->moveSetupStateToServer(setupOper);
 }
 
 
@@ -100,12 +100,12 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
         EncIndLoc* encIndLvl = encIndLvls[lvl];
         // don't use `this->size` as the bound here as that doesn't include padding while
-        // `encIndLvl` does (this should all be client-side anyway so not leaking anything)
+        // `encIndLvl` does (this should all be client-side anyway so its' not leaking anything)
         for (bigint pos = 0; pos < encIndLvl->getCapacity(); pos++) {
             EncIndVal encIndVal;
             // only `fseek()` to read on the first read, since after that the reads themselves
             // should advance the file pointer to the right location for the next one
-            bool isValidVal = encIndLvl->read(this->setupOper, pos, encIndVal, pos == 0);
+            bool isValidVal = encIndLvl->read(SseOper::UPDATE, pos, encIndVal, pos == 0);
             if (!isValidVal) {
                 continue;
             }
@@ -128,19 +128,21 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
 
 
 template <IsDbTuple DbTuple>
-void NLogNBase<DbTuple>::initSetupState() {
+void NLogNBase<DbTuple>::initSetupState(SseOper setupOper) {
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
         EncIndLoc* encIndLvl = new EncIndLoc();
         bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
         bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
-        encIndLvl->init(this->setupOper, bcktSizeOnLvl, bcktCountOnLvl);
+        encIndLvl->init(setupOper, bcktSizeOnLvl, bcktCountOnLvl);
         this->encIndLvlsTmp.push_back(encIndLvl);
     }
 }
 
 
 template <IsDbTuple DbTuple>
-void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange) {
+void NLogNBase<DbTuple>::setupDbKwList(
+    Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange, SseOper setupOper
+) {
     // pad keyword list to the next power of two
     dbKwList.padToPowOf2();
     // randomly permute documents associated with same keyword, i.e. shuffle within bucket
@@ -171,7 +173,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
             // if first write to this bucket, get the first bucket start pos at or after
             // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
             this->encIndLvlsTmp[lvl]->writeToFirstEmpty(
-                this->setupOper, startPos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
+                setupOper, startPos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
             );
         } else {
             // after first write, just write consecutively as we are now guaranteed that
@@ -180,7 +182,7 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
             // we also stop `fseek()`ing at every write since the write itself should
             // advance the file pointer to the right location for the next one
             this->encIndLvlsTmp[lvl]->write(
-                this->setupOper,
+                setupOper,
                 startPos + dbKwCounter, EncIndEntry {label, EncIndVal {encDbTuple, iv}}, false
             );
         }
@@ -189,10 +191,10 @@ void NLogNBase<DbTuple>::setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>
 
 
 template <IsDbTuple DbTuple>
-void NLogNBase<DbTuple>::moveSetupStateToServer() {
+void NLogNBase<DbTuple>::moveSetupStateToServer(SseOper setupOper) {
     assert(this->getServer() != nullptr);
     for (EncIndLoc* encIndLvl : this->encIndLvlsTmp) {
-        encIndLvl->endSetup(this->setupOper);
+        encIndLvl->endSetup(setupOper);
     }
 
     // IMPORTANT: since this is a transfer of pointers, clearing it should be handled by the server!

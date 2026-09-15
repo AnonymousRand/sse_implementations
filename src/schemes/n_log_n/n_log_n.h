@@ -31,22 +31,21 @@ private:
     EncIndRand* dbKwCountsDictTmp = nullptr;
 
     //--------------------------------------------------------------------------
-    // `NLogNBase`
-
-    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>();
-    NLogNServer<DbTuple>* getServer() const override { return this->server; }
-
-    //--------------------------------------------------------------------------
     // `IStaticPointSse`
 
     std::vector<DbDoc> searchRaw(const Range<DbKw>& query) const override;
 
     //--------------------------------------------------------------------------
-    // helpers
+    // `NLogNBase`
 
-    void initSetupState() override;
-    void setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange) override;
-    void moveSetupStateToServer() override;
+    NLogNServer<DbTuple>* server = new NLogNServer<DbTuple>();
+    NLogNServer<DbTuple>* getServer() const override { return this->server; }
+
+    void initSetupState(SseOper setupOper) override;
+    void setupDbKwList(
+        Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange, SseOper setupOper
+    ) override;
+    void moveSetupStateToServer(SseOper setupOper) override;
 
     bigint calcLvlCount() const override;
     bigint calcBcktCountOnLvl(bigint lvl) const override;

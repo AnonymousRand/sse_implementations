@@ -22,7 +22,7 @@ public:
     //--------------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<Tuple<>>& db) override;
+    void setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper) override;
     std::vector<Doc> search(
         const Range<Kw>& query, bool shouldCleanUpResults = true, bool isNaive = true
     ) const override;

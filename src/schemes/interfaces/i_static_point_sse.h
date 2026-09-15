@@ -25,7 +25,7 @@ protected:
 
 public:
     //--------------------------------------------------------------------------
-    // shared code
+    // interface
 
     std::vector<DbDoc> search(
         const Range<DbKw>& query, bool shouldCleanUpResults = true, bool isNaive = true
@@ -65,9 +65,6 @@ protected:
     // helpers
 
     virtual std::vector<DbDoc> searchRaw(const Range<DbKw>& query) const = 0;
-    
-    //--------------------------------------------------------------------------
-    // shared code
 
     /**
      * helper function to decrypt `encIndVal`.

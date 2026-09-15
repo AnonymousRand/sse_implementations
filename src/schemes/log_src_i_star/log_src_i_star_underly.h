@@ -33,17 +33,11 @@ public:
     //--------------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<DbTuple>& db) override;
+    void setup(int secParam, const Db<DbTuple>& db, SseOper setupOper = SseOper::SETUP) override;
     void clear() override;
 
 private:
     bigint leafCount;
-
-    //--------------------------------------------------------------------------
-    // `NLogNBase`
-
-    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>();
-    UnderlyServer<DbTuple>* getServer() const override { return this->server; }
 
     //--------------------------------------------------------------------------
     // `IStaticPointSse`
@@ -51,7 +45,10 @@ private:
     std::vector<DbDoc> searchRaw(const Range<DbKw>& query) const override;
 
     //--------------------------------------------------------------------------
-    // helpers
+    // `NLogNBase`
+
+    UnderlyServer<DbTuple>* server = new UnderlyServer<DbTuple>();
+    UnderlyServer<DbTuple>* getServer() const override { return this->server; }
 
     bigint calcLvlCount() const override;
     bigint calcBcktCountOnLvl(bigint lvl) const override;

@@ -27,7 +27,7 @@ public:
     //--------------------------------------------------------------------------
     // `ISse`
 
-    void setup(int secParam, const Db<DbTuple>& db) override;
+    void setup(int secParam, const Db<DbTuple>& db, SseOper setupOper = SseOper::SETUP) override;
     void clear() override;
 
     //--------------------------------------------------------------------------
@@ -44,9 +44,11 @@ protected:
     // helpers
 
     // `setup()` helpers for code reusability
-    virtual void initSetupState();
-    virtual void setupDbKwList(Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange);
-    virtual void moveSetupStateToServer();
+    virtual void initSetupState(SseOper setupOper);
+    virtual void setupDbKwList(
+        Db<DbTuple>&& dbKwList, const Range<DbKw>& dbKwRange, SseOper setupOper
+    );
+    virtual void moveSetupStateToServer(SseOper setupOper);
 
     ustring genQueryToken(const Range<DbKw>& query) const;
 

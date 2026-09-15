@@ -1,5 +1,6 @@
 #include "schemes/n_log_n/n_log_n_base_server.h"
 
+#include <cassert>
 #include <concepts>
 #include <utility>
 #include <vector>
@@ -84,6 +85,7 @@ template <IsDbTuple DbTuple>
 std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
     bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
 ) const {
+    assert(lvl < this->encIndLvls.size() || this->encIndLvls.size() == 0);
     utils::benchmark::communication +=
         sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + label.length();
 

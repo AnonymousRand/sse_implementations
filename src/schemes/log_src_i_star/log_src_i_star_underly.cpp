@@ -37,11 +37,11 @@ Underly<DbTuple>::~Underly() {
 
 
 template <IsDbTuple DbTuple>
-void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db) {
+void Underly<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOper) {
     Range<DbKw> dbKwBounds = db.getDbKwBounds();
     // remember to not use `db.getSize()` as TDAG leaves must be contiguous!
     this->leafCount = dbKwBounds.size();
-    NLogNBase<DbTuple>::setup(secParam, db);
+    NLogNBase<DbTuple>::setup(secParam, db, setupOper);
 }
 
 
@@ -97,7 +97,7 @@ std::vector<typename Underly<DbTuple>::DbDoc> Underly<DbTuple>::searchRaw(
 
 
 //------------------------------------------------------------------------------
-// helpers
+// `NLogNBase`
 
 
 template <IsDbTuple DbTuple>

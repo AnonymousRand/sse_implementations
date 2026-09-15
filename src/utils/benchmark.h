@@ -227,11 +227,11 @@ class Benchmarked : public Sse {
 public:
     using Sse::Sse;
 
-    void setup(int secParam, const Db<Tuple<>>& db) override {
+    void setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper = SseOper::SETUP) override {
         utils::benchmark::resetAll();
 
         auto start = std::chrono::high_resolution_clock::now();
-        Sse::setup(secParam, db);
+        Sse::setup(secParam, db, setupOper);
         auto end = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double, std::milli> elapsed = end - start;

@@ -43,7 +43,6 @@ protected:
      * padding/processing!).
      */
     bigint size;
-    SseOper setupOper = SseOper::SETUP;
 };
 
 

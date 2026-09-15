@@ -33,7 +33,7 @@ LogSrc<Underly>::~LogSrc() {
 
 
 template <template <class ...> class Underly> requires IsSse<Underly<Tuple<>>>
-void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
+void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -49,7 +49,7 @@ void LogSrc<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
     Db<Tuple<>> dbWithRepls = db;
     log_src::utils::buildTdagDbFromLeaves<Tuple<>>(dbWithRepls, this->tdag);
 
-    this->underly->setup(secParam, dbWithRepls);
+    this->underly->setup(secParam, dbWithRepls, setupOper);
 }
 
 

@@ -33,7 +33,7 @@ Sda<Underly>::~Sda() {
 
 
 template <IsSdUnderly Underly>
-void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
+void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper) {
     this->clear();
     this->secParam = secParam;
 
@@ -58,8 +58,8 @@ void Sda<Underly>::setup(int secParam, const Db<Tuple<>>& db) {
             }
 
             Underly* newUnderly = new Underly();
-            newUnderly->setSetupOper(SseOper::UPDATE);
-            newUnderly->setup(this->secParam, indDb);
+            // still using `SseOper::SETUP` since this is a shortcut setup so we want to use big buf
+            newUnderly->setup(this->secParam, indDb, SseOper::SETUP);
             this->underlys.push_back(newUnderly);
             dbPos += indSize;
         }
@@ -128,8 +128,7 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
     // if empty, initialize first index
     if (this->updateCount == 0) {
         Underly* newUnderly = new Underly();
-        newUnderly->setSetupOper(SseOper::UPDATE);
-        newUnderly->setup(this->secParam, Db<Tuple<>> {newTuple});
+        newUnderly->setup(this->secParam, Db<Tuple<>> {newTuple}, SseOper::UPDATE);
         this->underlys.push_back(newUnderly);
         this->firstEmptyInd = 1;
         this->updateCount++;
@@ -146,13 +145,11 @@ void Sda<Underly>::update(const Tuple<>& newTuple) {
     if (this->firstEmptyInd >= this->underlys.size() - 1) {
         // if we need to create a new, larger index
         Underly* newUnderly = new Underly();
-        newUnderly->setSetupOper(SseOper::UPDATE);
-        newUnderly->setup(this->secParam, mergedDb);
+        newUnderly->setup(this->secParam, mergedDb, SseOper::UPDATE);
         this->underlys.push_back(newUnderly);
     } else {
         Underly* underlyToSetup = this->underlys[this->firstEmptyInd];
-        underlyToSetup->setSetupOper(SseOper::UPDATE);
-        underlyToSetup->setup(this->secParam, mergedDb);
+        underlyToSetup->setup(this->secParam, mergedDb, SseOper::UPDATE);
     }
 
     // clear all EDB_<j

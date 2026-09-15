@@ -16,7 +16,7 @@
 // `ISse`
 
 
-void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
+void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper) {
     this->clear();
 
     //--------------------------------------------------------------------------
@@ -78,7 +78,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // required for Log-SRC-i*
     log_src::utils::buildTdagDbFromLeaves<SrcIDb1Tuple>(db1, this->tdag1, true);
 
-    this->underly1->setup(secParam, db1);
+    this->underly1->setup(secParam, db1, setupOper);
 
     //--------------------------------------------------------------------------
     // build index 2
@@ -87,5 +87,5 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db) {
     // the leaf count to the next power of 2 as is required for Log-SRC-i*
     log_src::utils::buildTdagDbFromLeaves<Tuple<IdAlias>>(db2, this->tdag2, true);
 
-    this->underly2->setup(secParam, db2);
+    this->underly2->setup(secParam, db2, setupOper);
 }

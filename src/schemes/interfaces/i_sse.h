@@ -42,7 +42,7 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    virtual void setup(int secParam, const Db<DbTuple>& db) = 0;
+    virtual void setup(int secParam, const Db<DbTuple>& db, SseOper setupOper = SseOper::SETUP) = 0;
     
     /**
      * params:
