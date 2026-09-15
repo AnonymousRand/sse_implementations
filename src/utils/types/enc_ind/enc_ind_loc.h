@@ -57,7 +57,7 @@ private:
         case SseOper::SEARCH: return false;
         case SseOper::UPDATE: return false;
         default:
-            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_READ(): mama wee zoo" << std::endl;
+            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_READ(): woof arf woof :3" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -68,7 +68,7 @@ private:
         case SseOper::SEARCH: return false;
         case SseOper::UPDATE: return false;
         default:
-            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_WRITE(): mama wee zoo" << std::endl;
+            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_WRITE(): woof arf woof :3" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -79,7 +79,7 @@ private:
         case SseOper::SEARCH: return this->bcktSize == 1;
         case SseOper::UPDATE: return this->bcktSize == 1;
         default:
-            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_ADVANCE(): mama wee zoo" << std::endl;
+            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_ADVANCE(): woof arf woof :3" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }

@@ -59,7 +59,7 @@ private:
         case SseOper::SEARCH: return false;
         case SseOper::UPDATE: return false;
         default:
-            std::cerr << "Error: EncIndRand::SHOULD_BUFFER_READ(): wee mama zoo" << std::endl;
+            std::cerr << "Error: EncIndRand::SHOULD_BUFFER_READ(): mrrp :3" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -70,7 +70,7 @@ private:
         case SseOper::SEARCH: return false;
         case SseOper::UPDATE: return false;
         default:
-            std::cerr << "Error: EncIndRand::SHOULD_BUFFER_WRITE(): wee mama zoo" << std::endl;
+            std::cerr << "Error: EncIndRand::SHOULD_BUFFER_WRITE(): mrrp :3" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }

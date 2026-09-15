@@ -222,7 +222,7 @@ protected:
         case SseOper::SEARCH: return this->searchBuf;
         case SseOper::UPDATE: return this->updateBuf;
         default:
-            std::cerr << "Error: EncIndBase::getBufForSseOper(): zoo wee mama" << std::endl;
+            std::cerr << "Error: EncIndBase::getBufForSseOper(): meow meow meow :3" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
