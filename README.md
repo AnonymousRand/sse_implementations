@@ -24,7 +24,7 @@ Since many of these can be instantiated with various underlying schemes, the fol
 - SD<sub>a</sub>[Logarithmic-SRC-i[NLogN]]
 - SD<sub>a</sub>[Logarithmic-SRC-i\*]
 
-See [src/main.cpp](src/main.cpp), [src/app/sse_factory.cpp](src/app/sse_factory.cpp), and [src/app/experiments/](src/app/experiments/) for usage examples :3
+See [src/main.cpp](src/main.cpp), [src/app/sse_factory.h](src/app/sse_factory.h), and [src/app/experiments/](src/app/experiments/) for usage examples :3
 
 # Requirements
 
@@ -81,17 +81,18 @@ If you're using NixOS, there is a `flake.nix` provided that installs the package
 - Ids and keywords MUST be nonnegative integral values. Otherwise, Bad Things may happen.
 - While database tuples each possess a range of keywords instead of just one for sake of generality (for range scheme underlying indexes), they must still only have a singular keyword in the input database, meaning the start and end of each keyword range must be the same.
 - Keyword search is supported (i.e. one document can have multiple keywords), but only for non-range schemes (as range queries for documents with multiple "keywords" or attribute values are not well-defined). To insert such documents into the dataset, put in one document per keyword all with the same id. Attempting to do this for the range schemes may result in undefined behavior; only insert one document per id for those.
-- Profile a section of code inside an SSE scheme's class or encrypted indexes using `this->benchmarks->startProfile(<profile display name>)` and `this->benchmarks->endProfile(<profile display name>)`; then the total time stored in the `<profile display name>` profile will be printed out in the benchmarking info.
+- Profile a section of code using `utils::benchmark::startProfile(<profile display name>)` and `utils::benchmark::endProfile(<profile display name>)`; then the total time stored in the `<profile display name>` profile will be printed out in the benchmarking info.
 - i have pain
 
 # dev notes/conventions
 
 - uh mostly just keep the existing conventions ig
 - files are almost always include what you use, i.e. include everything that has a relevant symbol in the file. also, includes should almost always be relative to [./src/](./src/), and just keep the existing include ordering/formatting.
-- see [src/utils/types/MOVE_SEMANTICS.md](src/utils/types/MOVE_SEMANTICS.md) for notes about move semantics and the big five.
+- see [src/utils/types/MOVE_SEMANTICS.md](src/utils/types/MOVE_SEMANTICS.md) for notes about move semantics and the rule of five.
 - generally, each class should define constructors/destructors/init methods/clear methods etc. that are responsible for the members defined by that class. children inheriting from these classes should call each parent's version of these methods in their own implementation.
 - call parent `clear()` methods at the end, in reverse order of `init()` or constructor (just like destructor/constructor). if no `init()` or constructor to reference, the unofficial convention i'm using is the reverse order of inheritance.
-- one-line getters/setters/very simple methods like `bool IDb::empty()` should be implemented inside the class declaration in the header (with simple getters/setters having the function body collapsed into the same line as the signature, whereas methods where the implementation does matter a bit more can  be laid out normally). very broad interfaces like in [src/schemes/interfaces/](src/schemes/interfaces/) have all implementations of methods in the header and have no .cpp file, which avoids massive explicit template instantiation.
+- one-line getters/setters/very simple methods should be implemented inside the class declaration in the header (with simple getters/setters having the function body collapsed into the same line as the signature, whereas methods where the implementation does matter a bit more can  be laid out normally). very broad interfaces like in [src/schemes/interfaces/](src/schemes/interfaces/) have all implementations of methods in the header and have no .cpp file, which avoids massive explicit template instantiation.
 - public destructors in classes that are meant to be inherited from should almost always be `virtual`.
 - generally, use direct access for members within the same class, and getters for members declared by parent classes (unless the parent has more of a "code-sharing" role rather an an "encapsulation" role—this is a bit subjective).
 - referencing static members within the same class (or children of that class) should generally be done without an explicit "namespace"/class name specifier.
+- i should probably just use a formatter huh
