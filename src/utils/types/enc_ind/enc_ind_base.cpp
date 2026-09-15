@@ -406,8 +406,7 @@ uchar* EncIndBase::readEncodedNoBuf(
     // `fread()` didn't move the file pointer
     //
     // this is also why we needed to flush the buffer at the end of `init()`!
-    //this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncIndBase::readEncodedNoBuf()");
-    int itemsRead = this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncIndBase::readEncodedNoBuf()");
+    this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncIndBase::readEncodedNoBuf()");
 
     // also read encoded entry from buffer if `pos` is covered by the buffer, as it must have
     // the most updated version of that entry, and return it instead of the `ret` parameter
