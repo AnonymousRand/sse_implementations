@@ -26,7 +26,7 @@ int main() {
     std::cin >> maxDbSizeExp;
     std::cout << std::endl << std::endl;
     // smaller sizes, e.g. for Log-SRC[NLogN]-based things where storage is log^2
-    int maxDbSizeExpSmall = maxDbSizeExp > 15 ? std::max(maxDbSizeExp - 4, 15) : maxDbSizeExp;
+    const int maxDbSizeExpSmall = maxDbSizeExp > 15 ? std::max(maxDbSizeExp - 4, 15) : maxDbSizeExp;
 
     std::unique_ptr<PiBas<>>        piBas         = app::createSse<PiBas<>>();
     std::unique_ptr<NLogN<>>        nLogN         = app::createSse<NLogN<>>();
@@ -66,7 +66,7 @@ int main() {
         // SSE schemes (also why DB is always small since we need the same DB for each scheme)
         Db<> db;
         app::createDb(db, std::pow(2, maxDbSizeExpSmall), true, true);
-        Range<Kw> query {3, 5};
+        const Range<Kw> query {3, 5};
         app::experiments::Debugging debugging(db, query);
         debugging.printHeader();
 
@@ -120,7 +120,7 @@ int main() {
     // all vs. DB size experiment
 
     {
-        bigint targetResultSize = 100;
+        const bigint targetResultSize = 100;
         app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp, targetResultSize);
         app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExpSmall, targetResultSize);
         allVsDbSize.printHeader();
@@ -173,8 +173,8 @@ int main() {
 
     {
         // this experiment must use the same DB size everywhere, so we use the small DB throughout
-        int maxResSizeExp = 22;
-        int maxResSizeExpSmall = 18;
+        const int maxResSizeExp = 22;
+        const int maxResSizeExpSmall = 18;
         app::experiments::SearchVsResultSize searchVsResultSize(maxDbSizeExpSmall, maxResSizeExp);
         app::experiments::SearchVsResultSize searchVsResultSizeSmall(
             maxDbSizeExpSmall, maxResSizeExpSmall
@@ -229,8 +229,8 @@ int main() {
 
     {
         // this experiment also requires the same DB sizes everywhere
-        int maxResSizeExp = 22;
-        int maxResSizeExpSmall = 18;
+        const int maxResSizeExp = 22;
+        const int maxResSizeExpSmall = 18;
         app::experiments::SearchVsRangeSize searchVsRangeSize(maxDbSizeExpSmall, maxResSizeExp);
         app::experiments::SearchVsRangeSize searchVsRangeSizeSmall(
             maxDbSizeExp, maxResSizeExpSmall
@@ -324,7 +324,7 @@ int main() {
 
     if (config::SHOULD_BENCHMARK_UPDTS) {
         // set a bound to prevent this experiment from taking too long and outputting too much text
-        int dbSizeExp = std::min(maxDbSizeExpSmall, 13);
+        const int dbSizeExp = std::min(maxDbSizeExpSmall, 13);
         Db<> db;
         app::createDb(db, std::pow(2, dbSizeExp), true, true);
         app::experiments::UpdateVsDbSize updateVsDbSize(db);
