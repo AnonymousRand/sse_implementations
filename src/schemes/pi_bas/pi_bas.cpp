@@ -29,9 +29,9 @@ template <IsDbTuple DbTuple>
 PiBas<DbTuple>::~PiBas() {
     this->clear();
 
-    if (this->server != nullptr) {
-        delete this->server;
-        this->server = nullptr;
+    if (this->piBasServer != nullptr) {
+        delete this->piBasServer;
+        this->piBasServer = nullptr;
     }
 }
 
@@ -42,7 +42,7 @@ PiBas<DbTuple>::~PiBas() {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOper) {
-    assert(this->server != nullptr);
+    assert(this->piBasServer != nullptr);
     this->clear();
     
     //--------------------------------------------------------------------------
@@ -100,14 +100,14 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOpe
     }
 
     encInd->endSetup(setupOper);
-    this->server->setEncInd(encInd);
+    this->piBasServer->setEncInd(encInd);
 }
 
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::clear() {
-    assert(this->server != nullptr);
-    this->server->clear();
+    assert(this->piBasServer != nullptr);
+    this->piBasServer->clear();
 
     // clears `this->size`
     ISdUnderly<DbTuple>::clear();
@@ -123,8 +123,8 @@ void PiBas<DbTuple>::clear() {
 
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
-    assert(this->server != nullptr);
-    EncIndRand* encInd = this->server->getEncInd();
+    assert(this->piBasServer != nullptr);
+    EncIndRand* encInd = this->piBasServer->getEncInd();
 
     // don't use `this->size` as the bound here as that doesn't include padding while
     // `encInd` does (this should all be client-side anyway so it's not leaking anything)
@@ -149,12 +149,12 @@ template <IsDbTuple DbTuple>
 std::vector<typename PiBas<DbTuple>::DbDoc> PiBas<DbTuple>::searchRaw(
     const Range<DbKw>& query
 ) const {
-    assert(this->server != nullptr);
+    assert(this->piBasServer != nullptr);
     std::vector<DbDoc> results;
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
-    std::vector<EncIndVal> encResultTups = this->server->searchEncInd(queryToken);
+    std::vector<EncIndVal> encResultTups = this->piBasServer->searchEncInd(queryToken);
 
     // decrypt results (on the client)
     results.reserve(encResultTups.size());
