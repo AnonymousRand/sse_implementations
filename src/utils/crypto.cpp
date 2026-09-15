@@ -1,6 +1,7 @@
 #include "utils/crypto.h"
 
 #include <cstdlib>
+#include <format>
 #include <iostream>
 
 #include <openssl/err.h>
@@ -21,7 +22,8 @@
 namespace {
 
 
-void handleErrors() {
+void handleErrors(const std::string& beginText = "") {
+    std::cerr << beginText;
     ERR_print_errors_fp(stderr);
     std::exit(EXIT_FAILURE);
 }
@@ -42,7 +44,7 @@ ustring genKey(int keyLen) {
     uchar* key = new uchar[keyLen];
     int res = RAND_priv_bytes(key, keyLen);
     if (res != 1) {
-        handleErrors();
+        handleErrors("Error: utils::crypto::genKey(): ");
     }
     ustring ustrKey = ::utils::ustr::toUstr(key, keyLen);
     delete[] key;
@@ -54,7 +56,7 @@ ustring genIv(int ivLen) {
     uchar* iv = new uchar[ivLen];
     int res = RAND_bytes(iv, ivLen);
     if (res != 1) {
-        handleErrors();
+        handleErrors("Error: utils::crypto::genIv(): ");
     }
     ustring ustrIv = ::utils::ustr::toUstr(iv, ivLen);
     delete[] iv;
@@ -65,12 +67,16 @@ ustring genIv(int ivLen) {
 ustring hash(const ustring& input, const EVP_MD* hashFunc, int hashOutputLen) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (!ctx) {
-        handleErrors();
+        handleErrors(
+            std::format("Error: utils::crypto::hash() creating context (input is \"{}\"): ", input)
+        );
     }
 
     // initialize hash
     if (EVP_DigestInit_ex(ctx, hashFunc, NULL) != 1) {
-        handleErrors();
+        handleErrors(
+            std::format("Error: utils::crypto::hash() initializing hash (input is \"{}\"): ", input)
+        );
     }
 
     // perform hash
@@ -78,12 +84,16 @@ ustring hash(const ustring& input, const EVP_MD* hashFunc, int hashOutputLen) {
     ustring hash;
     hash.resize(hashOutputLen);
     if (EVP_DigestUpdate(ctx, input.data(), input.length()) != 1) {
-        handleErrors();
+        handleErrors(
+            std::format("Error: utils::crypto::hash() performing hash (input is \"{}\"): ", input)
+        );
     }
 
     // finalize hash by outputting the digest
     if (EVP_DigestFinal_ex(ctx, hash.data(), &hashLen) != 1) {
-        handleErrors();
+        handleErrors(
+            std::format("Error: utils::crypto::hash() finalizing hash (input is \"{}\"): ", input)
+        );
     }
 
     EVP_MD_CTX_free(ctx);
@@ -92,7 +102,7 @@ ustring hash(const ustring& input, const EVP_MD* hashFunc, int hashOutputLen) {
 }
 
 
-// PRF implemented with HMAC-SHA512, as done in Demertzis'16
+// PRF implemented with HMAC-SHA512, as done in SIGMOD'16's implementation
 ustring prf(const ustring& key, const ustring& input) {
     unsigned int outputLen;
     uchar* output = HMAC(
@@ -108,7 +118,11 @@ ustring encrypt(
 ) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
-        handleErrors();
+        handleErrors(
+            std::format(
+                "Error: utils::crypto::encrypt() creating context (ptext is \"{}\"): ", ptext
+            )
+        );
     }
 
     // initialize encryption
@@ -119,7 +133,11 @@ ustring encrypt(
         ucharIv = nullptr;
     }
     if (EVP_EncryptInit_ex(ctx, cipher, nullptr, key.data(), ucharIv) != 1) {
-        handleErrors();
+        handleErrors(
+            std::format(
+                "Error: utils::crypto::encrypt() initializing encryption (ptext is \"{}\"): ", ptext
+            )
+        );
     }
 
     // perform encryption
@@ -127,12 +145,20 @@ ustring encrypt(
     ustring ctext;
     ctext.resize(ptext.length() + BLOCK_SIZE); // need to allocate worst-case size first
     if (EVP_EncryptUpdate(ctx, ctext.data(), &ctextLen1, ptext.data(), ptext.length()) != 1) {
-        handleErrors();
+        handleErrors(
+            std::format(
+                "Error: utils::crypto::encrypt() performing encryption (ptext is \"{}\"): ", ptext
+            )
+        );
     }
 
     // finalize encryption (deal with last partial block)
     if (EVP_EncryptFinal_ex(ctx, ctext.data() + ctextLen1, &ctextLen2) != 1) {
-        handleErrors();
+        handleErrors(
+            std::format(
+                "Error: utils::crypto::encrypt() finalizing encryption (ptext is \"{}\"): ", ptext
+            )
+        );
     }
 
     EVP_CIPHER_CTX_free(ctx);
@@ -162,7 +188,12 @@ ustring decrypt(
 ) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
-        handleErrors();
+        handleErrors(
+            std::format(
+                "Error: utils::crypto::decrypt() creating context (ctext is \"{}\"): ",
+                utils::debug::ustrToHex(ctext)
+            )
+        );
     }
 
     // initialize decryption
@@ -173,7 +204,12 @@ ustring decrypt(
         ucharIv = nullptr;
     }
     if (EVP_DecryptInit_ex(ctx, cipher, nullptr, key.data(), ucharIv) != 1) {
-        handleErrors();
+        handleErrors(
+            std::format(
+                "Error: utils::crypto::decrypt() initializing decryption (ctext is \"{}\"): ",
+                utils::debug::ustrToHex(ctext)
+            )
+        );
     }
 
     // perform decryption
@@ -181,12 +217,22 @@ ustring decrypt(
     ustring ptext;
     ptext.resize(ctext.length());
     if (EVP_DecryptUpdate(ctx, ptext.data(), &ptextLen1, ctext.data(), ctext.length()) != 1) {
-        handleErrors();
+        handleErrors(
+            std::format(
+                "Error: utils::crypto::decrypt() performing decryption (ctext is \"{}\"): ",
+                utils::debug::ustrToHex(ctext)
+            )
+        );
     }
 
     // finalize decryption (deal with last partial block)
     if (EVP_DecryptFinal_ex(ctx, ptext.data() + ptextLen1, &ptextLen2) != 1) {
-        handleErrors();
+        handleErrors(
+            std::format(
+                "Error: utils::crypto::decrypt() finalizing decryption (ctext is \"{}\"): ",
+                utils::debug::ustrToHex(ctext)
+            )
+        );
     }
 
     EVP_CIPHER_CTX_free(ctx);

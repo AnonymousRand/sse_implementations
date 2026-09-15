@@ -65,7 +65,7 @@ public:
 
             // search
             sse->search(query);
-            utils::benchmark::print("Search", std::format("(false pos 2^{}-1)", dbSizeExp));
+            utils::benchmark::print("Search", std::format("(flse pos 2^{}-1)", dbSizeExp));
 
             sse->clear();
         }

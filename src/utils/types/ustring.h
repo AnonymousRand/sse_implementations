@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <format>
 #include <iostream>
 #include <string>
 
@@ -34,5 +35,16 @@ template <>
 struct std::hash<ustring> {
     inline std::size_t operator ()(const ustring& ustr) const noexcept {
         return std::hash<std::string>{}(utils::ustr::toStr(ustr));
+    }
+};
+
+
+// specialize `std::formatter` for `ustring` so that they can be insert in `std::format()`
+template <>
+struct std::formatter<ustring> : std::formatter<std::string> {
+    // inherit `parse()` from std::string
+
+    auto format(const ustring& ustr, std::format_context& ctx) const {
+        return std::formatter<std::string>::format(utils::ustr::toStr(ustr), ctx);
     }
 };
