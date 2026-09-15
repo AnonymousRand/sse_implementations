@@ -18,7 +18,7 @@
 //==============================================================================
 
 
-class EncIndBase : public IDiskStorage {
+class EncIndBase : public IDiskStorage<uchar> {
 public:
     // currently, all schemes are result-hiding, which uses a hash as the final key here
     // IMPORTANT: change if this is no longer the case!

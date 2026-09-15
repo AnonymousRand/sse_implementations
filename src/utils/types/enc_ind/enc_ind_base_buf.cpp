@@ -133,6 +133,7 @@ void EncIndBase::Buf::operOnFileBase(
 }
 
 
+// IMPORTANT: this doesn't control flushing of the `FILE*`, so that's the enc ind's responsibility!
 void EncIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
     auto fillOper = [this, allowIncompleteFill](uchar* data, bigint targetEntryCount) {
         bigint itemsRead = std::fread(data, this->entryLen, targetEntryCount, this->file);
@@ -151,13 +152,13 @@ void EncIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
 }
 
 
+// IMPORTANT: this doesn't control flushing of the `FILE*`, so that's the enc ind's responsibility!
 void EncIndBase::Buf::flushIfNotFlushed() const {
     if (!this->isFlushed && this->isFilled) {
         auto flushOper = [this](uchar* data, bigint targetEntryCount) {
             return std::fwrite(data, this->entryLen, targetEntryCount, this->file);
         };
         operOnFileBase(this, flushOper, this->startPos);
-
         this->isFlushed = true;
     }
 }

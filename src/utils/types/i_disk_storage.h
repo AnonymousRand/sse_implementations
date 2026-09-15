@@ -3,7 +3,10 @@
 #include <cstdio>
 #include <string>
 
+#include "utils/types/basic_types.h"
 
+
+template <class CharType>
 class IDiskStorage {
 public:
     //--------------------------------------------------------------------------
@@ -64,6 +67,21 @@ protected:
 
     //--------------------------------------------------------------------------
     // helpers
+
+    /**
+     * the raw file operation methods, which are just wrappers around `fread()` and `fwrite()`
+     * for instance but also controlling flushing of the `FILE*` buffers, etc.
+     *
+     * returns: the actual number of items read/written.
+     */
+    bigint readFromFile(
+        CharType* ret, bigint length, bigint count,
+        const std::string& caller = "IDiskStorage::readFromFile()"
+    ) const;
+    bigint writeToFile(
+        const CharType* toWrite, bigint length, bigint count,
+        const std::string& caller = "IDiskStorage::writeToFile()"
+    );
 
     std::string genFilename() const;
     void flushIfNotFlushed() const;

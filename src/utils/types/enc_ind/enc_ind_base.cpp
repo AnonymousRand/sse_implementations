@@ -33,7 +33,7 @@ EncIndBase::~EncIndBase() {
 
 
 void EncIndBase::copyFrom(const EncIndBase& other) {
-    IDiskStorage::copyFrom(other);
+    IDiskStorage<uchar>::copyFrom(other);
 
     if (other.NULL_ENTRY != nullptr) {
         assert(this->ENTRY_LEN() == other.ENTRY_LEN());
@@ -66,7 +66,7 @@ void EncIndBase::copyFrom(const EncIndBase& other) {
 
 
 void EncIndBase::moveFrom(EncIndBase&& other) noexcept {
-    IDiskStorage::moveFrom(std::move(other));
+    IDiskStorage<uchar>::moveFrom(std::move(other));
 
     // this is now regular pointer assignment instead of actually copying the heap data
     this->NULL_ENTRY = other.NULL_ENTRY;
@@ -127,7 +127,7 @@ void EncIndBase::init(SseOper setupOper, bigint capacity) {
     assert(setupOper == SseOper::SETUP || setupOper == SseOper::UPDATE);
 
     // inits enc ind file and file pointer
-    IDiskStorage::init();
+    IDiskStorage<uchar>::init();
 
     // also initialize `this->NULL_ENTRY` to a contiguous block of zero bits, which we do here
     // instead of in the constructor since `this->ENTRY_LEN()` relies on virtual methods
@@ -171,6 +171,9 @@ void EncIndBase::init(SseOper setupOper, bigint capacity) {
         // we allow incomplete buffer fills from the file here since, well, the file is incomplete
         this->writeEncoded(setupOper, i, this->NULL_ENTRY, true);
     }
+    // this is needed so that the buf does not contain a region where the file simply does not
+    // have yet, which makes `NoBuf` methods later wrong!
+    this->flushBufIfNotFlushed(this->getBufForSseOper(setupOper));
 }
 
 
@@ -195,7 +198,7 @@ void EncIndBase::clear() {
     }
 
     // clears DB file and file pointer
-    IDiskStorage::clear();
+    IDiskStorage<uchar>::clear();
 }
 
 
@@ -377,15 +380,7 @@ uchar* EncIndBase::readEncodedOptionalBuf(
         if (shouldFseek) {
             std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
         }
-        int itemsRead = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
-        DEBUG_ONLY({
-            if (itemsRead != 1) {
-                std::cerr << "Error: EncIndBase::readEncodedOptionalBuf(): error reading from file "
-                          << this->filename << " (nothing read)" << std::endl;
-                std::exit(EXIT_FAILURE);
-            }
-        });
-
+        this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncIndBase::readEncodedOptionalBuf()");
         return ret;
     } else {
         // if `pos` is covered by the buffer, read it from the buffer instead since the buffer may
@@ -405,7 +400,14 @@ uchar* EncIndBase::readEncodedNoBuf(
     if (shouldFseek) {
         std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
     }
-    int itemsReadFromFile = std::fread(ret, this->ENTRY_LEN(), 1, this->file);
+    // note that we do still need the check for no items read in `this->readFromFile()` even if
+    // we end up reading from the buffer instead, as otherwise the caller may think the read
+    // from file succeeded and not call for an `fseek()` subsequently when in reality the failed
+    // `fread()` didn't move the file pointer
+    //
+    // this is also why we needed to flush the buffer at the end of `init()`!
+    //this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncIndBase::readEncodedNoBuf()");
+    int itemsRead = this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncIndBase::readEncodedNoBuf()");
 
     // also read encoded entry from buffer if `pos` is covered by the buffer, as it must have
     // the most updated version of that entry, and return it instead of the `ret` parameter
@@ -416,15 +418,6 @@ uchar* EncIndBase::readEncodedNoBuf(
         return bufToUse->read(bufIndex);
     } else {
         // if we are returning what we read from the file
-        DEBUG_ONLY({
-            // we only check here since it can be the case that the buffer contains the entry but
-            // it has never been written onto the file (e.g. buffer after init and before any flush)
-            if (itemsReadFromFile != 1) {
-                std::cerr << "Error: EncIndBase::readEncodedNoBuf(): error reading from file "
-                          << this->filename << " (nothing read)" << std::endl;
-                std::exit(EXIT_FAILURE);
-            }
-        });
         return ret;
     }
 }
@@ -440,14 +433,7 @@ void EncIndBase::writeEncodedNoBuf(
     if (shouldFseek) {
         std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
     }
-    int itemsWritten = std::fwrite(encodedEntry, this->ENTRY_LEN(), 1, this->file);
-    DEBUG_ONLY({
-        if (itemsWritten != 1) {
-            std::cerr << "Error: EncIndBase::writeEncodedNoBuf(): error writing to file "
-                      << this->filename << " (nothing written)" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    });
+    this->writeToFile(encodedEntry, this->ENTRY_LEN(), 1, "EncIndBase::writeEncodedNoBuf()");
 
     // also write encoded entry to buffer if `pos` is covered by the buffer, to ensure that
     // the buffer has the most updated version of that entry
@@ -513,12 +499,7 @@ void EncIndBase::printFile() const {
             std::fseek(this->file, 0, SEEK_SET);
         }
 
-        int itemsRead = std::fread(currEntry, this->ENTRY_LEN(), 1, this->file);
-        if (itemsRead != 1) {
-            std::cerr << "Error: EncIndBase::printFile(): error reading from file "
-                      << this->filename << " (nothing read at pos " << pos << ")" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
+        this->readFromFile(currEntry, this->ENTRY_LEN(), 1, "EncIndBase::printFile()");
         std::cerr << pos << ": " << utils::debug::ustrToHex(currEntry, this->ENTRY_LEN())
                   << std::endl;
     }

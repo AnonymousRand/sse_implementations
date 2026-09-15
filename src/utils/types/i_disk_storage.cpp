@@ -13,27 +13,15 @@
 #include "utils/debug.h"
 #include "utils/random.h"
 #include "utils/types/basic_types.h"
-
-
-namespace {
-
-
-std::uniform_int_distribution<ubigint> dist;
-
-
-} // anonymous namespace
-
-
-//==============================================================================
-// `IDiskStorage`
-//==============================================================================
+#include "utils/types/ustring.h"
 
 
 //------------------------------------------------------------------------------
 // constructors/destructors
 
 
-IDiskStorage::~IDiskStorage() {
+template <class CharType>
+IDiskStorage<CharType>::~IDiskStorage() {
     this->clear();
 }
 
@@ -42,7 +30,8 @@ IDiskStorage::~IDiskStorage() {
 // rule of five
 
 
-void IDiskStorage::copyFrom(const IDiskStorage& other) {
+template <class CharType>
+void IDiskStorage<CharType>::copyFrom(const IDiskStorage& other) {
     this->filename = this->genFilename();
     // flush if needed to make sure `other.file` has written everything
     if (!other.isFlushed) {
@@ -72,7 +61,8 @@ void IDiskStorage::copyFrom(const IDiskStorage& other) {
 }
 
 
-void IDiskStorage::moveFrom(IDiskStorage&& other) noexcept {
+template <class CharType>
+void IDiskStorage<CharType>::moveFrom(IDiskStorage&& other) noexcept {
     // IMPORTANT: set all fields in `other` that have non-default destruction/should not be
     // double-freed to a null value, so that its destructor doesn't try to delete the same resource
     // (e.g.  pointer or filename) that `this`'s fields now point to when it goes out of scope
@@ -87,7 +77,8 @@ void IDiskStorage::moveFrom(IDiskStorage&& other) noexcept {
 
 
 // copy assignment operator
-IDiskStorage& IDiskStorage::operator =(const IDiskStorage& other) {
+template <class CharType>
+IDiskStorage<CharType>& IDiskStorage<CharType>::operator =(const IDiskStorage& other) {
     // important self-assignment safety check!
     if (this != &other) {
         this->clear();
@@ -98,13 +89,15 @@ IDiskStorage& IDiskStorage::operator =(const IDiskStorage& other) {
 
 
 // move constructor
-IDiskStorage::IDiskStorage(IDiskStorage&& other) noexcept {
+template <class CharType>
+IDiskStorage<CharType>::IDiskStorage(IDiskStorage&& other) noexcept {
     this->moveFrom(std::move(other));
 }
 
 
 // move assignment operator
-IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
+template <class CharType>
+IDiskStorage<CharType>& IDiskStorage<CharType>::operator =(IDiskStorage&& other) noexcept {
     // important self-assignment safety check!
     if (this != &other) {
         this->clear();
@@ -118,7 +111,8 @@ IDiskStorage& IDiskStorage::operator =(IDiskStorage&& other) noexcept {
 // interface
 
 
-void IDiskStorage::init() {
+template <class CharType>
+void IDiskStorage<CharType>::init() {
     this->clear();
 
     // first make sure base directory exists
@@ -148,7 +142,8 @@ void IDiskStorage::init() {
 }
 
 
-void IDiskStorage::clear() {
+template <class CharType>
+void IDiskStorage<CharType>::clear() {
     // close file descriptors
     if (this->file != nullptr) {
         std::fclose(this->file);
@@ -173,18 +168,69 @@ void IDiskStorage::clear() {
 // helpers
 
 
-std::string IDiskStorage::genFilename() const {
+template <class CharType>
+bigint IDiskStorage<CharType>::readFromFile(
+    CharType* ret, bigint length, bigint count, const std::string& caller
+) const {
+    // make sure to flush if more writes have been done since the last manual flush
+    this->flushIfNotFlushed();
+
+    bigint itemsRead = std::fread(ret, length, count, this->file);
+    DEBUG_ONLY({
+        if (itemsRead != count) {
+            std::cerr << "Error: " << caller << ": error reading from file " << this->filename
+                      << " (only " << itemsRead << " out of " << count << " read)"
+                      << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
+
+    return itemsRead;
+}
+
+
+template <class CharType>
+bigint IDiskStorage<CharType>::writeToFile(
+    const CharType* toWrite, bigint length, bigint count, const std::string& caller
+) {
+    bigint itemsWritten = std::fwrite(toWrite, length, count, this->file);
+    DEBUG_ONLY({
+        if (itemsWritten != count) {
+            std::cerr << "Error: " << caller << ": error writing to file " << this->filename
+                      << " (only " << itemsWritten << " out of " << count << " written)"
+                      << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+    });
+
+    this->isFlushed = false;
+    return itemsWritten;
+}
+
+
+template <class CharType>
+std::string IDiskStorage<CharType>::genFilename() const {
     // avoid naming clashes by generating a random 8 byte (16 char) hex string
-    ubigint randomHex = ::dist(utils::random::RNG);
+    std::uniform_int_distribution<ubigint> dist;
+    ubigint randomHex = dist(utils::random::RNG);
     std::string randomHexStr = std::format("{:016x}", randomHex);
     return std::format("{}/{}{}.dat", this->FILE_DIR(), this->FILENAME_PREFIX(), randomHexStr);
 }
 
 
-void IDiskStorage::flushIfNotFlushed() const {
+template <class CharType>
+void IDiskStorage<CharType>::flushIfNotFlushed() const {
     assert(this->file != nullptr);
     if (!this->isFlushed) {
         std::fflush(this->file);
         this->isFlushed = true;
     }
 }
+
+
+//------------------------------------------------------------------------------
+// explicit template instantiations
+
+
+template class IDiskStorage<char>;
+template class IDiskStorage<uchar>;

@@ -18,7 +18,7 @@
 // operators must be called first, as they call `clear()`!
 // (and `= default` calls their parent versions in order of inheritance)
 template <IsDbTuple DbTuple>
-class DbDisk : public IDiskStorage, public IDb<DbTuple> {
+class DbDisk : public IDiskStorage<char>, public IDb<DbTuple> {
 public:
     //--------------------------------------------------------------------------
     // constructors/destructors

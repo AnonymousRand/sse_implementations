@@ -32,7 +32,7 @@
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple>::DbDisk() {
     // inits DB file and file pointer
-    IDiskStorage::init();
+    IDiskStorage<char>::init();
 }
 
 
@@ -68,7 +68,7 @@ DbDisk<DbTuple>::DbDisk(const DbDisk& other) :
     // call `IDb`'s base copy constructor to ensure it gets run as well
     IDb<DbTuple>(other)
 {
-    IDiskStorage::copyFrom(other);
+    IDiskStorage<char>::copyFrom(other);
 }
 
 
@@ -82,7 +82,7 @@ void DbDisk<DbTuple>::clear() {
     IDb<DbTuple>::clear();
 
     // clears DB file and file pointer
-    IDiskStorage::clear();
+    IDiskStorage<char>::clear();
 }
 
 
@@ -105,15 +105,7 @@ void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
 
     // write to DB
     std::fseek(this->file, 0, SEEK_END);
-    int itemsWritten = std::fwrite(dbTupleStr.c_str(), config::TUPLE_ENCOD_LEN, 1, this->file);
-    DEBUG_ONLY({
-        if (itemsWritten != 1) {
-            std::cerr << "Error: DbDisk::append(): error writing to file " << this->filename
-                      << " (nothing written)" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    });
-    this->isFlushed = false;
+    this->writeToFile(dbTupleStr.c_str(), config::TUPLE_ENCOD_LEN, 1, "DbDisk::append()");
 
     // update member variables as needed
     this->onNewDbTuple(dbTuple);
@@ -125,20 +117,10 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     assert(this->file != nullptr);
     assert(index < this->size);
 
-    // make sure to flush if more writes have been done since the last manual flush
-    this->flushIfNotFlushed();
-
     // read from DB
     char dbTupleCstr[config::TUPLE_ENCOD_LEN];
     std::fseek(this->file, index * config::TUPLE_ENCOD_LEN, SEEK_SET);
-    int itemsRead = std::fread(dbTupleCstr, config::TUPLE_ENCOD_LEN, 1, this->file);
-    DEBUG_ONLY({
-        if (itemsRead != 1) {
-            std::cerr << "Error: DbDisk::operator []: error reading from file " << this->filename
-                      << " (nothing read)" << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-    });
+    this->readFromFile(dbTupleCstr, config::TUPLE_ENCOD_LEN, 1, "DbDisk::operator []");
     std::string dbTupleStr(dbTupleCstr, config::TUPLE_ENCOD_LEN);
 
     // unpad as necessary so that decoding works properly
