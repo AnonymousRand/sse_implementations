@@ -213,14 +213,6 @@ ustring NLogNBase<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
 
 
 template <IsDbTuple DbTuple>
-ubigint NLogNBase<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
-    // l <- Hash(PRF(K_1, w))
-    retLabel = utils::crypto::hash(queryToken);
-    return utils::misc::hashToPos(retLabel); // no modulus
-}
-
-
-template <IsDbTuple DbTuple>
 std::pair<ubigint, ubigint> NLogNBase<DbTuple>::map(
     const ustring& queryToken, bigint dbKwPaddedCount, ustring& retLabel
 ) const {
@@ -230,6 +222,14 @@ std::pair<ubigint, ubigint> NLogNBase<DbTuple>::map(
     ubigint lvl = std::log2(dbKwPaddedCount);
     pos %= (ubigint)this->calcBcktCountOnLvl(lvl);
     return std::pair {lvl, pos};
+}
+
+
+template <IsDbTuple DbTuple>
+ubigint NLogNBase<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
+    // l <- Hash(PRF(K_1, w))
+    retLabel = utils::crypto::hash(queryToken);
+    return utils::misc::hashToPos(retLabel); // no modulus
 }
 
 
