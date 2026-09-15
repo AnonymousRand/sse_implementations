@@ -20,9 +20,9 @@
 namespace app::experiments {
 
 
-class SearchVsResultSize : public IExperiment<ISse<>> {
+class SearchVsResSize : public IExperiment<ISse<>> {
 public:
-    SearchVsResultSize(int dbSizeExp, int maxResSizeExp) : dbSizeExp(dbSizeExp) {
+    SearchVsResSize(int dbSizeExp, int maxResSizeExp) : dbSizeExp(dbSizeExp) {
         this->maxResSizeExp = std::min(maxResSizeExp, this->dbSizeExp);
     }
 

@@ -126,9 +126,9 @@ int main() {
     // all vs. DB size experiment
 
     {
-        const bigint targetResultSize = 100;
-        app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp, targetResultSize);
-        app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExpSmall, targetResultSize);
+        const bigint targetResSize = 100;
+        app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp, targetResSize);
+        app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExpSmall, targetResSize);
         allVsDbSize.printHeader();
 
         std::cout << "================ PiBas =================" << std::endl << std::endl;
@@ -186,55 +186,55 @@ int main() {
         const int dbSizeExp = maxDbSizeExpSmall;
         const int maxResSizeExp = 22;
         const int maxResSizeExpSmall = 18;
-        app::experiments::SearchVsResultSize searchVsResultSize(dbSizeExp, maxResSizeExp);
-        app::experiments::SearchVsResultSize searchVsResultSizeSmall(dbSizeExp, maxResSizeExpSmall);
-        searchVsResultSize.printHeader();
+        app::experiments::SearchVsResSize searchVsResSize(dbSizeExp, maxResSizeExp);
+        app::experiments::SearchVsResSize searchVsResSizeSmall(dbSizeExp, maxResSizeExpSmall);
+        searchVsResSize.printHeader();
 
         std::cout << "================ PiBas =================" << std::endl << std::endl;
-        searchVsResultSizeSmall.run(piBas.get());
+        searchVsResSizeSmall.run(piBas.get());
 
         std::cout << "================ NLogN =================" << std::endl << std::endl;
-        searchVsResultSizeSmall.run(nLogN.get());
+        searchVsResSizeSmall.run(nLogN.get());
 
         std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-        searchVsResultSize.run(logSrcPiBas.get());
+        searchVsResSize.run(logSrcPiBas.get());
 
         // huge storage; may want to use small DB size everywhere if this is being run!
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-        searchVsResultSize.run(logSrcNLogN.get());
+        searchVsResSize.run(logSrcNLogN.get());
 
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-        searchVsResultSize.run(logSrcIPiBas.get());
+        searchVsResSize.run(logSrcIPiBas.get());
 
         // huge storage; may want to use small DB size everywhere if this is being run!
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-        searchVsResultSize.run(logSrcINLogN.get());
+        searchVsResSize.run(logSrcINLogN.get());
 
         std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
-        searchVsResultSize.run(logSrcIStar.get());
+        searchVsResSize.run(logSrcIStar.get());
 
         std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
-        searchVsResultSizeSmall.run(sdaPiBas.get());
+        searchVsResSizeSmall.run(sdaPiBas.get());
 
         std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
-        searchVsResultSizeSmall.run(sdaNLogN.get());
+        searchVsResSizeSmall.run(sdaNLogN.get());
 
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-        searchVsResultSize.run(sdaLogSrcPiBas.get());
+        searchVsResSize.run(sdaLogSrcPiBas.get());
 
         // huge storage; may want to use small DB size everywhere if this is being run!
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        searchVsResultSize.run(sdaLogSrcNLogN.get());
+        searchVsResSize.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-        searchVsResultSize.run(sdaLogSrcIPiBas.get());
+        searchVsResSize.run(sdaLogSrcIPiBas.get());
 
         // huge storage; may want to use small DB size everywhere if this is being run!
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        searchVsResultSize.run(sdaLogSrcINLogN.get());
+        searchVsResSize.run(sdaLogSrcINLogN.get());
 
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-        searchVsResultSize.run(sdaLogSrcIStar.get());
+        searchVsResSize.run(sdaLogSrcIStar.get());
     }
 
     //--------------------------------------------------------------------------

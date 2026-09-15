@@ -24,10 +24,10 @@ namespace app::experiments {
 
 class AllVsDbSize : public IExperiment<ISse<>> {
 public:
-    AllVsDbSize(int maxDbSizeExp, bigint targetResultSize) : maxDbSizeExp(maxDbSizeExp) {
+    AllVsDbSize(int maxDbSizeExp, bigint targetResSize) : maxDbSizeExp(maxDbSizeExp) {
         // make sure we can still run at least one setup/search by capping result size at DB size
         bigint maxDbSize = std::pow(2, maxDbSizeExp);
-        this->resultSize = std::min(targetResultSize, maxDbSize);
+        this->resSize = std::min(targetResSize, maxDbSize);
     }
 
     void printHeader() const override {
@@ -35,7 +35,7 @@ public:
         std::cout << "=============================== All vs. DB Size ================================"
                   << std::endl;
         std::cout << "Setup and search vs. DB size up to 2^" << this->maxDbSizeExp << std::endl;
-        std::cout << "Fixed query result size " << this->resultSize << std::endl;
+        std::cout << "Fixed query result size " << this->resSize << std::endl;
         std::cout << "================================================================================"
                   << std::endl;
         std::cout << std::endl << std::endl;
@@ -44,17 +44,17 @@ public:
     void run(ISse<>* sse) const override {
         utils::benchmark::printHeader();
 
-        // we start `dbSizeExp` big enough for a query with `this->resultSize` results
+        // we start `dbSizeExp` big enough for a query with `this->resSize` results
         // to make sense
-        for (int dbSizeExp = std::ceil(std::log2(this->resultSize));
+        for (int dbSizeExp = std::ceil(std::log2(this->resSize));
             dbSizeExp <= this->maxDbSizeExp; dbSizeExp++)
         {
             bigint dbSize = std::pow(2, dbSizeExp);
             Db<> db;
-            // make sure only `this->resultSize` tuples have the right kws to be returned as results
-            createDb(db, this->resultSize, true, false);
-            createDb(db, dbSize - this->resultSize, true, false, this->resultSize);
-            Range<Kw> query {0, this->resultSize - 1};
+            // make sure only `this->resSize` tuples have the right kws to be returned as results
+            createDb(db, this->resSize, true, false);
+            createDb(db, dbSize - this->resSize, true, false, this->resSize);
+            Range<Kw> query {0, this->resSize - 1};
 
             // setup
             sse->setup(utils::crypto::KEY_LEN, db);
@@ -71,7 +71,7 @@ public:
 
 private:
     int maxDbSizeExp;
-    bigint resultSize;
+    bigint resSize;
 };
 
 
