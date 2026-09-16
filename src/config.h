@@ -56,7 +56,7 @@ inline constexpr bigint ENC_IND_SETUP_BUF_CAPAC = std::pow(2, 25);
 inline constexpr bigint ENC_IND_SETUP_OVERFLOW_BUF_CAPAC = std::pow(2, 8);
 // search buf size is determined heuristically from enc ind size (currently: 1/2^9 of enc ind size);
 // this is its maximum allowed size
-inline constexpr bigint ENC_IND_SEARCH_BUF_MAX_CAPAC = std::pow(2, 18);
+inline constexpr bigint ENC_IND_SEARCH_BUF_MAX_CAPAC = ENC_IND_SETUP_BUF_CAPAC / std::pow(2, 9);
 inline constexpr bigint ENC_IND_UPDATE_BUF_CAPAC = std::pow(2, 8);
 static_assert(
     ENC_IND_SETUP_BUF_CAPAC > 0,

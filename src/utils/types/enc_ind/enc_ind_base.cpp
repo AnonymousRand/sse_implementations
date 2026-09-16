@@ -149,11 +149,11 @@ void EncIndBase::init(SseOper setupOper, bigint capacity) {
     );
 
     // heuristically determine this size
-    bigint searchBufEntryCapacity = utils::misc::roundUpToPowOf2(this->capacity / 512);
+    bigint searchBufEntryCapacity = utils::misc::roundUpToPowOf2(this->capacity / std::pow(2, 9));
     searchBufEntryCapacity = std::min(searchBufEntryCapacity, config::ENC_IND_SEARCH_BUF_MAX_CAPAC);
     searchBufEntryCapacity = std::min(searchBufEntryCapacity, this->capacity);
     if (this->capacity > 0) {
-        // (buffer must have nonzero size (which is possible due to the `/ 512`) to avoid errors)
+        // buffer must have nonzero size (0 is possible due to `/ std::pow(...)`) to avoid errors
         searchBufEntryCapacity = std::max(searchBufEntryCapacity, (bigint)1);
     }
     this->searchBuf = new Buf(
