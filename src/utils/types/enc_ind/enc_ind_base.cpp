@@ -277,6 +277,7 @@ void EncIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncIndEntry
 
 void EncIndBase::endSetup(SseOper setupOper) {
     assert(setupOper == SseOper::SETUP || setupOper == SseOper::UPDATE);
+    // make sure the changes in the setup buffer are visible to the separate search buffer!
     Buf* buf = this->getBufForSseOper(setupOper);
     this->flushBufIfNotFlushed(buf);
 }
