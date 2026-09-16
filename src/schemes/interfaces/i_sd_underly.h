@@ -35,7 +35,6 @@ public:
     virtual void getDb(Db<DbTuple>& ret) const = 0;
 
     bigint getSize() const { return this->size; }
-    void setSetupOper(SseOper setupOper) { this->setupOper = setupOper; }
 
 protected:
     /**
