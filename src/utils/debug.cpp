@@ -23,7 +23,11 @@ std::string ustrToHex(const ustring& str, int len) {
 std::string ustrToHex(const uchar* str, int len) {
     std::string hexStr = "";
     for (int i = 0; i < len; i++) {
-        hexStr += std::format("{:02x} ", static_cast<unsigned int>(str[i]));
+        if (i < len - 1) {
+            hexStr += std::format("{:02x} ", static_cast<unsigned int>(str[i]));
+        } else {
+            hexStr += std::format("{:02x}", static_cast<unsigned int>(str[i]));
+        }
     }
     return hexStr;
 }
