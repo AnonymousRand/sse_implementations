@@ -386,6 +386,9 @@ uchar* EncIndBase::readEncodedOptionalBuf(
     } else {
         // if `pos` is covered by the buffer, read it from the buffer instead since the buffer may
         // have a more updated version of that entry than the file
+
+        // IMPORTANT: this does NOT guarantee that the file pointer is moved correctly! as this is
+        // transparently an "optional" buf read, the caller bears the responsibility of checking
         return bufToUse->read(bufIndex);
     }
 }

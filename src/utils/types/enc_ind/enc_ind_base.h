@@ -188,6 +188,9 @@ protected:
      * this may mean reading from the buffer instead of the file if `pos` is within the buffer;
      * and for `NoBuf`, this may mean always syncing the relevant entry between buffer and file).
      * this should ensure that it is ALWAYS correct to read from the buffer.
+     *
+     * on the other hand, `OptionalBuf` methods need NOT guarantee that the file pointer is moved as
+     * if a read from the file had occurred, as it is transparently "may or may not read from file".
      */
     uchar* readEncodedOptionalBuf(
         SseOper oper, ubigint pos, uchar* ret, bool shouldFseek = true
