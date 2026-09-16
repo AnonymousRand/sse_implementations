@@ -8,6 +8,7 @@
 
 #include "config.h"
 
+#include "app/db_factory.h"
 #include "app/experiments/i_experiment.h"
 
 #include "schemes/interfaces/i_dsse.h"
@@ -24,14 +25,13 @@ namespace app::experiments {
 
 class UpdateVsDbSize : public IExperiment<IDsse<>> {
 public:
-    UpdateVsDbSize(const Db<>& db) : db(db) {}
+    UpdateVsDbSize(int dbSizeExp) : dbSizeExp(dbSizeExp) {}
 
     void printHeader() const override {
         std::cout << std::endl;
         std::cout << "============================== Update vs. DB Size =============================="
                   << std::endl;
-        std::cout << "Update vs. DB size up to 2^" << std::ceil(std::log2(this->db.getSize()))
-                  << std::endl;
+        std::cout << "Update vs. DB size up to 2^" << this->dbSizeExp << std::endl;
         std::cout << "================================================================================"
                   << std::endl;
         std::cout << std::endl << std::endl;
@@ -40,12 +40,16 @@ public:
     void run(IDsse<>* dsse) const override {
         utils::benchmark::printHeader();
 
+        bigint dbSize = std::pow(2, this->dbSizeExp);
+        Db<> db;
+        createDb(db, dbSize, true, true);
+
         // setup (with empty DB, just to init keys and stuff)
         dsse->setup(utils::crypto::KEY_LEN, Db<> {});
 
         // updates
-        for (bigint i = 0; i < this->db.getSize(); i++) {
-            Tuple<> tuple = this->db[i];
+        for (bigint i = 0; i < dbSize; i++) {
+            Tuple<> tuple = db[i];
             dsse->update(tuple);
             if (config::SHOULD_PRINT_EACH_UPDT) {
                 utils::benchmark::print("Update", std::to_string(i));
@@ -58,7 +62,7 @@ public:
     }
 
 private:
-    const Db<>& db;
+    const int dbSizeExp;
 };
 
 

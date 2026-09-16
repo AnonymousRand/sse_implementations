@@ -22,9 +22,9 @@ namespace app::experiments {
 
 class SearchVsRangeSize : public IExperiment<ISse<>> {
 public:
-    SearchVsRangeSize(int dbSizeExp, int maxRangeSizeExp) : dbSizeExp(dbSizeExp) {
-        this->maxRangeSizeExp = std::min(maxRangeSizeExp, this->dbSizeExp);
-    }
+    SearchVsRangeSize(int dbSizeExp, int maxRangeSizeExp) :
+        dbSizeExp(dbSizeExp),
+        maxRangeSizeExp(std::min(maxRangeSizeExp, dbSizeExp)) {}
 
     void printHeader() const override {
         std::cout << std::endl;
@@ -59,8 +59,8 @@ public:
     }
 
 private:
-    int dbSizeExp;
-    int maxRangeSizeExp;
+    const int dbSizeExp;
+    const int maxRangeSizeExp;
 };
 
 

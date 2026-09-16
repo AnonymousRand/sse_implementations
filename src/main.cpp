@@ -81,14 +81,14 @@ int main() {
         std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
         debugging.run(logSrcPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
         debugging.run(logSrcNLogN.get());
 
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
         debugging.run(logSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
         debugging.run(logSrcINLogN.get());
 
@@ -104,14 +104,14 @@ int main() {
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
         debugging.run(sdaLogSrcPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
         debugging.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         debugging.run(sdaLogSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
         debugging.run(sdaLogSrcINLogN.get());
 
@@ -128,7 +128,8 @@ int main() {
     {
         const bigint targetResSize = 100;
         app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp, targetResSize);
-        app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExpSmall, targetResSize);
+        app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExp - 2, targetResSize);
+        app::experiments::AllVsDbSize allVsDbSizeSmaller(maxDbSizeExpSmall, targetResSize);
         allVsDbSize.printHeader();
 
         std::cout << "================ PiBas =================" << std::endl << std::endl;
@@ -137,19 +138,21 @@ int main() {
         std::cout << "================ NLogN =================" << std::endl << std::endl;
         allVsDbSize.run(nLogN.get());
 
+        // slow setup
         std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-        allVsDbSize.run(logSrcPiBas.get());
+        allVsDbSizeSmall.run(logSrcPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-        allVsDbSizeSmall.run(logSrcNLogN.get());
+        allVsDbSizeSmaller.run(logSrcNLogN.get());
 
+        // slow setup
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-        allVsDbSize.run(logSrcIPiBas.get());
+        allVsDbSizeSmall.run(logSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-        allVsDbSizeSmall.run(logSrcINLogN.get());
+        allVsDbSizeSmaller.run(logSrcINLogN.get());
 
         std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
         allVsDbSize.run(logSrcIStar.get());
@@ -160,19 +163,21 @@ int main() {
         std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
         allVsDbSize.run(sdaNLogN.get());
 
+        // slow setup
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-        allVsDbSize.run(sdaLogSrcPiBas.get());
+        allVsDbSizeSmall.run(sdaLogSrcPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        allVsDbSizeSmall.run(sdaLogSrcNLogN.get());
+        allVsDbSizeSmaller.run(sdaLogSrcNLogN.get());
 
+        // slow setup
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-        allVsDbSize.run(sdaLogSrcIPiBas.get());
+        allVsDbSizeSmall.run(sdaLogSrcIPiBas.get());
         
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        allVsDbSizeSmall.run(sdaLogSrcINLogN.get());
+        allVsDbSizeSmaller.run(sdaLogSrcINLogN.get());
 
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
         allVsDbSize.run(sdaLogSrcIStar.get());
@@ -190,46 +195,50 @@ int main() {
         app::experiments::SearchVsResSize searchVsResSizeSmall(dbSizeExp, maxResSizeExpSmall);
         searchVsResSize.printHeader();
 
+        // slow searches
         std::cout << "================ PiBas =================" << std::endl << std::endl;
         searchVsResSizeSmall.run(piBas.get());
 
+        // slow searches
         std::cout << "================ NLogN =================" << std::endl << std::endl;
         searchVsResSizeSmall.run(nLogN.get());
 
         std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
         searchVsResSize.run(logSrcPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
         searchVsResSize.run(logSrcNLogN.get());
 
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
         searchVsResSize.run(logSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
         searchVsResSize.run(logSrcINLogN.get());
 
         std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
         searchVsResSize.run(logSrcIStar.get());
 
+        // slow searches
         std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
         searchVsResSizeSmall.run(sdaPiBas.get());
 
+        // slow searches
         std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
         searchVsResSizeSmall.run(sdaNLogN.get());
 
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
         searchVsResSize.run(sdaLogSrcPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
         searchVsResSize.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         searchVsResSize.run(sdaLogSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
         searchVsResSize.run(sdaLogSrcINLogN.get());
 
@@ -249,46 +258,50 @@ int main() {
         app::experiments::SearchVsRangeSize searchVsRangeSizeSmall(dbSizeExp, maxRangeSizeExpSmall);
         searchVsRangeSize.printHeader();
 
+        // slow searches
         std::cout << "================ PiBas =================" << std::endl << std::endl;
         searchVsRangeSizeSmall.run(piBas.get());
 
+        // slow searches
         std::cout << "================ NLogN =================" << std::endl << std::endl;
         searchVsRangeSizeSmall.run(nLogN.get());
 
         std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
         searchVsRangeSize.run(logSrcPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
         searchVsRangeSize.run(logSrcNLogN.get());
 
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
         searchVsRangeSize.run(logSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
         searchVsRangeSize.run(logSrcINLogN.get());
 
         std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
         searchVsRangeSize.run(logSrcIStar.get());
 
+        // slow searches
         std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
         searchVsRangeSizeSmall.run(sdaPiBas.get());
 
+        // slow searches
         std::cout << "============== SDa[NLogN] ==============" << std::endl << std::endl;
         searchVsRangeSizeSmall.run(sdaNLogN.get());
 
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
         searchVsRangeSize.run(sdaLogSrcPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
         searchVsRangeSize.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         searchVsRangeSize.run(sdaLogSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
         searchVsRangeSize.run(sdaLogSrcINLogN.get());
 
@@ -301,7 +314,7 @@ int main() {
 
     {
         // this experiment must use the same DB size everywhere
-        const int dbSizeExp = maxDbSizeExp;
+        const int dbSizeExp = maxDbSizeExpSmall;
         app::experiments::SearchVsFalsePos searchVsFalsePos(dbSizeExp);
         searchVsFalsePos.printHeader();
 
@@ -311,11 +324,11 @@ int main() {
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
         searchVsFalsePos.run(logSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
         searchVsFalsePos.run(logSrcNLogN.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
         searchVsFalsePos.run(logSrcINLogN.get());
 
@@ -328,11 +341,11 @@ int main() {
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         searchVsFalsePos.run(sdaLogSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
         searchVsFalsePos.run(sdaLogSrcNLogN.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
         searchVsFalsePos.run(sdaLogSrcINLogN.get());
 
@@ -344,12 +357,11 @@ int main() {
     // update vs. DB size experiment
 
     if (config::SHOULD_BENCHMARK_UPDTS) {
-        // this experiment must use the same DB size everywhere
         // set a bound to prevent this experiment from taking too long and outputting too much text
-        const int dbSizeExp = std::min(maxDbSizeExpSmall, 13);
-        Db<> db;
-        app::createDb(db, std::pow(2, dbSizeExp), true, true);
-        app::experiments::UpdateVsDbSize updateVsDbSize(db);
+        const int dbSizeExp = std::min(maxDbSizeExp, 16);
+        const int dbSizeExpSmall = std::min(maxDbSizeExpSmall, 12);
+        app::experiments::UpdateVsDbSize updateVsDbSize(dbSizeExp);
+        app::experiments::UpdateVsDbSize updateVsDbSizeSmall(dbSizeExpSmall);
         updateVsDbSize.printHeader();
 
         std::cout << "============== SDa[PiBas] ==============" << std::endl << std::endl;
@@ -361,24 +373,21 @@ int main() {
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
         updateVsDbSize.run(sdaLogSrcPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcNLogN.get());
+        updateVsDbSizeSmall.run(sdaLogSrcNLogN.get());
 
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
         updateVsDbSize.run(sdaLogSrcIPiBas.get());
 
-        // huge storage; may want to use small DB size everywhere if this is being run!
+        // huge storage; may want to use small DB size if this is being run!
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcINLogN.get());
+        updateVsDbSizeSmall.run(sdaLogSrcINLogN.get());
 
-        // terrible performance; may want to use small DB size everywhere if this is being run!
+        // terrible performance; may want to use small DB size if this is being run!
         // (as randomized keywords with Log-SRC-i*'s TDAG 1 contiguousness padding lets
         // individual SDa subindexes have HUGE TDAG 1s. for the same reason this is not secure)
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
-        updateVsDbSize.run(sdaLogSrcIStar.get());
-
-        // free memory ASAP
-        db.clear();
+        updateVsDbSizeSmall.run(sdaLogSrcIStar.get());
     }
 }

@@ -46,11 +46,11 @@ inline constexpr bool SHOULD_STORE_DBS_ON_DISK = false;
  * search and update buffers are recommended to be smaller than the setup buffer, both since there
  * is usually less need for buffering and also so on-disk performance is more accurately measured.
  */
-// currently: an enc ind entry is 128 bytes (48 tuple + 16 iv + 64 label/hash), so
-// 2^25 => ~4.3 GB, which should accommodate Log-SRC-i[PiBas/NLogN] up to 2^19 (noting that
-// NLogN maintains a separate enc ind instance and hence buffer for each level; HOWEVER
-// since all the instances are active simultaneously, you may still run out of RAM)
-inline constexpr bigint ENC_IND_SETUP_BUF_CAPAC = std::pow(2, 25);
+// currently: an enc ind entry is 96 bytes (48 tuple + 16 iv + 32 label/hash), so 2^26 => ~6.44 GB,
+// which should accommodate Log-SRC-i[PiBas/NLogN] up to 2^20 and Log-SRC-i* up to 2^19
+// (noting that NLogN maintains a separate enc ind instance and hence buffer for each level;
+// HOWEVER since all instances are active simultaneously, you may still run out of RAM past 2^15)
+inline constexpr bigint ENC_IND_SETUP_BUF_CAPAC = std::pow(2, 26);
 // this is for when the enc ind does not fit entirely in memory; i recommend this being
 // quite a bit smaller than the main setup buf as there will be lots of filling and flushing
 inline constexpr bigint ENC_IND_SETUP_OVERFLOW_BUF_CAPAC = std::pow(2, 8);

@@ -24,11 +24,10 @@ namespace app::experiments {
 
 class AllVsDbSize : public IExperiment<ISse<>> {
 public:
-    AllVsDbSize(int maxDbSizeExp, bigint targetResSize) : maxDbSizeExp(maxDbSizeExp) {
+    AllVsDbSize(int maxDbSizeExp, bigint targetResSize) :
+        maxDbSizeExp(maxDbSizeExp),
         // make sure we can still run at least one setup/search by capping result size at DB size
-        bigint maxDbSize = std::pow(2, maxDbSizeExp);
-        this->resSize = std::min(targetResSize, maxDbSize);
-    }
+        resSize(std::min(targetResSize, (bigint)std::pow(2, maxDbSizeExp))) {}
 
     void printHeader() const override {
         std::cout << std::endl;
@@ -70,8 +69,8 @@ public:
     }
 
 private:
-    int maxDbSizeExp;
-    bigint resSize;
+    const int maxDbSizeExp;
+    const bigint resSize;
 };
 
 

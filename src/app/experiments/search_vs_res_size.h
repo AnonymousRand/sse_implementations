@@ -22,9 +22,9 @@ namespace app::experiments {
 
 class SearchVsResSize : public IExperiment<ISse<>> {
 public:
-    SearchVsResSize(int dbSizeExp, int maxResSizeExp) : dbSizeExp(dbSizeExp) {
-        this->maxResSizeExp = std::min(maxResSizeExp, this->dbSizeExp);
-    }
+    SearchVsResSize(int dbSizeExp, int maxResSizeExp) :
+        dbSizeExp(dbSizeExp),
+        maxResSizeExp(std::min(maxResSizeExp, dbSizeExp)) {}
 
     void printHeader() const override {
         std::cout << std::endl;
@@ -69,8 +69,8 @@ public:
     }
 
 private:
-    int dbSizeExp;
-    int maxResSizeExp;
+    const int dbSizeExp;
+    const int maxResSizeExp;
 };
 
 

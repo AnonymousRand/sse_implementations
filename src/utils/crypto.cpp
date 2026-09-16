@@ -64,6 +64,7 @@ ustring genIv(int ivLen) {
 }
 
 
+
 ustring hash(const ustring& input, const EVP_MD* hashFunc, int hashOutputLen) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (!ctx) {
@@ -102,12 +103,11 @@ ustring hash(const ustring& input, const EVP_MD* hashFunc, int hashOutputLen) {
 }
 
 
-// PRF implemented with HMAC-SHA512, as done in SIGMOD'16's implementation
+// PRF implemented with HMAC-SHA256
 ustring prf(const ustring& key, const ustring& input) {
     unsigned int outputLen;
     uchar* output = HMAC(
-        EVP_sha512(),
-        key.data(), key.length(), input.data(), input.length(), nullptr, &outputLen
+        HASH_FUNC, key.data(), key.length(), input.data(), input.length(), nullptr, &outputLen
     );
     return utils::ustr::toUstr(output, outputLen);
 }

@@ -73,7 +73,7 @@ public:
     }
 
 private:
-    int maxDbSizeExp;
+    const int maxDbSizeExp;
 };
 
 

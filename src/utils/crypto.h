@@ -12,9 +12,9 @@ namespace utils::crypto {
 inline constexpr int KEY_LEN         = 256 / 8;
 inline constexpr int IV_LEN          = 128 / 8;
 inline constexpr int BLOCK_SIZE      = 128 / 8;
-inline constexpr int HASH_OUTPUT_LEN = 512 / 8;
+inline constexpr int HASH_OUTPUT_LEN = 256 / 8;
 inline const EVP_CIPHER* ENC_CIPHER  = EVP_aes_256_cbc();
-inline const EVP_MD* HASH_FUNC       = EVP_sha512();
+inline const EVP_MD* HASH_FUNC       = EVP_sha256();
 
 
 ustring genKey(int keyLen = KEY_LEN);
