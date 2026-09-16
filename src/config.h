@@ -54,7 +54,8 @@ inline constexpr bigint ENC_IND_SETUP_BUF_CAPAC = std::pow(2, 25);
 // this is for when the enc ind does not fit entirely in memory; i recommend this being
 // quite a bit smaller than the main setup buf as there will be lots of filling and flushing
 inline constexpr bigint ENC_IND_SETUP_OVERFLOW_BUF_CAPAC = std::pow(2, 8);
-// search buf size is determined heuristically from enc ind size; this is its maximum allowed size
+// search buf size is determined heuristically from enc ind size (currently: 1/2^9 of enc ind size);
+// this is its maximum allowed size
 inline constexpr bigint ENC_IND_SEARCH_BUF_MAX_CAPAC = std::pow(2, 18);
 inline constexpr bigint ENC_IND_UPDATE_BUF_CAPAC = std::pow(2, 8);
 static_assert(
