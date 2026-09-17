@@ -27,7 +27,7 @@ int main() {
     std::cin >> maxDbSizeExp;
     std::cout << std::endl << std::endl;
     // smaller sizes, e.g. for Log-SRC[NLogN]-based things where storage is log^2
-    const int maxDbSizeExpSmall = maxDbSizeExp > 15 ? std::max(maxDbSizeExp - 4, 15) : maxDbSizeExp;
+    const int maxDbSizeExpSmall = maxDbSizeExp > 15 ? std::max(maxDbSizeExp - 5, 15) : maxDbSizeExp;
 
     std::unique_ptr<PiBas<>>        piBas         = app::createSse<PiBas<>>();
     std::unique_ptr<NLogN<>>        nLogN         = app::createSse<NLogN<>>();
@@ -127,9 +127,11 @@ int main() {
 
     {
         const bigint targetResSize = 100;
+        const int maxDbSizeExpSmallish =
+            maxDbSizeExp > 15 ? std::max(maxDbSizeExp - 3, 15) : maxDbSizeExp;
         app::experiments::AllVsDbSize allVsDbSize(maxDbSizeExp, targetResSize);
-        app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExp - 2, targetResSize);
-        app::experiments::AllVsDbSize allVsDbSizeSmaller(maxDbSizeExpSmall, targetResSize);
+        app::experiments::AllVsDbSize allVsDbSizeSmallish(maxDbSizeExpSmallish, targetResSize);
+        app::experiments::AllVsDbSize allVsDbSizeSmall(maxDbSizeExpSmall, targetResSize);
         allVsDbSize.printHeader();
 
         std::cout << "================ PiBas =================" << std::endl << std::endl;
@@ -140,19 +142,19 @@ int main() {
 
         // slow setup
         std::cout << "============ Log-SRC[PiBas] ============" << std::endl << std::endl;
-        allVsDbSizeSmall.run(logSrcPiBas.get());
+        allVsDbSizeSmallish.run(logSrcPiBas.get());
 
         // huge storage
         std::cout << "============ Log-SRC[NLogN] ============" << std::endl << std::endl;
-        allVsDbSizeSmaller.run(logSrcNLogN.get());
+        allVsDbSizeSmall.run(logSrcNLogN.get());
 
         // slow setup
         std::cout << "=========== Log-SRC-i[PiBas] ===========" << std::endl << std::endl;
-        allVsDbSizeSmall.run(logSrcIPiBas.get());
+        allVsDbSizeSmallish.run(logSrcIPiBas.get());
 
         // huge storage
         std::cout << "=========== Log-SRC-i[NLogN] ===========" << std::endl << std::endl;
-        allVsDbSizeSmaller.run(logSrcINLogN.get());
+        allVsDbSizeSmall.run(logSrcINLogN.get());
 
         std::cout << "============== Log-SRC-i* ==============" << std::endl << std::endl;
         allVsDbSize.run(logSrcIStar.get());
@@ -165,19 +167,19 @@ int main() {
 
         // slow setup
         std::cout << "========= SDa[Log-SRC[PiBas]] ==========" << std::endl << std::endl;
-        allVsDbSizeSmall.run(sdaLogSrcPiBas.get());
+        allVsDbSizeSmallish.run(sdaLogSrcPiBas.get());
 
         // huge storage
         std::cout << "========= SDa[Log-SRC[NLogN]] ==========" << std::endl << std::endl;
-        allVsDbSizeSmaller.run(sdaLogSrcNLogN.get());
+        allVsDbSizeSmall.run(sdaLogSrcNLogN.get());
 
         // slow setup
         std::cout << "======== SDa[Log-SRC-i[PiBas]] =========" << std::endl << std::endl;
-        allVsDbSizeSmall.run(sdaLogSrcIPiBas.get());
+        allVsDbSizeSmallish.run(sdaLogSrcIPiBas.get());
         
         // huge storage
         std::cout << "======== SDa[Log-SRC-i[NLogN]] =========" << std::endl << std::endl;
-        allVsDbSizeSmaller.run(sdaLogSrcINLogN.get());
+        allVsDbSizeSmall.run(sdaLogSrcINLogN.get());
 
         std::cout << "=========== SDa[Log-SRC-i*] ============" << std::endl << std::endl;
         allVsDbSize.run(sdaLogSrcIStar.get());
