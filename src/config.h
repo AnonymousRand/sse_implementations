@@ -15,6 +15,12 @@ namespace config {
 // main
 
 
+/**
+ * whether timing should be taken after every update (and if experiments relying on that timing
+ * even get run). set this to `false` if you only want to benchmark the entire `setup()` without
+ * the additional computation of setting benchmarks each update (at least for non-shortcut
+ * `setup()`s, i.e. those that do call `update()` for each entry).
+ */
 inline constexpr bool SHOULD_BENCHMARK_UPDTS = true;
 
 
