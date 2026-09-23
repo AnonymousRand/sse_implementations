@@ -50,6 +50,7 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper) 
 
     // first pad the leaves to be contiguous, which ensures that upon replication,
     // *every* bucket in *every* level is *completely* full as is required for NLogN
+    // (alternatively, we could probably add dummies as needed to every bucket in a separate pass)
     if (sortedDb.getSize() > 0) {
         Tuple<> tuple = sortedDb[0];
         Kw prevKw = tuple.getKw();
