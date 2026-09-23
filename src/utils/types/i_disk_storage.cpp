@@ -53,8 +53,10 @@ void IDiskStorage<CharType>::copyFrom(const IDiskStorage& other) {
     this->file = std::fopen(this->filename.c_str(), "ab+");
     DEBUG_ONLY({
         if (this->file == nullptr) {
-            std::cerr << "Error: IDiskStorage::copyFrom(): error opening file " << this->filename
-                      << std::endl;
+            std::perror(std::format(
+                "Error: IDiskStorage::copyFrom(): error opening file {}",
+                this->filename
+            ).c_str());
             std::exit(EXIT_FAILURE);
         }
     });
@@ -134,8 +136,10 @@ void IDiskStorage<CharType>::init() {
     this->file = std::fopen(this->filename.c_str(), "wb+");
     DEBUG_ONLY({
         if (this->file == nullptr) {
-            std::cerr << "Error: IDiskStorage::init(): error opening file " << this->filename
-                      << std::endl;
+            std::perror(std::format(
+                "Error: IDiskStorage::init(): error opening file {}",
+                this->filename
+            ).c_str());
             std::exit(EXIT_FAILURE);
         }
     });
@@ -178,9 +182,10 @@ bigint IDiskStorage<CharType>::readFromFile(
     bigint itemsRead = std::fread(ret, length, count, this->file);
     DEBUG_ONLY({
         if (itemsRead != count) {
-            std::cerr << "Error: " << caller << ": error reading from file " << this->filename
-                      << " (only " << itemsRead << " out of " << count << " read)"
-                      << std::endl;
+            std::perror(std::format(
+                "Error: {}: error reading from file {} (only {} out of {} read)",
+                caller, this->filename, itemsRead, count
+            ).c_str());
             std::exit(EXIT_FAILURE);
         }
     });
@@ -196,9 +201,10 @@ bigint IDiskStorage<CharType>::writeToFile(
     bigint itemsWritten = std::fwrite(toWrite, length, count, this->file);
     DEBUG_ONLY({
         if (itemsWritten != count) {
-            std::cerr << "Error: " << caller << ": error writing to file " << this->filename
-                      << " (only " << itemsWritten << " out of " << count << " written)"
-                      << std::endl;
+            std::perror(std::format(
+                "Error: {}: error writing to file {} (only {} out of {} written)",
+                caller, this->filename, itemsWritten, count
+            ).c_str());
             std::exit(EXIT_FAILURE);
         }
     });

@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <format>
 #include <functional>
 #include <iostream>
 #include <string>
@@ -103,10 +104,11 @@ void EncIndBase::Buf::operOnFileBase(
     bigint itemsOpered = oper(self->data, entriesToOper1);
     DEBUG_ONLY({
         if (itemsOpered < entriesToOper1) {
-            std::cerr << "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 1) "
-                      << "on file " << self->filename
-                      << " (only did " << itemsOpered << " out of " << entriesToOper1 << ")"
-                      << std::endl;
+            std::perror(std::format(
+                "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 1) on file {} "
+                    "(only did {} out of {})",
+                self->filename, itemsOpered, entriesToOper1
+            ).c_str());
             std::exit(EXIT_FAILURE);
         }
     });
@@ -122,10 +124,11 @@ void EncIndBase::Buf::operOnFileBase(
         );
         DEBUG_ONLY({
             if (itemsOpered < self->ENTRY_CAPACITY) {
-                std::cerr << "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 2) "
-                          << "on file " << self->filename
-                          << " (only did " << itemsOpered << " out of " << self->ENTRY_CAPACITY
-                          << ")" << std::endl;
+                std::perror(std::format(
+                    "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 2) on file {} "
+                        "(only did {} across both parts out of {})",
+                    self->filename, itemsOpered, self->ENTRY_CAPACITY
+                ).c_str());
                 std::exit(EXIT_FAILURE);
             }
         });
