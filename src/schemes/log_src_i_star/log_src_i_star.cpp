@@ -48,13 +48,8 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper) 
     //--------------------------------------------------------------------------
     // build index 1
 
-    // first ensure (leaf) `Kw`s are contiguous:
-    // since `Kw`s have no guarantee of being contiguous but the leaves and hence
-    // bottom level in the index must be, we need to pad `db1` to have (exactly)
-    // one tuple per `Kw` (we can just leave blanks in the case of non-locality
-    // Log-SRC-i since tuples are placed pseudorandomly in the index, but here we
-    // have to pad to avoid empty buckets in the index that the server knows
-    // corresponds to a lack of tuples with that keyword)
+    // first pad the leaves to be contiguous, which ensures that upon replication,
+    // *every* bucket in *every* level is *completely* full as is required for NLogN
     if (sortedDb.getSize() > 0) {
         Tuple<> tuple = sortedDb[0];
         Kw prevKw = tuple.getKw();
@@ -73,9 +68,9 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper) 
         }
     }
 
-    // after guaranteeing contiguous-ness of `Kw`s, build TDAG 1 over `Kw`s and replicate
-    // `db1` appropriately, again padding the leaf count to the next power of 2 as is
-    // required for Log-SRC-i*
+    // build TDAG 1 over `Kw`s and replicate `db1` appropriately, padding the leaf count
+    // to the next power of 2 as is required for NLogN as well
+    // (currently, we pad consecutively at the end which ensures that leaves remain contiguous)
     log_src::utils::buildTdagDbFromLeaves<SrcIDb1Tuple>(db1, this->tdag1, true);
 
     this->underly1->setup(secParam, db1, setupOper);
@@ -83,8 +78,9 @@ void LogSrcIStar::setup(int secParam, const Db<Tuple<>>& db, SseOper setupOper) 
     //--------------------------------------------------------------------------
     // build index 2
 
-    // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately, and padding
-    // the leaf count to the next power of 2 as is required for Log-SRC-i*
+    // build TDAG 2 over `IdAlias`es and replicate `db2` appropriately, also padding
+    // the leaf count to the next power of 2
+    // (lack of contiguousness is not an issue for index 2 by how it's constructed)
     log_src::utils::buildTdagDbFromLeaves<Tuple<IdAlias>>(db2, this->tdag2, true);
 
     this->underly2->setup(secParam, db2, setupOper);

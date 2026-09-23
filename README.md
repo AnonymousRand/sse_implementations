@@ -8,7 +8,7 @@ Implementations of the following [searchable symmetric encryption](https://wikip
 - Logarithmic-SRC-i\* ([Demertzis et al., TODS'18](https://doi.org/10.1145/3167971))
 - SD<sub>a</sub> ([Demertzis et al., NDSS'20](https://doi.org/10.14722/ndss.2020.24423))
 
-Since many of these can be instantiated with various underlying schemes, the following instantiations are possible (not all of these are secure, though!):
+Since many of these can be instantiated with various underlying schemes, the following instantiations are possible (not all of these are secure, though, particularly the SD<sub>a</sub>[Logarithmic-SRC-i[\*]] constructions which lack forward privacy from the size of the first index leaking information about keyword domains!):
 - PiBas
 - NLogN
 - Logarithmic-SRC[PiBas]
