@@ -49,17 +49,17 @@ public:
 template <std::integral T>
 struct std::hash<Range<T>> {
     inline std::size_t operator ()(const Range<T>& range) const noexcept {
-        return std::hash<std::string>{}(range.toPrettyStr());
+        return std::hash<ustring>{}(range.encode());
     }
 };
 
 
 // specialize `std::formatter` for `Range` so that they can be insert in `std::format()`
 template <std::integral T>
-struct std::formatter<Range<T>> : std::formatter<std::string> {
-    // inherit `parse()` from std::string
+struct std::formatter<Range<T>> : std::formatter<ustring> {
+    // inherit `parse()` from `ustring`
 
     auto format(const Range<T>& range, std::format_context& ctx) const {
-        return std::formatter<std::string>::format(range.toPrettyStr(), ctx);
+        return std::formatter<ustring>::format(range.encode(), ctx);
     }
 };

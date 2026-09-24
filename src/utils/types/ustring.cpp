@@ -7,11 +7,6 @@
 namespace utils::ustr {
 
 
-ustring toUstr(const std::string& s) {
-    return reinterpret_cast<const uchar*>(s.c_str());
-}
-
-
 std::string toStr(const ustring& ustr) {
     std::string str;
     for (uchar c : ustr) {

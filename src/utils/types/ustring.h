@@ -15,11 +15,11 @@ using ustring = std::basic_string<uchar>;
 namespace utils::ustr {
 
 
-ustring toUstr(const std::string& s);
 std::string toStr(const ustring& ustr);
 
 
-inline const ustring EMPTY = toUstr("");
+// default construction should make it an empty string
+inline constexpr ustring EMPTY;
 
 
 } // namespace `utils::ustr`

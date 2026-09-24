@@ -86,7 +86,7 @@ public:
 template <class DbKw>
 struct std::hash<Tuple<DbKw>> {
     inline std::size_t operator ()(const Tuple<DbKw>& tuple) const noexcept {
-        return std::hash<std::string>{}(tuple.toStr());
+        return std::hash<ustring>{}(tuple.encode());
     }
 };
 
