@@ -6,8 +6,8 @@
 #include "schemes/interfaces/i_sse_server.h"
 
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_rand.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_rand.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
 
@@ -25,10 +25,10 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    void setEncInd(EncIndRand* encInd);
-    EncIndRand* getEncInd() const;
-    std::vector<EncIndVal> searchEncInd(const ustring& queryToken) const;
+    void setEncrInd(EncrIndRand* encInd);
+    EncrIndRand* getEncrInd() const;
+    std::vector<EncrIndVal> searchEncrInd(const ustring& queryToken) const;
 
 private:
-    EncIndRand* encInd = nullptr;
+    EncrIndRand* encInd = nullptr;
 };

@@ -1,4 +1,4 @@
-#include "utils/types/enc_ind/enc_ind_base_buf.h"
+#include "utils/types/encr_ind/encr_ind_base_buf.h"
 
 #include <algorithm>
 #include <cassert>
@@ -14,18 +14,18 @@
 #include "utils/benchmark.h"
 #include "utils/debug.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
+#include "utils/types/encr_ind/encr_ind_base.h"
 #include "utils/types/ustring.h"
 
 
-const bigint EncIndBase::Buf::NOT_IN_BUF = -1;
+const bigint EncrIndBase::Buf::NOT_IN_BUF = -1;
 
 
 //------------------------------------------------------------------------------
 // constructors/destructors
 
 
-EncIndBase::Buf::Buf(
+EncrIndBase::Buf::Buf(
     bigint ENTRY_CAPACITY,
     FILE* file, const std::string& filename, bigint encIndCapacity, bigint entryLen
 ) :
@@ -40,7 +40,7 @@ EncIndBase::Buf::Buf(
 }
 
 
-EncIndBase::Buf::~Buf() {
+EncrIndBase::Buf::~Buf() {
     if (this->data != nullptr) {
         delete[] this->data;
         this->data = nullptr;
@@ -52,7 +52,7 @@ EncIndBase::Buf::~Buf() {
 // rule of five
 
 
-EncIndBase::Buf::Buf(const Buf& other) :
+EncrIndBase::Buf::Buf(const Buf& other) :
     Buf(other.ENTRY_CAPACITY, other.file, other.filename, other.encIndCapacity, other.entryLen)
 {
     if (other.data != nullptr) {
@@ -72,21 +72,21 @@ EncIndBase::Buf::Buf(const Buf& other) :
 // interface
 
 
-uchar* EncIndBase::Buf::read(bigint index) const {
+uchar* EncrIndBase::Buf::read(bigint index) const {
     assert(index < this->ENTRY_CAPACITY || this->ENTRY_CAPACITY == 0);
     return this->data + (index * this->entryLen);
 }
 
 
-void EncIndBase::Buf::write(bigint index, const uchar* entry) {
+void EncrIndBase::Buf::write(bigint index, const uchar* entry) {
     assert(index < this->ENTRY_CAPACITY || this->ENTRY_CAPACITY == 0);
     std::memcpy(this->data + (index * this->entryLen), entry, this->entryLen);
     this->isFlushed = false;
 }
 
 
-template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, EncIndBase::Buf>
-void EncIndBase::Buf::operOnFileBase(
+template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, EncrIndBase::Buf>
+void EncrIndBase::Buf::operOnFileBase(
     SelfType* self, const std::function<bigint(uchar*, bigint)>& oper, ubigint startPos
 ) {
     assert(startPos < self->encIndCapacity);
@@ -105,7 +105,7 @@ void EncIndBase::Buf::operOnFileBase(
     DEBUG_ONLY({
         if (itemsOpered < entriesToOper1) {
             std::perror(std::format(
-                "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 1) on file {} "
+                "Error: EncrIndBase::Buf::operOnFileBase(): error operating (part 1) on file {} "
                     "(only did {} out of {})",
                 self->filename, itemsOpered, entriesToOper1
             ).c_str());
@@ -125,8 +125,8 @@ void EncIndBase::Buf::operOnFileBase(
         DEBUG_ONLY({
             if (itemsOpered < self->ENTRY_CAPACITY) {
                 std::perror(std::format(
-                    "Error: EncIndBase::Buf::operOnFileBase(): error operating (part 2) on file {} "
-                        "(only did {} across both parts out of {})",
+                    "Error: EncrIndBase::Buf::operOnFileBase(): error operating (part 2) on file {}"
+                        " (only did {} across both parts out of {})",
                     self->filename, itemsOpered, self->ENTRY_CAPACITY
                 ).c_str());
                 std::exit(EXIT_FAILURE);
@@ -136,8 +136,8 @@ void EncIndBase::Buf::operOnFileBase(
 }
 
 
-// IMPORTANT: this doesn't control flushing of the `FILE*`, so that's the enc ind's responsibility!
-void EncIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
+// IMPORTANT: this doesn't control flushing of the `FILE*`, so that's the encr ind's responsibility!
+void EncrIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
     auto fillOper = [this, allowIncompleteFill](uchar* data, bigint targetEntryCount) {
         bigint itemsRead = std::fread(data, this->entryLen, targetEntryCount, this->file);
         if (allowIncompleteFill) {
@@ -155,8 +155,8 @@ void EncIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
 }
 
 
-// IMPORTANT: this doesn't control flushing of the `FILE*`, so that's the enc ind's responsibility!
-void EncIndBase::Buf::flushIfNotFlushed() const {
+// IMPORTANT: this doesn't control flushing of the `FILE*`, so that's the encr ind's responsibility!
+void EncrIndBase::Buf::flushIfNotFlushed() const {
     if (!this->isFlushed && this->isFilled) {
         auto flushOper = [this](uchar* data, bigint targetEntryCount) {
             return std::fwrite(data, this->entryLen, targetEntryCount, this->file);
@@ -167,7 +167,7 @@ void EncIndBase::Buf::flushIfNotFlushed() const {
 }
 
 
-bigint EncIndBase::Buf::posToBufIndex(ubigint pos) const {
+bigint EncrIndBase::Buf::posToBufIndex(ubigint pos) const {
     if (!this->isFilled || this->ENTRY_CAPACITY == 0) {
         return NOT_IN_BUF;
     }
@@ -191,8 +191,8 @@ bigint EncIndBase::Buf::posToBufIndex(ubigint pos) const {
         } else if (pos < this->endPos) {
             // if `pos` is before the buffer's end pos (so `pos` did wrap around)
 
-            // we add up the segment from `pos` to the start of the enc ind,
-            // and the segment from the end of the enc ind to `this->startPos`
+            // we add up the segment from `pos` to the start of the encr ind,
+            // and the segment from the end of the encr ind to `this->startPos`
             bigint ret = pos + (this->encIndCapacity - this->startPos);
             assert(ret >= 0 && ret < this->ENTRY_CAPACITY);
             return ret;
@@ -207,9 +207,9 @@ bigint EncIndBase::Buf::posToBufIndex(ubigint pos) const {
 // explicit template instantiations
 
 
-template void EncIndBase::Buf::operOnFileBase(
+template void EncrIndBase::Buf::operOnFileBase(
     Buf* self, const std::function<bigint(uchar*, bigint)>& oper, ubigint startPos
 );
-template void EncIndBase::Buf::operOnFileBase(
+template void EncrIndBase::Buf::operOnFileBase(
     const Buf* self, const std::function<bigint(uchar*, bigint)>& oper, ubigint startPos
 );

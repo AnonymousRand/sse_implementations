@@ -14,11 +14,6 @@ ustring toUstr(const std::string& s) {
 }
 
 
-ustring toUstr(uchar* ucstr, int len) {
-    return ustring(ucstr, len);
-}
-
-
 std::string toStr(const ustring& ustr) {
     std::string str;
     for (uchar c : ustr) {

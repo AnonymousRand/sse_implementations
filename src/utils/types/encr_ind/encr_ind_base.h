@@ -8,17 +8,17 @@
 
 #include "utils/crypto.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/i_disk_storage.h"
 #include "utils/types/ustring.h"
 
 
 //==============================================================================
-// `EncIndBase`
+// `EncrIndBase`
 //==============================================================================
 
 
-class EncIndBase : public IDiskStorage<uchar> {
+class EncrIndBase : public IDiskStorage<uchar> {
 public:
     // currently, all schemes are result-hiding, which uses a hash as the final key here
     // IMPORTANT: change if this is no longer the case!
@@ -33,7 +33,7 @@ public:
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    virtual ~EncIndBase();
+    virtual ~EncrIndBase();
 
     //--------------------------------------------------------------------------
     // rule of five
@@ -41,24 +41,24 @@ public:
 protected:
     // (non-virtually) redeclaring these completely to also take into account new member variables
     // (non-virtual since virtual polymorphism doesn't work anyway in the base class' constructors)
-    void copyFrom(const EncIndBase& other);
-    void moveFrom(EncIndBase&& other) noexcept;
+    void copyFrom(const EncrIndBase& other);
+    void moveFrom(EncrIndBase&& other) noexcept;
 
 public:
     // bring back default constructor
-    EncIndBase() = default;
+    EncrIndBase() = default;
 
     // copy constructor
-    EncIndBase(const EncIndBase& other);
+    EncrIndBase(const EncrIndBase& other);
 
     // copy assignment operator
-    EncIndBase& operator =(const EncIndBase& other);
+    EncrIndBase& operator =(const EncrIndBase& other);
 
     // move constructor
-    EncIndBase(EncIndBase&& other) noexcept;
+    EncrIndBase(EncrIndBase&& other) noexcept;
 
     // move assignment operator
-    EncIndBase& operator =(EncIndBase&& other) noexcept;
+    EncrIndBase& operator =(EncrIndBase&& other) noexcept;
 
     //--------------------------------------------------------------------------
     // interface
@@ -73,7 +73,7 @@ public:
      *     - `true` if the entry at `pos` is valid.
      *     - `false` if the entry at `pos` is the null entry.
      */
-    bool read(SseOper oper, ubigint pos, EncIndVal& ret, bool shouldFseek = true) const;
+    bool read(SseOper oper, ubigint pos, EncrIndVal& ret, bool shouldFseek = true) const;
 
     /**
      * try to find `key` starting at `pos`, iterating forward from `pos` if the key
@@ -86,13 +86,13 @@ public:
      *     - `true` if the entry corresponding to `key` was found.
      *     - `false` if the entry corresponding to `key` was not found in the entire index.
      */
-    bool find(SseOper oper, ubigint& pos, const ustring& key, EncIndVal& ret) const;
+    bool find(SseOper oper, ubigint& pos, const ustring& key, EncrIndVal& ret) const;
 
     /**
      * write to `pos` (but does not check if there is already something there, e.g. from
      * `pos % this->capacity`, and will overwrite it!).
      */
-    void write(SseOper oper, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek = true);
+    void write(SseOper oper, ubigint pos, const EncrIndEntry& encIndEntry, bool shouldFseek = true);
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos` until
@@ -101,16 +101,16 @@ public:
      * returns in `pos`: this final empty location (in case you may need it for e.g.
      * contiguous writing of a locality-aware bucket after determining its start position).
      */
-    void writeToFirstEmpty(SseOper oper, ubigint& pos, const EncIndEntry& encIndEntry);
+    void writeToFirstEmpty(SseOper oper, ubigint& pos, const EncrIndEntry& encIndEntry);
 
     /**
      * this method MUST be called when all setup operations done! e.g. they flush the buffers,
      * since different operations currently use different buffers.
      *
-     * IMPORTANT: this also means that enc inds must have all setup operations performed before
+     * IMPORTANT: this also means that encr inds must have all setup operations performed before
      * all search operations, as otherwise syncing the 2 buffers becomes quite a nightmare.
      *
-     * (i could let enc inds track and handle this automatically, but that can only be done
+     * (i could let encr inds track and handle this automatically, but that can only be done
      * upon starting the new oper, which would then impact benchmarking (e.g. flushing
      * a huge setup buffer at the start of a search.)
      */
@@ -141,7 +141,7 @@ protected:
     // `IDiskStorage`
 
     constexpr std::string FILE_DIR() const override { return "out/server"; }
-    constexpr std::string FILENAME_PREFIX() const override { return "enc_ind_"; }
+    constexpr std::string FILENAME_PREFIX() const override { return "encr_ind_"; }
 
     //--------------------------------------------------------------------------
     // helpers
@@ -225,12 +225,12 @@ protected:
         case SseOper::SEARCH: return this->searchBuf;
         case SseOper::UPDATE: return this->updateBuf;
         default:
-            std::cerr << "Error: EncIndBase::getBufForSseOper(): meow meow meow :3" << std::endl;
+            std::cerr << "Error: EncrIndBase::getBufForSseOper(): meow meow meow :3" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
 
-    void fillBuf(Buf* buf, ubigint bufStartPos, bool isEncIndInit = false) const;
+    void fillBuf(Buf* buf, ubigint bufStartPos, bool isEncrIndInit = false) const;
     void flushBufIfNotFlushed(Buf* buf) const;
 
     bigint posToBufIndex(Buf* buf, ubigint pos) const;

@@ -6,8 +6,8 @@
 #include "schemes/interfaces/i_sse_server.h"
 
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_loc.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_loc.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
 
@@ -25,12 +25,12 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    void setEncIndLvls(const std::vector<EncIndLoc*>& encIndLvls);
-    const std::vector<EncIndLoc*>& getEncIndLvls() const;
-    std::vector<EncIndVal> searchEncIndForBckt(
+    void setEncrIndLvls(const std::vector<EncrIndLoc*>& encIndLvls);
+    const std::vector<EncrIndLoc*>& getEncrIndLvls() const;
+    std::vector<EncrIndVal> searchEncrIndForBckt(
         bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
     ) const;
 
 protected:
-    std::vector<EncIndLoc*> encIndLvls;
+    std::vector<EncrIndLoc*> encIndLvls;
 };

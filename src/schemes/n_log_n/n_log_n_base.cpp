@@ -12,11 +12,11 @@
 
 #include "utils/crypto.h"
 #include "utils/debug.h"
-#include "utils/misc.h"
+#include "utils/str.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
-#include "utils/types/enc_ind/enc_ind_loc.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_loc.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/ind.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
@@ -90,14 +90,14 @@ void NLogNBase<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
     assert(this->getServer() != nullptr);
-    const std::vector<EncIndLoc*>& encIndLvls = this->getServer()->getEncIndLvls();
+    const std::vector<EncrIndLoc*>& encIndLvls = this->getServer()->getEncrIndLvls();
 
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncIndLoc* encIndLvl = encIndLvls[lvl];
+        EncrIndLoc* encIndLvl = encIndLvls[lvl];
         // don't use `this->size` as the bound here as that doesn't include padding while
         // `encIndLvl` does (this should all be client-side anyway so its' not leaking anything)
         for (bigint pos = 0; pos < encIndLvl->getCapacity(); pos++) {
-            EncIndVal encIndVal;
+            EncrIndVal encIndVal;
             // only `fseek()` to read on the first read, since after that the reads themselves
             // should advance the file pointer to the right location for the next one
             bool isValidVal = encIndLvl->read(SseOper::UPDATE, pos, encIndVal, pos == 0);
@@ -105,7 +105,7 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
                 continue;
             }
 
-            DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
+            DbTuple dbTuple = this->decryptEncrIndVal(encIndVal);
             // exclude dummies/padding (that are from NLogN's `setup()`, but not from any upstream
             // SSE scheme which is using NLogN as an underlying scheme. while deleting those dummies
             // too seems to work fine, we don't since we don't have an easy, general way to check
@@ -125,7 +125,7 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::initSetupState(SseOper setupOper) {
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncIndLoc* encIndLvl = new EncIndLoc();
+        EncrIndLoc* encIndLvl = new EncrIndLoc();
         bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
         bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
         encIndLvl->init(setupOper, bcktCountOnLvl, bcktSizeOnLvl);
@@ -168,7 +168,7 @@ void NLogNBase<DbTuple>::setupDbKwList(
             // if first write to this bucket, get the first bucket start pos at or after
             // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
             this->encIndLvlsTmp[lvl]->writeToFirstEmpty(
-                setupOper, startPos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
+                setupOper, startPos, EncrIndEntry {label, EncrIndVal {encDbTuple, iv}}
             );
         } else {
             // after first write, just write consecutively as we are now guaranteed that
@@ -178,7 +178,7 @@ void NLogNBase<DbTuple>::setupDbKwList(
             // advance the file pointer to the right location for the next one
             this->encIndLvlsTmp[lvl]->write(
                 setupOper,
-                startPos + dbKwCounter, EncIndEntry {label, EncIndVal {encDbTuple, iv}}, false
+                startPos + dbKwCounter, EncrIndEntry {label, EncrIndVal {encDbTuple, iv}}, false
             );
         }
     }
@@ -188,12 +188,12 @@ void NLogNBase<DbTuple>::setupDbKwList(
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::moveSetupStateToServer(SseOper setupOper) {
     assert(this->getServer() != nullptr);
-    for (EncIndLoc* encIndLvl : this->encIndLvlsTmp) {
+    for (EncrIndLoc* encIndLvl : this->encIndLvlsTmp) {
         encIndLvl->endSetup(setupOper);
     }
 
     // IMPORTANT: since this is a transfer of pointers, clearing it should be handled by the server!
-    this->getServer()->setEncIndLvls(this->encIndLvlsTmp);
+    this->getServer()->setEncrIndLvls(this->encIndLvlsTmp);
     // however we still need to clear the vector in the client so it doesn't keep trying
     // to call old instances later!
     this->encIndLvlsTmp.clear();
@@ -224,7 +224,7 @@ template <IsDbTuple DbTuple>
 ubigint NLogNBase<DbTuple>::mapNoMod(const ustring& queryToken, ustring& retLabel) const {
     // l <- Hash(PRF(K_1, w))
     retLabel = utils::crypto::hash(queryToken);
-    return utils::misc::hashToPos(retLabel); // no modulus
+    return utils::str::hashToPos(retLabel); // no modulus
 }
 
 

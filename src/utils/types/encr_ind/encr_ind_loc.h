@@ -4,34 +4,34 @@
 #include <iostream>
 
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
+#include "utils/types/encr_ind/encr_ind_base.h"
 
 
-class EncIndLoc : public EncIndBase {
+class EncrIndLoc : public EncrIndBase {
 public:
     //--------------------------------------------------------------------------
     // rule of five
 
     // bring back default constructor
-    EncIndLoc() = default;
+    EncrIndLoc() = default;
 
     // destructor
-    ~EncIndLoc() = default;
+    ~EncrIndLoc() = default;
 
     // copy constructor
-    EncIndLoc(const EncIndLoc& other) = default;
+    EncrIndLoc(const EncrIndLoc& other) = default;
 
     // copy assignment operator
-    EncIndLoc& operator =(const EncIndLoc& other) = default;
+    EncrIndLoc& operator =(const EncrIndLoc& other) = default;
 
     // move constructor
-    EncIndLoc(EncIndLoc&& other) noexcept = default;
+    EncrIndLoc(EncrIndLoc&& other) noexcept = default;
 
     // move assignment operator
-    EncIndLoc& operator =(EncIndLoc&& other) noexcept = default;
+    EncrIndLoc& operator =(EncrIndLoc&& other) noexcept = default;
 
     //--------------------------------------------------------------------------
-    // `EncIndBase`
+    // `EncrIndBase`
 
     void init(SseOper setupOper, bigint bcktCount, bigint bcktSize);
     void clear() override;
@@ -41,9 +41,9 @@ private:
     bigint bcktSize = 0;
 
     //--------------------------------------------------------------------------
-    // `EncIndBase`
+    // `EncrIndBase`
 
-    // compared to pseudorandom enc inds, we skip buffering for advances except when bucket size
+    // compared to pseudorandom encr inds, we skip buffering for advances except when bucket size
     // is 1, as otherwise we only check every bucket start pos, i.e. every `this->bcktSize` entries,
     // so buffering contiguous blocks usually becomes a waste (and more often than not,
     // we do not need to try as many positions as during setups to find the right entry)
@@ -57,7 +57,7 @@ private:
         case SseOper::SEARCH: return false;
         case SseOper::UPDATE: return false;
         default:
-            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_READ(): woof arf woof :3" << std::endl;
+            std::cerr << "Error: EncrIndLoc::SHOULD_BUFFER_READ(): woof arf woof :3" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -68,7 +68,7 @@ private:
         case SseOper::SEARCH: return false;
         case SseOper::UPDATE: return false;
         default:
-            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_WRITE(): woof arf woof :3" << std::endl;
+            std::cerr << "Error: EncrIndLoc::SHOULD_BUFFER_WRITE(): woof arf woof :3" << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }
@@ -79,7 +79,8 @@ private:
         case SseOper::SEARCH: return this->bcktSize == 1;
         case SseOper::UPDATE: return this->bcktSize == 1;
         default:
-            std::cerr << "Error: EncIndLoc::SHOULD_BUFFER_ADVANCE(): woof arf woof :3" << std::endl;
+            std::cerr << "Error: EncrIndLoc::SHOULD_BUFFER_ADVANCE(): woof arf woof :3"
+                      << std::endl;
             std::exit(EXIT_FAILURE);
         }
     }

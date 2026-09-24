@@ -32,15 +32,16 @@ add_executable(main
     src/utils/crypto.cpp
     src/utils/debug.cpp
     src/utils/misc.cpp
+    src/utils/str.cpp
 
     src/utils/types/db/db_disk.cpp
     src/utils/types/db/db_ram.cpp
     src/utils/types/db/i_db.cpp
 
-    src/utils/types/enc_ind/enc_ind_base.cpp
-    src/utils/types/enc_ind/enc_ind_base_buf.cpp
-    src/utils/types/enc_ind/enc_ind_loc.cpp
-    src/utils/types/enc_ind/enc_ind_types.cpp
+    src/utils/types/encr_ind/encr_ind_base.cpp
+    src/utils/types/encr_ind/encr_ind_base_buf.cpp
+    src/utils/types/encr_ind/encr_ind_loc.cpp
+    src/utils/types/encr_ind/encr_ind_types.cpp
 
     src/utils/types/doc.cpp
     src/utils/types/i_disk_storage.cpp

@@ -6,8 +6,8 @@
 
 #include "utils/benchmark.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_rand.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_rand.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
 
@@ -34,7 +34,7 @@ void NLogNServer<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-void NLogNServer<DbTuple>::setDbKwCountsDict(EncIndRand* dbKwCountsDict) {
+void NLogNServer<DbTuple>::setDbKwCountsDict(EncrIndRand* dbKwCountsDict) {
     bigint dbKwCountsDictBytes = dbKwCountsDict->getBytes();
     utils::benchmark::serverStorage += dbKwCountsDictBytes;
     utils::benchmark::communication += dbKwCountsDictBytes;
@@ -43,7 +43,7 @@ void NLogNServer<DbTuple>::setDbKwCountsDict(EncIndRand* dbKwCountsDict) {
 
 
 template <IsDbTuple DbTuple>
-bool NLogNServer<DbTuple>::getDbKwCount(ubigint pos, const ustring& label, EncIndVal& ret) const {
+bool NLogNServer<DbTuple>::getDbKwCount(ubigint pos, const ustring& label, EncrIndVal& ret) const {
     utils::benchmark::communication +=
         sizeof(ubigint) + label.length() + this->dbKwCountsDict->VAL_LEN();
     return this->dbKwCountsDict->find(SseOper::SEARCH, pos, label, ret);

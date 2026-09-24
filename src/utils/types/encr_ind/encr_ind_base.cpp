@@ -1,4 +1,4 @@
-#include "utils/types/enc_ind/enc_ind_base.h"
+#include "utils/types/encr_ind/encr_ind_base.h"
 
 #include <algorithm>
 #include <cassert>
@@ -13,8 +13,8 @@
 #include "utils/debug.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base_buf.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_base_buf.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/i_disk_storage.h"
 #include "utils/types/ustring.h"
 
@@ -23,7 +23,7 @@
 // constructors/destructors
 
 
-EncIndBase::~EncIndBase() {
+EncrIndBase::~EncrIndBase() {
     this->clear();
 }
 
@@ -32,7 +32,7 @@ EncIndBase::~EncIndBase() {
 // rule of five
 
 
-void EncIndBase::copyFrom(const EncIndBase& other) {
+void EncrIndBase::copyFrom(const EncrIndBase& other) {
     IDiskStorage<uchar>::copyFrom(other);
 
     if (other.NULL_ENTRY != nullptr) {
@@ -65,7 +65,7 @@ void EncIndBase::copyFrom(const EncIndBase& other) {
 }
 
 
-void EncIndBase::moveFrom(EncIndBase&& other) noexcept {
+void EncrIndBase::moveFrom(EncrIndBase&& other) noexcept {
     IDiskStorage<uchar>::moveFrom(std::move(other));
 
     // this is now regular pointer assignment instead of actually copying the heap data
@@ -86,13 +86,13 @@ void EncIndBase::moveFrom(EncIndBase&& other) noexcept {
 
 
 // copy constructor
-EncIndBase::EncIndBase(const EncIndBase& other) {
+EncrIndBase::EncrIndBase(const EncrIndBase& other) {
     this->copyFrom(other);
 }
 
 
 // copy assignment operator
-EncIndBase& EncIndBase::operator =(const EncIndBase& other) {
+EncrIndBase& EncrIndBase::operator =(const EncrIndBase& other) {
     // important self-assignment safety check!
     if (this != &other) {
         this->clear();
@@ -103,13 +103,13 @@ EncIndBase& EncIndBase::operator =(const EncIndBase& other) {
 
 
 // move constructor
-EncIndBase::EncIndBase(EncIndBase&& other) noexcept {
+EncrIndBase::EncrIndBase(EncrIndBase&& other) noexcept {
     this->moveFrom(std::move(other));
 }
 
 
 // move assignment operator
-EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
+EncrIndBase& EncrIndBase::operator =(EncrIndBase&& other) noexcept {
     // important self-assignment safety check!
     if (this != &other) {
         this->clear();
@@ -123,10 +123,10 @@ EncIndBase& EncIndBase::operator =(EncIndBase&& other) noexcept {
 // interface
 
 
-void EncIndBase::init(SseOper setupOper, bigint capacity) {
+void EncrIndBase::init(SseOper setupOper, bigint capacity) {
     assert(setupOper == SseOper::SETUP || setupOper == SseOper::UPDATE);
 
-    // inits enc ind file and file pointer
+    // inits encr ind file and file pointer
     IDiskStorage<uchar>::init();
 
     // also initialize `this->NULL_ENTRY` to a contiguous block of zero bits, which we do here
@@ -139,7 +139,7 @@ void EncIndBase::init(SseOper setupOper, bigint capacity) {
 
     // init buffers
     bigint setupBufEntryCapacity = std::min(config::ENC_IND_SETUP_BUF_CAPAC, this->capacity);
-    // if our enc ind does not fit entirely in memory, use a smaller buffer to avoid rapid
+    // if our encr ind does not fit entirely in memory, use a smaller buffer to avoid rapid
     // moving (i.e. flushing and refilling) of huge setup buffers
     if (setupBufEntryCapacity < this->capacity) {
         setupBufEntryCapacity = std::min(config::ENC_IND_SETUP_OVERFLOW_BUF_CAPAC, this->capacity);
@@ -177,7 +177,7 @@ void EncIndBase::init(SseOper setupOper, bigint capacity) {
 }
 
 
-void EncIndBase::clear() {
+void EncrIndBase::clear() {
     if (this->NULL_ENTRY != nullptr) {
         delete[] this->NULL_ENTRY;
         this->NULL_ENTRY = nullptr;
@@ -202,7 +202,7 @@ void EncIndBase::clear() {
 }
 
 
-bool EncIndBase::read(SseOper oper, ubigint pos, EncIndVal& ret, bool shouldFseek) const {
+bool EncrIndBase::read(SseOper oper, ubigint pos, EncrIndVal& ret, bool shouldFseek) const {
     // read encoded entry at `pos`
     uchar* entryPtr;
     // note that `entry` must be declared out here for `entryPtr`, which may point to it,
@@ -219,12 +219,12 @@ bool EncIndBase::read(SseOper oper, ubigint pos, EncIndVal& ret, bool shouldFsee
     }
 
     // decode the val part of the entry
-    ret = EncIndVal::decode(entryPtr + this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
+    ret = EncrIndVal::decode(entryPtr + this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
     return true;
 }
 
 
-bool EncIndBase::find(SseOper oper, ubigint& pos, const ustring& key, EncIndVal& ret) const {
+bool EncrIndBase::find(SseOper oper, ubigint& pos, const ustring& key, EncrIndVal& ret) const {
     bool isFound = this->advanceUntilMatch(oper, pos, key.c_str(), this->KEY_LEN());
     if (!isFound) {
         return false;
@@ -235,14 +235,14 @@ bool EncIndBase::find(SseOper oper, ubigint& pos, const ustring& key, EncIndVal&
 }
 
 
-void EncIndBase::write(
-    SseOper oper, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek
+void EncrIndBase::write(
+    SseOper oper, ubigint pos, const EncrIndEntry& encIndEntry, bool shouldFseek
 ) {
     // encode `encIndEntry`
     ustring encodedEntry = encIndEntry.encode();
     DEBUG_ONLY({
         if (encodedEntry.length() != this->ENTRY_LEN()) {
-            std::cerr << "Error: EncIndBase::write(): write of length " << encodedEntry.length()
+            std::cerr << "Error: EncrIndBase::write(): write of length " << encodedEntry.length()
                       << " bytes is not allowed! (want " << this->ENTRY_LEN() << " bytes)"
                       << std::endl;
             std::exit(EXIT_FAILURE);
@@ -258,13 +258,13 @@ void EncIndBase::write(
 }
 
 
-void EncIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncIndEntry& encIndEntry) {
+void EncrIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncrIndEntry& encIndEntry) {
     bool isEmptyAvailable = this->advanceUntilMatch(oper, pos, this->NULL_ENTRY, this->ENTRY_LEN());
     // if we've scoured the whole index and still haven't found an available space,
     // throw an error: we are trying to write to a full index
     DEBUG_ONLY({
         if (!isEmptyAvailable) {
-            std::cerr << "Error: EncIndBase::writeToFirstEmpty(): ran out of space writing to "
+            std::cerr << "Error: EncrIndBase::writeToFirstEmpty(): ran out of space writing to "
                       << this->filename << std::endl;
             std::exit(EXIT_FAILURE);
         }
@@ -275,7 +275,7 @@ void EncIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncIndEntry
 }
 
 
-void EncIndBase::endSetup(SseOper setupOper) {
+void EncrIndBase::endSetup(SseOper setupOper) {
     assert(setupOper == SseOper::SETUP || setupOper == SseOper::UPDATE);
     // make sure the changes in the setup buffer are visible to the separate search buffer!
     Buf* buf = this->getBufForSseOper(setupOper);
@@ -287,7 +287,7 @@ void EncIndBase::endSetup(SseOper setupOper) {
 // helpers
 
 
-bool EncIndBase::advanceUntilMatch(
+bool EncrIndBase::advanceUntilMatch(
     SseOper oper, ubigint& pos, const uchar* match, int matchLen
 ) const {
     // need this for wrapping logic later to work!
@@ -297,9 +297,9 @@ bool EncIndBase::advanceUntilMatch(
     // iterate forward one bucket (i.e. `this->getBcktSize()`) at a time to search for it
 
     // for the first read, we skip filling the buffer if it turns out we don't need to iterate
-    // forward. this is especially good when the buffer is big but the enc ind is even bigger,
+    // forward. this is especially good when the buffer is big but the encr ind is even bigger,
     // as this avoids large amounts of filling and flushing the buffer at different positions
-    // and never using it in between (especially when the enc ind is still mostly empty)
+    // and never using it in between (especially when the encr ind is still mostly empty)
     uchar* currEntryPtr;
     uchar currEntry[this->ENTRY_LEN()];
     currEntryPtr = this->readEncodedOptionalBuf(oper, pos, currEntry, true);
@@ -336,7 +336,7 @@ bool EncIndBase::advanceUntilMatch(
 }
 
 
-uchar* EncIndBase::readEncoded(SseOper oper, ubigint pos) const {
+uchar* EncrIndBase::readEncoded(SseOper oper, ubigint pos) const {
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufForSseOper(oper);
@@ -351,7 +351,7 @@ uchar* EncIndBase::readEncoded(SseOper oper, ubigint pos) const {
 }
 
 
-void EncIndBase::writeEncoded(SseOper oper, ubigint pos, const uchar* encodedEntry, bool isInit) {
+void EncrIndBase::writeEncoded(SseOper oper, ubigint pos, const uchar* encodedEntry, bool isInit) {
     pos %= this->capacity;
 
     Buf* bufToUse = this->getBufForSseOper(oper);
@@ -366,7 +366,7 @@ void EncIndBase::writeEncoded(SseOper oper, ubigint pos, const uchar* encodedEnt
 }
 
 
-uchar* EncIndBase::readEncodedOptionalBuf(
+uchar* EncrIndBase::readEncodedOptionalBuf(
     SseOper oper, ubigint pos, uchar* ret, bool shouldFseek
 ) const {
     pos %= this->capacity;
@@ -381,7 +381,7 @@ uchar* EncIndBase::readEncodedOptionalBuf(
         if (shouldFseek) {
             std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
         }
-        this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncIndBase::readEncodedOptionalBuf()");
+        this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncrIndBase::readEncodedOptionalBuf()");
         return ret;
     } else {
         // if `pos` is covered by the buffer, read it from the buffer instead since the buffer may
@@ -394,7 +394,7 @@ uchar* EncIndBase::readEncodedOptionalBuf(
 }
 
 
-uchar* EncIndBase::readEncodedNoBuf(
+uchar* EncrIndBase::readEncodedNoBuf(
     SseOper oper, ubigint pos, uchar* ret, bool shouldFseek
 ) const {
     assert(this->file != nullptr);
@@ -410,7 +410,7 @@ uchar* EncIndBase::readEncodedNoBuf(
     // `fread()` didn't move the file pointer
     //
     // this is also why we needed to flush the buffer at the end of `init()`!
-    this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncIndBase::readEncodedNoBuf()");
+    this->readFromFile(ret, this->ENTRY_LEN(), 1, "EncrIndBase::readEncodedNoBuf()");
 
     // also read encoded entry from buffer if `pos` is covered by the buffer, as it must have
     // the most updated version of that entry, and return it instead of the `ret` parameter
@@ -426,7 +426,7 @@ uchar* EncIndBase::readEncodedNoBuf(
 }
 
 
-void EncIndBase::writeEncodedNoBuf(
+void EncrIndBase::writeEncodedNoBuf(
     SseOper oper, ubigint pos, const uchar* encodedEntry, bool shouldFseek
 ) {
     assert(this->file != nullptr);
@@ -436,7 +436,7 @@ void EncIndBase::writeEncodedNoBuf(
     if (shouldFseek) {
         std::fseek(this->file, pos * this->ENTRY_LEN(), SEEK_SET);
     }
-    this->writeToFile(encodedEntry, this->ENTRY_LEN(), 1, "EncIndBase::writeEncodedNoBuf()");
+    this->writeToFile(encodedEntry, this->ENTRY_LEN(), 1, "EncrIndBase::writeEncodedNoBuf()");
 
     // also write encoded entry to buffer if `pos` is covered by the buffer, to ensure that
     // the buffer has the most updated version of that entry
@@ -453,14 +453,14 @@ void EncIndBase::writeEncodedNoBuf(
 // buffer
 
 
-void EncIndBase::fillBuf(Buf* buf, ubigint bufStartPos, bool isEncIndInit) const {
+void EncrIndBase::fillBuf(Buf* buf, ubigint bufStartPos, bool isEncrIndInit) const {
     assert(buf != nullptr);
     this->flushBufIfNotFlushed(buf);
-    buf->fill(bufStartPos, isEncIndInit);
+    buf->fill(bufStartPos, isEncrIndInit);
 }
 
 
-void EncIndBase::flushBufIfNotFlushed(Buf* buf) const {
+void EncrIndBase::flushBufIfNotFlushed(Buf* buf) const {
     assert(buf != nullptr);
     buf->flushIfNotFlushed();
     this->isFlushed = false;
@@ -469,7 +469,7 @@ void EncIndBase::flushBufIfNotFlushed(Buf* buf) const {
 }
 
 
-bigint EncIndBase::posToBufIndex(Buf* buf, ubigint pos) const {
+bigint EncrIndBase::posToBufIndex(Buf* buf, ubigint pos) const {
     assert(buf != nullptr);
     return buf->posToBufIndex(pos);
 }
@@ -479,7 +479,7 @@ bigint EncIndBase::posToBufIndex(Buf* buf, ubigint pos) const {
 // debugging
 
 
-void EncIndBase::printBuf(SseOper oper) const {
+void EncrIndBase::printBuf(SseOper oper) const {
     Buf* buf = this->getBufForSseOper(oper);
     assert(buf != nullptr);
     if (!buf->isFilled) {
@@ -493,7 +493,7 @@ void EncIndBase::printBuf(SseOper oper) const {
 }
 
 
-void EncIndBase::printFile() const {
+void EncrIndBase::printFile() const {
     assert(this->file != nullptr);
     bigint origFilePtrPos = std::ftell(this->file);
     uchar currEntry[this->ENTRY_LEN()];
@@ -502,7 +502,7 @@ void EncIndBase::printFile() const {
             std::fseek(this->file, 0, SEEK_SET);
         }
 
-        this->readFromFile(currEntry, this->ENTRY_LEN(), 1, "EncIndBase::printFile()");
+        this->readFromFile(currEntry, this->ENTRY_LEN(), 1, "EncrIndBase::printFile()");
         std::cerr << pos << ": " << utils::debug::ustrToHex(currEntry, this->ENTRY_LEN())
                   << std::endl;
     }

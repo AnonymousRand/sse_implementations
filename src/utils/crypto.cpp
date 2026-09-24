@@ -9,7 +9,7 @@
 #include <openssl/rand.h>
 
 #include "utils/debug.h"
-#include "utils/misc.h"
+#include "utils/str.h"
 #include "utils/types/ustring.h"
 
 
@@ -46,7 +46,7 @@ ustring genKey(int keyLen) {
     if (res != 1) {
         handleErrors("Error: utils::crypto::genKey(): ");
     }
-    ustring ustrKey = ::utils::ustr::toUstr(key, keyLen);
+    ustring ustrKey(key, keyLen);
     delete[] key;
     return ustrKey;
 }
@@ -58,7 +58,7 @@ ustring genIv(int ivLen) {
     if (res != 1) {
         handleErrors("Error: utils::crypto::genIv(): ");
     }
-    ustring ustrIv = ::utils::ustr::toUstr(iv, ivLen);
+    ustring ustrIv(iv, ivLen);
     delete[] iv;
     return ustrIv;
 }
@@ -109,7 +109,7 @@ ustring prf(const ustring& key, const ustring& input) {
     uchar* output = HMAC(
         HASH_FUNC, key.data(), key.length(), input.data(), input.length(), nullptr, &outputLen
     );
-    return utils::ustr::toUstr(output, outputLen);
+    return ustring(output, outputLen);
 }
 
 
@@ -178,7 +178,7 @@ ustring padAndEncrypt(
             std::exit(EXIT_FAILURE);
         }
     });
-    utils::misc::padStr(ptext, targetLen);
+    utils::str::padStr(ptext, targetLen);
     return encrypt(key, ptext, iv, cipher);
 }
 
@@ -245,7 +245,7 @@ ustring decryptAndUnpad(
     const ustring& key, const ustring& ctext, const ustring& iv, const EVP_CIPHER* cipher
 ) {
     ustring ptext = decrypt(key, ctext, iv, cipher);
-    utils::misc::unpadStr(ptext);
+    utils::str::unpadStr(ptext);
     return ptext;
 }
 

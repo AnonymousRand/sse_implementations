@@ -4,32 +4,32 @@
 
 
 //==============================================================================
-// `EncIndVal`
+// `EncrIndVal`
 //==============================================================================
 
 
 /**
  * encrypted indexes are a collection of `std::pair<ustring, std::pair<ustring, ustring>>`
- * (aka `EncIndEntry`) pairs, corresponding to `std::pair<key, std::pair<encrypted data, IV>>`.
+ * (aka `EncrIndEntry`) pairs, corresponding to `std::pair<key, std::pair<encrypted data, IV>>`.
  */
-struct EncIndVal {
+struct EncrIndVal {
     ustring data;
     ustring iv;
 
     ustring encode() const;
-    static EncIndVal decode(const uchar* encoding, int dataLen, int ivLen);
+    static EncrIndVal decode(const uchar* encoding, int dataLen, int ivLen);
 };
 
 
 //==============================================================================
-// `EncIndEntry`
+// `EncrIndEntry`
 //==============================================================================
 
 
-struct EncIndEntry {
+struct EncrIndEntry {
     ustring key;
-    EncIndVal val;
+    EncrIndVal val;
 
     ustring encode() const;
-    static EncIndEntry decode(const uchar* encoding, int keyLen, int dataLen, int ivLen);
+    static EncrIndEntry decode(const uchar* encoding, int keyLen, int dataLen, int ivLen);
 };

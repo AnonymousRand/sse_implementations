@@ -8,7 +8,7 @@
 
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
-#include "utils/types/enc_ind/enc_ind_rand.h"
+#include "utils/types/encr_ind/encr_ind_rand.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
 
@@ -28,7 +28,7 @@ public:
     void clear() override;
 
 private:
-    EncIndRand* dbKwCountsDictTmp = nullptr;
+    EncrIndRand* dbKwCountsDictTmp = nullptr;
 
     //--------------------------------------------------------------------------
     // `IStaticPointSse`

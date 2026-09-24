@@ -6,14 +6,14 @@
 #include <string>
 
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_base.h"
+#include "utils/types/encr_ind/encr_ind_base.h"
 #include "utils/types/ustring.h"
 
 
-struct EncIndBase::Buf {
+struct EncrIndBase::Buf {
 public:
     // mainly for debugging/assertions
-    friend class EncIndBase;
+    friend class EncrIndBase;
 
     static const bigint NOT_IN_BUF;
 
@@ -72,7 +72,7 @@ private:
     bool isFilled = false;
     mutable bool isFlushed = true;
 
-    // members shared with its parent enc ind (do not free these in `Buf`!!)
+    // members shared with its parent encr ind (do not free these in `Buf`!!)
     FILE* file;
     const std::string& filename;
     const bigint encIndCapacity;

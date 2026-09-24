@@ -14,11 +14,11 @@
 
 #include "utils/crypto.h"
 #include "utils/debug.h"
-#include "utils/misc.h"
+#include "utils/str.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
-#include "utils/types/enc_ind/enc_ind_rand.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_rand.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/ind.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
@@ -54,7 +54,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOpe
     this->prfKey = utils::crypto::genKey(secParam);
     this->encKey = utils::crypto::genKey(secParam);
 
-    EncIndRand* encInd = new EncIndRand();
+    EncrIndRand* encInd = new EncrIndRand();
     encInd->init(setupOper, this->size);
 
     //--------------------------------------------------------------------------
@@ -94,13 +94,13 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOpe
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->writeToFirstEmpty(
-                setupOper, pos, EncIndEntry {label, EncIndVal {encDbTuple, iv}}
+                setupOper, pos, EncrIndEntry {label, EncrIndVal {encDbTuple, iv}}
             );
         }
     }
 
     encInd->endSetup(setupOper);
-    this->piBasServer->setEncInd(encInd);
+    this->piBasServer->setEncrInd(encInd);
 }
 
 
@@ -124,18 +124,18 @@ void PiBas<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
     assert(this->piBasServer != nullptr);
-    EncIndRand* encInd = this->piBasServer->getEncInd();
+    EncrIndRand* encInd = this->piBasServer->getEncrInd();
 
     // don't use `this->size` as the bound here as that doesn't include padding while
     // `encInd` does (this should all be client-side anyway so it's not leaking anything)
     for (bigint pos = 0; pos < encInd->getCapacity(); pos++) {
-        EncIndVal encIndVal;
+        EncrIndVal encIndVal;
         bool isValidVal = encInd->read(SseOper::UPDATE, pos, encIndVal);
         if (!isValidVal) {
             continue;
         }
 
-        DbTuple dbTuple = this->decryptEncIndVal(encIndVal);
+        DbTuple dbTuple = this->decryptEncrIndVal(encIndVal);
         ret.append(dbTuple);
     }
 }
@@ -154,12 +154,12 @@ std::vector<typename PiBas<DbTuple>::DbDoc> PiBas<DbTuple>::searchRaw(
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
-    std::vector<EncIndVal> encResultTups = this->piBasServer->searchEncInd(queryToken);
+    std::vector<EncrIndVal> encResultTups = this->piBasServer->searchEncrInd(queryToken);
 
     // decrypt results (on the client)
     results.reserve(encResultTups.size());
-    for (const EncIndVal& encResultTup : encResultTups) {
-        DbTuple resultTup = this->decryptEncIndVal(encResultTup);
+    for (const EncrIndVal& encResultTup : encResultTups) {
+        DbTuple resultTup = this->decryptEncrIndVal(encResultTup);
         results.emplace_back(std::move(resultTup.dbDoc));
     }
 
@@ -183,8 +183,8 @@ ubigint PiBas<DbTuple>::map(
     const ustring& queryToken, bigint dbKwCounter, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w) || c)
-    retLabel = utils::crypto::hash(queryToken + utils::misc::encodeBigint(dbKwCounter));
-    return utils::misc::hashToPos(retLabel);
+    retLabel = utils::crypto::hash(queryToken + utils::str::encodeBigint(dbKwCounter));
+    return utils::str::hashToPos(retLabel);
 }
 
 

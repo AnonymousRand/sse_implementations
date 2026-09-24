@@ -12,7 +12,7 @@
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/db.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
@@ -81,14 +81,14 @@ std::vector<typename Underly<DbTuple>::DbDoc> Underly<DbTuple>::searchRaw(
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncIndVal> encResultTups = this->underlyServer->searchEncIndForBckt(
+    std::vector<EncrIndVal> encResultTups = this->underlyServer->searchEncrIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 
     // decrypt results (on the client)
     results.reserve(encResultTups.size());
-    for (const EncIndVal& encResultTup : encResultTups) {
-        DbTuple resultTup = this->decryptEncIndVal(encResultTup);
+    for (const EncrIndVal& encResultTup : encResultTups) {
+        DbTuple resultTup = this->decryptEncrIndVal(encResultTup);
         results.emplace_back(std::move(resultTup.dbDoc));
     }
 

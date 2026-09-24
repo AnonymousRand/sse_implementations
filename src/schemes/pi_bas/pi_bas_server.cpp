@@ -8,10 +8,10 @@
 
 #include "utils/benchmark.h"
 #include "utils/crypto.h"
-#include "utils/misc.h"
+#include "utils/str.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_rand.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_rand.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
 
@@ -44,7 +44,7 @@ void PiBasServer<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-void PiBasServer<DbTuple>::setEncInd(EncIndRand* encInd) {
+void PiBasServer<DbTuple>::setEncrInd(EncrIndRand* encInd) {
     bigint encIndBytes = encInd->getBytes();
     utils::benchmark::serverStorage += encIndBytes;
     utils::benchmark::communication += encIndBytes;
@@ -53,26 +53,26 @@ void PiBasServer<DbTuple>::setEncInd(EncIndRand* encInd) {
 
 
 template <IsDbTuple DbTuple>
-EncIndRand* PiBasServer<DbTuple>::getEncInd() const {
+EncrIndRand* PiBasServer<DbTuple>::getEncrInd() const {
     utils::benchmark::communication += this->encInd->getBytes();
     return this->encInd;
 }
 
 
 template <IsDbTuple DbTuple>
-std::vector<EncIndVal> PiBasServer<DbTuple>::searchEncInd(const ustring& queryToken) const {
+std::vector<EncrIndVal> PiBasServer<DbTuple>::searchEncrInd(const ustring& queryToken) const {
     utils::benchmark::communication += queryToken.length();
-    std::vector<EncIndVal> encResults;
+    std::vector<EncrIndVal> encResults;
 
     // for c = 0 until `Get` returns error
     bigint dbKwCounter = 0;
     while (true) {
         // l <- Hash(PRF(K_1, w) || c), and also generate associated `pos`
         // (same as client's `setup()`)
-        ustring label = utils::crypto::hash(queryToken + utils::misc::encodeBigint(dbKwCounter));
-        ubigint pos = utils::misc::hashToPos(label);
+        ustring label = utils::crypto::hash(queryToken + utils::str::encodeBigint(dbKwCounter));
+        ubigint pos = utils::str::hashToPos(label);
         // res <- encInd.get(l)
-        EncIndVal encIndVal;
+        EncrIndVal encIndVal;
         bool isFound = this->encInd->find(SseOper::SEARCH, pos, label, encIndVal);
         if (!isFound) {
             break;

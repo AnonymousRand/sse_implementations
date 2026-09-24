@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-#include "utils/misc.h"
+#include "utils/str.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/ustring.h"
 
@@ -38,8 +38,8 @@ bool Range<T>::isDisjointFrom(const Range<T>& target) const {
 
 template <std::integral T>
 ustring Range<T>::encode() const {
-    ustring ret = utils::misc::encodeBigint(this->start);
-    ret += utils::misc::encodeBigint(this->end);
+    ustring ret = utils::str::encodeBigint(this->start);
+    ret += utils::str::encodeBigint(this->end);
     return ret;
 }
 
@@ -50,8 +50,8 @@ int Range<T>::ENCODING_LEN = 2 * config::INT_MAX_BYTES;
 
 template <std::integral T>
 Range<T> Range<T>::decode(const ustring& encoding, int startIndex) {
-    T start = utils::misc::decodeBigint(encoding, startIndex);
-    T end = utils::misc::decodeBigint(encoding, startIndex + config::INT_MAX_BYTES);
+    T start = utils::str::decodeBigint(encoding, startIndex);
+    T end = utils::str::decodeBigint(encoding, startIndex + config::INT_MAX_BYTES);
     return Range<T> {start, end};
 }
 

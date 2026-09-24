@@ -18,7 +18,7 @@
 // operators must be called first, as they call `clear()`!
 // (and `= default` calls their parent versions in order of inheritance)
 template <IsDbTuple DbTuple>
-// we use `uchar` here instead of `char` to use tuples' existing encoding/decoding for enc inds
+// we use `uchar` here instead of `char` to use tuples' existing encoding/decoding for encr inds
 class DbDisk : public IDiskStorage<uchar>, public IDb<DbTuple> {
 public:
     //--------------------------------------------------------------------------

@@ -9,8 +9,8 @@
 
 #include "utils/benchmark.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_loc.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_loc.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
 
@@ -18,9 +18,9 @@
 namespace {
 
 
-bigint calcAllEncIndLvlsBytes(const std::vector<EncIndLoc*>& encIndLvls) {
+bigint calcAllEncrIndLvlsBytes(const std::vector<EncrIndLoc*>& encIndLvls) {
     bigint bytes = 0;
-    for (EncIndLoc* encIndLvl : encIndLvls) {
+    for (EncrIndLoc* encIndLvl : encIndLvls) {
         bytes += encIndLvl->getBytes();
     }
     return bytes;
@@ -47,7 +47,7 @@ NLogNBaseServer<DbTuple>::~NLogNBaseServer() {
 
 template <IsDbTuple DbTuple>
 void NLogNBaseServer<DbTuple>::clear() {
-    for (EncIndLoc* lvl : this->encIndLvls) {
+    for (EncrIndLoc* lvl : this->encIndLvls) {
         if (lvl != nullptr) {
             utils::benchmark::serverStorage -= lvl->getBytes();
 
@@ -64,34 +64,34 @@ void NLogNBaseServer<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-void NLogNBaseServer<DbTuple>::setEncIndLvls(const std::vector<EncIndLoc*>& encIndLvls) {
-    bigint allEncIndLvlsBytes = ::calcAllEncIndLvlsBytes(encIndLvls);
-    utils::benchmark::serverStorage += allEncIndLvlsBytes;
-    utils::benchmark::communication += allEncIndLvlsBytes;
+void NLogNBaseServer<DbTuple>::setEncrIndLvls(const std::vector<EncrIndLoc*>& encIndLvls) {
+    bigint allEncrIndLvlsBytes = ::calcAllEncrIndLvlsBytes(encIndLvls);
+    utils::benchmark::serverStorage += allEncrIndLvlsBytes;
+    utils::benchmark::communication += allEncrIndLvlsBytes;
 
     this->encIndLvls = encIndLvls;
 }
 
 
 template <IsDbTuple DbTuple>
-const std::vector<EncIndLoc*>& NLogNBaseServer<DbTuple>::getEncIndLvls() const {
-    utils::benchmark::communication += ::calcAllEncIndLvlsBytes(this->encIndLvls);
+const std::vector<EncrIndLoc*>& NLogNBaseServer<DbTuple>::getEncrIndLvls() const {
+    utils::benchmark::communication += ::calcAllEncrIndLvlsBytes(this->encIndLvls);
 
     return this->encIndLvls;
 }
 
 
 template <IsDbTuple DbTuple>
-std::vector<EncIndVal> NLogNBaseServer<DbTuple>::searchEncIndForBckt(
+std::vector<EncrIndVal> NLogNBaseServer<DbTuple>::searchEncrIndForBckt(
     bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
 ) const {
     assert(lvl < this->encIndLvls.size() || this->encIndLvls.size() == 0);
     utils::benchmark::communication +=
         sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + label.length();
 
-    std::vector<EncIndVal> encResults;
+    std::vector<EncrIndVal> encResults;
     for (bigint dbKwCounter = 0; dbKwCounter < bcktSize; dbKwCounter++) {
-        EncIndVal encIndVal;
+        EncrIndVal encIndVal;
         bool isFound;
         if (dbKwCounter == 0) {
             // if first read, get the right bucket start pos (e.g. in case of modulo

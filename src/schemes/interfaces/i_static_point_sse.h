@@ -9,7 +9,7 @@
 #include "utils/crypto.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
-#include "utils/types/enc_ind/enc_ind_types.h"
+#include "utils/types/encr_ind/encr_ind_types.h"
 #include "utils/types/range.h"
 #include "utils/types/tuple.h"
 #include "utils/types/ustring.h"
@@ -69,14 +69,14 @@ protected:
     /**
      * helper function to decrypt `encIndVal`.
      */
-    DbTuple decryptEncIndVal(const EncIndVal& encIndVal) const {
+    DbTuple decryptEncrIndVal(const EncrIndVal& encIndVal) const {
         // (we didn't get rid of padding, but this shouldn't matter since padding comes at end, and
         // our decoding only cares about the bytes starting at the beginning. we also don't know how
         // much padding there is as different tuple types have different lengths, and we can't just
         // delete until first nonzero byte as there can be zero bytes in the actual encoding)
-        ustring decDbTuple = utils::crypto::decrypt(this->encKey, encIndVal.data, encIndVal.iv);
+        ustring decrDbTuple = utils::crypto::decrypt(this->encKey, encIndVal.data, encIndVal.iv);
         DbTuple dbTuple;
-        DbTuple::decode(decDbTuple, dbTuple);
+        DbTuple::decode(decrDbTuple, dbTuple);
         return dbTuple;
     }
 };

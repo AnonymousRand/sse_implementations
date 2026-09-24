@@ -15,8 +15,8 @@
 #include "config.h"
 
 #include "utils/debug.h"
-#include "utils/misc.h"
 #include "utils/random.h"
+#include "utils/str.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/db/i_db.h"
 #include "utils/types/i_disk_storage.h"
@@ -88,23 +88,23 @@ void DbDisk<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
     assert(this->file != nullptr);
-    ustring dbTupleUstr = dbTuple.encode();
+    ustring encodDbTuple = dbTuple.encode();
 
     // make sure every encoded tuple is stored into the same fixed-length size for easy lookups,
     // padding with '\0' bytes if necessary
     DEBUG_ONLY({
-        if (dbTupleUstr.length() > config::TUPLE_ENCOD_LEN) {
-            std::cerr << "Error: DbDisk::append(): write of length " << dbTupleUstr.length()
+        if (encodDbTuple.length() > config::TUPLE_ENCOD_LEN) {
+            std::cerr << "Error: DbDisk::append(): write of length " << encodDbTuple.length()
                       << " bytes is not allowed! (want " << config::TUPLE_ENCOD_LEN << " bytes)"
                       << std::endl;
             std::exit(EXIT_FAILURE);
         }
     });
-    utils::misc::padStr(dbTupleUstr, config::TUPLE_ENCOD_LEN);
+    utils::str::padStr(encodDbTuple, config::TUPLE_ENCOD_LEN);
 
     // write to DB
     std::fseek(this->file, 0, SEEK_END);
-    this->writeToFile(dbTupleUstr.c_str(), config::TUPLE_ENCOD_LEN, 1, "DbDisk::append()");
+    this->writeToFile(encodDbTuple.c_str(), config::TUPLE_ENCOD_LEN, 1, "DbDisk::append()");
 
     // update member variables as needed
     this->onNewDbTuple(dbTuple);
@@ -120,7 +120,7 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     uchar dbTupleUcstr[config::TUPLE_ENCOD_LEN];
     std::fseek(this->file, index * config::TUPLE_ENCOD_LEN, SEEK_SET);
     this->readFromFile(dbTupleUcstr, config::TUPLE_ENCOD_LEN, 1, "DbDisk::operator []");
-    ustring dbTupleUstr(dbTupleUcstr, config::TUPLE_ENCOD_LEN);
+    ustring encodDbTuple(dbTupleUcstr, config::TUPLE_ENCOD_LEN);
 
     // decode and return
     // (we didn't get rid of padding, but this shouldn't matter since padding comes at end, and
@@ -128,7 +128,7 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     // much padding there is as different tuple types have different lengths, and we can't just
     // delete until first nonzero byte as there can be zero bytes in the actual encoding)
     DbTuple dbTuple;
-    DbTuple::decode(dbTupleUstr, dbTuple);
+    DbTuple::decode(encodDbTuple, dbTuple);
     return dbTuple;
 }
 
