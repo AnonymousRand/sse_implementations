@@ -27,7 +27,7 @@ ustring IDbTuple<DbDoc, DbKw>::encode() const {
 template <IsDbDoc DbDoc, class DbKw>
 void IDbTuple<DbDoc, DbKw>::decode(const ustring& encoding, IDbTuple<DbDoc, DbKw>& ret) {
     ret.dbDoc = DbDoc::decode(encoding);
-    ret.dbKwRange = Range<DbKw>::decode(encoding, DbDoc::ENCODING_LEN);
+    ret.dbKwRange = Range<DbKw>::decode(encoding, DbDoc::ENCOD_LEN);
 }
 
 

@@ -35,7 +35,7 @@ public:
     ustring encode() const;
     static Range decode(const ustring& encoding, int startIndex);
     std::string toPrettyStr() const;
-    static int ENCODING_LEN; // can't make this `const` without initializing it in constructors
+    static int ENCOD_LEN; // can't make this `const` without initializing it in constructors
 
     friend bool operator ==(const Range& range1, const Range& range2) = default;
     template <std::integral T2>

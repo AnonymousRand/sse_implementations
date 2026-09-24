@@ -60,7 +60,7 @@ public:
     ustring encode() const override;
     static Doc decode(const ustring& encoding);
     std::string toPrettyStr() const override;
-    static int ENCODING_LEN;
+    static int ENCOD_LEN;
 
     // need to explicitly declare this again since we have additional member variables in this child
     friend bool operator ==(const Doc& doc1, const Doc& doc2) = default;
@@ -89,7 +89,7 @@ public:
     ustring encode() const override;
     static SrcIDb1Doc decode(const ustring& encoding);
     std::string toPrettyStr() const override;
-    static int ENCODING_LEN;
+    static int ENCOD_LEN;
 
     friend bool operator ==(const SrcIDb1Doc& doc1, const SrcIDb1Doc& doc2) = default;
 };
