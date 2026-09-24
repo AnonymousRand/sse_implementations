@@ -76,7 +76,7 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     ustring decDbKwCount = utils::crypto::decryptAndUnpad(
         this->encKey, encIndValDict.data, encIndValDict.iv
     );
-    bigint dbKwCount = utils::ustr::fromUstr(decDbKwCount);
+    bigint dbKwCount = utils::misc::decodeBigint(decrDbKwCount, 0);
     bigint dbKwPaddedCount = utils::misc::roundUpToPowOf2(dbKwCount); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)
@@ -125,7 +125,8 @@ void NLogN<DbTuple>::setupDbKwList(
     ustring label;
     ustring iv = utils::crypto::genIv();
     ustring encDbKwCount = utils::crypto::padAndEncrypt(
-        this->encKey, utils::ustr::toUstr(dbKwCount), iv, this->dbKwCountsDictTmp->DATA_LEN() - 1
+        this->encKey, utils::misc::encodeBigint(dbKwCount), iv,
+        this->dbKwCountsDictTmp->DATA_LEN() - 1
     );
     ubigint pos = this->mapNoMod(queryToken, label);
     this->dbKwCountsDictTmp->writeToFirstEmpty(

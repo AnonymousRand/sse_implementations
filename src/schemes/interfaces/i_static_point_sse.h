@@ -53,8 +53,8 @@ public:
 
     // handle clearing of this class' member variables
     void clear() override {
-        this->prfKey = utils::ustr::toUstr("");
-        this->encKey = utils::ustr::toUstr("");
+        this->prfKey = utils::ustr::EMPTY;
+        this->encKey = utils::ustr::EMPTY;
     }
 
 protected:

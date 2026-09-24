@@ -183,7 +183,7 @@ ubigint PiBas<DbTuple>::map(
     const ustring& queryToken, bigint dbKwCounter, ustring& retLabel
 ) const {
     // l <- Hash(PRF(K_1, w) || c)
-    retLabel = utils::crypto::hash(queryToken + utils::ustr::toUstr(dbKwCounter));
+    retLabel = utils::crypto::hash(queryToken + utils::misc::encodeBigint(dbKwCounter));
     return utils::misc::hashToPos(retLabel);
 }
 

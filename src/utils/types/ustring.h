@@ -17,11 +17,12 @@ using ustring = std::basic_string<uchar>;
 namespace utils::ustr {
 
 
-ustring toUstr(bigint n);
+inline const ustring EMPTY = toUstr("");
+
+
 ustring toUstr(const std::string& s);
 ustring toUstr(uchar* ucstr, int len);
 std::string toStr(const ustring& ustr);
-bigint fromUstr(const ustring& ustr);
 
 
 } // namespace `utils::ustr`
