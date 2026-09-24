@@ -74,9 +74,11 @@ protected:
         // our decoding only cares about the bytes starting at the beginning. we also don't know how
         // much padding there is as different tuple types have different lengths, and we can't just
         // delete until first nonzero byte as there can be zero bytes in the actual encoding)
-        ustring decrDbTuple = utils::crypto::decrypt(this->encrKey, encrIndVal.data, encrIndVal.iv);
+        ustring encodDbTuple = utils::crypto::decrypt(
+            this->encrKey, encrIndVal.data, encrIndVal.iv
+        );
         DbTuple dbTuple;
-        DbTuple::decode(decrDbTuple, dbTuple);
+        DbTuple::decode(encodDbTuple, dbTuple);
         return dbTuple;
     }
 };
