@@ -70,9 +70,11 @@ protected:
      * helper function to decrypt `encIndVal`.
      */
     DbTuple decryptEncIndVal(const EncIndVal& encIndVal) const {
-        ustring decDbTuple = utils::crypto::decryptAndUnpad(
-            this->encKey, encIndVal.data, encIndVal.iv
-        );
+        // (we didn't get rid of padding, but this shouldn't matter since padding comes at end, and
+        // our decoding only cares about the bytes starting at the beginning. we also don't know how
+        // much padding there is as different tuple types have different lengths, and we can't just
+        // delete until first nonzero byte as there can be zero bytes in the actual encoding)
+        ustring decDbTuple = utils::crypto::decrypt(this->encKey, encIndVal.data, encIndVal.iv);
         DbTuple dbTuple;
         DbTuple::decode(decDbTuple, dbTuple);
         return dbTuple;

@@ -34,6 +34,7 @@ ustring Doc::encode() const {
     ustring ret = utils::misc::encodeBigint(this->id, config::INT_MAX_BYTES);
     ret += utils::misc::encodeBigint(this->kw, config::INT_MAX_BYTES);
     ret += static_cast<char>(this->op);
+    //std::cout << "op is " << static_cast<char>(this->op) << ", encoding is " << utils::debug::ustrToHex(ret) << std::endl;
     return ret;
 }
 
@@ -44,7 +45,7 @@ int Doc::ENCODING_LEN = 2 * config::INT_MAX_BYTES + 1;
 Doc Doc::decode(const ustring& encoding) {
     Id id = utils::misc::decodeBigint(encoding, 0, config::INT_MAX_BYTES);
     Kw kw = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES, config::INT_MAX_BYTES);
-    Op op = static_cast<Op>(encoding[2 * config::INT_MAX_BYTES + 1]);
+    Op op = static_cast<Op>(encoding[2 * config::INT_MAX_BYTES]);
     return Doc {id, kw, op};
 }
 
