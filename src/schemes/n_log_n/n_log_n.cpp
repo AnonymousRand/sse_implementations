@@ -77,7 +77,7 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     ustring encodDbKwCount = utils::crypto::decryptAndUnpad(
         this->encrKey, encrIndValDict.data, encrIndValDict.iv
     );
-    bigint dbKwCount = utils::str::decodeBigint(encodDbKwCount, 0);
+    bigint dbKwCount = utils::str::decodeBigint(encodDbKwCount);
     bigint dbKwPaddedCount = utils::misc::roundUpToPowOf2(dbKwCount); // this is bucket size
 
     // compute `lvl` and `pos` of correct bucket (the same way as in `setup()`)

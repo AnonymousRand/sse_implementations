@@ -33,7 +33,7 @@ public:
     bool isDisjointFrom(const Range& target) const;
 
     ustring encode() const;
-    static Range decode(const ustring& encoding, int startIndex);
+    static Range decode(const ustring& encoding, int startIndex = 0);
     std::string toPrettyStr() const;
     static int ENCOD_LEN; // can't make this `const` without initializing it in constructors
 
