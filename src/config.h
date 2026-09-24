@@ -86,6 +86,8 @@ static_assert(
 // other
 
 
+inline constexpr int ENCODED_NUMBER_BITS = 29;
+
 /**
  * the max number of decimal digits you want ids and keywords to be able to support
  * (this determines the size of each entry in encrypted indexes; see `TUPLE_ENCOD_LEN` below).

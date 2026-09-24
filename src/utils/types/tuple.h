@@ -3,7 +3,6 @@
 #include <concepts>
 #include <cstddef>
 #include <iostream>
-#include <regex>
 #include <string>
 
 #include "utils/types/basic_types.h"
@@ -36,9 +35,8 @@ public:
     IDbTuple(const DbDoc& dbDoc, const Range<DbKw>& dbKwRange) :
         dbDoc(dbDoc), dbKwRange(dbKwRange) {}
 
-    virtual std::string toStr() const = 0;
+    virtual uchar* encode() const = 0;
     virtual std::string toPrintableStr() const = 0;
-    ustring toUstr() const;
 
     // (the `= default` seems to remove the need to template this friended method)
     friend bool operator ==(const IDbTuple& dbTuple1, const IDbTuple& dbTuple2) = default;
@@ -75,18 +73,13 @@ public:
     using IDbTuple<Doc, DbKw>::IDbTuple;
     Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange);
 
-    std::string toStr() const override;
+    uchar* encode() const override;
+    static Tuple decode(const uchar* encoding);
     std::string toPrintableStr() const override;
-    static Tuple fromStr(const std::string& str);
-    static Tuple fromUstr(const ustring& ustr);
 
     Id getId() const { return this->dbDoc.id; }
     Kw getKw() const { return this->dbDoc.kw; }
     Op getOp() const { return this->dbDoc.op; }
-
-private:
-    static const std::string REGEX_STR;
-    static const std::regex REGEX;
 };
 
 
@@ -119,15 +112,10 @@ public:
     using IDbTuple<SrcIDb1Doc, Kw>::IDbTuple;
     SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange);
 
-    std::string toStr() const override;
+    uchar* encode() const override;
+    static SrcIDb1Tuple decode(const uchar* encoding);
     std::string toPrintableStr() const override;
-    static SrcIDb1Tuple fromStr(const std::string& str);
-    static SrcIDb1Tuple fromUstr(const ustring& ustr);
 
     Kw getKw() const { return this->dbDoc.kw; }
     const Range<IdAlias>& getIdAliasRange() const { return this->dbDoc.idAliasRange; }
-
-private:
-    static const std::string REGEX_STR;
-    static const std::regex REGEX;
 };
