@@ -6,8 +6,6 @@
 #include <iostream>
 #include <string>
 
-#include "config.h"
-
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/range.h"
@@ -41,8 +39,8 @@ int Doc::ENCODING_LEN = 2 * config::INT_MAX_BYTES + 1;
 
 
 Doc Doc::decode(const ustring& encoding) {
-    Id id = utils::misc::decodeBigint(encoding, 0, config::INT_MAX_BYTES);
-    Kw kw = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES, config::INT_MAX_BYTES);
+    Id id = utils::misc::decodeBigint(encoding, 0);
+    Kw kw = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES);
     Op op = static_cast<Op>(encoding[2 * config::INT_MAX_BYTES]);
     return Doc {id, kw, op};
 }
@@ -69,7 +67,7 @@ int SrcIDb1Doc::ENCODING_LEN = config::INT_MAX_BYTES + Range<IdAlias>::ENCODING_
 
 
 SrcIDb1Doc SrcIDb1Doc::decode(const ustring& encoding) {
-    Kw kw = utils::misc::decodeBigint(encoding, 0, config::INT_MAX_BYTES);
+    Kw kw = utils::misc::decodeBigint(encoding, 0);
     Range<IdAlias> idAliasRange = Range<IdAlias>::decode(encoding, config::INT_MAX_BYTES);
     return SrcIDb1Doc {kw, idAliasRange};
 }

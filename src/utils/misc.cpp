@@ -10,7 +10,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "utils/debug.h" // TODO tmp
 #include "utils/types/basic_types.h"
 #include "utils/types/doc.h"
 #include "utils/types/ustring.h"

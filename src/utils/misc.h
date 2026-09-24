@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "config.h"
+
 #include "utils/types/basic_types.h"
 #include "utils/types/doc.h"
 #include "utils/types/ustring.h"
@@ -16,9 +18,11 @@ template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& results);
 
 
-ustring encodeBigint(bigint sourceInt, int targetBytes);
+ustring encodeBigint(bigint sourceInt, int targetBytes = config::INT_MAX_BYTES);
 
-bigint decodeBigint(const ustring& encoding, int startIndex, int targetBytes);
+bigint decodeBigint(
+    const ustring& encoding, int startIndex, int targetBytes = config::INT_MAX_BYTES
+);
 
 
 ubigint hashToPos(const ustring& hash);
