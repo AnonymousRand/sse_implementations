@@ -23,10 +23,9 @@ public:
     static Range DUMMY() { return Range {::DUMMY, ::DUMMY}; }
     bool isDummy() const { return *this == DUMMY(); }
 
-    // we should be able to use aggregated initialization here
-
     // default constructor needed for `IDbTuple` children's default constructors
     Range() = default;
+    Range(T start, T end) : start(start), end(end) {}
 
     T size() const;
     bool contains(const Range& target) const;
@@ -36,7 +35,7 @@ public:
     ustring encode() const;
     static Range decode(const ustring& encoding, int startIndex);
     std::string toPrettyStr() const;
-    const int ENCODING_LEN;
+    static int ENCODING_LEN; // can't make this `const` without initializing it in constructors
 
     friend bool operator ==(const Range& range1, const Range& range2) = default;
     template <std::integral T2>

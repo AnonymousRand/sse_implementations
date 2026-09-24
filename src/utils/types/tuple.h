@@ -32,6 +32,8 @@ public:
     DbDoc dbDoc;
     Range<DbKw> dbKwRange;
 
+    // default constructor needed for children's default constructors
+    IDbTuple() = default;
     IDbTuple(const DbDoc& dbDoc, const Range<DbKw>& dbKwRange) :
         dbDoc(dbDoc), dbKwRange(dbKwRange) {}
 

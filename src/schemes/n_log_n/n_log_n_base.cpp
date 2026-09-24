@@ -161,7 +161,7 @@ void NLogNBase<DbTuple>::setupDbKwList(
         // d <- Enc(K_2, w, id)
         ustring iv = utils::crypto::genIv();
         ustring encDbTuple = utils::crypto::padAndEncrypt(
-            this->encKey, dbTuple.toUstr(), iv, this->encIndLvlsTmp[lvl]->DATA_LEN() - 1
+            this->encKey, dbTuple.encode(), iv, this->encIndLvlsTmp[lvl]->DATA_LEN() - 1
         );
         // store `(l, d)` into key-value store, and also store IV in plain along with `d`
         if (dbKwCounter == 0) {
@@ -203,7 +203,7 @@ void NLogNBase<DbTuple>::moveSetupStateToServer(SseOper setupOper) {
 template <IsDbTuple DbTuple>
 ustring NLogNBase<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
-    return utils::crypto::prf(this->prfKey, query.toUstr());
+    return utils::crypto::prf(this->prfKey, query.encode());
 }
 
 

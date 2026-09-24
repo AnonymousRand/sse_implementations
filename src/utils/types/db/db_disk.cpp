@@ -9,7 +9,6 @@
 #include <functional>
 #include <initializer_list>
 #include <iostream>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -32,7 +31,7 @@
 template <IsDbTuple DbTuple>
 DbDisk<DbTuple>::DbDisk() {
     // inits DB file and file pointer
-    IDiskStorage<char>::init();
+    IDiskStorage<uchar>::init();
 }
 
 
@@ -68,7 +67,7 @@ DbDisk<DbTuple>::DbDisk(const DbDisk& other) :
     // call `IDb`'s base copy constructor to ensure it gets run as well
     IDb<DbTuple>(other)
 {
-    IDiskStorage<char>::copyFrom(other);
+    IDiskStorage<uchar>::copyFrom(other);
 }
 
 
@@ -82,30 +81,30 @@ void DbDisk<DbTuple>::clear() {
     IDb<DbTuple>::clear();
 
     // clears DB file and file pointer
-    IDiskStorage<char>::clear();
+    IDiskStorage<uchar>::clear();
 }
 
 
 template <IsDbTuple DbTuple>
 void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
     assert(this->file != nullptr);
-    std::string dbTupleStr = dbTuple.toStr();
+    ustring dbTupleUstr = dbTuple.encode();
 
     // make sure every encoded tuple is stored into the same fixed-length size for easy lookups,
     // padding with '\0' bytes if necessary
     DEBUG_ONLY({
-        if (dbTupleStr.length() > config::TUPLE_ENCOD_LEN) {
-            std::cerr << "Error: DbDisk::append(): write of length " << dbTupleStr.length()
+        if (dbTupleUstr.length() > config::TUPLE_ENCOD_LEN) {
+            std::cerr << "Error: DbDisk::append(): write of length " << dbTupleUstr.length()
                       << " bytes is not allowed! (want " << config::TUPLE_ENCOD_LEN << " bytes)"
                       << std::endl;
             std::exit(EXIT_FAILURE);
         }
     });
-    utils::misc::padStr(dbTupleStr, config::TUPLE_ENCOD_LEN);
+    utils::misc::padStr(dbTupleUstr, config::TUPLE_ENCOD_LEN);
 
     // write to DB
     std::fseek(this->file, 0, SEEK_END);
-    this->writeToFile(dbTupleStr.c_str(), config::TUPLE_ENCOD_LEN, 1, "DbDisk::append()");
+    this->writeToFile(dbTupleUstr.c_str(), config::TUPLE_ENCOD_LEN, 1, "DbDisk::append()");
 
     // update member variables as needed
     this->onNewDbTuple(dbTuple);
@@ -118,16 +117,18 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     assert(index < this->size);
 
     // read from DB
-    char dbTupleCstr[config::TUPLE_ENCOD_LEN];
+    uchar dbTupleUcstr[config::TUPLE_ENCOD_LEN];
     std::fseek(this->file, index * config::TUPLE_ENCOD_LEN, SEEK_SET);
-    this->readFromFile(dbTupleCstr, config::TUPLE_ENCOD_LEN, 1, "DbDisk::operator []");
-    std::string dbTupleStr(dbTupleCstr, config::TUPLE_ENCOD_LEN);
+    this->readFromFile(dbTupleUcstr, config::TUPLE_ENCOD_LEN, 1, "DbDisk::operator []");
+    ustring dbTupleUstr(dbTupleUcstr, config::TUPLE_ENCOD_LEN);
 
     // unpad as necessary so that decoding works properly
-    utils::misc::unpadStr(dbTupleStr);
+    utils::misc::unpadStr(dbTupleUstr);
 
     // decode and return
-    return DbTuple::fromStr(dbTupleStr);
+    DbTuple dbTuple;
+    DbTuple::decode(dbTupleUstr, dbTuple);
+    return dbTuple;
 }
 
 

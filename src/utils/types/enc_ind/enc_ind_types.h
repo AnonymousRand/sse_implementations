@@ -17,7 +17,7 @@ struct EncIndVal {
     ustring iv;
 
     ustring encode() const;
-    static EncIndVal decode(const ustring& encoding, int dataLen, int ivLen);
+    static EncIndVal decode(const uchar* encoding, int dataLen, int ivLen);
 };
 
 
@@ -31,5 +31,5 @@ struct EncIndEntry {
     EncIndVal val;
 
     ustring encode() const;
-    static EncIndEntry decode(const ustring& encoding, int keyLen, int dataLen, int ivLen);
+    static EncIndEntry decode(const uchar* encoding, int keyLen, int dataLen, int ivLen);
 };

@@ -48,7 +48,7 @@ ustring Range<T>::encode() const {
 
 
 template <std::integral T>
-const int Range<T>::ENCODING_LEN = 2 * config::INT_MAX_BYTES;
+int Range<T>::ENCODING_LEN = 2 * config::INT_MAX_BYTES;
 
 
 template <std::integral T>

@@ -47,7 +47,7 @@ void cleanUpResults(std::vector<Doc>& results) {
 
 
 ustring encodeBigint(bigint sourceInt, int targetBytes) {
-    ustring ret = "";
+    ustring ret(utils::ustr::toUstr(""));
     if constexpr (std::endian::native == std::endian::little) {
         // on little-endian systems, `std::memcpy()` already copies LSB first, which is what we want
         // note that `memcpy()`ing directly to a C++ string requires resizing first!

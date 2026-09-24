@@ -90,7 +90,7 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOpe
             // d <- Enc(K_2, w, id)
             ustring iv = utils::crypto::genIv();
             ustring encDbTuple = utils::crypto::padAndEncrypt(
-                this->encKey, dbTuple.toUstr(), iv, encInd->DATA_LEN() - 1
+                this->encKey, dbTuple.encode(), iv, encInd->DATA_LEN() - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
             encInd->writeToFirstEmpty(
@@ -174,7 +174,7 @@ std::vector<typename PiBas<DbTuple>::DbDoc> PiBas<DbTuple>::searchRaw(
 template <IsDbTuple DbTuple>
 ustring PiBas<DbTuple>::genQueryToken(const Range<DbKw>& query) const {
     // PRF(K_1, w)
-    return utils::crypto::prf(this->prfKey, query.toUstr());
+    return utils::crypto::prf(this->prfKey, query.encode());
 }
 
 

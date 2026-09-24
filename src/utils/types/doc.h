@@ -51,6 +51,8 @@ public:
     static Doc DUMMY() { return Doc {::DUMMY, ::DUMMY, Op::DUMMY}; }
     bool isDummy() const { return *this == DUMMY(); }
 
+    // default constructor needed for `IDbTuple` children's default constructors
+    Doc() = default;
     // note: can't use aggregate initialization here as that only works if the class
     // has no virtual methods
     Doc(Id id, Kw kw, Op op) : id(id), kw(kw), op(op) {}
@@ -58,6 +60,7 @@ public:
     ustring encode() const override;
     static Doc decode(const ustring& encoding);
     std::string toPrettyStr() const override;
+    static int ENCODING_LEN;
 
     // need to explicitly declare this again since we have additional member variables in this child
     friend bool operator ==(const Doc& doc1, const Doc& doc2) = default;
@@ -79,11 +82,14 @@ public:
     static SrcIDb1Doc DUMMY() { return SrcIDb1Doc {::DUMMY, Range<IdAlias>::DUMMY()}; }
     bool isDummy() const { return *this == DUMMY(); }
 
+    // default constructor needed for `IDbTuple` children's default constructors
+    SrcIDb1Doc() = default;
     SrcIDb1Doc(Kw kw, Range<IdAlias> idAliasRange) : kw(kw), idAliasRange(idAliasRange) {}
 
     ustring encode() const override;
     static SrcIDb1Doc decode(const ustring& encoding);
     std::string toPrettyStr() const override;
+    static int ENCODING_LEN;
 
     friend bool operator ==(const SrcIDb1Doc& doc1, const SrcIDb1Doc& doc2) = default;
 };

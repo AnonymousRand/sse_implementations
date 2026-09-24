@@ -239,8 +239,7 @@ void EncIndBase::write(
     SseOper oper, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek
 ) {
     // encode `encIndEntry`
-    uchar encodedEntry[this->ENTRY_LEN()];
-    encIndEntry.encode(encodedEntry);
+    ustring encodedEntry = encIndEntry.encode();
     DEBUG_ONLY({
         if (encodedEntry.length() != this->ENTRY_LEN()) {
             std::cerr << "Error: EncIndBase::write(): write of length " << encodedEntry.length()

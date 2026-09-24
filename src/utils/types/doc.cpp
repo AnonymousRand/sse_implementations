@@ -38,7 +38,7 @@ ustring Doc::encode() const {
 }
 
 
-const int Doc::ENCODING_LEN = 2 * config::INT_MAX_BYTES + 1;
+int Doc::ENCODING_LEN = 2 * config::INT_MAX_BYTES + 1;
 
 
 Doc Doc::decode(const ustring& encoding) {
@@ -66,7 +66,7 @@ ustring SrcIDb1Doc::encode() const {
 }
 
 
-const int SrcIDb1Doc::ENCODING_LEN = config::INT_MAX_BYTES + Range<IdAlias>::ENCODING_LEN;
+int SrcIDb1Doc::ENCODING_LEN = config::INT_MAX_BYTES + Range<IdAlias>::ENCODING_LEN;
 
 
 SrcIDb1Doc SrcIDb1Doc::decode(const ustring& encoding) {

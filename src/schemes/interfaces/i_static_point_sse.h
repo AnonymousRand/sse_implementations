@@ -73,6 +73,8 @@ protected:
         ustring decDbTuple = utils::crypto::decryptAndUnpad(
             this->encKey, encIndVal.data, encIndVal.iv
         );
-        return DbTuple::fromUstr(decDbTuple);
+        DbTuple dbTuple;
+        DbTuple::decode(decDbTuple, dbTuple);
+        return dbTuple;
     }
 };

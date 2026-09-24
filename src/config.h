@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cmath>
+#include <string>
 
 #include "utils/crypto.h"
 #include "utils/types/basic_types.h"
@@ -86,27 +87,30 @@ static_assert(
 // other
 
 
-inline constexpr int INT_MAX_BYTES = 4;
-
 /**
- * the max number of decimal digits you want ids and keywords to be able to support
+ * the max number of bytes you want ids and keywords to be able to take up
  * (this determines the size of each entry in encrypted indexes; see `TUPLE_ENCOD_LEN` below).
  */
-// currently: 8 is the largest possible value such that each encrypted tuple fits in
-// 3 AES blocks (= 48 bytes), and corresponds to DB sizes up to 2^26
-inline constexpr int MAX_VALUE_DIGITS = 8;
+// currently: 4 is the largest possible value such that each encrypted tuple fits in
+// 2 AES blocks (= 32 bytes), and corresponds to DB sizes up to 2^32
+inline constexpr int INT_MAX_BYTES = 4;
+static_assert(INT_MAX_BYTES > 0, "Error: `INT_MAX_BYTES` must be strictly positive!");
+// these asserts are important for encoding!
+// (can't do them in `basic_types.h` due to circular import ._.)
+static_assert(sizeof(Id) >= INT_MAX_BYTES, "Error: `Id` must be at least `INT_MAX_BYTES` bytes");
+static_assert(sizeof(Kw) >= INT_MAX_BYTES, "Error: `Kw` must be at least `INT_MAX_BYTES` bytes");
 static_assert(
-    MAX_VALUE_DIGITS > 0, "Error: `MAX_VALUE_DIGITS` must be strictly positive!"
+    sizeof(IdAlias) >= INT_MAX_BYTES, "Error: `IdAlias` must be at least `INT_MAX_BYTES` bytes"
 );
 
-// currently, encoding a `Tuple<>` is of the form `id,kw[op]dbKw-dbKw` while an `SrcIDb1Doc` is
-// `kw,id'-id',kw-kw`, meaning the latter is the larger encoding. there, all but 4 bytes are
-// divided up between `kw`, 2 `id'`s, and 2 `kw`s. however, we actually must restrict our
-// plaintexts by one more byte or else AES' PCKS #7 padding will generate an extra block if
-// our plaintext is exactly block-aligned, thus the `+ 5`.
+// currently, encoding a `Tuple<>` is of the form `id|kw|[op]|dbKw|dbKw` while an `SrcIDb1Doc` is
+// `kw|id'|id'|kw|kw`, meaning the latter is the larger encoding, consisting of 5 "numbers".
+// thus, we multiply `INT_MAX_BYTES` by 5 to obtain the total max size of an encoded tuple.
+// however, we actually must restrict our plaintexts by one more byte or else AES' PCKS #7
+// padding will generate an extra block if our plaintext is exactly block-aligned, thus the `+ 1`.
 // IMPORTANT: update if encoding changes!
 inline constexpr int TUPLE_ENCOD_LEN =
-    std::ceil((5 * MAX_VALUE_DIGITS + 5) / (float)utils::crypto::BLOCK_SIZE)
+    std::ceil((5 * INT_MAX_BYTES + 1) / (float)utils::crypto::BLOCK_SIZE)
     * utils::crypto::BLOCK_SIZE;
 
 
