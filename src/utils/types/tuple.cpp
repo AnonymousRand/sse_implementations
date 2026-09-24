@@ -18,16 +18,17 @@
 
 
 template <IsDbDoc DbDoc, class DbKw>
-void IDbTuple<DbDoc, DbKw>::encode(uchar* ret) const {
-    this->dbDoc.encode(ret);
-    this->dbKwRange.encode(ret + DbDoc::ENCODING_LEN);
+ustring IDbTuple<DbDoc, DbKw>::encode() const {
+    ustring ret = this->dbDoc.encode();
+    ret += this->dbKwRange.encode();
+    return ret;
 }
 
 
 template <IsDbDoc DbDoc, class DbKw>
-void IDbTuple<DbDoc, DbKw>::decode(const uchar* encoding, IDbTuple<DbDoc, DbKw>& ret) {
+void IDbTuple<DbDoc, DbKw>::decode(const ustring& encoding, IDbTuple<DbDoc, DbKw>& ret) {
     ret.dbDoc = DbDoc::decode(encoding);
-    ret.dbKwRange = Range<DbKw>::decode(encoding + DbDoc::ENCODING_LEN);
+    ret.dbKwRange = Range<DbKw>::decode(encoding, DbDoc::ENCODING_LEN);
 }
 
 

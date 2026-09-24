@@ -30,26 +30,27 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc& iDbDoc) {
 //==============================================================================
 
 
-std::string Doc::toPrettyStr() const {
-    return std::format("({},{},{})", this->id, this->kw, static_cast<char>(this->op));
-}
-
-
-void Doc::encode(uchar* ret) const {
-    utils::misc::encodeBigint(ret, this->id, config::INT_MAX_BYTES);
-    utils::misc::encodeBigint(ret + config::INT_MAX_BYTES, this->kw, config::INT_MAX_BYTES);
-    ret[2 * config::INT_MAX_BYTES + 1] = static_cast<char>(this->op);
+ustring Doc::encode() const {
+    ustring ret = utils::misc::encodeBigint(this->id, config::INT_MAX_BYTES);
+    ret += utils::misc::encodeBigint(this->kw, config::INT_MAX_BYTES);
+    ret += static_cast<char>(this->op);
+    return ret;
 }
 
 
 const int Doc::ENCODING_LEN = 2 * config::INT_MAX_BYTES + 1;
 
 
-Doc Doc::decode(const uchar* encoding) {
-    Id id = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES);
-    Kw kw = utils::misc::decodeBigint(encoding + config::INT_MAX_BYTES, config::INT_MAX_BYTES);
+Doc Doc::decode(const ustring& encoding) {
+    Id id = utils::misc::decodeBigint(encoding, 0, config::INT_MAX_BYTES);
+    Kw kw = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES, config::INT_MAX_BYTES);
     Op op = static_cast<Op>(encoding[2 * config::INT_MAX_BYTES + 1]);
     return Doc {id, kw, op};
+}
+
+
+std::string Doc::toPrettyStr() const {
+    return std::format("({},{},{})", this->id, this->kw, static_cast<char>(this->op));
 }
 
 
@@ -58,18 +59,19 @@ Doc Doc::decode(const uchar* encoding) {
 //==============================================================================
 
 
-void SrcIDb1Doc::encode(uchar* ret) const {
-    utils::misc::encodeBigint(ret, this->kw, config::INT_MAX_BYTES);
-    this->idAliasRange.encode(ret + config::INT_MAX_BYTES);
+ustring SrcIDb1Doc::encode() const {
+    ustring ret = utils::misc::encodeBigint(this->kw, config::INT_MAX_BYTES);
+    ret += this->idAliasRange.encode();
+    return ret;
 }
 
 
 const int SrcIDb1Doc::ENCODING_LEN = config::INT_MAX_BYTES + Range<IdAlias>::ENCODING_LEN;
 
 
-SrcIDb1Doc SrcIDb1Doc::decode(const uchar* encoding) {
-    Kw kw = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES);
-    Range<IdAlias> idAliasRange = Range<IdAlias>::decode(encoding + config::INT_MAX_BYTES);
+SrcIDb1Doc SrcIDb1Doc::decode(const ustring& encoding) {
+    Kw kw = utils::misc::decodeBigint(encoding, 0, config::INT_MAX_BYTES);
+    Range<IdAlias> idAliasRange = Range<IdAlias>::decode(encoding, config::INT_MAX_BYTES);
     return SrcIDb1Doc {kw, idAliasRange};
 }
 

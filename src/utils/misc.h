@@ -16,9 +16,9 @@ template <IsDbDoc DbDoc>
 void cleanUpResults(std::vector<DbDoc>& results);
 
 
-void encodeBigint(uchar* ret, bigint sourceInt, int targetBytes);
+ustring encodeBigint(bigint sourceInt, int targetBytes);
 
-bigint decodeBigint(const uchar* encoding, int targetBytes);
+bigint decodeBigint(const ustring& encoding, int startIndex, int targetBytes);
 
 
 ubigint hashToPos(const ustring& hash);

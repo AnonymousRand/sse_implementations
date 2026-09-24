@@ -19,7 +19,7 @@
  */
 struct IDbDoc {
 public:
-    virtual void encode(uchar* ret) const = 0;
+    virtual ustring encode() const = 0;
     virtual std::string toPrettyStr() const = 0;
 
     friend bool operator ==(const IDbDoc& iDbDoc1, const IDbDoc& iDbDoc2) = default;
@@ -55,10 +55,9 @@ public:
     // has no virtual methods
     Doc(Id id, Kw kw, Op op) : id(id), kw(kw), op(op) {}
 
-    void encode(uchar* ret) const override;
-    static Doc decode(const uchar* encoding);
+    ustring encode() const override;
+    static Doc decode(const ustring& encoding);
     std::string toPrettyStr() const override;
-    static const int ENCODING_LEN;
 
     // need to explicitly declare this again since we have additional member variables in this child
     friend bool operator ==(const Doc& doc1, const Doc& doc2) = default;
@@ -82,10 +81,9 @@ public:
 
     SrcIDb1Doc(Kw kw, Range<IdAlias> idAliasRange) : kw(kw), idAliasRange(idAliasRange) {}
 
-    void encode(uchar* ret) const override;
-    static SrcIDb1Doc decode(const uchar* encoding);
+    ustring encode() const override;
+    static SrcIDb1Doc decode(const ustring& encoding);
     std::string toPrettyStr() const override;
-    static const int ENCODING_LEN;
 
     friend bool operator ==(const SrcIDb1Doc& doc1, const SrcIDb1Doc& doc2) = default;
 };

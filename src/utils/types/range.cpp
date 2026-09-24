@@ -40,9 +40,10 @@ bool Range<T>::isDisjointFrom(const Range<T>& target) const {
 
 
 template <std::integral T>
-void Range<T>::encode(uchar* ret) const {
-    utils::misc::encodeBigint(ret, this->start, config::INT_MAX_BYTES);
-    utils::misc::encodeBigint(ret + config::INT_MAX_BYTES, this->end, config::INT_MAX_BYTES);
+ustring Range<T>::encode() const {
+    ustring ret = utils::misc::encodeBigint(this->start, config::INT_MAX_BYTES);
+    ret += utils::misc::encodeBigint(this->end, config::INT_MAX_BYTES);
+    return ret;
 }
 
 
@@ -51,9 +52,11 @@ const int Range<T>::ENCODING_LEN = 2 * config::INT_MAX_BYTES;
 
 
 template <std::integral T>
-Range Range<T>::decode(const uchar* encoding) {
-    T start = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES);
-    T end = utils::misc::decodeBigint(encoding + config::INT_MAX_BYTES, config::INT_MAX_BYTES);
+Range<T> Range<T>::decode(const ustring& encoding, int startIndex) {
+    T start = utils::misc::decodeBigint(encoding, startIndex, config::INT_MAX_BYTES);
+    T end = utils::misc::decodeBigint(
+        encoding, startIndex + config::INT_MAX_BYTES, config::INT_MAX_BYTES
+    );
     return Range<T> {start, end};
 }
 

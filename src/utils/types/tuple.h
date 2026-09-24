@@ -35,11 +35,11 @@ public:
     IDbTuple(const DbDoc& dbDoc, const Range<DbKw>& dbKwRange) :
         dbDoc(dbDoc), dbKwRange(dbKwRange) {}
 
-    void encode(uchar* ret) const;
+    ustring encode() const;
     // we pass in the return value as a param as `IDbTuple` is an abstract class,
     // so we can't return it by value; caller must instantiate a non-abstract child as `ret`
     // (and i don't wanna deal with pointers :3)
-    static void decode(const uchar* encoding, IDbTuple& ret);
+    static void decode(const ustring& encoding, IDbTuple& ret);
     virtual std::string toPrettyStr() const = 0;
 
     // (the `= default` seems to remove the need to template this friended method)

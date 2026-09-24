@@ -33,10 +33,10 @@ public:
     bool contains(T target) const;
     bool isDisjointFrom(const Range& target) const;
 
-    void encode(uchar* ret) const;
-    static Range decode(const uchar* encoding);
+    ustring encode() const;
+    static Range decode(const ustring& encoding, int startIndex);
     std::string toPrettyStr() const;
-    static const int ENCODING_LEN;
+    const int ENCODING_LEN;
 
     friend bool operator ==(const Range& range1, const Range& range2) = default;
     template <std::integral T2>

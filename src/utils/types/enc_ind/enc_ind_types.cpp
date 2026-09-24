@@ -1,7 +1,5 @@
 #include "utils/types/enc_ind/enc_ind_types.h"
 
-#include <cstring>
-
 #include "utils/types/ustring.h"
 
 
@@ -10,15 +8,13 @@
 //==============================================================================
 
 
-void EncIndVal::encode(uchar* ret, int dataLen, int ivLen) const {
-    std::memcpy(ret, this->data, dataLen);
-    std::memcpy(ret + dataLen, this->iv, ivLen);
+ustring EncIndVal::encode() const {
+    return this->data + this->iv;
 }
 
 
 EncIndVal EncIndVal::decode(const uchar* encoding, int dataLen, int ivLen) {
-    uchar* data = new uchar[dataLen];
-    uchar* iv = new uchar[dataLen];data(encoding, dataLen);
+    ustring data(encoding, dataLen);
     ustring iv(encoding + dataLen, ivLen);
     return EncIndVal {data, iv};
 }
