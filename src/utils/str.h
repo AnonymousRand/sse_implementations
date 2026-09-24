@@ -12,7 +12,6 @@ namespace utils::str {
 
 
 ustring encodeBigint(bigint sourceInt, int targetBytes = config::INT_MAX_BYTES);
-
 bigint decodeBigint(
     const ustring& encoding, int startIndex, int targetBytes = config::INT_MAX_BYTES
 );
