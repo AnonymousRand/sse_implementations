@@ -5,7 +5,6 @@
 #include <iostream>
 #include <string>
 
-#include "utils/debug.h" // TODO tmp and maybe for range/doc too
 #include "utils/types/basic_types.h"
 #include "utils/types/doc.h"
 #include "utils/types/range.h"
@@ -21,7 +20,6 @@ template <IsDbDoc DbDoc, class DbKw>
 ustring IDbTuple<DbDoc, DbKw>::encode() const {
     ustring ret = this->dbDoc.encode();
     ret += this->dbKwRange.encode();
-    std::cout << "generated encoding " << utils::debug::ustrToHex(ret, ret.size()) << " for " << this->toPrettyStr() << "; it has length " << ret.size() << std::endl;
     return ret;
 }
 
@@ -30,7 +28,6 @@ template <IsDbDoc DbDoc, class DbKw>
 void IDbTuple<DbDoc, DbKw>::decode(const ustring& encoding, IDbTuple<DbDoc, DbKw>& ret) {
     ret.dbDoc = DbDoc::decode(encoding);
     ret.dbKwRange = Range<DbKw>::decode(encoding, DbDoc::ENCODING_LEN);
-    std::cout << "decoded " << utils::debug::ustrToHex(encoding, encoding.size()) << " into " << ret.toPrettyStr() << "; it has length " << encoding.size() << " with encoding length being " << DbDoc::ENCODING_LEN << std::endl;
 }
 
 

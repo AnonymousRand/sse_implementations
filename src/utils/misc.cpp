@@ -60,7 +60,6 @@ ustring encodeBigint(bigint sourceInt, int targetBytes) {
             ret[i] = static_cast<uchar>((sourceInt >> (8 * (targetBytes - i - 1))) & 0xff);
         }
     }
-    //std::cout << "encoding int " << sourceInt << ": " << utils::debug::ustrToHex(ret, ret.size()) << std::endl;
     return ret;
 }
 
@@ -89,7 +88,6 @@ bigint decodeBigint(const ustring& encoding, int startIndex, int targetBytes) {
         bigint mask = ~(allOneBits >> (sizeof(bigint) - targetBytes) * 8);
         ret |= mask;
     }
-    std::cout << "decoding " << targetBytes << " bytes starting at " << startIndex << ", result is " << ret << " and bytes were " << utils::debug::ustrToHex(ustring(encoding, startIndex, 4)) << std::endl;
     return ret;
 }
 

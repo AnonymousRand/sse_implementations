@@ -8,7 +8,6 @@
 
 #include "config.h"
 
-#include "utils/debug.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/range.h"
@@ -34,7 +33,6 @@ ustring Doc::encode() const {
     ustring ret = utils::misc::encodeBigint(this->id, config::INT_MAX_BYTES);
     ret += utils::misc::encodeBigint(this->kw, config::INT_MAX_BYTES);
     ret += static_cast<char>(this->op);
-    //std::cout << "op is " << static_cast<char>(this->op) << ", encoding is " << utils::debug::ustrToHex(ret) << std::endl;
     return ret;
 }
 

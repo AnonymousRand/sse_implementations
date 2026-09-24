@@ -8,7 +8,6 @@
 
 #include "config.h"
 
-#include "utils/debug.h"
 #include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/ustring.h"
