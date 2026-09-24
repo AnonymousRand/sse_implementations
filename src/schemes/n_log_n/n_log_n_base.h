@@ -37,7 +37,7 @@ public:
 
 protected:
     virtual NLogNBaseServer<DbTuple>* getServer() const = 0;
-    std::vector<EncrIndLoc*> encIndLvlsTmp;
+    std::vector<EncrIndLoc*> encrIndLvlsTmp;
     bigint lvlCount = 0;
 
     //--------------------------------------------------------------------------

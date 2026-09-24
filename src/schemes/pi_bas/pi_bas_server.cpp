@@ -28,13 +28,13 @@ PiBasServer<DbTuple>::~PiBasServer() {
 
 template <IsDbTuple DbTuple>
 void PiBasServer<DbTuple>::clear() {
-    // this is deleted instead of just cleared since we only set it via direct pointer assignment,
-    // so if we don't delete we would make this memory inaccessible the next time we assign `encInd`
-    if (this->encInd != nullptr) {
-        utils::benchmark::serverStorage -= this->encInd->getBytes();
+    // this is deleted instead of cleared since we only set it via direct pointer assignment, so
+    // if we don't delete we would make this memory inaccessible the next time we assign `encrInd`
+    if (this->encrInd != nullptr) {
+        utils::benchmark::serverStorage -= this->encrInd->getBytes();
 
-        delete this->encInd;
-        this->encInd = nullptr;
+        delete this->encrInd;
+        this->encrInd = nullptr;
     };
 }
 
@@ -44,25 +44,25 @@ void PiBasServer<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-void PiBasServer<DbTuple>::setEncrInd(EncrIndRand* encInd) {
-    bigint encIndBytes = encInd->getBytes();
-    utils::benchmark::serverStorage += encIndBytes;
-    utils::benchmark::communication += encIndBytes;
-    this->encInd = encInd;
+void PiBasServer<DbTuple>::setEncrInd(EncrIndRand* encrInd) {
+    bigint encrIndBytes = encrInd->getBytes();
+    utils::benchmark::serverStorage += encrIndBytes;
+    utils::benchmark::communication += encrIndBytes;
+    this->encrInd = encrInd;
 }
 
 
 template <IsDbTuple DbTuple>
 EncrIndRand* PiBasServer<DbTuple>::getEncrInd() const {
-    utils::benchmark::communication += this->encInd->getBytes();
-    return this->encInd;
+    utils::benchmark::communication += this->encrInd->getBytes();
+    return this->encrInd;
 }
 
 
 template <IsDbTuple DbTuple>
 std::vector<EncrIndVal> PiBasServer<DbTuple>::searchEncrInd(const ustring& queryToken) const {
     utils::benchmark::communication += queryToken.length();
-    std::vector<EncrIndVal> encResults;
+    std::vector<EncrIndVal> encrResults;
 
     // for c = 0 until `Get` returns error
     bigint dbKwCounter = 0;
@@ -71,19 +71,19 @@ std::vector<EncrIndVal> PiBasServer<DbTuple>::searchEncrInd(const ustring& query
         // (same as client's `setup()`)
         ustring label = utils::crypto::hash(queryToken + utils::str::encodeBigint(dbKwCounter));
         ubigint pos = utils::str::hashToPos(label);
-        // res <- encInd.get(l)
-        EncrIndVal encIndVal;
-        bool isFound = this->encInd->find(SseOper::SEARCH, pos, label, encIndVal);
+        // res <- encrInd.get(l)
+        EncrIndVal encrIndVal;
+        bool isFound = this->encrInd->find(SseOper::SEARCH, pos, label, encrIndVal);
         if (!isFound) {
             break;
         }
 
-        encResults.emplace_back(std::move(encIndVal));
-        utils::benchmark::communication += this->encInd->VAL_LEN();
+        encrResults.emplace_back(std::move(encrIndVal));
+        utils::benchmark::communication += this->encrInd->VAL_LEN();
         dbKwCounter++;
     }
 
-    return encResults;
+    return encrResults;
 }
 
 

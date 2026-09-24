@@ -25,12 +25,12 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    void setEncrIndLvls(const std::vector<EncrIndLoc*>& encIndLvls);
+    void setEncrIndLvls(const std::vector<EncrIndLoc*>& encrIndLvls);
     const std::vector<EncrIndLoc*>& getEncrIndLvls() const;
     std::vector<EncrIndVal> searchEncrIndForBckt(
         bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
     ) const;
 
 protected:
-    std::vector<EncrIndLoc*> encIndLvls;
+    std::vector<EncrIndLoc*> encrIndLvls;
 };

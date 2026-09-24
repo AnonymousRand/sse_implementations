@@ -22,7 +22,7 @@ public:
 
     Buf(
         bigint ENTRY_CAPACITY,
-        FILE* file, const std::string& filename, bigint encIndCapacity, bigint entryLen
+        FILE* file, const std::string& filename, bigint encrIndCapacity, bigint entryLen
     );
 
     ~Buf();
@@ -75,7 +75,7 @@ private:
     // members shared with its parent encr ind (do not free these in `Buf`!!)
     FILE* file;
     const std::string& filename;
-    const bigint encIndCapacity;
+    const bigint encrIndCapacity;
     const bigint entryLen;
 
     /**

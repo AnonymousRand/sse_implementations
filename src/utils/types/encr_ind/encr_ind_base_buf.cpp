@@ -27,16 +27,16 @@ const bigint EncrIndBase::Buf::NOT_IN_BUF = -1;
 
 EncrIndBase::Buf::Buf(
     bigint ENTRY_CAPACITY,
-    FILE* file, const std::string& filename, bigint encIndCapacity, bigint entryLen
+    FILE* file, const std::string& filename, bigint encrIndCapacity, bigint entryLen
 ) :
     ENTRY_CAPACITY(ENTRY_CAPACITY),
     file(file),
     filename(filename),
-    encIndCapacity(encIndCapacity),
+    encrIndCapacity(encrIndCapacity),
     entryLen(entryLen)
 {
     this->data = new uchar[this->ENTRY_CAPACITY * this->entryLen];
-    assert(this->ENTRY_CAPACITY <= this->encIndCapacity);
+    assert(this->ENTRY_CAPACITY <= this->encrIndCapacity);
 }
 
 
@@ -53,7 +53,7 @@ EncrIndBase::Buf::~Buf() {
 
 
 EncrIndBase::Buf::Buf(const Buf& other) :
-    Buf(other.ENTRY_CAPACITY, other.file, other.filename, other.encIndCapacity, other.entryLen)
+    Buf(other.ENTRY_CAPACITY, other.file, other.filename, other.encrIndCapacity, other.entryLen)
 {
     if (other.data != nullptr) {
         this->data = new uchar[](*other.data);
@@ -89,14 +89,14 @@ template <class SelfType> requires std::is_same_v<std::remove_cv_t<SelfType>, En
 void EncrIndBase::Buf::operOnFileBase(
     SelfType* self, const std::function<bigint(uchar*, bigint)>& oper, ubigint startPos
 ) {
-    assert(startPos < self->encIndCapacity);
+    assert(startPos < self->encrIndCapacity);
     // we need to allow this, e.g. for when SSE schemes are set up with an empty DB
     if (self->ENTRY_CAPACITY <= 0) {
         return;
     }
 
     // first operate on as many of the target entries as we can without exceeding EOF
-    bigint entriesUntilEof = self->encIndCapacity - startPos;
+    bigint entriesUntilEof = self->encrIndCapacity - startPos;
     bigint entriesToOper1 = std::min(self->ENTRY_CAPACITY, entriesUntilEof);
     // we always `fseek()` here since we were likely reading from the buffer previously,
     // and that doesn't advance the file pointers
@@ -114,7 +114,7 @@ void EncrIndBase::Buf::operOnFileBase(
     });
 
     // wrap around to beginning of file if we read less than the target number of entries
-    // (NOTE: the buf must not be larger than `this->encIndCapacity`, so that we only need to
+    // (NOTE: the buf must not be larger than `this->encrIndCapacity`, so that we only need to
     // wrap around at most once!)
     if (entriesToOper1 < self->ENTRY_CAPACITY) {
         std::fseek(self->file, 0, SEEK_SET);
@@ -149,7 +149,7 @@ void EncrIndBase::Buf::fill(ubigint startPos, bool allowIncompleteFill) {
     operOnFileBase(this, fillOper, startPos);
 
     this->startPos = startPos;
-    this->endPos = (startPos + this->ENTRY_CAPACITY) % this->encIndCapacity;
+    this->endPos = (startPos + this->ENTRY_CAPACITY) % this->encrIndCapacity;
     this->isFilled = true;
     this->isFlushed = true;
 }
@@ -193,7 +193,7 @@ bigint EncrIndBase::Buf::posToBufIndex(ubigint pos) const {
 
             // we add up the segment from `pos` to the start of the encr ind,
             // and the segment from the end of the encr ind to `this->startPos`
-            bigint ret = pos + (this->encIndCapacity - this->startPos);
+            bigint ret = pos + (this->encrIndCapacity - this->startPos);
             assert(ret >= 0 && ret < this->ENTRY_CAPACITY);
             return ret;
         }

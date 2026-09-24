@@ -236,10 +236,10 @@ bool EncrIndBase::find(SseOper oper, ubigint& pos, const ustring& key, EncrIndVa
 
 
 void EncrIndBase::write(
-    SseOper oper, ubigint pos, const EncrIndEntry& encIndEntry, bool shouldFseek
+    SseOper oper, ubigint pos, const EncrIndEntry& encrIndEntry, bool shouldFseek
 ) {
-    // encode `encIndEntry`
-    ustring encodedEntry = encIndEntry.encode();
+    // encode `encrIndEntry`
+    ustring encodedEntry = encrIndEntry.encode();
     DEBUG_ONLY({
         if (encodedEntry.length() != this->ENTRY_LEN()) {
             std::cerr << "Error: EncrIndBase::write(): write of length " << encodedEntry.length()
@@ -258,7 +258,7 @@ void EncrIndBase::write(
 }
 
 
-void EncrIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncrIndEntry& encIndEntry) {
+void EncrIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncrIndEntry& encrIndEntry) {
     bool isEmptyAvailable = this->advanceUntilMatch(oper, pos, this->NULL_ENTRY, this->ENTRY_LEN());
     // if we've scoured the whole index and still haven't found an available space,
     // throw an error: we are trying to write to a full index
@@ -271,7 +271,7 @@ void EncrIndBase::writeToFirstEmpty(SseOper oper, ubigint& pos, const EncrIndEnt
     });
 
     // write into the empty location we found
-    this->write(oper, pos, encIndEntry, true);
+    this->write(oper, pos, encrIndEntry, true);
 }
 
 

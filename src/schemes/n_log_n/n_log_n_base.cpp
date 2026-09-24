@@ -39,7 +39,7 @@ void NLogNBase<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setu
     this->lvlCount = this->calcLvlCount();
 
     this->prfKey = utils::crypto::genKey(secParam);
-    this->encKey = utils::crypto::genKey(secParam);
+    this->encrKey = utils::crypto::genKey(secParam);
 
     this->initSetupState(setupOper);
     
@@ -90,22 +90,22 @@ void NLogNBase<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
     assert(this->getServer() != nullptr);
-    const std::vector<EncrIndLoc*>& encIndLvls = this->getServer()->getEncrIndLvls();
+    const std::vector<EncrIndLoc*>& encrIndLvls = this->getServer()->getEncrIndLvls();
 
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncrIndLoc* encIndLvl = encIndLvls[lvl];
+        EncrIndLoc* encrIndLvl = encrIndLvls[lvl];
         // don't use `this->size` as the bound here as that doesn't include padding while
-        // `encIndLvl` does (this should all be client-side anyway so its' not leaking anything)
-        for (bigint pos = 0; pos < encIndLvl->getCapacity(); pos++) {
-            EncrIndVal encIndVal;
+        // `encrIndLvl` does (this should all be client-side anyway so its' not leaking anything)
+        for (bigint pos = 0; pos < encrIndLvl->getCapacity(); pos++) {
+            EncrIndVal encrIndVal;
             // only `fseek()` to read on the first read, since after that the reads themselves
             // should advance the file pointer to the right location for the next one
-            bool isValidVal = encIndLvl->read(SseOper::UPDATE, pos, encIndVal, pos == 0);
+            bool isValidVal = encrIndLvl->read(SseOper::UPDATE, pos, encrIndVal, pos == 0);
             if (!isValidVal) {
                 continue;
             }
 
-            DbTuple dbTuple = this->decryptEncrIndVal(encIndVal);
+            DbTuple dbTuple = this->decryptEncrIndVal(encrIndVal);
             // exclude dummies/padding (that are from NLogN's `setup()`, but not from any upstream
             // SSE scheme which is using NLogN as an underlying scheme. while deleting those dummies
             // too seems to work fine, we don't since we don't have an easy, general way to check
@@ -125,11 +125,11 @@ void NLogNBase<DbTuple>::getDb(Db<DbTuple>& ret) const {
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::initSetupState(SseOper setupOper) {
     for (bigint lvl = 0; lvl < this->lvlCount; lvl++) {
-        EncrIndLoc* encIndLvl = new EncrIndLoc();
+        EncrIndLoc* encrIndLvl = new EncrIndLoc();
         bigint bcktCountOnLvl = this->calcBcktCountOnLvl(lvl);
         bigint bcktSizeOnLvl = this->calcBcktSizeOnLvl(lvl);
-        encIndLvl->init(setupOper, bcktCountOnLvl, bcktSizeOnLvl);
-        this->encIndLvlsTmp.push_back(encIndLvl);
+        encrIndLvl->init(setupOper, bcktCountOnLvl, bcktSizeOnLvl);
+        this->encrIndLvlsTmp.push_back(encrIndLvl);
     }
 }
 
@@ -160,15 +160,15 @@ void NLogNBase<DbTuple>::setupDbKwList(
         DbTuple dbTuple = dbKwList[dbKwCounter];
         // d <- Enc(K_2, w, id)
         ustring iv = utils::crypto::genIv();
-        ustring encDbTuple = utils::crypto::padAndEncrypt(
-            this->encKey, dbTuple.encode(), iv, this->encIndLvlsTmp[lvl]->DATA_LEN() - 1
+        ustring encrDbTuple = utils::crypto::padAndEncrypt(
+            this->encrKey, dbTuple.encode(), iv, this->encrIndLvlsTmp[lvl]->DATA_LEN() - 1
         );
         // store `(l, d)` into key-value store, and also store IV in plain along with `d`
         if (dbKwCounter == 0) {
             // if first write to this bucket, get the first bucket start pos at or after
             // `startPos` that is *empty* (e.g. in case of modulo collision in encrypted index)
-            this->encIndLvlsTmp[lvl]->writeToFirstEmpty(
-                setupOper, startPos, EncrIndEntry {label, EncrIndVal {encDbTuple, iv}}
+            this->encrIndLvlsTmp[lvl]->writeToFirstEmpty(
+                setupOper, startPos, EncrIndEntry {label, EncrIndVal {encrDbTuple, iv}}
             );
         } else {
             // after first write, just write consecutively as we are now guaranteed that
@@ -176,9 +176,9 @@ void NLogNBase<DbTuple>::setupDbKwList(
             //
             // we also stop `fseek()`ing at every write since the write itself should
             // advance the file pointer to the right location for the next one
-            this->encIndLvlsTmp[lvl]->write(
+            this->encrIndLvlsTmp[lvl]->write(
                 setupOper,
-                startPos + dbKwCounter, EncrIndEntry {label, EncrIndVal {encDbTuple, iv}}, false
+                startPos + dbKwCounter, EncrIndEntry {label, EncrIndVal {encrDbTuple, iv}}, false
             );
         }
     }
@@ -188,15 +188,15 @@ void NLogNBase<DbTuple>::setupDbKwList(
 template <IsDbTuple DbTuple>
 void NLogNBase<DbTuple>::moveSetupStateToServer(SseOper setupOper) {
     assert(this->getServer() != nullptr);
-    for (EncrIndLoc* encIndLvl : this->encIndLvlsTmp) {
-        encIndLvl->endSetup(setupOper);
+    for (EncrIndLoc* encrIndLvl : this->encrIndLvlsTmp) {
+        encrIndLvl->endSetup(setupOper);
     }
 
     // IMPORTANT: since this is a transfer of pointers, clearing it should be handled by the server!
-    this->getServer()->setEncrIndLvls(this->encIndLvlsTmp);
+    this->getServer()->setEncrIndLvls(this->encrIndLvlsTmp);
     // however we still need to clear the vector in the client so it doesn't keep trying
     // to call old instances later!
-    this->encIndLvlsTmp.clear();
+    this->encrIndLvlsTmp.clear();
 }
 
 

@@ -52,10 +52,10 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOpe
     this->size = db.getSize();
 
     this->prfKey = utils::crypto::genKey(secParam);
-    this->encKey = utils::crypto::genKey(secParam);
+    this->encrKey = utils::crypto::genKey(secParam);
 
-    EncrIndRand* encInd = new EncrIndRand();
-    encInd->init(setupOper, this->size);
+    EncrIndRand* encrInd = new EncrIndRand();
+    encrInd->init(setupOper, this->size);
 
     //--------------------------------------------------------------------------
     // build index
@@ -89,18 +89,18 @@ void PiBas<DbTuple>::setup(int secParam, const Db<DbTuple>& db, SseOper setupOpe
             ubigint pos = this->map(queryToken, dbKwCounter, label);
             // d <- Enc(K_2, w, id)
             ustring iv = utils::crypto::genIv();
-            ustring encDbTuple = utils::crypto::padAndEncrypt(
-                this->encKey, dbTuple.encode(), iv, encInd->DATA_LEN() - 1
+            ustring encrDbTuple = utils::crypto::padAndEncrypt(
+                this->encrKey, dbTuple.encode(), iv, encrInd->DATA_LEN() - 1
             );
             // store `(l, d)` into key-value store, and also store IV in plain along with `d`
-            encInd->writeToFirstEmpty(
-                setupOper, pos, EncrIndEntry {label, EncrIndVal {encDbTuple, iv}}
+            encrInd->writeToFirstEmpty(
+                setupOper, pos, EncrIndEntry {label, EncrIndVal {encrDbTuple, iv}}
             );
         }
     }
 
-    encInd->endSetup(setupOper);
-    this->piBasServer->setEncrInd(encInd);
+    encrInd->endSetup(setupOper);
+    this->piBasServer->setEncrInd(encrInd);
 }
 
 
@@ -124,18 +124,18 @@ void PiBas<DbTuple>::clear() {
 template <IsDbTuple DbTuple>
 void PiBas<DbTuple>::getDb(Db<DbTuple>& ret) const {
     assert(this->piBasServer != nullptr);
-    EncrIndRand* encInd = this->piBasServer->getEncrInd();
+    EncrIndRand* encrInd = this->piBasServer->getEncrInd();
 
     // don't use `this->size` as the bound here as that doesn't include padding while
-    // `encInd` does (this should all be client-side anyway so it's not leaking anything)
-    for (bigint pos = 0; pos < encInd->getCapacity(); pos++) {
-        EncrIndVal encIndVal;
-        bool isValidVal = encInd->read(SseOper::UPDATE, pos, encIndVal);
+    // `encrInd` does (this should all be client-side anyway so it's not leaking anything)
+    for (bigint pos = 0; pos < encrInd->getCapacity(); pos++) {
+        EncrIndVal encrIndVal;
+        bool isValidVal = encrInd->read(SseOper::UPDATE, pos, encrIndVal);
         if (!isValidVal) {
             continue;
         }
 
-        DbTuple dbTuple = this->decryptEncrIndVal(encIndVal);
+        DbTuple dbTuple = this->decryptEncrIndVal(encrIndVal);
         ret.append(dbTuple);
     }
 }
@@ -154,12 +154,12 @@ std::vector<typename PiBas<DbTuple>::DbDoc> PiBas<DbTuple>::searchRaw(
 
     // PRF(K_1, w)
     ustring queryToken = this->genQueryToken(query);
-    std::vector<EncrIndVal> encResultTups = this->piBasServer->searchEncrInd(queryToken);
+    std::vector<EncrIndVal> encrResultTups = this->piBasServer->searchEncrInd(queryToken);
 
     // decrypt results (on the client)
-    results.reserve(encResultTups.size());
-    for (const EncrIndVal& encResultTup : encResultTups) {
-        DbTuple resultTup = this->decryptEncrIndVal(encResultTup);
+    results.reserve(encrResultTups.size());
+    for (const EncrIndVal& encrResultTup : encrResultTups) {
+        DbTuple resultTup = this->decryptEncrIndVal(encrResultTup);
         results.emplace_back(std::move(resultTup.dbDoc));
     }
 

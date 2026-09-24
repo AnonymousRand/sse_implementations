@@ -54,12 +54,12 @@ public:
     // handle clearing of this class' member variables
     void clear() override {
         this->prfKey = utils::ustr::EMPTY;
-        this->encKey = utils::ustr::EMPTY;
+        this->encrKey = utils::ustr::EMPTY;
     }
 
 protected:
     ustring prfKey;
-    ustring encKey;
+    ustring encrKey;
 
     //--------------------------------------------------------------------------
     // helpers
@@ -67,14 +67,14 @@ protected:
     virtual std::vector<DbDoc> searchRaw(const Range<DbKw>& query) const = 0;
 
     /**
-     * helper function to decrypt `encIndVal`.
+     * helper function to decrypt `encrIndVal`.
      */
-    DbTuple decryptEncrIndVal(const EncrIndVal& encIndVal) const {
+    DbTuple decryptEncrIndVal(const EncrIndVal& encrIndVal) const {
         // (we didn't get rid of padding, but this shouldn't matter since padding comes at end, and
         // our decoding only cares about the bytes starting at the beginning. we also don't know how
         // much padding there is as different tuple types have different lengths, and we can't just
         // delete until first nonzero byte as there can be zero bytes in the actual encoding)
-        ustring decrDbTuple = utils::crypto::decrypt(this->encKey, encIndVal.data, encIndVal.iv);
+        ustring decrDbTuple = utils::crypto::decrypt(this->encrKey, encrIndVal.data, encrIndVal.iv);
         DbTuple dbTuple;
         DbTuple::decode(decrDbTuple, dbTuple);
         return dbTuple;

@@ -81,14 +81,14 @@ std::vector<typename Underly<DbTuple>::DbDoc> Underly<DbTuple>::searchRaw(
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncrIndVal> encResultTups = this->underlyServer->searchEncrIndForBckt(
+    std::vector<EncrIndVal> encrResultTups = this->underlyServer->searchEncrIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 
     // decrypt results (on the client)
-    results.reserve(encResultTups.size());
-    for (const EncrIndVal& encResultTup : encResultTups) {
-        DbTuple resultTup = this->decryptEncrIndVal(encResultTup);
+    results.reserve(encrResultTups.size());
+    for (const EncrIndVal& encrResultTup : encrResultTups) {
+        DbTuple resultTup = this->decryptEncrIndVal(encrResultTup);
         results.emplace_back(std::move(resultTup.dbDoc));
     }
 

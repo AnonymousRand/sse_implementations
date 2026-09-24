@@ -41,8 +41,8 @@ public:
         return EncrIndBase::find(oper, pos, key, ret);
     }
 
-    void writeToFirstEmpty(SseOper oper, ubigint pos, const EncrIndEntry& encIndEntry) {
-        EncrIndBase::writeToFirstEmpty(oper, pos, encIndEntry);
+    void writeToFirstEmpty(SseOper oper, ubigint pos, const EncrIndEntry& encrIndEntry) {
+        EncrIndBase::writeToFirstEmpty(oper, pos, encrIndEntry);
     }
 
 private:

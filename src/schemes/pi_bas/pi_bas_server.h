@@ -25,10 +25,10 @@ public:
     //--------------------------------------------------------------------------
     // interface
 
-    void setEncrInd(EncrIndRand* encInd);
+    void setEncrInd(EncrIndRand* encrInd);
     EncrIndRand* getEncrInd() const;
     std::vector<EncrIndVal> searchEncrInd(const ustring& queryToken) const;
 
 private:
-    EncrIndRand* encInd = nullptr;
+    EncrIndRand* encrInd = nullptr;
 };

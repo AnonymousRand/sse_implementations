@@ -18,10 +18,10 @@
 namespace {
 
 
-bigint calcAllEncrIndLvlsBytes(const std::vector<EncrIndLoc*>& encIndLvls) {
+bigint calcAllEncrIndLvlsBytes(const std::vector<EncrIndLoc*>& encrIndLvls) {
     bigint bytes = 0;
-    for (EncrIndLoc* encIndLvl : encIndLvls) {
-        bytes += encIndLvl->getBytes();
+    for (EncrIndLoc* encrIndLvl : encrIndLvls) {
+        bytes += encrIndLvl->getBytes();
     }
     return bytes;
 }
@@ -47,7 +47,7 @@ NLogNBaseServer<DbTuple>::~NLogNBaseServer() {
 
 template <IsDbTuple DbTuple>
 void NLogNBaseServer<DbTuple>::clear() {
-    for (EncrIndLoc* lvl : this->encIndLvls) {
+    for (EncrIndLoc* lvl : this->encrIndLvls) {
         if (lvl != nullptr) {
             utils::benchmark::serverStorage -= lvl->getBytes();
 
@@ -55,7 +55,7 @@ void NLogNBaseServer<DbTuple>::clear() {
             lvl = nullptr;
         }
     }
-    this->encIndLvls.clear();
+    this->encrIndLvls.clear();
 }
 
 
@@ -64,20 +64,20 @@ void NLogNBaseServer<DbTuple>::clear() {
 
 
 template <IsDbTuple DbTuple>
-void NLogNBaseServer<DbTuple>::setEncrIndLvls(const std::vector<EncrIndLoc*>& encIndLvls) {
-    bigint allEncrIndLvlsBytes = ::calcAllEncrIndLvlsBytes(encIndLvls);
+void NLogNBaseServer<DbTuple>::setEncrIndLvls(const std::vector<EncrIndLoc*>& encrIndLvls) {
+    bigint allEncrIndLvlsBytes = ::calcAllEncrIndLvlsBytes(encrIndLvls);
     utils::benchmark::serverStorage += allEncrIndLvlsBytes;
     utils::benchmark::communication += allEncrIndLvlsBytes;
 
-    this->encIndLvls = encIndLvls;
+    this->encrIndLvls = encrIndLvls;
 }
 
 
 template <IsDbTuple DbTuple>
 const std::vector<EncrIndLoc*>& NLogNBaseServer<DbTuple>::getEncrIndLvls() const {
-    utils::benchmark::communication += ::calcAllEncrIndLvlsBytes(this->encIndLvls);
+    utils::benchmark::communication += ::calcAllEncrIndLvlsBytes(this->encrIndLvls);
 
-    return this->encIndLvls;
+    return this->encrIndLvls;
 }
 
 
@@ -85,21 +85,21 @@ template <IsDbTuple DbTuple>
 std::vector<EncrIndVal> NLogNBaseServer<DbTuple>::searchEncrIndForBckt(
     bigint lvl, ubigint startPos, bigint bcktSize, const ustring& label
 ) const {
-    assert(lvl < this->encIndLvls.size() || this->encIndLvls.size() == 0);
+    assert(lvl < this->encrIndLvls.size() || this->encrIndLvls.size() == 0);
     utils::benchmark::communication +=
         sizeof(bigint) + sizeof(ubigint) + sizeof(bigint) + label.length();
 
-    std::vector<EncrIndVal> encResults;
+    std::vector<EncrIndVal> encrResults;
     for (bigint dbKwCounter = 0; dbKwCounter < bcktSize; dbKwCounter++) {
-        EncrIndVal encIndVal;
+        EncrIndVal encrIndVal;
         bool isFound;
         if (dbKwCounter == 0) {
             // if first read, get the right bucket start pos (e.g. in case of modulo
             // collision in encrypted index)
             // (NOTE: dummies must also use the correct (not dummy) `label` so they
             // are still found by `find()`!)
-            isFound = this->encIndLvls[lvl]->find(
-                SseOper::SEARCH, startPos, label, encIndVal
+            isFound = this->encrIndLvls[lvl]->find(
+                SseOper::SEARCH, startPos, label, encrIndVal
             );
         } else {
             // after first read, just read from the bucket consecutively as we are
@@ -107,19 +107,19 @@ std::vector<EncrIndVal> NLogNBaseServer<DbTuple>::searchEncrIndForBckt(
             // 
             // we also stop `fseek()`ing at every read since the read itself should advance
             // the file pointer to the right location for the next one
-            isFound = this->encIndLvls[lvl]->read(
-                SseOper::SEARCH, startPos + dbKwCounter, encIndVal, false
+            isFound = this->encrIndLvls[lvl]->read(
+                SseOper::SEARCH, startPos + dbKwCounter, encrIndVal, false
             );
         }
         if (!isFound) {
             break;
         }
 
-        encResults.emplace_back(std::move(encIndVal));
-        utils::benchmark::communication += this->encIndLvls[lvl]->VAL_LEN();
+        encrResults.emplace_back(std::move(encrIndVal));
+        utils::benchmark::communication += this->encrIndLvls[lvl]->VAL_LEN();
     }
 
-    return encResults;
+    return encrResults;
 }
 
 

@@ -32,6 +32,6 @@ ustring EncrIndEntry::encode() const {
 
 EncrIndEntry EncrIndEntry::decode(const uchar* encoding, int keyLen, int dataLen, int ivLen) {
     ustring key(encoding, keyLen);
-    EncrIndVal encIndVal = EncrIndVal::decode(encoding + keyLen, dataLen, ivLen);
-    return EncrIndEntry {key, encIndVal};
+    EncrIndVal encrIndVal = EncrIndVal::decode(encoding + keyLen, dataLen, ivLen);
+    return EncrIndEntry {key, encrIndVal};
 }

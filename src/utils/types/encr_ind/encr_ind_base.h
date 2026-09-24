@@ -92,7 +92,9 @@ public:
      * write to `pos` (but does not check if there is already something there, e.g. from
      * `pos % this->capacity`, and will overwrite it!).
      */
-    void write(SseOper oper, ubigint pos, const EncrIndEntry& encIndEntry, bool shouldFseek = true);
+    void write(
+        SseOper oper, ubigint pos, const EncrIndEntry& encrIndEntry, bool shouldFseek = true
+    );
 
     /**
      * write to first *empty* location at or after `pos`, iterating forward from `pos` until
@@ -101,7 +103,7 @@ public:
      * returns in `pos`: this final empty location (in case you may need it for e.g.
      * contiguous writing of a locality-aware bucket after determining its start position).
      */
-    void writeToFirstEmpty(SseOper oper, ubigint& pos, const EncrIndEntry& encIndEntry);
+    void writeToFirstEmpty(SseOper oper, ubigint& pos, const EncrIndEntry& encrIndEntry);
 
     /**
      * this method MUST be called when all setup operations done! e.g. they flush the buffers,

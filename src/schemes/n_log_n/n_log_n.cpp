@@ -69,13 +69,13 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     // (and how many dummies there are)
     ustring labelDict;
     ubigint posDict = this->mapNoMod(queryToken, labelDict);
-    EncrIndVal encIndValDict;
-    bool isFoundDict = this->nLogNServer->getDbKwCount(posDict, labelDict, encIndValDict);
+    EncrIndVal encrIndValDict;
+    bool isFoundDict = this->nLogNServer->getDbKwCount(posDict, labelDict, encrIndValDict);
     if (!isFoundDict) {
         return results;
     }
     ustring decrDbKwCount = utils::crypto::decryptAndUnpad(
-        this->encKey, encIndValDict.data, encIndValDict.iv
+        this->encrKey, encrIndValDict.data, encrIndValDict.iv
     );
     bigint dbKwCount = utils::str::decodeBigint(decrDbKwCount, 0);
     bigint dbKwPaddedCount = utils::misc::roundUpToPowOf2(dbKwCount); // this is bucket size
@@ -88,14 +88,14 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     // return entire bucket (`dbKwPaddedCount` instead of `dbKwCount`) from server
     // to hide true result size
     ubigint startPos = pos * this->calcBcktSizeOnLvl(lvl);
-    std::vector<EncrIndVal> encResultTups = this->nLogNServer->searchEncrIndForBckt(
+    std::vector<EncrIndVal> encrResultTups = this->nLogNServer->searchEncrIndForBckt(
         lvl, startPos, dbKwPaddedCount, label
     );
 
     // decrypt results (on the client)
-    results.reserve(encResultTups.size());
-    for (const EncrIndVal& encResultTup : encResultTups) {
-        DbTuple resultTup = this->decryptEncrIndVal(encResultTup);
+    results.reserve(encrResultTups.size());
+    for (const EncrIndVal& encrResultTup : encrResultTups) {
+        DbTuple resultTup = this->decryptEncrIndVal(encrResultTup);
         results.emplace_back(std::move(resultTup.dbDoc));
     }
 
@@ -125,13 +125,13 @@ void NLogN<DbTuple>::setupDbKwList(
     ustring queryToken = this->genQueryToken(dbKwRange);
     ustring label;
     ustring iv = utils::crypto::genIv();
-    ustring encDbKwCount = utils::crypto::padAndEncrypt(
-        this->encKey, utils::str::encodeBigint(dbKwCount), iv,
+    ustring encrDbKwCount = utils::crypto::padAndEncrypt(
+        this->encrKey, utils::str::encodeBigint(dbKwCount), iv,
         this->dbKwCountsDictTmp->DATA_LEN() - 1
     );
     ubigint pos = this->mapNoMod(queryToken, label);
     this->dbKwCountsDictTmp->writeToFirstEmpty(
-        setupOper, pos, EncrIndEntry {label, EncrIndVal {encDbKwCount, iv}}
+        setupOper, pos, EncrIndEntry {label, EncrIndVal {encrDbKwCount, iv}}
     );
 
     // do the rest from `NLogNBase` (we have to `std::move()` *after* we are done using `dbKwList`)
