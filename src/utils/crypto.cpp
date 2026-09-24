@@ -178,7 +178,7 @@ ustring padAndEncrypt(
             std::exit(EXIT_FAILURE);
         }
     });
-    utils::str::padStr(ptext, targetLen);
+    utils::str::padStrEnd(ptext, targetLen);
     return encrypt(key, ptext, iv, cipher);
 }
 
@@ -245,7 +245,7 @@ ustring decryptAndUnpad(
     const ustring& key, const ustring& ctext, const ustring& iv, const EVP_CIPHER* cipher
 ) {
     ustring ptext = decrypt(key, ctext, iv, cipher);
-    utils::str::unpadStr(ptext);
+    utils::str::unpadStrEnd(ptext);
     return ptext;
 }
 

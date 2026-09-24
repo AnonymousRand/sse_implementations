@@ -100,7 +100,7 @@ void DbDisk<DbTuple>::append(const DbTuple& dbTuple) {
             std::exit(EXIT_FAILURE);
         }
     });
-    utils::str::padStr(encodDbTuple, config::TUPLE_ENCOD_LEN);
+    utils::str::padStrEnd(encodDbTuple, config::TUPLE_ENCOD_LEN);
 
     // write to DB
     std::fseek(this->file, 0, SEEK_END);
