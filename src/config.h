@@ -102,10 +102,10 @@ static_assert(
     sizeof(IdAlias) >= INT_MAX_BYTES, "Error: `IdAlias` must be at least `INT_MAX_BYTES` bytes"
 );
 
-// currently, encoding a `Tuple<>` is of the form `id|kw|[op]|dbKw|dbKw` while an `SrcIDb1Doc` is
-// `kw|id'|id'|kw|kw`, meaning the latter is the larger encoding, consisting of 5 "numbers".
-// thus, we multiply `INT_MAX_BYTES` by 5 to obtain the total max size of an encoded tuple.
-// however, we actually must restrict our plaintexts by one more byte or else AES' PCKS #7
+// currently, encoding a `Tuple<>` is of the form `id|kw|op|dbKw|dbKw` while an `SrcIDb1Doc` is
+// `kw|id'|id'|kw|kw`, meaning the latter is the larger encoding, consisting of 5 "numbers" vs. 4
+// + one char for `op`. thus, we multiply `INT_MAX_BYTES` by 5 to obtain the total max size of an
+// encoded tuple. but we actually must restrict our plaintexts by one more byte or else AES' PCKS #7
 // padding will generate an extra block if our plaintext is exactly block-aligned, thus the `+ 1`.
 // IMPORTANT: update if encoding changes!
 inline constexpr int TUPLE_ENCOD_LEN =
