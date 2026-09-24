@@ -10,13 +10,15 @@
 //==============================================================================
 
 
-void EncIndVal::encode(uchar* ret) const {
-    std::memcpy(ret, this->data + this->iv;
+void EncIndVal::encode(uchar* ret, int dataLen, int ivLen) const {
+    std::memcpy(ret, this->data, dataLen);
+    std::memcpy(ret + dataLen, this->iv, ivLen);
 }
 
 
 EncIndVal EncIndVal::decode(const uchar* encoding, int dataLen, int ivLen) {
-    ustring data(encoding, dataLen);
+    uchar* data = new uchar[dataLen];
+    uchar* iv = new uchar[dataLen];data(encoding, dataLen);
     ustring iv(encoding + dataLen, ivLen);
     return EncIndVal {data, iv};
 }
