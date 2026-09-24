@@ -4,10 +4,12 @@
 #include <cstdlib>
 #include <format>
 #include <iostream>
-#include <regex>
 #include <string>
 
+#include "config.h"
+
 #include "utils/debug.h"
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/range.h"
 #include "utils/types/ustring.h"
@@ -18,13 +20,8 @@
 //==============================================================================
 
 
-ustring IDbDoc::toUstr() const {
-    return ::utils::ustr::toUstr(this->toStr());
-}
-
-
 std::ostream& operator <<(std::ostream& os, const IDbDoc& iDbDoc) {
-    return os << iDbDoc.toPrintableStr();
+    return os << iDbDoc.toPrettyStr();
 }
 
 
@@ -33,37 +30,25 @@ std::ostream& operator <<(std::ostream& os, const IDbDoc& iDbDoc) {
 //==============================================================================
 
 
-const std::string Doc::REGEX_STR = "(-?[0-9]+),(-?[0-9]+)([I|D|X])";
-
-const int Doc::REGEX_SUBMATCH_COUNT = 3;
-
-
-std::string Doc::toStr() const {
-    return std::format("{},{}{}", this->id, this->kw, static_cast<char>(this->op));
-}
-
-
-std::string Doc::toPrintableStr() const {
+std::string Doc::toPrettyStr() const {
     return std::format("({},{},{})", this->id, this->kw, static_cast<char>(this->op));
 }
 
 
-Doc Doc::fromRegexMatches(const std::smatch& matches) {
-    DEBUG_ONLY({
-        if (matches.size() < REGEX_SUBMATCH_COUNT + 1) {
-            std::cerr << "Error: Doc::fromRegexMatches(): bad string passed\n"
-                      << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
-                      << std::endl;
-            for (auto match : matches) {
-                std::cerr << match.str() << std::endl;
-            }
-            std::exit(EXIT_FAILURE);
-        }
-    });
+void Doc::encode(uchar* ret) const {
+    utils::misc::encodeBigint(ret, this->id, config::INT_MAX_BYTES);
+    utils::misc::encodeBigint(ret + config::INT_MAX_BYTES, this->kw, config::INT_MAX_BYTES);
+    ret[2 * config::INT_MAX_BYTES + 1] = static_cast<char>(this->op);
+}
 
-    Id id = std::stoll(matches[1].str());
-    Kw kw = std::stoll(matches[2].str());
-    Op op = static_cast<Op>(matches[3].str()[0]);
+
+const int Doc::ENCODING_LEN = 2 * config::INT_MAX_BYTES + 1;
+
+
+Doc Doc::decode(const uchar* encoding) {
+    Id id = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES);
+    Kw kw = utils::misc::decodeBigint(encoding + config::INT_MAX_BYTES, config::INT_MAX_BYTES);
+    Op op = static_cast<Op>(encoding[2 * config::INT_MAX_BYTES + 1]);
     return Doc {id, kw, op};
 }
 
@@ -73,35 +58,22 @@ Doc Doc::fromRegexMatches(const std::smatch& matches) {
 //==============================================================================
 
 
-const std::string SrcIDb1Doc::REGEX_STR = "(-?[0-9]+),(-?[0-9]+--?[0-9]+)";
-
-const int SrcIDb1Doc::REGEX_SUBMATCH_COUNT = 2;
-
-
-std::string SrcIDb1Doc::toStr() const {
-    return std::format("{},{}", this->kw, this->idAliasRange);
+void SrcIDb1Doc::encode(uchar* ret) const {
+    utils::misc::encodeBigint(ret, this->kw, config::INT_MAX_BYTES);
+    this->idAliasRange.encode(ret + config::INT_MAX_BYTES);
 }
 
 
-std::string SrcIDb1Doc::toPrintableStr() const {
-    return std::format("({},{})", this->kw, this->idAliasRange);
-}
+const int SrcIDb1Doc::ENCODING_LEN = config::INT_MAX_BYTES + Range<IdAlias>::ENCODING_LEN;
 
 
-SrcIDb1Doc SrcIDb1Doc::fromRegexMatches(const std::smatch& matches) {
-    DEBUG_ONLY({
-        if (matches.size() < REGEX_SUBMATCH_COUNT + 1) {
-            std::cerr << "Error: SrcIDb1Doc::fromRegexMatches(): bad string passed\n"
-                      << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
-                      << std::endl;
-            for (auto match : matches) {
-                std::cerr << match.str() << std::endl;
-            }
-            std::exit(EXIT_FAILURE);
-        }
-    });
-
-    Kw kw = std::stoll(matches[1].str());
-    Range<IdAlias> idAliasRange = Range<IdAlias>::fromStr(matches[2].str());
+SrcIDb1Doc SrcIDb1Doc::decode(const uchar* encoding) {
+    Kw kw = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES);
+    Range<IdAlias> idAliasRange = Range<IdAlias>::decode(encoding + config::INT_MAX_BYTES);
     return SrcIDb1Doc {kw, idAliasRange};
+}
+
+
+std::string SrcIDb1Doc::toPrettyStr() const {
+    return std::format("({},{})", this->kw, this->idAliasRange);
 }

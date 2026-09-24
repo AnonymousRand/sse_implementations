@@ -4,19 +4,14 @@
 #include <cstdlib>
 #include <format>
 #include <iostream>
-#include <regex>
 #include <string>
 
+#include "config.h"
+
 #include "utils/debug.h"
+#include "utils/misc.h"
 #include "utils/types/basic_types.h"
 #include "utils/types/ustring.h"
-
-
-template <std::integral T>
-const std::string Range<T>::REGEX_STR = "(-?[0-9]+)-(-?[0-9]+)";
-
-template <std::integral T>
-const std::regex Range<T>::REGEX(REGEX_STR);
 
 
 template <std::integral T>
@@ -45,43 +40,45 @@ bool Range<T>::isDisjointFrom(const Range<T>& target) const {
 
 
 template <std::integral T>
-std::string Range<T>::toStr() const {
+void Range<T>::encode(uchar* ret) const {
+    utils::misc::encodeBigint(ret, this->start, config::INT_MAX_BYTES);
+    utils::misc::encodeBigint(ret + config::INT_MAX_BYTES, this->end, config::INT_MAX_BYTES);
+}
+
+
+template <std::integral T>
+const int Range<T>::ENCODING_LEN = 2 * config::INT_MAX_BYTES;
+
+
+template <std::integral T>
+Range Range<T>::decode(const uchar* encoding) {
+    T start = utils::misc::decodeBigint(encoding, config::INT_MAX_BYTES);
+    T end = utils::misc::decodeBigint(encoding + config::INT_MAX_BYTES, config::INT_MAX_BYTES);
+    return Range<T> {start, end};
+}
+
+
+template <std::integral T>
+std::string Range<T>::toPrettyStr() const {
     return std::format("{}-{}", this->start, this->end);
 }
 
 
 template <std::integral T>
-ustring Range<T>::toUstr() const {
-    return ::utils::ustr::toUstr(this->toStr());
-}
-
-
-template <std::integral T>
-Range<T> Range<T>::fromStr(const std::string& str) {
-    std::smatch matches;
-    bool isMatchFound = std::regex_search(str, matches, REGEX);
-    DEBUG_ONLY({
-        if (!isMatchFound || matches.size() != 3) {
-            std::cerr << "Error: Range::fromStr(): bad string \"" << str << "\" passed\n"
-                      << "Regex to match is \"" << REGEX_STR << "\"; matched groups are:"
-                      << std::endl;
-            for (auto match : matches) {
-                std::cerr << match.str() << std::endl;
-            }
-            std::exit(EXIT_FAILURE);
-        }
-    });
-
-    return Range<T> {
-        T(std::stoll(matches[1].str())),
-        T(std::stoll(matches[2].str()))
-    };
+bool operator <(const Range<T>& range1, const Range<T>& range2) {
+    if (range1.start < range2.start) {
+        return true;
+    } else if (range1.start > range2.start) {
+        return false;
+    } else {
+        return range1.end < range2.end;
+    }
 }
 
 
 template <std::integral T>
 std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
-    return os << range.toStr();
+    return os << range.toPrettyStr();
 }
 
 
@@ -91,6 +88,10 @@ std::ostream& operator <<(std::ostream& os, const Range<T>& range) {
 
 template class Range<Kw>;
 //template class Range<IdAlias>;
+
+
+template bool operator <(const Range<Kw>& range1, const Range<Kw>& range2);
+//template bool operator <(const Range<IdAlias>& range1, const Range<IdAlias>& range2);
 
 
 template std::ostream& operator <<(std::ostream& os, const Range<Kw>& range);

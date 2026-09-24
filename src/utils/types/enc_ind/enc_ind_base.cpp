@@ -219,7 +219,7 @@ bool EncIndBase::read(SseOper oper, ubigint pos, EncIndVal& ret, bool shouldFsee
     }
 
     // decode the val part of the entry
-    ret = EncIndVal::fromUcstr(entryPtr + this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
+    ret = EncIndVal::decode(entryPtr + this->KEY_LEN(), this->DATA_LEN(), utils::crypto::IV_LEN);
     return true;
 }
 
@@ -239,7 +239,8 @@ void EncIndBase::write(
     SseOper oper, ubigint pos, const EncIndEntry& encIndEntry, bool shouldFseek
 ) {
     // encode `encIndEntry`
-    ustring encodedEntry = encIndEntry.toUstr();
+    uchar encodedEntry[this->ENTRY_LEN()];
+    encIndEntry.encode(encodedEntry);
     DEBUG_ONLY({
         if (encodedEntry.length() != this->ENTRY_LEN()) {
             std::cerr << "Error: EncIndBase::write(): write of length " << encodedEntry.length()

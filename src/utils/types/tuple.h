@@ -35,8 +35,12 @@ public:
     IDbTuple(const DbDoc& dbDoc, const Range<DbKw>& dbKwRange) :
         dbDoc(dbDoc), dbKwRange(dbKwRange) {}
 
-    virtual uchar* encode() const = 0;
-    virtual std::string toPrintableStr() const = 0;
+    void encode(uchar* ret) const;
+    // we pass in the return value as a param as `IDbTuple` is an abstract class,
+    // so we can't return it by value; caller must instantiate a non-abstract child as `ret`
+    // (and i don't wanna deal with pointers :3)
+    static void decode(const uchar* encoding, IDbTuple& ret);
+    virtual std::string toPrettyStr() const = 0;
 
     // (the `= default` seems to remove the need to template this friended method)
     friend bool operator ==(const IDbTuple& dbTuple1, const IDbTuple& dbTuple2) = default;
@@ -60,22 +64,15 @@ concept IsDbTuple = requires(T t) {
 template <class DbKw = Kw>
 struct Tuple : public IDbTuple<Doc, DbKw> {
 public:
-    static Tuple DUMMY(const Range<DbKw>& dbKwRange) {
-        return Tuple {Doc::DUMMY(), dbKwRange};
-    }
-    bool isDummy() const {
-        return *this == DUMMY(this->dbKwRange);
-    }
-
-    //--------------------------------------------------------------------------
-    // `IDbTuple`
+    static Tuple DUMMY(const Range<DbKw>& dbKwRange) { return Tuple {Doc::DUMMY(), dbKwRange}; }
+    bool isDummy() const { return *this == DUMMY(this->dbKwRange); }
 
     using IDbTuple<Doc, DbKw>::IDbTuple;
+    // default constructor needed for caller of `decode()`
+    Tuple() = default;
     Tuple(Id id, Kw kw, Op op, const Range<DbKw>& dbKwRange);
 
-    uchar* encode() const override;
-    static Tuple decode(const uchar* encoding);
-    std::string toPrintableStr() const override;
+    std::string toPrettyStr() const override;
 
     Id getId() const { return this->dbDoc.id; }
     Kw getKw() const { return this->dbDoc.kw; }
@@ -102,19 +99,12 @@ public:
     static SrcIDb1Tuple DUMMY(const Range<Kw>& kwRange) {
         return SrcIDb1Tuple {SrcIDb1Doc::DUMMY(), kwRange};
     }
-    bool isDummy() const {
-        return *this == DUMMY(this->dbKwRange);
-    }
-
-    //--------------------------------------------------------------------------
-    // `IDbTuple`
+    bool isDummy() const { return *this == DUMMY(this->dbKwRange); }
 
     using IDbTuple<SrcIDb1Doc, Kw>::IDbTuple;
     SrcIDb1Tuple(Kw kw, const Range<IdAlias>& idAliasRange, const Range<Kw>& kwRange);
 
-    uchar* encode() const override;
-    static SrcIDb1Tuple decode(const uchar* encoding);
-    std::string toPrintableStr() const override;
+    std::string toPrettyStr() const override;
 
     Kw getKw() const { return this->dbDoc.kw; }
     const Range<IdAlias>& getIdAliasRange() const { return this->dbDoc.idAliasRange; }

@@ -86,7 +86,7 @@ static_assert(
 // other
 
 
-inline constexpr int ENCODED_NUMBER_BITS = 29;
+inline constexpr int INT_MAX_BYTES = 4;
 
 /**
  * the max number of decimal digits you want ids and keywords to be able to support

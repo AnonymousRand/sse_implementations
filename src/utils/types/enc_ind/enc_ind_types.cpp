@@ -1,5 +1,7 @@
 #include "utils/types/enc_ind/enc_ind_types.h"
 
+#include <cstring>
+
 #include "utils/types/ustring.h"
 
 
@@ -8,14 +10,14 @@
 //==============================================================================
 
 
-ustring EncIndVal::toUstr() const {
-    return this->data + this->iv;
+void EncIndVal::encode(uchar* ret) const {
+    std::memcpy(ret, this->data + this->iv;
 }
 
 
-EncIndVal EncIndVal::fromUcstr(const uchar* ucstr, int dataLen, int ivLen) {
-    ustring data(ucstr, dataLen);
-    ustring iv(ucstr + dataLen, ivLen);
+EncIndVal EncIndVal::decode(const uchar* encoding, int dataLen, int ivLen) {
+    ustring data(encoding, dataLen);
+    ustring iv(encoding + dataLen, ivLen);
     return EncIndVal {data, iv};
 }
 
@@ -25,13 +27,13 @@ EncIndVal EncIndVal::fromUcstr(const uchar* ucstr, int dataLen, int ivLen) {
 //==============================================================================
 
 
-ustring EncIndEntry::toUstr() const {
-    return this->key + this->val.toUstr();
+ustring EncIndEntry::encode() const {
+    return this->key + this->val.encode();
 }
 
 
-EncIndEntry EncIndEntry::fromUcstr(const uchar* ucstr, int keyLen, int dataLen, int ivLen) {
-    ustring key(ucstr, keyLen);
-    EncIndVal encIndVal = EncIndVal::fromUcstr(ucstr + keyLen, dataLen, ivLen);
+EncIndEntry EncIndEntry::decode(const uchar* encoding, int keyLen, int dataLen, int ivLen) {
+    ustring key(encoding, keyLen);
+    EncIndVal encIndVal = EncIndVal::decode(encoding + keyLen, dataLen, ivLen);
     return EncIndEntry {key, encIndVal};
 }

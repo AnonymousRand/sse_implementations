@@ -1,8 +1,11 @@
 #include "utils/misc.h"
 
+#include <bit>
 #include <cassert>
 #include <cmath>
 #include <concepts>
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -40,6 +43,35 @@ void cleanUpResults(std::vector<Doc>& results) {
         Op op = result.op;
         return id == DUMMY || op != Op::INS || deletedIds.contains(id);
     });
+}
+
+
+void encodeBigint(uchar* ret, bigint sourceInt, int targetBytes) {
+    if constexpr (std::endian::native == std::endian::little) {
+        // on little-endian systems, `std::memcpy()` already copies LSB first, which is what we want
+        std::memcpy(ret, &sourceInt, targetBytes);
+    } else {
+        // otherwise we must copy byte by byte, with less significant bytes earlier in `ret`
+        for (int i = 0; i < targetBytes; i++) {
+            ret[i] = static_cast<uchar>((sourceInt >> (8 * (targetBytes - i - 1))) & 0xff);
+        }
+    }
+}
+
+
+bigint decodeBigint(const uchar* encoding, int targetBytes) {
+    // init to 0 so that unfilled bytes are `0`
+    bigint ret = 0;
+    if constexpr (std::endian::native == std::endian::little) {
+        std::memcpy(&ret, encoding, targetBytes);
+    } else {
+        for (int i = 0; i < targetBytes; i++) {
+            // cast to `std::uint8_t` first to avoid sign extension issues when bitshifting
+            std::uint8_t byte = static_cast<std::uint8_t>(encoding[i]);
+            ret |= (static_cast<bigint>(byte) >> (8 * (targetBytes - i - 1)));
+        }
+    }
+    return ret;
 }
 
 

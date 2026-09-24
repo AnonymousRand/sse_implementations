@@ -2,7 +2,6 @@
 
 #include <concepts>
 #include <iostream>
-#include <regex>
 #include <string>
 
 #include "utils/types/basic_types.h"
@@ -20,11 +19,8 @@
  */
 struct IDbDoc {
 public:
-    // `toStr()` should be the most compact possible unambiguous encoding, for efficient storage
-    // whereas `toPrintableStr()` can be prettier :3
-    virtual std::string toStr() const = 0;
-    virtual std::string toPrintableStr() const = 0;
-    ustring toUstr() const;
+    virtual void encode(uchar* ret) const = 0;
+    virtual std::string toPrettyStr() const = 0;
 
     friend bool operator ==(const IDbDoc& iDbDoc1, const IDbDoc& iDbDoc2) = default;
     friend std::ostream& operator <<(std::ostream& os, const IDbDoc& iDbDoc);
@@ -50,32 +46,22 @@ public:
     Kw kw;
     Op op;
 
+    // note: these cannot be member *variables* if we wish to initialize them here in the class
+    // body, as that requires the class itself (i.e. variable type) to be fully initialized first
+    static Doc DUMMY() { return Doc {::DUMMY, ::DUMMY, Op::DUMMY}; }
+    bool isDummy() const { return *this == DUMMY(); }
+
     // note: can't use aggregate initialization here as that only works if the class
     // has no virtual methods
     Doc(Id id, Kw kw, Op op) : id(id), kw(kw), op(op) {}
 
-    // note: these cannot be member *variables* if we wish to initialize them here in the class
-    // body, as that requires the class itself (i.e. variable type) to be fully initialized first
-    static Doc DUMMY() {
-        return Doc {::DUMMY, ::DUMMY, Op::DUMMY};
-    }
-    bool isDummy() const {
-        return *this == DUMMY();
-    }
-
-    //--------------------------------------------------------------------------
-    // `IDbDoc`
-
-    std::string toStr() const override;
-    std::string toPrintableStr() const override;
-    static Doc fromRegexMatches(const std::smatch& matches);
+    void encode(uchar* ret) const override;
+    static Doc decode(const uchar* encoding);
+    std::string toPrettyStr() const override;
+    static const int ENCODING_LEN;
 
     // need to explicitly declare this again since we have additional member variables in this child
     friend bool operator ==(const Doc& doc1, const Doc& doc2) = default;
-
-private:
-    static const std::string REGEX_STR;
-    static const int REGEX_SUBMATCH_COUNT;
 };
 
 
@@ -91,25 +77,15 @@ public:
     Kw kw;
     Range<IdAlias> idAliasRange;
 
+    static SrcIDb1Doc DUMMY() { return SrcIDb1Doc {::DUMMY, Range<IdAlias>::DUMMY()}; }
+    bool isDummy() const { return *this == DUMMY(); }
+
     SrcIDb1Doc(Kw kw, Range<IdAlias> idAliasRange) : kw(kw), idAliasRange(idAliasRange) {}
 
-    static SrcIDb1Doc DUMMY() {
-        return SrcIDb1Doc {::DUMMY, Range<IdAlias>::DUMMY()};
-    }
-    bool isDummy() const {
-        return *this == DUMMY();
-    }
-
-    //--------------------------------------------------------------------------
-    // `IDbDoc`
-
-    std::string toStr() const override;
-    std::string toPrintableStr() const override;
-    static SrcIDb1Doc fromRegexMatches(const std::smatch& matches);
+    void encode(uchar* ret) const override;
+    static SrcIDb1Doc decode(const uchar* encoding);
+    std::string toPrettyStr() const override;
+    static const int ENCODING_LEN;
 
     friend bool operator ==(const SrcIDb1Doc& doc1, const SrcIDb1Doc& doc2) = default;
-
-private:
-    static const std::string REGEX_STR;
-    static const int REGEX_SUBMATCH_COUNT;
 };
