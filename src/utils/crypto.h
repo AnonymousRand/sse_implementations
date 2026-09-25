@@ -37,10 +37,12 @@ ustring encrypt(
 
 /**
  * pad `ptext` to `targetLen` before encrypting.
- *
+ * 
  * IMPORTANT: because of AES' PCKS #7 padding, padding to exactly `n` blocks here
  * actually generates `n + 1` blocks, so always pad to one less byte!
  */
+// (we need to manually pad instead of relying on AES' PCKS #7 padding since we need the number
+// of outputted blocks to be the same even when plaintexts have very different lengths)
 ustring padAndEncrypt(
     const ustring& key, ustring ptext, const ustring& iv, int targetLen,
     const EVP_CIPHER* cipher = ENC_CIPHER

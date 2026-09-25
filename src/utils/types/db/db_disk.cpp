@@ -123,10 +123,6 @@ DbTuple DbDisk<DbTuple>::operator [](bigint index) const {
     ustring encodDbTuple(dbTupleUcstr, config::TUPLE_ENCOD_LEN);
 
     // decode and return
-    // (we didn't get rid of padding, but this shouldn't matter since padding comes at end, and
-    // our decoding only cares about the bytes starting at the beginning. we also don't know how
-    // much padding there is as different tuple types have different lengths, and we can't just
-    // delete until first nonzero byte as there can be zero bytes in the actual encoding)
     DbTuple dbTuple;
     DbTuple::decode(encodDbTuple, dbTuple);
     return dbTuple;

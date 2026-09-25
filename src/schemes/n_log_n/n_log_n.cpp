@@ -76,6 +76,7 @@ std::vector<typename NLogN<DbTuple>::DbDoc> NLogN<DbTuple>::searchRaw(
     }
     // again shouldn't need to unpad here due to "little-endian" ordering of integer bytes
     // with our encoding: the bits we want (the least significant ones) are at the beginning
+    // IMPORTANT: change if this is no longer the case!
     ustring encodDbKwCount = utils::crypto::decrypt(
         this->encrKey, encrIndValDict.data, encrIndValDict.iv
     );
