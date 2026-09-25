@@ -241,13 +241,4 @@ ustring decrypt(
 }
 
 
-ustring decryptAndUnpad(
-    const ustring& key, const ustring& ctext, const ustring& iv, const EVP_CIPHER* cipher
-) {
-    ustring ptext = decrypt(key, ctext, iv, cipher);
-    utils::str::unpadStrEnd(ptext);
-    return ptext;
-}
-
-
 } // namespace `utils::crypto`

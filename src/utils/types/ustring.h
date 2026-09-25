@@ -37,7 +37,7 @@ struct std::hash<ustring> {
 };
 
 
-// specialize `std::formatter` for `ustring` so that they can be insert in `std::format()`
+// specialize `std::formatter` for `ustring` so that it can be used in `std::format()`
 template <>
 struct std::formatter<ustring> : std::formatter<std::string> {
     // inherit `parse()` from std::string

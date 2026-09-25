@@ -54,12 +54,12 @@ struct std::hash<Range<T>> {
 };
 
 
-// specialize `std::formatter` for `Range` so that they can be insert in `std::format()`
+// specialize `std::formatter` for `Range` so that it can be used in `std::format()`
 template <std::integral T>
-struct std::formatter<Range<T>> : std::formatter<ustring> {
-    // inherit `parse()` from `ustring`
+struct std::formatter<Range<T>> : std::formatter<std::string> {
+    // inherit `parse()` from `std::string`
 
     auto format(const Range<T>& range, std::format_context& ctx) const {
-        return std::formatter<ustring>::format(range.encode(), ctx);
+        return std::formatter<std::string>::format(range.toPrettyStr(), ctx);
     }
 };

@@ -21,6 +21,7 @@ ustring encodeBigint(bigint sourceInt, int targetBytes) {
         std::memcpy(ret.data(), &sourceInt, targetBytes);
     } else {
         // otherwise we must copy byte by byte, with less significant bytes earlier in `ret`
+        // which mimics little-endian ordering in `ret`
         for (int i = 0; i < targetBytes; i++) {
             ret[i] = static_cast<uchar>((sourceInt >> (8 * (targetBytes - i - 1))) & 0xff);
         }
@@ -67,18 +68,6 @@ void padStrEnd(std::basic_string<CharType>& str, bigint targetLen) {
 }
 
 
-template <class CharType>
-void unpadStrEnd(std::basic_string<CharType>& str) {
-    bigint paddingStart;
-    for (paddingStart = str.length() - 1; paddingStart >= 0; paddingStart--) {
-        if (str[paddingStart] != '\0') {
-            break;
-        }
-    }
-    str.resize(paddingStart + 1); // `+ 1` to add back the first null terminator
-}
-
-
 ubigint hashToPos(const ustring& hash) {
     // this conversion mess is from USENIX'24's implementation
     return (*((ubigint*)hash.c_str()));
@@ -91,10 +80,6 @@ ubigint hashToPos(const ustring& hash) {
 
 template void padStrEnd(std::basic_string<char>& str, bigint targetLen);
 template void padStrEnd(std::basic_string<uchar>& str, bigint targetLen);
-
-
-template void unpadStrEnd(std::basic_string<char>& str);
-template void unpadStrEnd(std::basic_string<uchar>& str);
 
 
 } // namespace `utils::str`
