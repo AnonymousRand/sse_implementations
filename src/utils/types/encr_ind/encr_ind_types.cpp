@@ -8,6 +8,8 @@
 //==============================================================================
 
 
+// IMPORTANT: this requires that `this->data` is already padded to the full `dataLen`, as we read/
+// decode at fixed indexes, which is why we pad pre-encryption to generate the same # of blocks!
 ustring EncrIndVal::encode() const {
     return this->data + this->iv;
 }
