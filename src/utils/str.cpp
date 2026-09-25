@@ -51,7 +51,7 @@ bigint decodeBigint(const ustring& encoding, int startIndex, int targetBytes) {
     // with `1` bits in order to not read the highest possible `ubigint` for `-1`, for example
     if (targetBytes < sizeof(bigint) && (static_cast<std::uint8_t>(encoding[msbIndex]) & 0x80)) {
         ubigint allOneBits = ~ubigint(0);
-        bigint mask = ~(allOneBits >> (sizeof(bigint) - targetBytes) * 8);
+        bigint mask = ~(allOneBits >> 8 * (sizeof(bigint) - targetBytes));
         ret |= mask;
     }
     return ret;
@@ -61,15 +61,13 @@ bigint decodeBigint(const ustring& encoding, int startIndex, int targetBytes) {
 template <class CharType>
 void padStrEnd(std::basic_string<CharType>& str, bigint targetLen) {
     if (str.length() < targetLen) {
-        bigint amountToPad = targetLen - str.length();
-        std::basic_string<CharType> padding(amountToPad, '\0');
-        str += padding;
+        str.resize(targetLen, '\0');
     }
 }
 
 
 ubigint hashToPos(const ustring& hash) {
-    // this conversion mess is from USENIX'24's implementation
+    // this mess is from USENIX'24's implementation
     return (*((ubigint*)hash.c_str()));
 }
 
