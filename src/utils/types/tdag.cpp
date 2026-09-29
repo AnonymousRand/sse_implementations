@@ -245,8 +245,7 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) const {
         }
     }
     if (this->range.size() < targetRange.size()) {
-        // if the earlier `if` case concluded that `extraParent` is not a valid cover,
-        // return nothing
+        // if `extraParent` is not a valid cover, return nothing
         if (diff == -1) {
             return Range<T>::DUMMY();
         }
