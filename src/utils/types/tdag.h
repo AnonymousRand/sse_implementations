@@ -22,7 +22,7 @@ public:
     //--------------------------------------------------------------------------
     // constructors/destructors
 
-    // default constructor needed for `init()`
+    // default constructor needed for `create()`
     TdagNode() = default;
 
     ~TdagNode();
