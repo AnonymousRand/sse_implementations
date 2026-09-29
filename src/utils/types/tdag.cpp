@@ -234,6 +234,8 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) const {
         return diff;
     };
 
+    // if the current node's range is narrower than the target range, it is impossible for
+    // its children to be the SRC, so its extra TDAG parent is the only possible SRC candidate
     T diff = T(-1);
     if (this->extraParent != nullptr) {
         Range<T> extraParentRange = this->extraParent->range;
@@ -242,8 +244,6 @@ Range<T> TdagNode<T>::findSrcHelper(const Range<T>& targetRange) const {
             return extraParentRange;
         }
     }
-    // if the current node's range is narrower than the target range, it is impossible for
-    // its children to be the SRC, so its extra TDAG parent is the only possible SRC candidate
     if (this->range.size() < targetRange.size()) {
         // if the earlier `if` case concluded that `extraParent` is not a valid cover,
         // return nothing
